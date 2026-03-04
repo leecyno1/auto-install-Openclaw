@@ -49,6 +49,8 @@ pass "compatibility checklist doc"
 # 8) auto-fix-openclaw + Claude/Codex 修复入口检查
 grep -q 'AUTO_FIX_OPENCLAW_REPO_URL=' config-menu.sh || fail "missing auto-fix-openclaw repo variable"
 grep -q 'AI 自动修复 OpenClaw' config-menu.sh || fail "missing AI auto-fix menu entry"
+grep -q '执行 AI 修复（选择 Claude/Codex）' config-menu.sh || fail "missing unified AI repair entry"
+grep -q 'choose_auto_fix_repair_provider' config-menu.sh || fail "missing provider chooser function"
 grep -q 'run_auto_fix_provider_repair codex' config-menu.sh || fail "missing codex repair entry"
 grep -q 'run_auto_fix_provider_repair claudecode' config-menu.sh || fail "missing claudecode repair entry"
 pass "auto-fix menu markers"

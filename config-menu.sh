@@ -4658,6 +4658,34 @@ run_auto_fix_provider_repair() {
     fi
 }
 
+choose_auto_fix_repair_provider() {
+    echo ""
+    echo -e "${WHITE}选择修复引擎${NC}"
+    print_divider
+    print_menu_item "1" "Codex CLI" "🤖"
+    print_menu_item "2" "Claude CLI" "🧠"
+    print_menu_item "0" "取消" "↩️"
+    echo ""
+    echo -en "${YELLOW}请选择 [0-2]: ${NC}"
+    read provider_choice < "$TTY_INPUT"
+
+    case "$provider_choice" in
+        1)
+            run_auto_fix_provider_repair codex
+            ;;
+        2)
+            run_auto_fix_provider_repair claudecode
+            ;;
+        0)
+            return 0
+            ;;
+        *)
+            log_error "无效选择"
+            return 1
+            ;;
+    esac
+}
+
 ai_auto_fix_menu() {
     clear_screen
     print_header
@@ -4674,12 +4702,11 @@ ai_auto_fix_menu() {
     print_menu_item "2" "查看 auto-fix 状态" "📊"
     print_menu_item "3" "采集诊断 (doctor-dry-run)" "🧪"
     print_menu_item "4" "执行单次巡检 (run-once)" "🔁"
-    print_menu_item "5" "使用 Codex CLI 修复" "🤖"
-    print_menu_item "6" "使用 Claude CLI 修复" "🧠"
+    print_menu_item "5" "执行 AI 修复（选择 Claude/Codex）" "🛠️"
     print_menu_item "0" "返回上级菜单" "↩️"
     echo ""
 
-    echo -en "${YELLOW}请选择 [0-6]: ${NC}"
+    echo -en "${YELLOW}请选择 [0-5]: ${NC}"
     read choice < "$TTY_INPUT"
 
     case "$choice" in
@@ -4696,10 +4723,7 @@ ai_auto_fix_menu() {
             run_auto_fix_openclaw_cmd run-once --source installer-menu
             ;;
         5)
-            run_auto_fix_provider_repair codex
-            ;;
-        6)
-            run_auto_fix_provider_repair claudecode
+            choose_auto_fix_repair_provider
             ;;
         0)
             return
