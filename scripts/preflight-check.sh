@@ -46,4 +46,11 @@ pass "independent repo markers"
 [ -f docs/official-compatibility-checklist.md ] || fail "missing official compatibility checklist doc"
 pass "compatibility checklist doc"
 
+# 8) auto-fix-openclaw + Claude/Codex 修复入口检查
+grep -q 'AUTO_FIX_OPENCLAW_REPO_URL=' config-menu.sh || fail "missing auto-fix-openclaw repo variable"
+grep -q 'AI 自动修复 OpenClaw' config-menu.sh || fail "missing AI auto-fix menu entry"
+grep -q 'run_auto_fix_provider_repair codex' config-menu.sh || fail "missing codex repair entry"
+grep -q 'run_auto_fix_provider_repair claudecode' config-menu.sh || fail "missing claudecode repair entry"
+pass "auto-fix menu markers"
+
 echo "All preflight checks passed."

@@ -195,6 +195,7 @@ bash ./config-menu.sh
 - `[3]` 消息渠道配置
 - `[7]` 快速测试
 - `[8]` 高级设置（升级、备份、恢复）
+- `[8]` 高级设置 → `[8]` AI 自动修复 OpenClaw（集成 `auto-fix-openclaw`，支持 Codex/Claude CLI）
 
 ### 3) 典型配置流程（建议）
 

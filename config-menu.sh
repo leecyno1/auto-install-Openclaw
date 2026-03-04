@@ -75,6 +75,9 @@ BACKUP_DIR="$CONFIG_DIR/backups"
 FEISHU_PLUGIN_OFFICIAL="@openclaw/feishu"
 INSTALLER_REPO="leecyno1/auto-install-Openclaw"
 INSTALLER_RAW_URL="https://raw.githubusercontent.com/${INSTALLER_REPO}/main"
+AUTO_FIX_OPENCLAW_REPO_URL="${AUTO_FIX_OPENCLAW_REPO_URL:-https://github.com/leecyno1/auto-fix-openclaw.git}"
+AUTO_FIX_OPENCLAW_DIR="${AUTO_FIX_OPENCLAW_DIR:-$HOME/.openclaw/tools/auto-fix-openclaw}"
+AUTO_FIX_OPENCLAW_BIN="$AUTO_FIX_OPENCLAW_DIR/bin/auto-fix-openclaw"
 
 # ================================ 工具函数 ================================
 
@@ -4569,6 +4572,147 @@ print('Custom provider configured: ' + vars['provider_id'])
 
 # ================================ 高级设置 ================================
 
+ensure_auto_fix_openclaw_ready() {
+    if ! command -v git &> /dev/null; then
+        log_error "未检测到 git，无法同步 auto-fix-openclaw"
+        return 1
+    fi
+
+    mkdir -p "$(dirname "$AUTO_FIX_OPENCLAW_DIR")"
+
+    if [ -d "$AUTO_FIX_OPENCLAW_DIR/.git" ]; then
+        log_info "检测到 auto-fix-openclaw，本地路径: $AUTO_FIX_OPENCLAW_DIR"
+        if [ -n "$(git -C "$AUTO_FIX_OPENCLAW_DIR" status --porcelain 2>/dev/null)" ]; then
+            log_warn "auto-fix-openclaw 存在本地改动，跳过自动 pull"
+        else
+            log_info "正在更新 auto-fix-openclaw..."
+            git -C "$AUTO_FIX_OPENCLAW_DIR" pull --ff-only > /dev/null 2>&1 || log_warn "自动更新失败，可稍后手动更新"
+        fi
+    elif [ -d "$AUTO_FIX_OPENCLAW_DIR" ]; then
+        log_warn "目录存在但不是 git 仓库: $AUTO_FIX_OPENCLAW_DIR"
+    else
+        log_info "正在克隆 auto-fix-openclaw..."
+        if ! git clone --depth 1 "$AUTO_FIX_OPENCLAW_REPO_URL" "$AUTO_FIX_OPENCLAW_DIR"; then
+            log_error "克隆失败: $AUTO_FIX_OPENCLAW_REPO_URL"
+            return 1
+        fi
+    fi
+
+    if [ -f "$AUTO_FIX_OPENCLAW_BIN" ] && [ ! -x "$AUTO_FIX_OPENCLAW_BIN" ]; then
+        chmod +x "$AUTO_FIX_OPENCLAW_BIN" 2>/dev/null || true
+    fi
+
+    if [ ! -x "$AUTO_FIX_OPENCLAW_BIN" ]; then
+        log_error "未找到可执行文件: $AUTO_FIX_OPENCLAW_BIN"
+        return 1
+    fi
+
+    log_info "auto-fix-openclaw 已就绪"
+    return 0
+}
+
+run_auto_fix_openclaw_cmd() {
+    if ! ensure_auto_fix_openclaw_ready; then
+        return 1
+    fi
+
+    AUTO_FIX_OPENCLAW_CODEX_BIN="${AUTO_FIX_OPENCLAW_CODEX_BIN:-$(command -v codex || true)}" \
+    AUTO_FIX_OPENCLAW_CLAUDE_CODE_BIN="${AUTO_FIX_OPENCLAW_CLAUDE_CODE_BIN:-$(command -v claude || command -v claude-code || true)}" \
+    "$AUTO_FIX_OPENCLAW_BIN" "$@"
+}
+
+run_auto_fix_provider_repair() {
+    local provider="$1"
+
+    if ! check_openclaw_installed; then
+        log_error "OpenClaw 未安装，无法执行修复"
+        return 1
+    fi
+
+    case "$provider" in
+        codex)
+            if ! command -v codex &> /dev/null; then
+                log_error "未检测到 codex CLI，请先安装并登录"
+                return 1
+            fi
+            ;;
+        claudecode)
+            if ! command -v claude &> /dev/null && ! command -v claude-code &> /dev/null; then
+                log_error "未检测到 claude CLI，请先安装并登录"
+                return 1
+            fi
+            ;;
+    esac
+
+    local force_flag=""
+    if confirm "即使当前网关健康也强制执行 AI 修复？" "n"; then
+        force_flag="--force"
+    fi
+
+    echo ""
+    log_info "执行修复: auto-fix-openclaw repair-now --provider $provider"
+    if [ -n "$force_flag" ]; then
+        run_auto_fix_openclaw_cmd repair-now --provider "$provider" --source installer-menu "$force_flag"
+    else
+        run_auto_fix_openclaw_cmd repair-now --provider "$provider" --source installer-menu
+    fi
+}
+
+ai_auto_fix_menu() {
+    clear_screen
+    print_header
+
+    echo -e "${WHITE}🛠️ AI 自动修复 OpenClaw${NC}"
+    print_divider
+    echo ""
+    echo -e "${GRAY}集成 auto-fix-openclaw，可调用 Codex/Claude CLI 执行修复${NC}"
+    echo -e "${GRAY}仓库: ${AUTO_FIX_OPENCLAW_REPO_URL}${NC}"
+    echo -e "${GRAY}路径: ${AUTO_FIX_OPENCLAW_DIR}${NC}"
+    echo ""
+
+    print_menu_item "1" "同步/安装 auto-fix-openclaw" "📦"
+    print_menu_item "2" "查看 auto-fix 状态" "📊"
+    print_menu_item "3" "采集诊断 (doctor-dry-run)" "🧪"
+    print_menu_item "4" "执行单次巡检 (run-once)" "🔁"
+    print_menu_item "5" "使用 Codex CLI 修复" "🤖"
+    print_menu_item "6" "使用 Claude CLI 修复" "🧠"
+    print_menu_item "0" "返回上级菜单" "↩️"
+    echo ""
+
+    echo -en "${YELLOW}请选择 [0-6]: ${NC}"
+    read choice < "$TTY_INPUT"
+
+    case "$choice" in
+        1)
+            ensure_auto_fix_openclaw_ready
+            ;;
+        2)
+            run_auto_fix_openclaw_cmd status
+            ;;
+        3)
+            run_auto_fix_openclaw_cmd doctor-dry-run
+            ;;
+        4)
+            run_auto_fix_openclaw_cmd run-once --source installer-menu
+            ;;
+        5)
+            run_auto_fix_provider_repair codex
+            ;;
+        6)
+            run_auto_fix_provider_repair claudecode
+            ;;
+        0)
+            return
+            ;;
+        *)
+            log_error "无效选择"
+            ;;
+    esac
+
+    press_enter
+    ai_auto_fix_menu
+}
+
 backup_runtime_config_for_upgrade() {
     local backup_root="$HOME/.openclaw-upgrade-backups"
     mkdir -p "$backup_root"
@@ -4767,10 +4911,11 @@ advanced_settings() {
     print_menu_item "5" "清理日志" "🧹"
     print_menu_item "6" "更新 OpenClaw" "⬆️"
     print_menu_item "7" "卸载 OpenClaw" "🗑️"
+    print_menu_item "8" "AI 自动修复 OpenClaw" "🛠️"
     print_menu_item "0" "返回主菜单" "↩️"
     echo ""
     
-    echo -en "${YELLOW}请选择 [0-7]: ${NC}"
+    echo -en "${YELLOW}请选择 [0-8]: ${NC}"
     read choice < "$TTY_INPUT"
     
     case $choice in
@@ -4833,6 +4978,9 @@ advanced_settings() {
                 log_info "OpenClaw 已卸载"
                 exit 0
             fi
+            ;;
+        8)
+            ai_auto_fix_menu
             ;;
         0)
             return
