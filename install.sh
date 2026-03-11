@@ -734,7 +734,7 @@ EOF
             echo "export MOONSHOT_API_KEY=$AI_KEY" >> "$env_file"
             echo "export MOONSHOT_BASE_URL=${BASE_URL:-https://api.moonshot.cn/v1}" >> "$env_file"
             ;;
-        google)
+        google|google-gemini-cli|google-antigravity)
             echo "export GOOGLE_API_KEY=$AI_KEY" >> "$env_file"
             [ -n "$BASE_URL" ] && echo "export GOOGLE_BASE_URL=$BASE_URL" >> "$env_file"
             ;;
@@ -804,6 +804,12 @@ EOF
                     ;;
                 google)
                     openclaw_model="google/$AI_MODEL"
+                    ;;
+                google-gemini-cli)
+                    openclaw_model="google-gemini-cli/$AI_MODEL"
+                    ;;
+                google-antigravity)
+                    openclaw_model="google-antigravity/$AI_MODEL"
                     ;;
                 ollama)
                     openclaw_model="ollama/$AI_MODEL"
@@ -1264,6 +1270,9 @@ setup_ai_provider() {
     echo "  11) 🇨🇳 智谱 GLM (Zai)"
     echo "  12) 🤖 MiniMax"
     echo "  13) 🆓 OpenCode (免费多模型)"
+    echo "  14) ☁️ Azure OpenAI"
+    echo "  15) 🧪 Google Gemini CLI"
+    echo "  16) 🚀 Google Antigravity"
     echo ""
     echo -e "${GRAY}说明:${NC}"
     echo -e "${GRAY}  • 本安装向导提供官方常用提供商的快速入口（与官方文档对齐的精简集）${NC}"
@@ -1272,7 +1281,7 @@ setup_ai_provider() {
     echo -e "${GRAY}  • 官方模型文档: https://docs.openclaw.ai/providers/models${NC}"
     echo -e "${GRAY}  • 支持自定义 API 地址（通过 openclaw.json 配置自定义 Provider）${NC}"
     echo ""
-    echo -en "${YELLOW}请选择 AI 提供商 [1-13] (默认: 1): ${NC}"; read ai_choice < "$TTY_INPUT"
+    echo -en "${YELLOW}请选择 AI 提供商 [1-16] (默认: 1): ${NC}"; read ai_choice < "$TTY_INPUT"
     ai_choice=${ai_choice:-1}
     
     case $ai_choice in
@@ -1603,6 +1612,74 @@ setup_ai_provider() {
                 2) AI_MODEL="opencode/claude-sonnet-4-5" ;;
                 3) echo -en "${YELLOW}输入模型名称: ${NC}"; read AI_MODEL < "$TTY_INPUT" ;;
                 *) AI_MODEL="opencode/gpt-4o-mini" ;;
+            esac
+            ;;
+        14)
+            # Azure OpenAI 走 OpenAI 兼容协议
+            AI_PROVIDER="openai"
+            AI_API_TYPE="openai-completions"
+            echo ""
+            echo -e "${CYAN}配置 Azure OpenAI${NC}"
+            echo -e "${GRAY}说明: 请输入 Azure Endpoint（示例: https://<resource>.openai.azure.com）${NC}"
+            echo ""
+            echo -en "${YELLOW}Azure Endpoint: ${NC}"; read azure_endpoint < "$TTY_INPUT"
+            echo -en "${YELLOW}Azure 部署名(Deployment Name): ${NC}"; read azure_deployment < "$TTY_INPUT"
+            read_secret_input "${YELLOW}输入 API Key: ${NC}" AI_KEY
+            if [ -z "$azure_endpoint" ] || [ -z "$azure_deployment" ] || [ -z "$AI_KEY" ]; then
+                log_warn "Azure OpenAI 信息不完整，回退到 OpenAI 默认配置"
+                BASE_URL=""
+                AI_MODEL="gpt-5-mini"
+            else
+                BASE_URL="${azure_endpoint%/}/openai/deployments/${azure_deployment}"
+                AI_MODEL="$azure_deployment"
+            fi
+            ;;
+        15)
+            AI_PROVIDER="google-gemini-cli"
+            BASE_URL=""
+            echo ""
+            echo -e "${CYAN}配置 Google Gemini CLI${NC}"
+            echo -e "${GRAY}获取 API Key: https://aistudio.google.com/apikey${NC}"
+            echo ""
+            read_secret_input "${YELLOW}输入 API Key: ${NC}" AI_KEY
+            echo ""
+            echo "选择模型:"
+            echo "  1) gemini-3-pro-preview (推荐)"
+            echo "  2) gemini-3-flash-preview"
+            echo "  3) gemini-2.5-pro"
+            echo "  4) gemini-2.5-flash"
+            echo "  5) 自定义模型名称"
+            echo -en "${YELLOW}选择模型 [1-5] (默认: 1): ${NC}"; read model_choice < "$TTY_INPUT"
+            case $model_choice in
+                2) AI_MODEL="gemini-3-flash-preview" ;;
+                3) AI_MODEL="gemini-2.5-pro" ;;
+                4) AI_MODEL="gemini-2.5-flash" ;;
+                5) echo -en "${YELLOW}输入模型名称: ${NC}"; read AI_MODEL < "$TTY_INPUT" ;;
+                *) AI_MODEL="gemini-3-pro-preview" ;;
+            esac
+            ;;
+        16)
+            AI_PROVIDER="google-antigravity"
+            BASE_URL=""
+            echo ""
+            echo -e "${CYAN}配置 Google Antigravity${NC}"
+            echo -e "${GRAY}获取 API Key: https://aistudio.google.com/apikey${NC}"
+            echo ""
+            read_secret_input "${YELLOW}输入 API Key: ${NC}" AI_KEY
+            echo ""
+            echo "选择模型:"
+            echo "  1) gemini-3-pro-high (推荐)"
+            echo "  2) gemini-3-pro-low"
+            echo "  3) gemini-3-flash"
+            echo "  4) claude-sonnet-4-5"
+            echo "  5) 自定义模型名称"
+            echo -en "${YELLOW}选择模型 [1-5] (默认: 1): ${NC}"; read model_choice < "$TTY_INPUT"
+            case $model_choice in
+                2) AI_MODEL="gemini-3-pro-low" ;;
+                3) AI_MODEL="gemini-3-flash" ;;
+                4) AI_MODEL="claude-sonnet-4-5" ;;
+                5) echo -en "${YELLOW}输入模型名称: ${NC}"; read AI_MODEL < "$TTY_INPUT" ;;
+                *) AI_MODEL="gemini-3-pro-high" ;;
             esac
             ;;
         *)
