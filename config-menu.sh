@@ -1696,10 +1696,10 @@ config_openrouter() {
     echo ""
     echo -e "${CYAN}选择模型:${NC}"
     echo ""
-    print_menu_item "1" "anthropic/claude-sonnet-4 (推荐)" "🟣"
-    print_menu_item "2" "openai/gpt-4o" "🟢"
-    print_menu_item "3" "google/gemini-pro-1.5" "🔴"
-    print_menu_item "4" "meta-llama/llama-3-70b" "🦙"
+    print_menu_item "1" "anthropic/claude-sonnet-4-5 (推荐)" "🟣"
+    print_menu_item "2" "openai/gpt-5-mini" "🟢"
+    print_menu_item "3" "google/gemini-2.5-pro" "🔴"
+    print_menu_item "4" "meta-llama/llama-3.3-70b-instruct" "🦙"
     print_menu_item "5" "自定义模型名称" "✏️"
     echo ""
     
@@ -1707,12 +1707,12 @@ config_openrouter() {
     model_choice=${model_choice:-1}
     
     case $model_choice in
-        1) model="anthropic/claude-sonnet-4" ;;
-        2) model="openai/gpt-4o" ;;
-        3) model="google/gemini-pro-1.5" ;;
-        4) model="meta-llama/llama-3-70b-instruct" ;;
+        1) model="anthropic/claude-sonnet-4-5" ;;
+        2) model="openai/gpt-5-mini" ;;
+        3) model="google/gemini-2.5-pro" ;;
+        4) model="meta-llama/llama-3.3-70b-instruct" ;;
         5) read -p "$(echo -e "${YELLOW}输入模型名称: ${NC}")" model < "$TTY_INPUT" ;;
-        *) model="anthropic/claude-sonnet-4" ;;
+        *) model="anthropic/claude-sonnet-4-5" ;;
     esac
     
     # 保存到 OpenClaw 环境变量配置
@@ -1812,9 +1812,9 @@ config_google_gemini() {
     echo ""
     echo -e "${CYAN}选择模型:${NC}"
     echo ""
-    print_menu_item "1" "gemini-2.0-flash (推荐)" "⭐"
-    print_menu_item "2" "gemini-1.5-pro" "🚀"
-    print_menu_item "3" "gemini-1.5-flash" "⚡"
+    print_menu_item "1" "gemini-2.5-pro (推荐)" "⭐"
+    print_menu_item "2" "gemini-2.5-flash" "🚀"
+    print_menu_item "3" "gemini-2.0-flash" "⚡"
     print_menu_item "4" "自定义模型名称" "✏️"
     echo ""
     
@@ -1822,11 +1822,11 @@ config_google_gemini() {
     model_choice=${model_choice:-1}
     
     case $model_choice in
-        1) model="gemini-2.0-flash" ;;
-        2) model="gemini-1.5-pro" ;;
-        3) model="gemini-1.5-flash" ;;
+        1) model="gemini-2.5-pro" ;;
+        2) model="gemini-2.5-flash" ;;
+        3) model="gemini-2.0-flash" ;;
         4) read -p "$(echo -e "${YELLOW}输入模型名称: ${NC}")" model < "$TTY_INPUT" ;;
-        *) model="gemini-2.0-flash" ;;
+        *) model="gemini-2.5-pro" ;;
     esac
     
     # 保存到 OpenClaw 环境变量配置
@@ -2276,8 +2276,8 @@ config_zai() {
     echo ""
     echo -e "${CYAN}选择模型:${NC}"
     echo ""
-    print_menu_item "1" "glm-4.7 (推荐，最新)" "⭐"
-    print_menu_item "2" "glm-4.6 (上一代)" "📦"
+    print_menu_item "1" "glm-5 (推荐，最新)" "⭐"
+    print_menu_item "2" "glm-4.7" "📦"
     print_menu_item "3" "glm-4.6v (视觉)" "👁️"
     print_menu_item "4" "glm-4.5-flash (快速)" "⚡"
     print_menu_item "5" "glm-4.5-air (轻量)" "🪶"
@@ -2288,13 +2288,13 @@ config_zai() {
     model_choice=${model_choice:-1}
     
     case $model_choice in
-        1) model="glm-4.7" ;;
-        2) model="glm-4.6" ;;
+        1) model="glm-5" ;;
+        2) model="glm-4.7" ;;
         3) model="glm-4.6v" ;;
         4) model="glm-4.5-flash" ;;
         5) model="glm-4.5-air" ;;
         6) read -p "$(echo -e "${YELLOW}输入模型名称: ${NC}")" model < "$TTY_INPUT" ;;
-        *) model="glm-4.7" ;;
+        *) model="glm-5" ;;
     esac
     
     # 保存到 OpenClaw 环境变量配置
@@ -2391,8 +2391,8 @@ config_minimax() {
     echo ""
     echo -e "${CYAN}选择模型:${NC}"
     echo ""
-    print_menu_item "1" "MiniMax-M2.1 (推荐，最新)" "⭐"
-    print_menu_item "2" "MiniMax-M2 (上一代)" "📦"
+    print_menu_item "1" "minimax-m2.5 (推荐，最新)" "⭐"
+    print_menu_item "2" "minimax-m2.1 (稳定)" "📦"
     print_menu_item "3" "自定义模型名称" "✏️"
     echo ""
     
@@ -2400,10 +2400,10 @@ config_minimax() {
     model_choice=${model_choice:-1}
     
     case $model_choice in
-        1) model="MiniMax-M2.1" ;;
-        2) model="MiniMax-M2" ;;
+        1) model="minimax-m2.5" ;;
+        2) model="minimax-m2.1" ;;
         3) read -p "$(echo -e "${YELLOW}输入模型名称: ${NC}")" model < "$TTY_INPUT" ;;
-        *) model="MiniMax-M2.1" ;;
+        *) model="minimax-m2.5" ;;
     esac
     
     # 保存到 OpenClaw 环境变量配置
