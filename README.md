@@ -43,6 +43,7 @@
 - [快速开始](#快速开始)
 - [操作手册](#操作手册)
 - [配置说明](#配置说明)
+- [渠道配置文档](#渠道配置文档)
 - [飞书插件说明](#飞书插件说明)
 - [微信适配说明（社区）](#微信适配说明社区)
 - [升级与维护](#升级与维护)
@@ -216,6 +217,7 @@ bash ./config-menu.sh
 - `[8]` 高级设置 → `[8]` AI 自动修复 OpenClaw（集成 `auto-fix-openclaw`，支持 Codex/Claude CLI）
 - `[5]` 服务管理 → `[8]` 卸载中心（全局卸载 / 目录卸载保留 skills+plugins / 完全卸载）
 - `[3]` 消息渠道配置 → `[15]` 微信（LangBot WeChatPad，社区）
+- `[3]` 消息渠道配置 → `[18]` 企业微信（WeCom，社区）
 
 AI 自动修复前置要求：
 
@@ -257,6 +259,14 @@ auto-install-Openclaw 当前推荐配置模型：
 ├── backups/
 └── logs/
 ```
+
+## 渠道配置文档
+
+- 仓库文档：`docs/channels-configuration-guide.md`
+- 安装后本地文档：`~/.openclaw/docs/channels-configuration-guide.md`
+- 安装后 Skill：`~/.openclaw/skills/channel-setup-assistant/SKILL.md`
+
+该文档覆盖官方与社区渠道（含飞书、微信、QQ、企业微信）的字段要求、菜单路径、排障命令与版本策略。
 
 ### Docker 配置兼容说明
 

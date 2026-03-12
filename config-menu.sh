@@ -84,6 +84,11 @@ QQ_PLUGIN_VERSION_DEFAULT="${OPENCLAW_QQ_PLUGIN_VERSION:-1.5.4}"
 WECHAT_PLUGIN_LANGBOT="openclaw-wechat-channel"
 WECHAT_PLUGIN_VERSION_DEFAULT="${OPENCLAW_WECHAT_PLUGIN_VERSION:-0.5.0}"
 WECHATPAD_CALLBACK_PATH_DEFAULT="${OPENCLAW_WECHATPAD_CALLBACK_PATH:-/api/callback/wechatpadpro}"
+# 企业微信社区插件策略（WeCom）
+WECOM_PLUGIN_COMMUNITY="@marshulll/openclaw-wecom"
+WECOM_PLUGIN_VERSION_DEFAULT="${OPENCLAW_WECOM_PLUGIN_VERSION:-0.1.41}"
+WECOM_WEBHOOK_BOT_DEFAULT="${OPENCLAW_WECOM_WEBHOOK_BOT_PATH:-/wecom/bot}"
+WECOM_WEBHOOK_APP_DEFAULT="${OPENCLAW_WECOM_WEBHOOK_APP_PATH:-/wecom/app}"
 INSTALLER_REPO="leecyno1/auto-install-Openclaw"
 INSTALLER_RAW_URL="https://raw.githubusercontent.com/${INSTALLER_REPO}/main"
 AUTO_FIX_OPENCLAW_REPO_URL="${AUTO_FIX_OPENCLAW_REPO_URL:-https://github.com/leecyno1/auto-fix-openclaw.git}"
@@ -1296,6 +1301,20 @@ run_openclaw_health() {
     fi
 }
 
+run_official_model_onboard() {
+    if ! check_openclaw_installed; then
+        log_error "OpenClaw 未安装"
+        return 1
+    fi
+    echo ""
+    log_info "启动官方模型配置向导: openclaw onboard"
+    if [ -e /dev/tty ]; then
+        openclaw onboard < /dev/tty
+    else
+        openclaw onboard
+    fi
+}
+
 # ================================ 状态显示 ================================
 
 show_status() {
@@ -1371,6 +1390,17 @@ config_ai_model() {
     echo -e "${WHITE}🤖 AI 模型配置${NC}"
     print_divider
     echo ""
+
+    echo -e "${CYAN}推荐优先使用官方向导（模型列表与参数始终最新）${NC}"
+    if confirm "是否启动官方向导 openclaw onboard？" "y"; then
+        if run_official_model_onboard; then
+            log_info "官方模型配置完成。"
+            press_enter
+            return
+        fi
+        log_warn "官方向导执行失败，继续使用本地兼容配置菜单。"
+        echo ""
+    fi
     
     echo -e "${CYAN}选择 AI 提供商:${NC}"
     echo -e "${GRAY}提示: 支持自定义 API 地址（通过自定义 Provider 配置）${NC}"
@@ -3163,6 +3193,8 @@ config_channels() {
     echo -e "${WHITE}📱 消息渠道配置${NC}"
     print_divider
     echo ""
+    echo -e "${GRAY}详细文档: ~/.openclaw/docs/channels-configuration-guide.md${NC}"
+    echo ""
     
     print_menu_item "1" "Telegram 机器人" "📨"
     print_menu_item "2" "Discord 机器人" "🎮"
@@ -3181,10 +3213,11 @@ config_channels() {
     print_menu_item "15" "微信（LangBot WeChatPad，社区）" "🟢"
     print_menu_item "16" "iMessage（旧版）" "🍎"
     print_menu_item "17" "QQ（社区插件，可选）" "🐧"
+    print_menu_item "18" "企业微信（WeCom，社区插件）" "🏬"
     print_menu_item "0" "返回主菜单" "↩️"
     echo ""
     
-    echo -en "${YELLOW}请选择 [0-17]: ${NC}"
+    echo -en "${YELLOW}请选择 [0-18]: ${NC}"
     read choice < "$TTY_INPUT"
     
     case $choice in
@@ -3205,6 +3238,7 @@ config_channels() {
         15) config_wechat ;;
         16) config_imessage ;;
         17) config_qq_community ;;
+        18) config_wecom_community ;;
         0) return ;;
         *) log_error "无效选择"; press_enter; config_channels ;;
     esac
@@ -3628,6 +3662,7 @@ check_cn_enterprise_channel_official_status() {
     echo -e "${CYAN}可选社区方案（非官方，需自行评估风险）:${NC}"
     echo "  • QQ: @sliverp/qqbot（本菜单提供安装/探针/回滚）"
     echo "  • 微信: openclaw-wechat-channel（按 LangBot WeChatPad 适配流程）"
+    echo "  • 企业微信: @marshulll/openclaw-wecom（本菜单提供安装/探针/回滚）"
     echo ""
     echo -e "${CYAN}已纳入的官方企业渠道替代项:${NC}"
     echo "  • 飞书（Feishu）"
@@ -3637,7 +3672,268 @@ check_cn_enterprise_channel_official_status() {
     echo "  • Mattermost（插件）"
     echo ""
     echo -e "${YELLOW}说明:${NC} 为避免与官方能力漂移，本安装器仅默认纳入已发布的官方渠道插件。"
+    echo -e "${YELLOW}补充:${NC} 企业微信/QQ/微信目前按社区插件方案接入。"
     echo ""
+    press_enter
+}
+
+probe_wecom_community_config() {
+    echo ""
+    echo -e "${CYAN}━━━ WeCom 社区插件探针 ━━━${NC}"
+    echo ""
+
+    if ! check_openclaw_installed; then
+        log_error "OpenClaw 未安装，无法探针"
+        return 1
+    fi
+
+    local plugin_ok=false
+    local channel_ok=false
+    local mode=""
+    local bot_token=""
+    local app_corp=""
+
+    if openclaw plugins list 2>/dev/null | grep -Eqi "openclaw-wecom|wecom"; then
+        plugin_ok=true
+        log_info "WeCom 插件已安装"
+    else
+        log_warn "未检测到 WeCom 插件"
+    fi
+
+    if openclaw channels list 2>/dev/null | grep -qi "wecom"; then
+        channel_ok=true
+        log_info "WeCom 渠道已注册"
+    else
+        log_warn "WeCom 渠道未在 channels list 中出现"
+    fi
+
+    mode="$(openclaw config get channels.wecom.mode 2>/dev/null || true)"
+    [ -z "$mode" ] || [ "$mode" = "undefined" ] && mode="both"
+    echo -e "${CYAN}当前模式:${NC} ${WHITE}${mode}${NC}"
+
+    bot_token="$(openclaw config get channels.wecom.accounts.bot.token 2>/dev/null || true)"
+    app_corp="$(openclaw config get channels.wecom.accounts.app.corpId 2>/dev/null || true)"
+    if [ "$mode" = "bot" ] || [ "$mode" = "both" ]; then
+        if [ -n "$bot_token" ] && [ "$bot_token" != "undefined" ]; then
+            log_info "Bot 模式关键字段已配置"
+        else
+            log_warn "Bot 模式 token 未配置"
+        fi
+    fi
+    if [ "$mode" = "app" ] || [ "$mode" = "both" ]; then
+        if [ -n "$app_corp" ] && [ "$app_corp" != "undefined" ]; then
+            log_info "App 模式关键字段已配置"
+        else
+            log_warn "App 模式 corpId 未配置"
+        fi
+    fi
+
+    echo ""
+    echo -e "${CYAN}诊断输出:${NC}"
+    openclaw doctor 2>&1 | head -10 | sed 's/^/  /'
+
+    if [ "$plugin_ok" = true ] && [ "$channel_ok" = true ]; then
+        log_info "WeCom 配置探针通过"
+        return 0
+    fi
+
+    echo ""
+    echo -e "${YELLOW}排障建议:${NC}"
+    echo "  1) openclaw doctor --fix"
+    echo "  2) openclaw plugins update --all"
+    echo "  3) 重新执行企业微信配置向导"
+    return 1
+}
+
+rollback_wecom_community_config() {
+    echo ""
+    echo -e "${WHITE}♻️ 回滚企业微信（WeCom）社区配置${NC}"
+    print_divider
+    echo ""
+    echo -e "${YELLOW}将执行:${NC}"
+    echo "  • 禁用并卸载 WeCom 社区插件"
+    echo "  • 清理 channels.wecom 与 plugins.allow 残留"
+    echo ""
+
+    if ! confirm "确认执行回滚？" "n"; then
+        log_info "已取消回滚"
+        return 0
+    fi
+
+    openclaw plugins disable wecom > /dev/null 2>&1 || true
+    openclaw plugins disable openclaw-wecom > /dev/null 2>&1 || true
+    openclaw plugins uninstall wecom --keep-files > /dev/null 2>&1 || true
+    openclaw plugins uninstall openclaw-wecom --keep-files > /dev/null 2>&1 || true
+    openclaw plugins uninstall "$WECOM_PLUGIN_COMMUNITY" --keep-files > /dev/null 2>&1 || true
+
+    if openclaw config --help 2>/dev/null | grep -q "unset"; then
+        openclaw config unset channels.wecom > /dev/null 2>&1 || true
+        openclaw config unset plugins.entries.wecom > /dev/null 2>&1 || true
+        openclaw config unset plugins.entries.openclaw-wecom > /dev/null 2>&1 || true
+    else
+        openclaw config set channels.wecom.enabled false > /dev/null 2>&1 || true
+    fi
+
+    remove_plugin_from_allow "wecom" || true
+    remove_plugin_from_allow "openclaw-wecom" || true
+
+    log_info "企业微信配置回滚完成"
+    if confirm "是否重启 Gateway 使回滚生效？" "y"; then
+        restart_gateway_for_channel
+    fi
+    return 0
+}
+
+config_wecom_community_setup() {
+    if ! check_openclaw_installed; then
+        log_error "OpenClaw 未安装"
+        return 1
+    fi
+
+    ensure_openclaw_init
+
+    local plugin_version="${OPENCLAW_WECOM_PLUGIN_VERSION:-$WECOM_PLUGIN_VERSION_DEFAULT}"
+    local plugin_spec="${WECOM_PLUGIN_COMMUNITY}@${plugin_version}"
+    local mode_choice mode
+    local default_account
+
+    local bot_webhook="$WECOM_WEBHOOK_BOT_DEFAULT"
+    local bot_token=""
+    local bot_aes=""
+    local bot_receive_id=""
+
+    local app_webhook="$WECOM_WEBHOOK_APP_DEFAULT"
+    local corp_id=""
+    local corp_secret=""
+    local agent_id=""
+    local callback_token=""
+    local callback_aes=""
+
+    echo -e "${YELLOW}⚠️ 风险提示:${NC}"
+    echo "  • 企业微信当前不是 OpenClaw 官方渠道，依赖社区插件"
+    echo "  • 插件固定版本安装，降低升级漂移风险"
+    echo ""
+    echo -e "${CYAN}将安装:${NC} ${WHITE}${plugin_spec}${NC}"
+    if ! confirm "继续安装并配置企业微信插件？" "n"; then
+        log_info "已取消企业微信配置"
+        return 0
+    fi
+
+    if openclaw plugins install "$plugin_spec" --pin; then
+        log_info "企业微信插件安装成功"
+    else
+        log_warn "插件安装失败，尝试继续使用已安装版本"
+        if ! openclaw plugins list 2>/dev/null | grep -Eqi "openclaw-wecom|wecom"; then
+            log_error "未检测到企业微信插件，无法继续"
+            return 1
+        fi
+    fi
+
+    openclaw plugins enable wecom > /dev/null 2>&1 || openclaw plugins enable openclaw-wecom > /dev/null 2>&1 || true
+    ensure_plugin_in_allow "wecom"
+    ensure_plugin_in_allow "openclaw-wecom"
+    openclaw channels add --channel wecom > /dev/null 2>&1 || true
+
+    echo ""
+    echo -e "${CYAN}选择企业微信接入模式:${NC}"
+    print_menu_item "1" "Bot 模式（回调 JSON）" "🤖"
+    print_menu_item "2" "App 模式（内部应用 XML 回调）" "🏢"
+    print_menu_item "3" "双模式（推荐）" "🔀"
+    echo ""
+    read_input "${YELLOW}请选择 [1-3] (默认: 3): ${NC}" mode_choice
+    mode_choice="${mode_choice:-3}"
+    case "$mode_choice" in
+        1) mode="bot"; default_account="bot" ;;
+        2) mode="app"; default_account="app" ;;
+        *) mode="both"; default_account="bot" ;;
+    esac
+
+    if [ "$mode" = "bot" ] || [ "$mode" = "both" ]; then
+        echo ""
+        echo -e "${CYAN}Bot 模式参数:${NC}"
+        read_input "${YELLOW}Bot webhookPath（默认 ${bot_webhook}）: ${NC}" bot_webhook
+        bot_webhook="${bot_webhook:-$WECOM_WEBHOOK_BOT_DEFAULT}"
+        read_secret_input "${YELLOW}Bot Token: ${NC}" bot_token
+        read_secret_input "${YELLOW}Bot EncodingAESKey: ${NC}" bot_aes
+        read_input "${YELLOW}Bot ReceiveId（aibotid）: ${NC}" bot_receive_id
+        if [ -z "$bot_token" ] || [ -z "$bot_aes" ] || [ -z "$bot_receive_id" ]; then
+            log_error "Bot 模式参数不完整"
+            return 1
+        fi
+    fi
+
+    if [ "$mode" = "app" ] || [ "$mode" = "both" ]; then
+        echo ""
+        echo -e "${CYAN}App 模式参数:${NC}"
+        read_input "${YELLOW}App webhookPath（默认 ${app_webhook}）: ${NC}" app_webhook
+        app_webhook="${app_webhook:-$WECOM_WEBHOOK_APP_DEFAULT}"
+        read_input "${YELLOW}CorpID: ${NC}" corp_id
+        read_secret_input "${YELLOW}CorpSecret: ${NC}" corp_secret
+        read_input "${YELLOW}AgentID（数字）: ${NC}" agent_id
+        read_secret_input "${YELLOW}Callback Token: ${NC}" callback_token
+        read_secret_input "${YELLOW}Callback AES Key: ${NC}" callback_aes
+        if [ -z "$corp_id" ] || [ -z "$corp_secret" ] || [ -z "$agent_id" ] || [ -z "$callback_token" ] || [ -z "$callback_aes" ]; then
+            log_error "App 模式参数不完整"
+            return 1
+        fi
+        if ! [[ "$agent_id" =~ ^[0-9]+$ ]]; then
+            log_error "AgentID 必须是数字"
+            return 1
+        fi
+    fi
+
+    openclaw config set channels.wecom.enabled true > /dev/null 2>&1 || true
+    openclaw config set channels.wecom.mode "$mode" > /dev/null 2>&1 || true
+    openclaw config set channels.wecom.defaultAccount "$default_account" > /dev/null 2>&1 || true
+
+    if [ "$mode" = "bot" ] || [ "$mode" = "both" ]; then
+        openclaw config set channels.wecom.accounts.bot.mode bot > /dev/null 2>&1 || true
+        openclaw config set channels.wecom.accounts.bot.webhookPath "$bot_webhook" > /dev/null 2>&1 || true
+        openclaw config set channels.wecom.accounts.bot.token "$bot_token" > /dev/null 2>&1 || true
+        openclaw config set channels.wecom.accounts.bot.encodingAESKey "$bot_aes" > /dev/null 2>&1 || true
+        openclaw config set channels.wecom.accounts.bot.receiveId "$bot_receive_id" > /dev/null 2>&1 || true
+    fi
+
+    if [ "$mode" = "app" ] || [ "$mode" = "both" ]; then
+        openclaw config set channels.wecom.accounts.app.mode app > /dev/null 2>&1 || true
+        openclaw config set channels.wecom.accounts.app.webhookPath "$app_webhook" > /dev/null 2>&1 || true
+        openclaw config set channels.wecom.accounts.app.corpId "$corp_id" > /dev/null 2>&1 || true
+        openclaw config set channels.wecom.accounts.app.corpSecret "$corp_secret" > /dev/null 2>&1 || true
+        openclaw config set channels.wecom.accounts.app.agentId "$agent_id" > /dev/null 2>&1 || true
+        openclaw config set channels.wecom.accounts.app.callbackToken "$callback_token" > /dev/null 2>&1 || true
+        openclaw config set channels.wecom.accounts.app.callbackAesKey "$callback_aes" > /dev/null 2>&1 || true
+    fi
+
+    log_info "企业微信 WeCom 配置完成"
+    if confirm "是否立即执行 WeCom 配置探针？" "y"; then
+        probe_wecom_community_config || true
+    fi
+    if confirm "是否重启 Gateway 使配置生效？" "y"; then
+        restart_gateway_for_channel
+    fi
+    return 0
+}
+
+config_wecom_community() {
+    clear_screen
+    print_header
+    echo -e "${WHITE}🏬 企业微信（WeCom，社区插件）${NC}"
+    print_divider
+    echo ""
+    echo "  1) 安装并配置企业微信插件"
+    echo "  2) 企业微信配置探针"
+    echo "  3) 回滚企业微信配置"
+    echo "  0) 返回"
+    echo ""
+    read_input "${YELLOW}请选择 [0-3]: ${NC}" wecom_choice
+
+    case "$wecom_choice" in
+        1) config_wecom_community_setup ;;
+        2) probe_wecom_community_config ;;
+        3) rollback_wecom_community_config ;;
+        0) return ;;
+        *) log_error "无效选择" ;;
+    esac
     press_enter
 }
 

@@ -84,6 +84,7 @@ SWAP_PERSIST_ENABLE="${OPENCLAW_SWAP_PERSIST:-1}"
 SWAP_THRESHOLD_MB="${OPENCLAW_SWAP_THRESHOLD_MB:-4096}"
 SWAP_TARGET_MB="${OPENCLAW_SWAP_TARGET_MB:-0}"
 SWAP_FILE_BASE="${OPENCLAW_SWAP_FILE:-/swapfile.openclaw}"
+AUTO_FIX_ATTEMPTED=0
 
 NO_ONBOARD="${OPENCLAW_NO_ONBOARD:-0}"
 NO_PROMPT="${OPENCLAW_NO_PROMPT:-0}"
@@ -144,6 +145,83 @@ log_error() {
 
 log_step() {
     echo -e "${BLUE}[STEP]${NC} $1"
+}
+
+run_auto_fix_once() {
+    if [ "$AUTO_FIX_ATTEMPTED" -ge 1 ]; then
+        log_warn "自动修复已执行过一次，跳过再次修复。"
+        return 1
+    fi
+
+    AUTO_FIX_ATTEMPTED=1
+    log_warn "检测到异常，尝试执行一次自动修复..."
+
+    if check_command openclaw; then
+        local repair_log
+        repair_log="$(mktemp /tmp/openclaw-auto-fix.XXXXXX.log)"
+        if openclaw doctor --help 2>/dev/null | grep -q -- "--non-interactive"; then
+            set +e
+            openclaw doctor --non-interactive >"$repair_log" 2>&1
+            local repair_exit=$?
+            set -e
+            if [ $repair_exit -eq 0 ]; then
+                log_info "自动修复成功（openclaw doctor --non-interactive）"
+                return 0
+            fi
+        fi
+
+        set +e
+        yes | openclaw doctor --fix >"$repair_log" 2>&1
+        local repair_exit=$?
+        set -e
+        if [ $repair_exit -eq 0 ]; then
+            log_info "自动修复成功（openclaw doctor --fix）"
+            return 0
+        fi
+        tail -n 30 "$repair_log" 2>/dev/null || true
+    fi
+
+    if check_command npm; then
+        set +e
+        npm cache verify >/tmp/openclaw-npm-cache-verify.log 2>&1
+        local cache_exit=$?
+        set -e
+        if [ $cache_exit -eq 0 ]; then
+            log_info "已执行 npm cache verify，准备重试失败步骤。"
+            return 0
+        fi
+    fi
+
+    log_warn "自动修复未生效。"
+    return 1
+}
+
+run_step_with_auto_fix() {
+    local step_name="$1"
+    shift
+
+    set +e
+    "$@"
+    local step_exit=$?
+    set -e
+    if [ $step_exit -eq 0 ]; then
+        return 0
+    fi
+
+    log_warn "${step_name} 失败（exit=${step_exit}），将执行一次自动修复并重试。"
+    if run_auto_fix_once; then
+        set +e
+        "$@"
+        step_exit=$?
+        set -e
+        if [ $step_exit -eq 0 ]; then
+            log_info "${step_name} 重试成功。"
+            return 0
+        fi
+        log_error "${step_name} 重试后仍失败（exit=${step_exit}）。"
+    fi
+
+    return $step_exit
 }
 
 download_with_fallback() {
@@ -433,7 +511,7 @@ detect_os() {
 check_root() {
     if [[ $EUID -eq 0 ]]; then
         log_warn "检测到以 root 用户运行"
-        if ! confirm "建议使用普通用户运行，是否继续？" "n"; then
+        if ! confirm "建议使用普通用户运行，是否继续？" "y"; then
             exit 1
         fi
     fi
@@ -1095,6 +1173,107 @@ EOF
     fi
 }
 
+run_official_onboard() {
+    if [ "$NO_PROMPT" = "1" ]; then
+        log_info "NO_PROMPT 模式下跳过交互式官方向导，可稍后手动运行: openclaw onboard"
+        return 0
+    fi
+
+    if ! check_command openclaw; then
+        log_error "未检测到 openclaw 命令，无法启动官方向导。"
+        return 1
+    fi
+
+    log_step "启动官方配置向导（openclaw onboard）..."
+    if [ -e /dev/tty ]; then
+        openclaw onboard < /dev/tty
+    else
+        openclaw onboard
+    fi
+}
+
+apply_default_security_baseline() {
+    if ! check_command openclaw; then
+        log_warn "未检测到 openclaw，跳过默认安全权限配置。"
+        return 0
+    fi
+
+    log_step "应用默认基础权限（系统命令/文件访问/网络浏览）..."
+    openclaw config set security.enable_shell_commands true >/dev/null 2>&1 || true
+    openclaw config set security.enable_file_access true >/dev/null 2>&1 || true
+    openclaw config set security.enable_web_browsing true >/dev/null 2>&1 || true
+    log_info "默认基础权限已启用：system commands / file access / web browsing"
+}
+
+install_channel_assets() {
+    local skill_dir="$CONFIG_DIR/skills/channel-setup-assistant"
+    local skill_file="$skill_dir/SKILL.md"
+    local docs_dir="$CONFIG_DIR/docs"
+    local doc_file="$docs_dir/channels-configuration-guide.md"
+    local script_dir
+    script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    local local_doc="$script_dir/docs/channels-configuration-guide.md"
+
+    mkdir -p "$skill_dir" "$docs_dir" 2>/dev/null || true
+
+    if [ -f "$local_doc" ]; then
+        cp "$local_doc" "$doc_file" 2>/dev/null || true
+    elif download_with_fallback "$doc_file.tmp" "$GITHUB_RAW_URL/docs/channels-configuration-guide.md" "$INSTALLER_MIRROR_RAW_URL/docs/channels-configuration-guide.md"; then
+        mv "$doc_file.tmp" "$doc_file"
+    else
+        rm -f "$doc_file.tmp" 2>/dev/null || true
+        cat > "$doc_file" <<'EOF'
+# OpenClaw 渠道配置文档（自动安装器）
+
+请优先使用：
+1) `openclaw onboard`（官方模型配置）
+2) `bash ~/.openclaw/config-menu.sh`（渠道配置）
+
+关键渠道推荐：
+- 飞书（官方）：`@openclaw/feishu`
+- 企业微信（社区）：`@marshulll/openclaw-wecom`
+- 微信（社区）：`openclaw-wechat-channel`
+- QQ（社区）：`@sliverp/qqbot`
+
+完整文档请查看仓库 `docs/channels-configuration-guide.md`。
+EOF
+    fi
+
+    cat > "$skill_file" <<'EOF'
+# OpenClaw 渠道配置助手 Skill
+
+目标：当用户提供消息渠道信息时，交互式收集缺失参数，并执行命令行完成配置。
+
+执行原则：
+1. 先确认渠道类型（telegram/discord/slack/feishu/wecom/wechat/qq/others）。
+2. 明确必填项，缺失项逐个询问，不一次性抛出过多字段。
+3. 执行前回显将执行的命令，并让用户确认。
+4. 执行后输出：成功/失败、下一步验证命令、常见排障命令。
+
+标准命令：
+- 状态：`openclaw channels list`
+- 健康检查：`openclaw doctor --fix`
+- 重启：`openclaw gateway restart`
+
+重点渠道字段：
+- Feishu: `appId`, `appSecret`
+- WeCom(bot): `token`, `encodingAESKey`, `receiveId`
+- WeCom(app): `corpId`, `corpSecret`, `agentId`, `callbackToken`, `callbackAesKey`
+- WeChatPad: `proxyUrl`, `apiKey`, `webhookHost`, `webhookPort`, `webhookPath`
+- QQ: `appId`, `appSecret`, `allowFrom`
+
+配置完成后必须执行：
+1) `openclaw doctor --fix`
+2) `openclaw gateway restart`
+3) `openclaw channels list`
+EOF
+
+    chmod 644 "$skill_file" "$doc_file" 2>/dev/null || true
+    log_info "已注入渠道配置文档与 Skill:"
+    log_info "  文档: $doc_file"
+    log_info "  Skill: $skill_file"
+}
+
 # 初始化 OpenClaw 配置
 init_openclaw_config() {
     log_step "初始化 OpenClaw 配置..."
@@ -1751,6 +1930,24 @@ run_onboard_wizard() {
     echo -e "${WHITE}           🧙 OpenClaw 核心配置向导${NC}"
     echo -e "${PURPLE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
     echo ""
+
+    if confirm "使用官方配置向导 openclaw onboard（推荐，模型列表与官方同步）？" "y"; then
+        if run_step_with_auto_fix "官方配置向导" run_official_onboard; then
+            echo ""
+            echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+            echo -e "${WHITE}  第 2 步: 消息渠道配置${NC}"
+            echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+            echo ""
+            if confirm "现在进入消息渠道配置？" "y"; then
+                if ! run_step_with_auto_fix "消息渠道配置菜单" run_config_menu --channels-only; then
+                    log_warn "消息渠道配置菜单启动失败，可稍后手动运行: bash ./config-menu.sh"
+                fi
+            fi
+            log_info "官方配置流程完成。"
+            return 0
+        fi
+        log_warn "官方向导执行失败，将回退到内置兼容向导。"
+    fi
     
     # 检查是否已有配置
     local skip_ai_config=false
@@ -2524,6 +2721,8 @@ print_success() {
     echo "  openclaw models status   # 查看模型配置"
     echo "  openclaw channels list   # 查看渠道列表"
     echo "  openclaw doctor          # 诊断问题"
+    echo "  ~/.openclaw/docs/channels-configuration-guide.md  # 渠道配置文档"
+    echo "  ~/.openclaw/skills/channel-setup-assistant/SKILL.md  # 渠道配置 Skill"
     echo ""
     echo -e "${PURPLE}📚 官方文档: $OFFICIAL_DOCS_URL${NC}"
     echo -e "${PURPLE}💬 社区支持: https://github.com/$GITHUB_REPO/discussions${NC}"
@@ -2708,13 +2907,23 @@ main() {
     ensure_sudo_privileges
     install_dependencies
     create_directories
-    install_openclaw
+    install_channel_assets
+    if ! run_step_with_auto_fix "安装 OpenClaw" install_openclaw; then
+        log_error "OpenClaw 安装失败"
+        exit 1
+    fi
     if [ "$NO_ONBOARD" = "1" ]; then
         log_info "已按参数跳过 AI 初始化向导 (--no-onboard)"
     else
-        run_onboard_wizard
+        if ! run_step_with_auto_fix "安装后配置向导" run_onboard_wizard; then
+            log_warn "安装后配置向导未完成，可稍后手动运行: openclaw onboard"
+        fi
     fi
-    setup_daemon
+    apply_default_security_baseline
+    if ! run_step_with_auto_fix "设置开机守护进程" setup_daemon; then
+        log_error "守护进程设置失败"
+        exit 1
+    fi
     print_success
     
     # 询问是否启动服务
