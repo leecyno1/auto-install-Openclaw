@@ -2722,30 +2722,92 @@ test_api_connection() {
 setup_identity() {
     echo ""
     echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-    echo -e "${WHITE}  第 3 步: 设置身份信息${NC}"
+    echo -e "${WHITE}  第 4 步: 首次欢迎与身份人设${NC}"
     echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
     echo ""
-    
-    echo -en "${YELLOW}给你的 AI 助手起个名字 (默认: Clawd): ${NC}"; read BOT_NAME < "$TTY_INPUT"
-    BOT_NAME=${BOT_NAME:-"Clawd"}
-    
-    echo -en "${YELLOW}AI 如何称呼你 (默认: 主人): ${NC}"; read USER_NAME < "$TTY_INPUT"
-    USER_NAME=${USER_NAME:-"主人"}
-    
-    echo -en "${YELLOW}你的时区 (默认: Asia/Shanghai): ${NC}"; read TIMEZONE < "$TTY_INPUT"
-    TIMEZONE=${TIMEZONE:-"Asia/Shanghai"}
-    
+
+    local bot_name="${OPENCLAW_ASSISTANT_NAME:-Clawd}"
+    local user_name="${OPENCLAW_USER_NAME:-主人}"
+    local region="${OPENCLAW_USER_REGION:-中国大陆}"
+    local timezone="${OPENCLAW_USER_TIMEZONE:-Asia/Shanghai}"
+    local user_goal="${OPENCLAW_USER_GOAL:-帮助我处理日常任务、信息检索与自动化执行}"
+    local personality="${OPENCLAW_ASSISTANT_PERSONALITY:-专业、直接、可靠}"
+    local work_style="${OPENCLAW_ASSISTANT_WORK_STYLE:-先澄清需求，再分步骤执行，关键节点主动反馈}"
+    local welcome_text=""
+    local profile_doc="$CONFIG_DIR/docs/assistant-base-profile.md"
+
+    echo -e "${WHITE}首次欢迎语（示例）:${NC}"
+    echo "  你好，我是 ${bot_name}，你的 OpenClaw 智能助手。"
+    echo "  我可以协助你完成信息检索、自动化任务执行、文档处理与渠道消息响应。"
+    echo "  渠道配置入口：bash ~/.openclaw/config-menu.sh（主菜单 3/4）"
+    echo "  渠道文档："
+    echo "    - https://gitee.com/leecyno1/auto-install-openclaw/blob/main/docs/channels-configuration-guide.md"
+    echo "    - https://github.com/leecyno1/auto-install-Openclaw/blob/main/docs/channels-configuration-guide.md"
     echo ""
-    log_info "身份配置完成"
-    echo -e "  助手名称: ${WHITE}$BOT_NAME${NC}"
-    echo -e "  你的称呼: ${WHITE}$USER_NAME${NC}"
-    echo -e "  时区: ${WHITE}$TIMEZONE${NC}"
-    
-    # 初始化渠道配置变量
-    TELEGRAM_ENABLED="false"
-    DISCORD_ENABLED="false"
-    SHELL_ENABLED="false"
-    FILE_ACCESS="false"
+
+    if [ "$NO_PROMPT" != "1" ] && [ "$TTY_INPUT" != "/dev/null" ]; then
+        read_input "${YELLOW}助手名称 (默认: ${bot_name}): ${NC}" bot_name
+        bot_name="${bot_name:-${OPENCLAW_ASSISTANT_NAME:-Clawd}}"
+        read_input "${YELLOW}机器人如何称呼你 (默认: ${user_name}): ${NC}" user_name
+        user_name="${user_name:-${OPENCLAW_USER_NAME:-主人}}"
+        read_input "${YELLOW}你所在地区 (默认: ${region}): ${NC}" region
+        region="${region:-${OPENCLAW_USER_REGION:-中国大陆}}"
+        read_input "${YELLOW}你的时区 (默认: ${timezone}): ${NC}" timezone
+        timezone="${timezone:-${OPENCLAW_USER_TIMEZONE:-Asia/Shanghai}}"
+        read_input "${YELLOW}你希望机器人主要做什么: ${NC}" user_goal
+        user_goal="${user_goal:-${OPENCLAW_USER_GOAL:-帮助我处理日常任务、信息检索与自动化执行}}"
+        read_input "${YELLOW}你希望机器人的性格: ${NC}" personality
+        personality="${personality:-${OPENCLAW_ASSISTANT_PERSONALITY:-专业、直接、可靠}}"
+        read_input "${YELLOW}你希望机器人的工作方式: ${NC}" work_style
+        work_style="${work_style:-${OPENCLAW_ASSISTANT_WORK_STYLE:-先澄清需求，再分步骤执行，关键节点主动反馈}}"
+    fi
+
+    welcome_text="你好 ${user_name}，我是 ${bot_name}。我会按照“${work_style}”的方式为你服务。"
+
+    if check_command openclaw; then
+        openclaw config set identity.name "$bot_name" >/dev/null 2>&1 || true
+        openclaw config set identity.user_name "$user_name" >/dev/null 2>&1 || true
+        openclaw config set identity.region "$region" >/dev/null 2>&1 || true
+        openclaw config set identity.timezone "$timezone" >/dev/null 2>&1 || true
+        openclaw config set identity.goal "$user_goal" >/dev/null 2>&1 || true
+        openclaw config set identity.personality "$personality" >/dev/null 2>&1 || true
+        openclaw config set identity.work_style "$work_style" >/dev/null 2>&1 || true
+        openclaw config set identity.greeting "$welcome_text" >/dev/null 2>&1 || true
+        # 使首次会话时更容易读取到该人设
+        openclaw config set "boot-md.enabled" true >/dev/null 2>&1 || true
+        openclaw config set "session-memory.enabled" true >/dev/null 2>&1 || true
+    fi
+
+    mkdir -p "$CONFIG_DIR/docs" 2>/dev/null || true
+    cat > "$profile_doc" <<EOF
+# OpenClaw 基础人设配置
+
+- 助手名称: ${bot_name}
+- 用户称呼: ${user_name}
+- 所在地区: ${region}
+- 时区: ${timezone}
+- 用户目标: ${user_goal}
+- 机器人性格: ${personality}
+- 机器人工作方式: ${work_style}
+
+## 首次欢迎语
+${welcome_text}
+
+## 渠道配置入口
+- 命令: \`bash ~/.openclaw/config-menu.sh\`
+- 主菜单: 3 官方消息渠道插件 / 4 非官方消息渠道配置
+- 文档:
+  - https://gitee.com/leecyno1/auto-install-openclaw/blob/main/docs/channels-configuration-guide.md
+  - https://github.com/leecyno1/auto-install-Openclaw/blob/main/docs/channels-configuration-guide.md
+EOF
+    chmod 600 "$profile_doc" 2>/dev/null || true
+
+    echo ""
+    log_info "首次欢迎与身份人设已写入"
+    echo -e "  助手名称: ${WHITE}$bot_name${NC}"
+    echo -e "  用户称呼: ${WHITE}$user_name${NC}"
+    echo -e "  时区: ${WHITE}$timezone${NC}"
+    echo -e "  人设文档: ${WHITE}$profile_doc${NC}"
 }
 
 
@@ -3055,6 +3117,7 @@ main() {
             log_warn "安装后配置向导未完成，可稍后手动运行: openclaw onboard"
         fi
     fi
+    setup_identity
     apply_default_security_baseline
     if ! run_step_with_auto_fix "设置开机守护进程" setup_daemon; then
         log_error "守护进程设置失败"

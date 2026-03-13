@@ -5187,20 +5187,88 @@ config_identity() {
     echo -e "${CYAN}当前配置:${NC}"
     openclaw config get identity 2>/dev/null || echo "  (未配置)"
     echo ""
+    echo -e "${CYAN}频道配置文档:${NC}"
+    echo "  https://gitee.com/leecyno1/auto-install-openclaw/blob/main/docs/channels-configuration-guide.md"
+    echo "  https://github.com/leecyno1/auto-install-Openclaw/blob/main/docs/channels-configuration-guide.md"
+    echo ""
     print_divider
     echo ""
-    
-    read -p "$(echo -e "${YELLOW}助手名称: ${NC}")" bot_name
-    read -p "$(echo -e "${YELLOW}如何称呼你: ${NC}")" user_name
-    read -p "$(echo -e "${YELLOW}时区 (如 Asia/Shanghai): ${NC}")" timezone
-    
-    # 使用 openclaw 命令设置
-    [ -n "$bot_name" ] && openclaw config set identity.name "$bot_name" 2>/dev/null
-    [ -n "$user_name" ] && openclaw config set identity.user_name "$user_name" 2>/dev/null
-    [ -n "$timezone" ] && openclaw config set identity.timezone "$timezone" 2>/dev/null
-    
+
+    local current_name current_user current_region current_timezone current_goal current_personality current_work_style
+    current_name="$(openclaw config get identity.name 2>/dev/null || true)"
+    current_user="$(openclaw config get identity.user_name 2>/dev/null || true)"
+    current_region="$(openclaw config get identity.region 2>/dev/null || true)"
+    current_timezone="$(openclaw config get identity.timezone 2>/dev/null || true)"
+    current_goal="$(openclaw config get identity.goal 2>/dev/null || true)"
+    current_personality="$(openclaw config get identity.personality 2>/dev/null || true)"
+    current_work_style="$(openclaw config get identity.work_style 2>/dev/null || true)"
+
+    current_name="${current_name:-Clawd}"
+    current_user="${current_user:-主人}"
+    current_region="${current_region:-中国大陆}"
+    current_timezone="${current_timezone:-Asia/Shanghai}"
+    current_goal="${current_goal:-帮助我处理日常任务、信息检索与自动化执行}"
+    current_personality="${current_personality:-专业、直接、可靠}"
+    current_work_style="${current_work_style:-先澄清需求，再分步骤执行，关键节点主动反馈}"
+
+    local bot_name user_name region timezone user_goal personality work_style greeting profile_doc
+    read_input "${YELLOW}助手名称 (默认: ${current_name}): ${NC}" bot_name
+    bot_name="${bot_name:-$current_name}"
+    read_input "${YELLOW}如何称呼你 (默认: ${current_user}): ${NC}" user_name
+    user_name="${user_name:-$current_user}"
+    read_input "${YELLOW}你所在地区 (默认: ${current_region}): ${NC}" region
+    region="${region:-$current_region}"
+    read_input "${YELLOW}时区 (默认: ${current_timezone}): ${NC}" timezone
+    timezone="${timezone:-$current_timezone}"
+    read_input "${YELLOW}你希望机器人主要做什么: ${NC}" user_goal
+    user_goal="${user_goal:-$current_goal}"
+    read_input "${YELLOW}你希望机器人的性格: ${NC}" personality
+    personality="${personality:-$current_personality}"
+    read_input "${YELLOW}你希望机器人的工作方式: ${NC}" work_style
+    work_style="${work_style:-$current_work_style}"
+
+    greeting="你好 ${user_name}，我是 ${bot_name}。我会按照“${work_style}”的方式为你服务。"
+
+    openclaw config set identity.name "$bot_name" 2>/dev/null || true
+    openclaw config set identity.user_name "$user_name" 2>/dev/null || true
+    openclaw config set identity.region "$region" 2>/dev/null || true
+    openclaw config set identity.timezone "$timezone" 2>/dev/null || true
+    openclaw config set identity.goal "$user_goal" 2>/dev/null || true
+    openclaw config set identity.personality "$personality" 2>/dev/null || true
+    openclaw config set identity.work_style "$work_style" 2>/dev/null || true
+    openclaw config set identity.greeting "$greeting" 2>/dev/null || true
+    openclaw config set "boot-md.enabled" true 2>/dev/null || true
+    openclaw config set "session-memory.enabled" true 2>/dev/null || true
+
+    profile_doc="$CONFIG_DIR/docs/assistant-base-profile.md"
+    mkdir -p "$CONFIG_DIR/docs" 2>/dev/null || true
+    cat > "$profile_doc" <<EOF
+# OpenClaw 基础人设配置
+
+- 助手名称: ${bot_name}
+- 用户称呼: ${user_name}
+- 所在地区: ${region}
+- 时区: ${timezone}
+- 用户目标: ${user_goal}
+- 机器人性格: ${personality}
+- 机器人工作方式: ${work_style}
+
+## 首次欢迎语
+${greeting}
+
+## 渠道配置入口
+- 命令: \`bash ~/.openclaw/config-menu.sh\`
+- 主菜单: 3 官方消息渠道插件 / 4 非官方消息渠道配置
+- 文档:
+  - https://gitee.com/leecyno1/auto-install-openclaw/blob/main/docs/channels-configuration-guide.md
+  - https://github.com/leecyno1/auto-install-Openclaw/blob/main/docs/channels-configuration-guide.md
+EOF
+    chmod 600 "$profile_doc" 2>/dev/null || true
+
     echo ""
     log_info "身份配置已更新！"
+    echo -e "  ${CYAN}首次欢迎语:${NC} ${WHITE}${greeting}${NC}"
+    echo -e "  ${CYAN}已写入:${NC} ${WHITE}${profile_doc}${NC}"
     
     press_enter
 }
