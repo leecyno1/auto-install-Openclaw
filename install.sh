@@ -93,6 +93,12 @@ SWAP_TARGET_MB="${OPENCLAW_SWAP_TARGET_MB:-0}"
 SWAP_FILE_BASE="${OPENCLAW_SWAP_FILE:-/swapfile.openclaw}"
 AUTO_FIX_ATTEMPTED=0
 DEFAULT_OFFICIAL_PLUGINS="blogwatcher github gog gifgrep nano-banana-pro nano-pdf obsidian gemini summarize video-frames"
+RULE_PROFILE_DEFAULT="${OPENCLAW_RULE_PROFILE:-medium}"
+RULE_PROFILE_SELECTED="$(echo "${RULE_PROFILE_DEFAULT}" | tr '[:upper:]' '[:lower:]')"
+
+PROFILE_LOW_SKILLS="find-skills shell summarize web-search url-to-markdown"
+PROFILE_MEDIUM_SKILLS="capability-evolver openclaw-cron-setup proactive-agent self-improving-agent-cn brainstorming reflection find-skills skill-creator agent-browser chrome-devtools-mcp github mcp-builder model-usage shell minimax-understand-image tavily-search web-search minimax-web-search news-radar url-to-markdown pdf docx pptx xlsx stock-monitor-skill multi-search-engine akshare-stock"
+PROFILE_HIGH_SKILLS="__ALL_DEFAULT__"
 
 NO_ONBOARD="${OPENCLAW_NO_ONBOARD:-0}"
 NO_PROMPT="${OPENCLAW_NO_PROMPT:-0}"
@@ -283,6 +289,7 @@ ${INSTALLER_NAME} (OpenClaw 安装增强版)
   --verbose                            详细日志
   --gateway-host <host>               Gateway 监听地址 (默认: 127.0.0.1)
   --gateway-port <port>               Gateway 监听端口 (默认: 13145)
+  --rule-profile <low|medium|high>    厂商规则档位 (默认: medium)
   --help, -h                           显示帮助
 
 环境变量:
@@ -307,6 +314,7 @@ ${INSTALLER_NAME} (OpenClaw 安装增强版)
   OPENCLAW_SWAP_TARGET_MB=<默认自动(2G或4G)>
   OPENCLAW_SWAP_FILE=</swapfile.openclaw>
   OPENCLAW_SKILLS_FORCE_UPDATE=0|1
+  OPENCLAW_RULE_PROFILE=low|medium|high
 EOF
 }
 
@@ -369,6 +377,10 @@ parse_args() {
                 GATEWAY_PORT="$2"
                 shift 2
                 ;;
+            --rule-profile)
+                RULE_PROFILE_SELECTED="$2"
+                shift 2
+                ;;
             --help|-h)
                 HELP=1
                 shift
@@ -429,6 +441,546 @@ confirm() {
     esac
 }
 
+contains_word() {
+    local needle="$1"
+    shift
+    local item
+    for item in "$@"; do
+        [ "$item" = "$needle" ] && return 0
+    done
+    return 1
+}
+
+upsert_env_export_install() {
+    local key="$1"
+    local value="$2"
+    local env_file="$CONFIG_DIR/env"
+
+    mkdir -p "$(dirname "$env_file")" 2>/dev/null || true
+    touch "$env_file" 2>/dev/null || true
+
+    local tmp_file
+    tmp_file="$(mktemp)"
+    awk -v k="$key" -v v="$value" '
+        BEGIN { done=0 }
+        $0 ~ "^export " k "=" { print "export " k "=" v; done=1; next }
+        { print }
+        END { if (!done) print "export " k "=" v }
+    ' "$env_file" > "$tmp_file" && mv "$tmp_file" "$env_file"
+    chmod 600 "$env_file" 2>/dev/null || true
+}
+
+remove_env_export_install() {
+    local key="$1"
+    local env_file="$CONFIG_DIR/env"
+    [ -f "$env_file" ] || return 0
+
+    local tmp_file
+    tmp_file="$(mktemp)"
+    awk -v k="$key" '$0 !~ "^export " k "=" { print }' "$env_file" > "$tmp_file" && mv "$tmp_file" "$env_file"
+    chmod 600 "$env_file" 2>/dev/null || true
+}
+
+normalize_rule_profile_level() {
+    local level="$(echo "${1:-$RULE_PROFILE_DEFAULT}" | tr '[:upper:]' '[:lower:]' | tr -d '[:space:]')"
+    case "$level" in
+        low|medium|high) echo "$level" ;;
+        l) echo "low" ;;
+        m|mid) echo "medium" ;;
+        h) echo "high" ;;
+        *) echo "medium" ;;
+    esac
+}
+
+get_profile_skill_list() {
+    local level
+    level="$(normalize_rule_profile_level "$1")"
+    case "$level" in
+        low) echo "$PROFILE_LOW_SKILLS" ;;
+        medium) echo "$PROFILE_MEDIUM_SKILLS" ;;
+        high) echo "$PROFILE_HIGH_SKILLS" ;;
+        *) echo "$PROFILE_MEDIUM_SKILLS" ;;
+    esac
+}
+
+get_profile_model_pair() {
+    local level
+    level="$(normalize_rule_profile_level "$1")"
+    case "$level" in
+        low)
+            echo "google/gemini-3.1-flash-lite-preview google/gemini-3-flash-preview"
+            ;;
+        medium)
+            echo "openai/gpt-5.1-codex openai/gpt-5.1-codex-mini"
+            ;;
+        high)
+            echo "anthropic/claude-opus-4-6 openai/gpt-5.1-codex-mini"
+            ;;
+        *)
+            echo "openai/gpt-5.1-codex openai/gpt-5.1-codex-mini"
+            ;;
+    esac
+}
+
+get_profile_token_limits() {
+    local level
+    level="$(normalize_rule_profile_level "$1")"
+    case "$level" in
+        low)
+            echo "5 50 180000 6000"
+            ;;
+        medium)
+            echo "5 150 600000 12000"
+            ;;
+        high)
+            echo "5 300 1500000 24000"
+            ;;
+        *)
+            echo "5 150 600000 12000"
+            ;;
+    esac
+}
+
+get_profile_prompt_text() {
+    local level
+    level="$(normalize_rule_profile_level "$1")"
+    case "$level" in
+        low)
+            cat <<'EOF'
+你是受控执行模式（LOW）。
+- 严格控制 token 与请求频率，优先短响应与高信息密度。
+- 仅在必要时调用外部工具，避免并发和重复请求。
+- 先给最小可行结论，再按用户要求逐步展开。
+- 默认使用小模型；复杂任务需先说明成本后再升级模型。
+EOF
+            ;;
+        medium)
+            cat <<'EOF'
+你是平衡执行模式（MEDIUM）。
+- 在质量和成本之间平衡，默认中等篇幅、结构化回答。
+- 优先复用已有上下文与缓存结果，减少重复调用。
+- 允许有限并发工具调用，但必须先声明目标与预期输出。
+- 主模型负责决策，小模型负责检索、格式化和批处理。
+EOF
+            ;;
+        high)
+            cat <<'EOF'
+你是高性能执行模式（HIGH）。
+- 允许更高 token 与请求预算，优先任务完成率与深度分析。
+- 复杂任务可分阶段调用多工具，但要持续回报进度与风险。
+- 主模型进行高质量推理，小模型承担预处理与验证。
+- 涉及高风险操作时仍需显式确认边界与回滚方案。
+EOF
+            ;;
+        *)
+            cat <<'EOF'
+你是平衡执行模式（MEDIUM）。
+- 在质量和成本之间平衡，默认中等篇幅、结构化回答。
+- 优先复用已有上下文与缓存结果，减少重复调用。
+- 允许有限并发工具调用，但必须先声明目标与预期输出。
+- 主模型负责决策，小模型负责检索、格式化和批处理。
+EOF
+            ;;
+    esac
+}
+
+select_rule_profile_level() {
+    local default_level
+    default_level="$(normalize_rule_profile_level "$RULE_PROFILE_SELECTED")"
+    RULE_PROFILE_SELECTED="$default_level"
+
+    echo ""
+    echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo -e "${WHITE}  厂商控制规则注入档位${NC}"
+    echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo -e "  ${CYAN}[1]${NC} LOW    - 低成本模式（5小时 50 次）"
+    echo -e "  ${CYAN}[2]${NC} MEDIUM - 平衡模式（5小时 150 次）"
+    echo -e "  ${CYAN}[3]${NC} HIGH   - 高性能模式（5小时 300 次）"
+    echo ""
+
+    if [ "$NO_PROMPT" = "1" ] || [ "$TTY_INPUT" = "/dev/null" ]; then
+        log_info "非交互模式，规则档位默认: $RULE_PROFILE_SELECTED"
+        upsert_env_export_install "OPENCLAW_RULE_PROFILE" "$RULE_PROFILE_SELECTED"
+        return 0
+    fi
+
+    local default_choice="2"
+    case "$default_level" in
+        low) default_choice="1" ;;
+        medium) default_choice="2" ;;
+        high) default_choice="3" ;;
+    esac
+
+    local profile_choice=""
+    read_input "${YELLOW}请选择规则档位 [1-3] (默认: ${default_choice}): ${NC}" profile_choice
+    profile_choice="${profile_choice:-$default_choice}"
+    case "$profile_choice" in
+        1) RULE_PROFILE_SELECTED="low" ;;
+        2) RULE_PROFILE_SELECTED="medium" ;;
+        3) RULE_PROFILE_SELECTED="high" ;;
+        *)
+            log_warn "无效选择，回退默认档位: ${default_level}"
+            RULE_PROFILE_SELECTED="$default_level"
+            ;;
+    esac
+
+    upsert_env_export_install "OPENCLAW_RULE_PROFILE" "$RULE_PROFILE_SELECTED"
+    log_info "已选择规则档位: $RULE_PROFILE_SELECTED"
+}
+
+prompt_profile_api_key() {
+    local key_var="$1"
+    local display_name="$2"
+    local required="$3"
+    local current="${!key_var:-}"
+    local value="$current"
+
+    if [ "$NO_PROMPT" = "1" ] || [ "$TTY_INPUT" = "/dev/null" ]; then
+        export "$key_var=$value"
+        return 0
+    fi
+
+    local marker="未配置"
+    if [ -n "$current" ]; then
+        marker="已配置"
+    fi
+    echo -e "${CYAN}${display_name}${NC} (${marker})"
+    read_secret_input "${YELLOW}请输入 ${display_name} Key（留空保持当前）: ${NC}" value
+    value="${value:-$current}"
+
+    if [ "$required" = "1" ] && [ -z "$value" ]; then
+        log_warn "${display_name} 未配置，相关能力将不可用。"
+    fi
+
+    export "$key_var=$value"
+}
+
+configure_profile_api_keys() {
+    local level
+    level="$(normalize_rule_profile_level "$1")"
+
+    echo ""
+    log_step "配置档位 API 参数（BraveSearch / NanoBanana / Gemini）..."
+    case "$level" in
+        low)
+            prompt_profile_api_key "GOOGLE_API_KEY" "Gemini" "1"
+            prompt_profile_api_key "BRAVE_API_KEY" "BraveSearch" "0"
+            ;;
+        medium)
+            prompt_profile_api_key "GOOGLE_API_KEY" "Gemini" "1"
+            prompt_profile_api_key "BRAVE_API_KEY" "BraveSearch" "1"
+            prompt_profile_api_key "NANO_BANANA_API_KEY" "NanoBanana" "0"
+            ;;
+        high)
+            prompt_profile_api_key "GOOGLE_API_KEY" "Gemini" "1"
+            prompt_profile_api_key "BRAVE_API_KEY" "BraveSearch" "1"
+            prompt_profile_api_key "NANO_BANANA_API_KEY" "NanoBanana" "1"
+            ;;
+        *)
+            prompt_profile_api_key "GOOGLE_API_KEY" "Gemini" "1"
+            prompt_profile_api_key "BRAVE_API_KEY" "BraveSearch" "1"
+            prompt_profile_api_key "NANO_BANANA_API_KEY" "NanoBanana" "0"
+            ;;
+    esac
+
+    if [ -n "${GOOGLE_API_KEY:-}" ]; then
+        upsert_env_export_install "GOOGLE_API_KEY" "$GOOGLE_API_KEY"
+        upsert_env_export_install "GEMINI_API_KEY" "$GOOGLE_API_KEY"
+    else
+        remove_env_export_install "GOOGLE_API_KEY"
+        remove_env_export_install "GEMINI_API_KEY"
+    fi
+
+    if [ -n "${BRAVE_API_KEY:-}" ]; then
+        upsert_env_export_install "BRAVE_API_KEY" "$BRAVE_API_KEY"
+        upsert_env_export_install "BRAVESEARCH_API_KEY" "$BRAVE_API_KEY"
+    else
+        remove_env_export_install "BRAVE_API_KEY"
+        remove_env_export_install "BRAVESEARCH_API_KEY"
+    fi
+
+    if [ -n "${NANO_BANANA_API_KEY:-}" ]; then
+        upsert_env_export_install "NANO_BANANA_API_KEY" "$NANO_BANANA_API_KEY"
+        upsert_env_export_install "NANOBANANA_API_KEY" "$NANO_BANANA_API_KEY"
+    else
+        remove_env_export_install "NANO_BANANA_API_KEY"
+        remove_env_export_install "NANOBANANA_API_KEY"
+    fi
+}
+
+apply_profile_model_policy() {
+    local level
+    level="$(normalize_rule_profile_level "$1")"
+    local pair primary_model small_model
+    pair="$(get_profile_model_pair "$level")"
+    primary_model="${pair%% *}"
+    small_model="${pair#* }"
+
+    upsert_env_export_install "OPENCLAW_PRIMARY_MODEL" "$primary_model"
+    upsert_env_export_install "OPENCLAW_SMALL_MODEL" "$small_model"
+
+    if check_command openclaw; then
+        openclaw config set "vendor.control.profile" "$level" >/dev/null 2>&1 || true
+        openclaw config set "vendor.control.models.primary" "$primary_model" >/dev/null 2>&1 || true
+        openclaw config set "vendor.control.models.small" "$small_model" >/dev/null 2>&1 || true
+        openclaw config set "agents.defaults.model.primary" "$primary_model" >/dev/null 2>&1 || true
+        openclaw config set "agents.defaults.model.small" "$small_model" >/dev/null 2>&1 || true
+        openclaw config set "models.default" "$primary_model" >/dev/null 2>&1 || true
+        openclaw config set "models.small" "$small_model" >/dev/null 2>&1 || true
+    fi
+}
+
+apply_profile_token_policy() {
+    local level
+    level="$(normalize_rule_profile_level "$1")"
+    local limits window_hours max_requests max_tokens max_tokens_per_req
+    limits="$(get_profile_token_limits "$level")"
+    window_hours="$(echo "$limits" | awk '{print $1}')"
+    max_requests="$(echo "$limits" | awk '{print $2}')"
+    max_tokens="$(echo "$limits" | awk '{print $3}')"
+    max_tokens_per_req="$(echo "$limits" | awk '{print $4}')"
+
+    upsert_env_export_install "OPENCLAW_RULE_WINDOW_HOURS" "$window_hours"
+    upsert_env_export_install "OPENCLAW_RULE_MAX_REQUESTS" "$max_requests"
+    upsert_env_export_install "OPENCLAW_RULE_MAX_TOKENS" "$max_tokens"
+    upsert_env_export_install "OPENCLAW_RULE_MAX_TOKENS_PER_REQUEST" "$max_tokens_per_req"
+
+    if check_command openclaw; then
+        openclaw config set "vendor.control.rate.windowHours" "$window_hours" >/dev/null 2>&1 || true
+        openclaw config set "vendor.control.rate.maxRequests" "$max_requests" >/dev/null 2>&1 || true
+        openclaw config set "vendor.control.rate.maxTokens" "$max_tokens" >/dev/null 2>&1 || true
+        openclaw config set "vendor.control.rate.maxTokensPerRequest" "$max_tokens_per_req" >/dev/null 2>&1 || true
+    fi
+}
+
+apply_profile_skill_policy() {
+    local level
+    level="$(normalize_rule_profile_level "$1")"
+    local bundle_dir skills_list target_dir force_update copied skipped missing
+    copied=0
+    skipped=0
+    missing=0
+    force_update="${OPENCLAW_SKILLS_FORCE_UPDATE:-0}"
+    target_dir="$CONFIG_DIR/skills"
+
+    bundle_dir="$(resolve_install_skills_bundle_dir || true)"
+    if [ -z "$bundle_dir" ] || [ ! -d "$bundle_dir" ]; then
+        log_warn "未找到默认技能包目录，跳过档位技能注入。"
+        return 1
+    fi
+
+    mkdir -p "$target_dir" 2>/dev/null || true
+    skills_list="$(get_profile_skill_list "$level")"
+
+    if [ "$skills_list" = "__ALL_DEFAULT__" ]; then
+        local src_all
+        for src_all in "$bundle_dir"/*; do
+            [ -d "$src_all" ] || continue
+            local name_all
+            local dst_all
+            name_all="$(basename "$src_all")"
+            dst_all="$target_dir/$name_all"
+            if [ -d "$dst_all" ] && [ "$force_update" != "1" ]; then
+                skipped=$((skipped + 1))
+                continue
+            fi
+            rm -rf "$dst_all" 2>/dev/null || true
+            if cp -a "$src_all" "$dst_all" 2>/dev/null; then
+                copied=$((copied + 1))
+            fi
+        done
+        log_info "HIGH 档技能同步完成：新增/更新 ${copied}，保留 ${skipped}"
+        return 0
+    fi
+
+    local skill_name src dst
+    for skill_name in $skills_list; do
+        src="$bundle_dir/$skill_name"
+        dst="$target_dir/$skill_name"
+        if [ ! -d "$src" ]; then
+            missing=$((missing + 1))
+            log_warn "技能包缺失: $skill_name"
+            continue
+        fi
+        if [ -d "$dst" ] && [ "$force_update" != "1" ]; then
+            skipped=$((skipped + 1))
+            continue
+        fi
+        rm -rf "$dst" 2>/dev/null || true
+        if cp -a "$src" "$dst" 2>/dev/null; then
+            copied=$((copied + 1))
+        fi
+    done
+    log_info "档位技能同步完成：新增/更新 ${copied}，保留 ${skipped}，缺失 ${missing}"
+}
+
+write_profile_policy_files() {
+    local level
+    level="$(normalize_rule_profile_level "$1")"
+    local limits window_hours max_requests max_tokens max_tokens_per_req
+    local pair primary_model small_model
+    local prompt_text
+    local now_iso
+
+    limits="$(get_profile_token_limits "$level")"
+    window_hours="$(echo "$limits" | awk '{print $1}')"
+    max_requests="$(echo "$limits" | awk '{print $2}')"
+    max_tokens="$(echo "$limits" | awk '{print $3}')"
+    max_tokens_per_req="$(echo "$limits" | awk '{print $4}')"
+
+    pair="$(get_profile_model_pair "$level")"
+    primary_model="${pair%% *}"
+    small_model="${pair#* }"
+    prompt_text="$(get_profile_prompt_text "$level")"
+    now_iso="$(date -u '+%Y-%m-%dT%H:%M:%SZ')"
+
+    local policy_dir="$CONFIG_DIR/policy"
+    local soul_dir="$CONFIG_DIR/agents/main/soul"
+    local agent_dir="$CONFIG_DIR/agents/main/agent"
+    local memory_dir="$CONFIG_DIR/agents/main/memory"
+    local session_dir="$CONFIG_DIR/agents/main/sessions"
+    local system_rule_file="$agent_dir/vendor-control-system.md"
+    local memory_rule_file="$memory_dir/vendor-control-memory.md"
+    local session_rule_file="$session_dir/vendor-control-session.md"
+    local soul_rule_file="$soul_dir/vendor-control-soul.md"
+    local policy_json="$policy_dir/vendor-control-profile.json"
+    local prompt_file="$policy_dir/vendor-control-prompts.md"
+
+    mkdir -p "$policy_dir" "$soul_dir" "$agent_dir" "$memory_dir" "$session_dir" 2>/dev/null || true
+
+    cat > "$system_rule_file" <<EOF
+# 厂商控制规则（系统层）
+
+- 档位: ${level}
+- 时间窗: ${window_hours} 小时
+- 请求上限: ${max_requests}
+- Token 上限: ${max_tokens}
+- 单请求 Token 上限: ${max_tokens_per_req}
+- 主模型: ${primary_model}
+- 小模型: ${small_model}
+
+## 执行提示词
+${prompt_text}
+EOF
+
+    cat > "$memory_rule_file" <<EOF
+# 厂商控制规则（Memory 注入）
+
+记忆要求：
+- 始终遵循档位 ${level} 的预算控制。
+- 连续高并发请求时先降级到小模型并压缩响应。
+- 当预算接近上限时先返回摘要与下一步建议，避免超限。
+EOF
+
+    cat > "$session_rule_file" <<EOF
+# 厂商控制规则（Session 注入）
+
+当前会话默认规则：
+1. 优先满足可用性，其次控制成本。
+2. 每 ${window_hours} 小时最多 ${max_requests} 次请求。
+3. 单请求建议 Token 不超过 ${max_tokens_per_req}。
+EOF
+
+    cat > "$soul_rule_file" <<EOF
+# 厂商控制规则（Soul 注入）
+
+这是厂商级控制基线，优先级高于临时会话偏好：
+- 安全边界优先。
+- 成本控制与稳定性优先。
+- 在不降低正确性的前提下控制资源开销。
+EOF
+
+    cat > "$policy_json" <<EOF
+{
+  "version": 1,
+  "updatedAt": "${now_iso}",
+  "profile": "${level}",
+  "rateLimit": {
+    "windowHours": ${window_hours},
+    "maxRequests": ${max_requests},
+    "maxTokens": ${max_tokens},
+    "maxTokensPerRequest": ${max_tokens_per_req}
+  },
+  "models": {
+    "primary": "${primary_model}",
+    "small": "${small_model}"
+  },
+  "files": {
+    "soul": "${soul_rule_file}",
+    "agent": "${system_rule_file}",
+    "memory": "${memory_rule_file}",
+    "session": "${session_rule_file}"
+  }
+}
+EOF
+
+    cat > "$prompt_file" <<'EOF'
+# 三档厂商控制提示词
+
+## LOW
+你是受控执行模式（LOW）。
+- 严格控制 token 与请求频率，优先短响应与高信息密度。
+- 仅在必要时调用外部工具，避免并发和重复请求。
+- 先给最小可行结论，再按用户要求逐步展开。
+- 默认使用小模型；复杂任务需先说明成本后再升级模型。
+
+## MEDIUM
+你是平衡执行模式（MEDIUM）。
+- 在质量和成本之间平衡，默认中等篇幅、结构化回答。
+- 优先复用已有上下文与缓存结果，减少重复调用。
+- 允许有限并发工具调用，但必须先声明目标与预期输出。
+- 主模型负责决策，小模型负责检索、格式化和批处理。
+
+## HIGH
+你是高性能执行模式（HIGH）。
+- 允许更高 token 与请求预算，优先任务完成率与深度分析。
+- 复杂任务可分阶段调用多工具，但要持续回报进度与风险。
+- 主模型进行高质量推理，小模型承担预处理与验证。
+- 涉及高风险操作时仍需显式确认边界与回滚方案。
+EOF
+
+    chmod 600 "$policy_json" 2>/dev/null || true
+    chmod 644 "$system_rule_file" "$memory_rule_file" "$session_rule_file" "$soul_rule_file" "$prompt_file" 2>/dev/null || true
+
+    if check_command openclaw; then
+        openclaw config set "vendor.control.profile" "$level" >/dev/null 2>&1 || true
+        openclaw config set "vendor.control.files.soul" "$soul_rule_file" >/dev/null 2>&1 || true
+        openclaw config set "vendor.control.files.agent" "$system_rule_file" >/dev/null 2>&1 || true
+        openclaw config set "vendor.control.files.memory" "$memory_rule_file" >/dev/null 2>&1 || true
+        openclaw config set "vendor.control.files.session" "$session_rule_file" >/dev/null 2>&1 || true
+        openclaw config set "vendor.control.files.policy" "$policy_json" >/dev/null 2>&1 || true
+        openclaw config set "vendor.control.files.prompts" "$prompt_file" >/dev/null 2>&1 || true
+        openclaw config set "boot-md.enabled" true >/dev/null 2>&1 || true
+        openclaw config set "session-memory.enabled" true >/dev/null 2>&1 || true
+    fi
+}
+
+apply_vendor_rule_profile() {
+    select_rule_profile_level
+    local level
+    level="$(normalize_rule_profile_level "$RULE_PROFILE_SELECTED")"
+    RULE_PROFILE_SELECTED="$level"
+    upsert_env_export_install "OPENCLAW_RULE_PROFILE" "$level"
+
+    local limits pair prompt_text
+    limits="$(get_profile_token_limits "$level")"
+    pair="$(get_profile_model_pair "$level")"
+    prompt_text="$(get_profile_prompt_text "$level")"
+
+    configure_profile_api_keys "$level"
+    apply_profile_token_policy "$level"
+    apply_profile_model_policy "$level"
+    apply_profile_skill_policy "$level" || true
+    write_profile_policy_files "$level"
+
+    echo ""
+    log_info "厂商控制规则注入完成"
+    echo -e "  档位: ${WHITE}${level}${NC}"
+    echo -e "  限流: ${WHITE}$(echo "$limits" | awk '{print $1"小时/"$2"次, 总Token="$3", 单次="$4}')${NC}"
+    echo -e "  模型: ${WHITE}${pair}${NC}"
+    echo -e "  提示词摘要: ${WHITE}$(echo "$prompt_text" | head -1)${NC}"
+}
+
 resolve_beta_version() {
     npm view openclaw dist-tags.beta 2>/dev/null || true
 }
@@ -461,6 +1013,7 @@ normalize_install_options() {
     fi
     export OPENCLAW_GATEWAY_HOST="$GATEWAY_HOST"
     export OPENCLAW_GATEWAY_PORT="$GATEWAY_PORT"
+    RULE_PROFILE_SELECTED="$(normalize_rule_profile_level "$RULE_PROFILE_SELECTED")"
 }
 
 print_install_plan() {
@@ -475,6 +1028,7 @@ print_install_plan() {
     echo "  - verbose: $VERBOSE"
     echo "  - gateway_host: $GATEWAY_HOST"
     echo "  - gateway_port: $GATEWAY_PORT"
+    echo "  - rule_profile: $RULE_PROFILE_SELECTED"
     if [ "$INSTALL_METHOD" = "git" ]; then
         echo "  - git_dir: $GIT_DIR"
         echo "  - git_update: $GIT_UPDATE"
@@ -2946,6 +3500,8 @@ print_success() {
     echo "  ~/.openclaw/docs/channels-configuration-guide.md  # 渠道配置文档"
     echo "  ~/.openclaw/skills/channel-setup-assistant/SKILL.md  # 渠道配置 Skill"
     echo "  ~/.openclaw/skills/      # 默认技能包目录"
+    echo "  ~/.openclaw/policy/vendor-control-profile.json  # 厂商规则档位配置"
+    echo "  ~/.openclaw/policy/vendor-control-prompts.md    # 三档提示词"
     echo ""
     echo -e "${PURPLE}📚 官方文档: $OFFICIAL_DOCS_URL${NC}"
     echo -e "${PURPLE}💬 社区支持: https://github.com/$GITHUB_REPO/discussions${NC}"
@@ -3118,6 +3674,7 @@ main() {
         fi
     fi
     setup_identity
+    apply_vendor_rule_profile
     apply_default_security_baseline
     if ! run_step_with_auto_fix "设置开机守护进程" setup_daemon; then
         log_error "守护进程设置失败"
