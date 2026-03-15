@@ -783,14 +783,9 @@ apply_generative_service_settings_menu() {
         openclaw config set "vendor.media.nanobanana.baseUrl" "$nano_url" >/dev/null 2>&1 || true
         openclaw config set "vendor.media.nanobanana.imageModel" "$nano_image_model" >/dev/null 2>&1 || true
         openclaw config set "vendor.media.nanobanana.videoModel" "$nano_video_model" >/dev/null 2>&1 || true
-
-        openclaw config set "plugins.entries.gemini.config.apiKey" "$gemini_key" >/dev/null 2>&1 || true
-        openclaw config set "plugins.entries.gemini.config.baseUrl" "$gemini_url" >/dev/null 2>&1 || true
-        openclaw config set "plugins.entries.gemini.config.model" "$gemini_model" >/dev/null 2>&1 || true
-        openclaw config set "plugins.entries.nano-banana-pro.config.apiKey" "$nano_key" >/dev/null 2>&1 || true
-        openclaw config set "plugins.entries.nano-banana-pro.config.baseUrl" "$nano_url" >/dev/null 2>&1 || true
-        openclaw config set "plugins.entries.nano-banana-pro.config.imageModel" "$nano_image_model" >/dev/null 2>&1 || true
-        openclaw config set "plugins.entries.nano-banana-pro.config.videoModel" "$nano_video_model" >/dev/null 2>&1 || true
+        # gemini/nano-banana 属于 skills 服务，不是 openclaw 插件；清理历史陈旧插件项
+        openclaw config unset "plugins.entries.gemini" >/dev/null 2>&1 || true
+        openclaw config unset "plugins.entries.nano-banana-pro" >/dev/null 2>&1 || true
     fi
 
     local skills_root="$CONFIG_DIR/skills"
@@ -1104,7 +1099,7 @@ select_rule_profile_level_menu() {
     local default_level profile_choice
     default_level="$(normalize_rule_profile_level "$RULE_PROFILE_DEFAULT")"
 
-    echo -e "${CYAN}请选择厂商控制规则档位:${NC}"
+    echo -e "${CYAN}请选择token规划规则档位:${NC}"
     echo -e "  ${CYAN}[1]${NC} LOW    - 基础档（5小时 50 次）"
     echo -e "  ${CYAN}[2]${NC} MEDIUM - 扩展档（5小时 160 次）"
     echo -e "  ${CYAN}[3]${NC} HIGH   - 超级档（5小时 360 次）"
@@ -1139,7 +1134,7 @@ apply_vendor_rule_profile_menu() {
     prompt_head="$(get_profile_prompt_text "$level" | head -1)"
 
     echo ""
-    log_info "厂商控制规则注入完成"
+    log_info "token规划规则注入完成"
     echo -e "  档位: ${WHITE}${level}${NC}"
     echo -e "  限流: ${WHITE}$(echo "$limits" | awk '{print $1"小时/"$2"次, 总Token="$3", 单次="$4}')${NC}"
     echo -e "  Skills 档位: ${WHITE}$(case "$level" in low) echo 基础;; medium) echo 扩展;; high) echo 超级;; *) echo 扩展;; esac)${NC}"
@@ -5514,15 +5509,33 @@ config_imessage() {
     press_enter
 }
 
+cleanup_stale_plugin_state_menu() {
+    if check_openclaw_installed; then
+        openclaw config unset "plugins.entries.gemini" >/dev/null 2>&1 || true
+        openclaw config unset "plugins.entries.nano-banana-pro" >/dev/null 2>&1 || true
+    fi
+
+    local legacy_dir
+    for legacy_dir in "$CONFIG_DIR/extensions/feishu" "$CONFIG_DIR/extensions/openclaw-feishu"; do
+        if [ -d "$legacy_dir" ]; then
+            rm -rf "$legacy_dir" >/dev/null 2>&1 || true
+            log_warn "已清理历史飞书扩展残留: $legacy_dir"
+        fi
+    done
+}
+
 # 安装飞书插件（仅官方包）
 install_feishu_plugin() {
     echo -e "${YELLOW}安装飞书插件...${NC}"
     echo ""
 
+    cleanup_stale_plugin_state_menu
+
     # 先清理同名插件，避免历史社区包与官方包冲突
     if openclaw plugins list 2>/dev/null | grep -qi "feishu"; then
         log_info "检测到已安装飞书插件，先执行重装清理..."
         openclaw plugins disable feishu > /dev/null 2>&1 || true
+        openclaw plugins uninstall feishu > /dev/null 2>&1 || true
         openclaw plugins uninstall feishu --keep-files > /dev/null 2>&1 || true
     fi
 
@@ -7966,7 +7979,7 @@ advanced_settings() {
     print_menu_item "6" "更新 OpenClaw" "⬆️"
     print_menu_item "7" "卸载 OpenClaw" "🗑️"
     print_menu_item "8" "AI 自动修复 OpenClaw" "🛠️"
-    print_menu_item "9" "厂商控制规则注入（低/中/高）" "🏭"
+    print_menu_item "9" "token规划规则注入（低/中/高）" "🏭"
     print_menu_item "0" "返回主菜单" "↩️"
     echo ""
     
@@ -8607,6 +8620,11 @@ main() {
     # 确保配置目录存在
     mkdir -p "$CONFIG_DIR"
     mkdir -p "$BACKUP_DIR"
+
+    # 启动时先清理历史陈旧插件项，减少 Config warnings
+    if check_openclaw_installed; then
+        cleanup_stale_plugin_state_menu || true
+    fi
 
     # 快捷模式：安装脚本可直接跳转到指定配置页
     case "${1:-}" in

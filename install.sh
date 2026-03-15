@@ -297,7 +297,7 @@ ${INSTALLER_NAME} (OpenClaw 安装增强版)
   --verbose                            详细日志
   --gateway-host <host>               Gateway 监听地址 (默认: 127.0.0.1)
   --gateway-port <port>               Gateway 监听端口 (默认: 13145)
-  --rule-profile <low|medium|high>    厂商规则档位 (默认: medium)
+  --rule-profile <low|medium|high>    token规划规则档位 (默认: medium)
   --help, -h                           显示帮助
 
 环境变量:
@@ -586,7 +586,7 @@ select_rule_profile_level() {
 
     echo ""
     echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-    echo -e "${WHITE}  厂商控制规则注入档位${NC}"
+    echo -e "${WHITE}  token规划规则注入档位${NC}"
     echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
     echo -e "  ${CYAN}[1]${NC} LOW    - 基础档（5小时 50 次）"
     echo -e "  ${CYAN}[2]${NC} MEDIUM - 扩展档（5小时 160 次）"
@@ -678,15 +678,9 @@ apply_generative_service_settings() {
         openclaw config set "vendor.media.nanobanana.baseUrl" "$nano_url" >/dev/null 2>&1 || true
         openclaw config set "vendor.media.nanobanana.imageModel" "$nano_image_model" >/dev/null 2>&1 || true
         openclaw config set "vendor.media.nanobanana.videoModel" "$nano_video_model" >/dev/null 2>&1 || true
-
-        # 兼容官方插件配置路径（若插件支持将自动生效）
-        openclaw config set "plugins.entries.gemini.config.apiKey" "$gemini_key" >/dev/null 2>&1 || true
-        openclaw config set "plugins.entries.gemini.config.baseUrl" "$gemini_url" >/dev/null 2>&1 || true
-        openclaw config set "plugins.entries.gemini.config.model" "$gemini_model" >/dev/null 2>&1 || true
-        openclaw config set "plugins.entries.nano-banana-pro.config.apiKey" "$nano_key" >/dev/null 2>&1 || true
-        openclaw config set "plugins.entries.nano-banana-pro.config.baseUrl" "$nano_url" >/dev/null 2>&1 || true
-        openclaw config set "plugins.entries.nano-banana-pro.config.imageModel" "$nano_image_model" >/dev/null 2>&1 || true
-        openclaw config set "plugins.entries.nano-banana-pro.config.videoModel" "$nano_video_model" >/dev/null 2>&1 || true
+        # gemini/nano-banana 属于 skills 服务，不是 openclaw 插件；清理历史陈旧插件项
+        openclaw config unset "plugins.entries.gemini" >/dev/null 2>&1 || true
+        openclaw config unset "plugins.entries.nano-banana-pro" >/dev/null 2>&1 || true
     fi
 
     local skills_root="$CONFIG_DIR/skills"
@@ -1024,7 +1018,7 @@ apply_vendor_rule_profile() {
     write_profile_policy_files "$level"
 
     echo ""
-    log_info "厂商控制规则注入完成"
+    log_info "token规划规则注入完成"
     echo -e "  档位: ${WHITE}${level}${NC}"
     echo -e "  限流: ${WHITE}$(echo "$limits" | awk '{print $1"小时/"$2"次, 总Token="$3", 单次="$4}')${NC}"
     echo -e "  Skills 档位: ${WHITE}$(case "$level" in low) echo 基础;; medium) echo 扩展;; high) echo 超级;; *) echo 扩展;; esac)${NC}"
@@ -1885,6 +1879,23 @@ resolve_install_skills_bundle_dir() {
     return 1
 }
 
+cleanup_stale_plugin_state() {
+    if check_command openclaw; then
+        # 清理已知的陈旧插件配置项，避免 Config warnings
+        openclaw config unset "plugins.entries.gemini" >/dev/null 2>&1 || true
+        openclaw config unset "plugins.entries.nano-banana-pro" >/dev/null 2>&1 || true
+    fi
+
+    # 清理历史飞书社区扩展目录，避免与官方 feishu 插件重复加载
+    local legacy_dir
+    for legacy_dir in "$CONFIG_DIR/extensions/feishu" "$CONFIG_DIR/extensions/openclaw-feishu"; do
+        if [ -d "$legacy_dir" ]; then
+            rm -rf "$legacy_dir" >/dev/null 2>&1 || true
+            log_warn "已清理历史飞书扩展残留: $legacy_dir"
+        fi
+    done
+}
+
 install_default_official_plugins() {
     if ! check_command openclaw; then
         log_warn "未检测到 openclaw，跳过默认官方插件安装。"
@@ -1899,6 +1910,8 @@ install_default_official_plugins() {
     if [ ! -d "$bundle_dir" ] && [ -d "$cache_repo/plugins/official" ]; then
         bundle_dir="$cache_repo/plugins/official"
     fi
+
+    cleanup_stale_plugin_state
 
     log_step "同步默认官方插件集（仓库本地包优先）..."
     local ok=0
@@ -3632,7 +3645,7 @@ print_success() {
     echo "  ~/.openclaw/docs/channels-configuration-guide.md  # 渠道配置文档"
     echo "  ~/.openclaw/skills/channel-setup-assistant/SKILL.md  # 渠道配置 Skill"
     echo "  ~/.openclaw/skills/      # 默认技能包目录"
-    echo "  ~/.openclaw/policy/vendor-control-profile.json  # 厂商规则档位配置"
+    echo "  ~/.openclaw/policy/vendor-control-profile.json  # token规划规则档位配置"
     echo "  ~/.openclaw/policy/vendor-control-prompts.md    # 三档提示词"
     echo ""
     echo -e "${PURPLE}📚 官方文档: $OFFICIAL_DOCS_URL${NC}"
@@ -3798,6 +3811,7 @@ main() {
         log_error "OpenClaw 安装失败"
         exit 1
     fi
+    cleanup_stale_plugin_state
     log_info "已跳过初装阶段官方插件安装；将在后续配置菜单中按仓库本地包同步官方插件。"
     if [ "$NO_ONBOARD" = "1" ]; then
         log_info "已按参数跳过 AI 初始化向导 (--no-onboard)"
