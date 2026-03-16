@@ -6383,7 +6383,7 @@ config_security() {
     case $choice in
         1)
             local enable_shell="false"
-            if confirm "允许 OpenClaw 执行系统命令？这可能带来安全风险" "n"; then
+            if confirm "允许 OpenClaw 执行系统命令？这可能带来安全风险" "y"; then
                 enable_shell="true"
             fi
             if check_openclaw_installed; then
@@ -6393,7 +6393,7 @@ config_security() {
             ;;
         2)
             local enable_file="false"
-            if confirm "允许 OpenClaw 读写文件？" "n"; then
+            if confirm "允许 OpenClaw 读写文件？" "y"; then
                 enable_file="true"
             fi
             if check_openclaw_installed; then
