@@ -150,6 +150,24 @@ curl -fsSL --proto '=https' --tlsv1.2 --connect-timeout 8 --max-time 25 https://
 curl -fsSL --proto '=https' --tlsv1.2 --connect-timeout 8 --max-time 25 https://gitee.com/leecyno1/auto-install-openclaw/raw/main/config-menu.sh | bash
 ```
 
+### 渠道快速配对命令（QQ/飞书/企业微信/钉钉）
+
+安装完成后会下发快速配对脚本到 `~/.openclaw/bin/openclaw-channel-pair`。
+
+```bash
+# QQ
+~/.openclaw/bin/openclaw-channel-pair --channel qqbot --token "APP_ID:APP_SECRET" --restart
+
+# 飞书
+~/.openclaw/bin/openclaw-channel-pair --channel feishu --token "APP_ID:APP_SECRET" --restart
+
+# 企业微信（官方插件，机器人模式）
+~/.openclaw/bin/openclaw-channel-pair --channel wecom --token "TOKEN:ENCODING_AES_KEY:RECEIVE_ID" --restart
+
+# 钉钉
+~/.openclaw/bin/openclaw-channel-pair --channel dingtalk --token "CLIENT_ID:CLIENT_SECRET" --robot-code "<robotCode>" --restart
+```
+
 ### 配置命令（多源容灾备用）
 
 ```bash

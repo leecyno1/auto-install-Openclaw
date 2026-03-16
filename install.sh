@@ -2230,6 +2230,8 @@ install_channel_assets() {
     local skill_file="$skill_dir/SKILL.md"
     local skills_root="$CONFIG_DIR/skills"
     local docs_dir="$CONFIG_DIR/docs"
+    local bin_dir="$CONFIG_DIR/bin"
+    local pair_cmd_file="$bin_dir/openclaw-channel-pair"
     local doc_file="$docs_dir/channels-configuration-guide.md"
     local source_index_file="$docs_dir/upstream-sources.md"
     local script_dir
@@ -2237,8 +2239,9 @@ install_channel_assets() {
     local local_doc="$script_dir/docs/channels-configuration-guide.md"
     local local_source_index="$script_dir/docs/upstream-sources.md"
     local local_skill="$script_dir/skills/channel-setup-assistant/SKILL.md"
+    local local_pair_cmd="$script_dir/scripts/openclaw-channel-pair.sh"
 
-    mkdir -p "$skill_dir" "$skills_root" "$docs_dir" 2>/dev/null || true
+    mkdir -p "$skill_dir" "$skills_root" "$docs_dir" "$bin_dir" 2>/dev/null || true
 
     if [ -f "$local_doc" ]; then
         cp "$local_doc" "$doc_file" 2>/dev/null || true
@@ -2292,8 +2295,7 @@ EOF
 
 重点渠道字段：
 - Feishu: `appId`, `appSecret`
-- WeCom(bot): `token`, `encodingAESKey`, `receiveId`
-- WeCom(app): `corpId`, `corpSecret`, `agentId`, `callbackToken`, `callbackAesKey`
+- WeCom(official bot): `token`, `encodingAESKey`, `receiveId`
 - WeChatPad: `proxyUrl`, `apiKey`, `webhookHost`, `webhookPort`, `webhookPath`
 - QQ: `appId`, `appSecret`, `allowFrom`
 
@@ -2304,6 +2306,11 @@ EOF
 EOF
     fi
 
+    if [ -f "$local_pair_cmd" ]; then
+        cp "$local_pair_cmd" "$pair_cmd_file" 2>/dev/null || true
+        chmod +x "$pair_cmd_file" 2>/dev/null || true
+    fi
+
     log_info "默认技能包将按规则档位注入（低/中/高），此步骤仅注入渠道文档与渠道助手 Skill。"
 
     chmod 644 "$skill_file" "$doc_file" "$source_index_file" 2>/dev/null || true
@@ -2311,6 +2318,9 @@ EOF
     log_info "  文档: $doc_file"
     log_info "  上游索引: $source_index_file"
     log_info "  Skill: $skill_file"
+    if [ -x "$pair_cmd_file" ]; then
+        log_info "  快速配对命令: $pair_cmd_file"
+    fi
 }
 
 # 初始化 OpenClaw 配置
@@ -4171,6 +4181,8 @@ main() {
     echo ""
     echo -e "${WHITE}💡 下次可以直接运行配置菜单:${NC}"
     echo -e "   ${CYAN}bash ./config-menu.sh${NC}"
+    echo -e "${WHITE}💡 渠道快速配对命令:${NC}"
+    echo -e "   ${CYAN}~/.openclaw/bin/openclaw-channel-pair --help${NC}"
     echo ""
     if confirm "是否现在打开配置菜单？" "n"; then
         run_config_menu

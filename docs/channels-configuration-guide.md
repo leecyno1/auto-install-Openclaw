@@ -12,6 +12,23 @@
    - `openclaw gateway restart`
    - `openclaw channels list`
 4. 如需追踪插件与 skills 上游来源，查看：`docs/upstream-sources.md`
+5. 如需命令行快速配对，使用：`~/.openclaw/bin/openclaw-channel-pair`
+
+### 快速配对示例
+
+```bash
+# QQ
+~/.openclaw/bin/openclaw-channel-pair --channel qqbot --token "APP_ID:APP_SECRET" --restart
+
+# 飞书
+~/.openclaw/bin/openclaw-channel-pair --channel feishu --token "APP_ID:APP_SECRET" --restart
+
+# 企业微信（官方插件，机器人模式）
+~/.openclaw/bin/openclaw-channel-pair --channel wecom --token "TOKEN:ENCODING_AES_KEY:RECEIVE_ID" --restart
+
+# 钉钉
+~/.openclaw/bin/openclaw-channel-pair --channel dingtalk --token "CLIENT_ID:CLIENT_SECRET" --robot-code "<robotCode>" --restart
+```
 
 ## 2. 渠道总览
 
