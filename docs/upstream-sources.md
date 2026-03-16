@@ -46,7 +46,10 @@
 | `openclaw-wechat-channel-*.tgz` | `plugins/official/archives/openclaw-wechat-channel-*.tgz` | https://www.npmjs.com/package/openclaw-wechat-channel |
 | `openclaw-channel-dingtalk-*.tgz` | `plugins/official/archives/openclaw-channel-dingtalk-*.tgz` | https://www.npmjs.com/package/openclaw-channel-dingtalk |
 | `sliverp-qqbot-*.tgz` | `plugins/official/archives/sliverp-qqbot-*.tgz` | https://www.npmjs.com/package/@sliverp/qqbot |
+| `tencent-connect-openclaw-qqbot-*.tgz` | `plugins/official/archives/tencent-connect-openclaw-qqbot-*.tgz` | https://www.npmjs.com/package/@tencent-connect/openclaw-qqbot |
 | `wecom-wecom-openclaw-plugin-*.tgz` | `plugins/official/archives/wecom-wecom-openclaw-plugin-*.tgz` | https://www.npmjs.com/package/@wecom/wecom-openclaw-plugin |
+| `openclaw-china-wecom-*.tgz` | `plugins/official/archives/openclaw-china-wecom-*.tgz` | https://www.npmjs.com/package/@openclaw-china/wecom |
+| `openclaw-china-channels-*.tgz` | `plugins/official/archives/openclaw-china-channels-*.tgz` | https://www.npmjs.com/package/@openclaw-china/channels |
 | `marshulll-openclaw-wecom-*.tgz` | `plugins/official/archives/marshulll-openclaw-wecom-*.tgz` | https://www.npmjs.com/package/@marshulll/openclaw-wecom |
 
 ## 2) 默认 Skills 包上游索引

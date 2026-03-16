@@ -11,7 +11,10 @@
 
 - `@openclaw/feishu`
 - `@wecom/wecom-openclaw-plugin`
+- `@openclaw-china/wecom`
+- `@openclaw-china/channels`
 - `@marshulll/openclaw-wecom`
+- `@tencent-connect/openclaw-qqbot`
 - `@sliverp/qqbot`
 - `openclaw-channel-dingtalk`
 - `@openclaw/msteams`
@@ -34,7 +37,8 @@
 ```bash
 mkdir -p plugins/official/archives
 for p in \
-  @openclaw/feishu @wecom/wecom-openclaw-plugin @marshulll/openclaw-wecom \
+  @openclaw/feishu @wecom/wecom-openclaw-plugin @openclaw-china/wecom \
+  @openclaw-china/channels @marshulll/openclaw-wecom @tencent-connect/openclaw-qqbot \
   @sliverp/qqbot openclaw-channel-dingtalk @openclaw/msteams @openclaw/mattermost \
   @openclaw/matrix @openclaw/line @openclaw/nextcloud-talk @openclaw/twitch \
   @openclaw/zalo @openclaw/zalouser @openclaw/nostr @openclaw/tlon \
