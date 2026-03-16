@@ -32,7 +32,7 @@
 | 13 | 更多官方渠道 | 官方 | IRC/Twitch/Zalo/Nostr... |
 | 15 | 微信 WeChatPad | 社区 | `openclaw-wechat-channel` |
 | 17 | QQ | 社区 | `@sliverp/qqbot` |
-| 18 | 企业微信 WeCom | 社区 | `@marshulll/openclaw-wecom` |
+| 18 | 企业微信 WeCom | 官方插件 | `@wecom/wecom-openclaw-plugin` |
 
 ## 3. 官方渠道配置要点
 
@@ -79,30 +79,19 @@
 - 推荐配置：`allowFrom` 白名单
 - 菜单路径：`[3]消息渠道 -> [17]QQ（社区）`
 
-### 企业微信 WeCom（社区）
-- 插件：`@marshulll/openclaw-wecom`
-- 模式：
-  - `bot`：Bot API
-  - `app`：内部应用
-  - `both`：双模式（推荐）
+### 企业微信 WeCom（官方插件）
+- 插件：`@wecom/wecom-openclaw-plugin`
+- 当前安装器仅保留机器人模式（Webhook）
 - 关键配置结构：
-  - `channels.wecom.mode`
-  - `channels.wecom.defaultAccount`
+  - `channels.wecom.mode=bot`
+  - `channels.wecom.defaultAccount=bot`
   - `channels.wecom.accounts.bot.*`
-  - `channels.wecom.accounts.app.*`
-- Bot 模式必填：
+- 机器人模式必填：
   - `token`
   - `encodingAESKey`
   - `receiveId`
   - `webhookPath`（默认 `/wecom/bot`）
-- App 模式必填：
-  - `corpId`
-  - `corpSecret`
-  - `agentId`（数字）
-  - `callbackToken`
-  - `callbackAesKey`
-  - `webhookPath`（默认 `/wecom/app`）
-- 菜单路径：`[3]消息渠道 -> [18]企业微信（社区）`
+- 菜单路径：`[4]非官方消息渠道配置 -> [3]企业微信（WeCom，官方）`
 
 ### 非官方高级模型（Claude/GPT）与自动路由
 - 高级模型入口：`[4]非官方消息渠道配置 -> [8]非官方渠道高级模型（Claude/GPT）`

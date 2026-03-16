@@ -99,7 +99,7 @@ AUTO_FIX_ATTEMPTED=0
 # 默认官方消息渠道插件：
 # - feishu / discord / whatsapp 为内置 stock 插件，只需要启用即可
 # - wechat / qqbot / dingtalk 依赖额外插件包，优先使用本仓库 plugins/official/archives 内置 tgz
-DEFAULT_OFFICIAL_PLUGINS="@openclaw/feishu @openclaw/discord @openclaw/whatsapp openclaw-wechat-channel @sliverp/qqbot openclaw-channel-dingtalk"
+DEFAULT_OFFICIAL_PLUGINS="@openclaw/feishu @wecom/wecom-openclaw-plugin @openclaw/discord @openclaw/whatsapp openclaw-wechat-channel @sliverp/qqbot openclaw-channel-dingtalk"
 DEFAULT_BUILTIN_CHANNEL_PLUGINS="telegram imessage"
 RULE_PROFILE_DEFAULT="${OPENCLAW_RULE_PROFILE:-medium}"
 RULE_PROFILE_SELECTED="$(echo "${RULE_PROFILE_DEFAULT}" | tr '[:upper:]' '[:lower:]')"
@@ -2182,6 +2182,8 @@ plugin_bundle_pack_name_from_spec_install() {
 plugin_enable_alias_from_spec_install() {
     local spec="$1"
     case "$spec" in
+        @wecom/wecom-openclaw-plugin* ) echo "wecom-openclaw-plugin" ;;
+        @openclaw-china/wecom* ) echo "wecom" ;;
         openclaw-wechat-channel* ) echo "wechat" ;;
         openclaw-channel-dingtalk* ) echo "dingtalk" ;;
         @sliverp/qqbot* ) echo "qqbot" ;;
@@ -2253,7 +2255,7 @@ install_channel_assets() {
 
 关键渠道推荐：
 - 飞书（官方）：`@openclaw/feishu`
-- 企业微信（社区）：`@marshulll/openclaw-wecom`
+- 企业微信（官方）：`@wecom/wecom-openclaw-plugin`
 - 微信（社区）：`openclaw-wechat-channel`
 - QQ（社区）：`@sliverp/qqbot`
 
