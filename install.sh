@@ -2331,6 +2331,9 @@ run_official_onboard() {
         return 1
     fi
 
+    # 先清理已移除渠道的历史插件残留，避免 onboard 阶段反复输出 Config warnings
+    cleanup_stale_plugin_state || true
+
     if [ "$NO_PROMPT" = "1" ] && [ "${AUTO_CONFIRM_ALL:-0}" = "1" ]; then
         log_step "全自动模式：执行官方模型配置（非交互，跳过官方其它步骤）..."
         local auth_choice="skip"
@@ -2511,12 +2514,23 @@ cleanup_stale_plugin_state() {
         cleanup_unknown_plugin_entries_install || true
     fi
 
-    # 清理历史飞书社区扩展目录，避免与官方 feishu 插件重复加载
+    # 清理历史/已下线渠道扩展目录，避免被 openclaw 自动发现后触发告警
     local legacy_dir
-    for legacy_dir in "$CONFIG_DIR/extensions/feishu" "$CONFIG_DIR/extensions/openclaw-feishu"; do
+    for legacy_dir in \
+        "$CONFIG_DIR/extensions/feishu" \
+        "$CONFIG_DIR/extensions/openclaw-feishu" \
+        "$CONFIG_DIR/extensions/wechat" \
+        "$CONFIG_DIR/extensions/openclaw-wechat-channel" \
+        "$CONFIG_DIR/extensions/wecom" \
+        "$CONFIG_DIR/extensions/openclaw-wecom" \
+        "$CONFIG_DIR/extensions/wecom-openclaw-plugin" \
+        "$CONFIG_DIR/extensions/dingtalk" \
+        "$CONFIG_DIR/extensions/openclaw-channel-dingtalk" \
+        "$CONFIG_DIR/extensions/qqbot" \
+        "$CONFIG_DIR/extensions/openclaw-qqbot"; do
         if [ -d "$legacy_dir" ]; then
             rm -rf "$legacy_dir" >/dev/null 2>&1 || true
-            log_warn "已清理历史飞书扩展残留: $legacy_dir"
+            log_warn "已清理历史扩展残留: $legacy_dir"
         fi
     done
 }

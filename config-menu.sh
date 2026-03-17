@@ -2306,6 +2306,7 @@ run_official_model_onboard() {
         log_error "OpenClaw 未安装"
         return 1
     fi
+    cleanup_stale_plugin_state_menu || true
     echo ""
     log_info "启动官方模型配置向导: openclaw onboard"
     if [ -e /dev/tty ]; then
@@ -6141,10 +6142,21 @@ cleanup_stale_plugin_state_menu() {
     normalize_channel_policy_in_json_menu || true
 
     local legacy_dir
-    for legacy_dir in "$CONFIG_DIR/extensions/feishu" "$CONFIG_DIR/extensions/openclaw-feishu"; do
+    for legacy_dir in \
+        "$CONFIG_DIR/extensions/feishu" \
+        "$CONFIG_DIR/extensions/openclaw-feishu" \
+        "$CONFIG_DIR/extensions/wechat" \
+        "$CONFIG_DIR/extensions/openclaw-wechat-channel" \
+        "$CONFIG_DIR/extensions/wecom" \
+        "$CONFIG_DIR/extensions/openclaw-wecom" \
+        "$CONFIG_DIR/extensions/wecom-openclaw-plugin" \
+        "$CONFIG_DIR/extensions/dingtalk" \
+        "$CONFIG_DIR/extensions/openclaw-channel-dingtalk" \
+        "$CONFIG_DIR/extensions/qqbot" \
+        "$CONFIG_DIR/extensions/openclaw-qqbot"; do
         if [ -d "$legacy_dir" ]; then
             rm -rf "$legacy_dir" >/dev/null 2>&1 || true
-            log_warn "已清理历史飞书扩展残留: $legacy_dir"
+            log_warn "已清理历史扩展残留: $legacy_dir"
         fi
     done
 }
