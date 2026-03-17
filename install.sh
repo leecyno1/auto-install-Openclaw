@@ -4433,6 +4433,24 @@ EOF
     return 0
 }
 
+apply_default_welcome_after_session_reset() {
+    local welcome_text
+    welcome_text="${OPENCLAW_WELCOME_MESSAGE:-你好我的主人，我是你的龙虾小助理，现在我已经上线了。现在你可以通过简单设置与飞书/钉钉/tele等进行配对，你就可以在通讯平台中给我布置任务啦！具体参照页面下方的配对指南}"
+    upsert_env_export_install "OPENCLAW_WELCOME_MESSAGE" "$welcome_text"
+    remove_env_export_install "OPENCLAW_WELCOME_CHANNEL"
+    remove_env_export_install "OPENCLAW_WELCOME_TARGET"
+
+    if check_command openclaw; then
+        # 仅写入欢迎语相关字段，不做身份初始化。
+        openclaw config set identity.greeting "$welcome_text" >/dev/null 2>&1 || true
+        openclaw config set identity.welcome.message "$welcome_text" >/dev/null 2>&1 || true
+        openclaw config unset identity.welcome.channel >/dev/null 2>&1 || true
+        openclaw config unset identity.welcome.target >/dev/null 2>&1 || true
+    fi
+
+    send_post_install_welcome_message || true
+}
+
 reset_gateway_chat_history_for_fresh_start() {
     if [ "$NO_PROMPT" != "1" ] && [ "$TTY_INPUT" != "/dev/null" ]; then
         local default_answer="y"
@@ -4817,6 +4835,7 @@ main() {
     apply_default_security_baseline
     cleanup_stale_plugin_state
     reset_gateway_chat_history_for_fresh_start
+    apply_default_welcome_after_session_reset
     if ! run_step_with_auto_fix "设置开机守护进程" setup_daemon; then
         log_warn "守护进程设置失败，安装继续完成；稍后可手动执行: openclaw gateway install --force --port ${GATEWAY_PORT}"
     fi
