@@ -2343,18 +2343,18 @@ apply_default_security_baseline() {
         return 0
     fi
 
-    log_step "应用默认安全权限（全部开启）..."
+    log_step "应用默认安全权限（开启 system/file/web/boot/session，关闭 sandbox）..."
     openclaw config set security.enable_shell_commands true >/dev/null 2>&1 || true
     openclaw config set security.enable_file_access true >/dev/null 2>&1 || true
     openclaw config set security.enable_web_browsing true >/dev/null 2>&1 || true
-    openclaw config set security.sandbox_mode true >/dev/null 2>&1 || true
+    openclaw config set security.sandbox_mode false >/dev/null 2>&1 || true
     openclaw config set "boot-md.enabled" true >/dev/null 2>&1 || true
     openclaw config set "boot_md.enabled" true >/dev/null 2>&1 || true
     openclaw config set "memory.boot.enabled" true >/dev/null 2>&1 || true
     openclaw config set "session-memory.enabled" true >/dev/null 2>&1 || true
     openclaw config set "session_memory.enabled" true >/dev/null 2>&1 || true
     openclaw config set "memory.session.enabled" true >/dev/null 2>&1 || true
-    log_info "默认安全设置已启用：system/file/web/sandbox/boot-md/session-memory"
+    log_info "默认安全设置已启用：system/file/web/boot-md/session-memory（sandbox 默认关闭）"
 }
 
 get_installer_repo_urls() {
