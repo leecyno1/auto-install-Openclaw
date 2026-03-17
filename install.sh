@@ -104,6 +104,7 @@ SKILL_PIP_PACKAGES_DEFAULT="duckduckgo-search akshare requests pyyaml pypdf pill
 SKILL_PIP_PACKAGES="${OPENCLAW_SKILL_PIP_PACKAGES:-$SKILL_PIP_PACKAGES_DEFAULT}"
 SKILL_PIP_PACKAGES_FILE_REL="skills/requirements-runtime.txt"
 AUTO_FIX_ATTEMPTED=0
+GATEWAY_CONVERGED_ONCE=0
 # 默认官方消息渠道插件：
 # - feishu / discord / whatsapp 为内置 stock 插件，只需要启用即可
 # - wechat / qqbot / dingtalk 依赖额外插件包，优先使用本仓库 plugins/official/archives 内置 tgz
@@ -2491,6 +2492,66 @@ PY
     fi
 }
 
+normalize_channel_policy_in_json_install() {
+    local cfg="$CONFIG_DIR/openclaw.json"
+    if [ ! -f "$cfg" ]; then
+        mkdir -p "$(dirname "$cfg")" 2>/dev/null || true
+        cat > "$cfg" <<'EOF'
+{
+  "channels": {
+    "feishu": { "groupPolicy": "open" },
+    "telegram": { "groupPolicy": "open" },
+    "whatsapp": { "groupPolicy": "open" },
+    "imessage": { "groupPolicy": "open" }
+  }
+}
+EOF
+    fi
+    if check_command jq; then
+        local tmp
+        tmp="$(mktemp)"
+        if jq '
+            .channels = (.channels // {})
+            | (.channels.feishu //= {})
+            | (.channels.telegram //= {})
+            | (.channels.whatsapp //= {})
+            | (.channels.imessage //= {})
+            | .channels.feishu.groupPolicy = "open"
+            | .channels.telegram.groupPolicy = "open"
+            | .channels.whatsapp.groupPolicy = "open"
+            | .channels.imessage.groupPolicy = "open"
+        ' "$cfg" > "$tmp" 2>/dev/null && [ -s "$tmp" ]; then
+            mv "$tmp" "$cfg"
+            return 0
+        fi
+        rm -f "$tmp" 2>/dev/null || true
+    fi
+    if check_command python3; then
+        python3 - "$cfg" <<'PY' 2>/dev/null || true
+import json, sys
+path = sys.argv[1]
+channels = ("feishu","telegram","whatsapp","imessage")
+try:
+    with open(path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+    root = data.get("channels") or {}
+    if not isinstance(root, dict):
+        root = {}
+    for ch in channels:
+        item = root.get(ch) or {}
+        if not isinstance(item, dict):
+            item = {}
+        item["groupPolicy"] = "open"
+        root[ch] = item
+    data["channels"] = root
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+except Exception:
+    pass
+PY
+    fi
+}
+
 apply_default_feishu_runtime_flags() {
     if ! check_command openclaw; then
         return 0
@@ -2912,6 +2973,9 @@ init_openclaw_config() {
     
     # 修复权限
     chmod 700 "$OPENCLAW_DIR" 2>/dev/null || true
+
+    # 预先纠正常见渠道策略，避免后续 openclaw config set 时反复输出 doctor 告警
+    normalize_channel_policy_in_json_install || true
     
     # 设置 gateway.mode 为 local
     if check_command openclaw; then
@@ -4582,7 +4646,6 @@ converge_gateway_single_instance() {
         openclaw config set gateway.customBindHost "$GATEWAY_CUSTOM_BIND_HOST" >/dev/null 2>&1 || true
     fi
     openclaw config set gateway.port "$GATEWAY_PORT" >/dev/null 2>&1 || true
-    init_openclaw_config
 
     if ! install_official_gateway_service; then
         return 1
@@ -4591,6 +4654,7 @@ converge_gateway_single_instance() {
     enforce_gateway_service_precedence
 
     if [ "$mode" = "install-only" ]; then
+        GATEWAY_CONVERGED_ONCE=1
         log_info "Gateway 单实例服务收敛完成（未启动）"
         return 0
     fi
@@ -4607,6 +4671,7 @@ converge_gateway_single_instance() {
     fi
 
     if [ -n "$gateway_pid" ]; then
+        GATEWAY_CONVERGED_ONCE=1
         log_info "Gateway 已单实例运行 (PID: $gateway_pid, bind=${GATEWAY_BIND}, port=${GATEWAY_PORT})"
         openclaw gateway status 2>/dev/null | head -8 | sed 's/^/  /' || true
         return 0
@@ -4683,9 +4748,15 @@ start_openclaw_service() {
         fi
     fi
 
-    if ! converge_gateway_single_instance "restart"; then
-        log_error "Gateway 启动失败，请先执行: openclaw doctor --fix"
-        return 1
+    if [ "${GATEWAY_CONVERGED_ONCE:-0}" = "1" ]; then
+        log_info "已在本次安装中完成 Gateway 单实例收敛，跳过重复收敛。"
+        openclaw gateway restart >/dev/null 2>&1 || openclaw gateway start >/dev/null 2>&1 || true
+        sleep 2
+    else
+        if ! converge_gateway_single_instance "restart"; then
+            log_error "Gateway 启动失败，请先执行: openclaw doctor --fix"
+            return 1
+        fi
     fi
 
     # 使用端口检测判断服务是否启动成功（更可靠）
@@ -4820,7 +4891,6 @@ main() {
         exit 1
     fi
     cleanup_stale_plugin_state
-    apply_default_feishu_runtime_flags
     log_info "默认消息渠道插件自动安装已关闭（改为手动安装，避免安装阶段耗时与失败重试）。"
     if [ "$NO_ONBOARD" = "1" ]; then
         log_info "已按参数跳过 AI 初始化向导 (--no-onboard)"

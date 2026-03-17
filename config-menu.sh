@@ -6130,6 +6130,7 @@ cleanup_stale_plugin_state_menu() {
         cleanup_unknown_plugin_entries_menu || true
     fi
     cleanup_stale_channel_keys_in_json_menu || true
+    normalize_channel_policy_in_json_menu || true
 
     local legacy_dir
     for legacy_dir in "$CONFIG_DIR/extensions/feishu" "$CONFIG_DIR/extensions/openclaw-feishu"; do
@@ -6172,6 +6173,66 @@ try:
         for k in drop:
             ch.pop(k, None)
         data["channels"] = ch
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+except Exception:
+    pass
+PY
+    fi
+}
+
+normalize_channel_policy_in_json_menu() {
+    local cfg="$OPENCLAW_JSON"
+    if [ ! -f "$cfg" ]; then
+        mkdir -p "$(dirname "$cfg")" 2>/dev/null || true
+        cat > "$cfg" <<'EOF'
+{
+  "channels": {
+    "feishu": { "groupPolicy": "open" },
+    "telegram": { "groupPolicy": "open" },
+    "whatsapp": { "groupPolicy": "open" },
+    "imessage": { "groupPolicy": "open" }
+  }
+}
+EOF
+    fi
+    if command -v jq >/dev/null 2>&1; then
+        local tmp
+        tmp="$(mktemp)"
+        if jq '
+            .channels = (.channels // {})
+            | (.channels.feishu //= {})
+            | (.channels.telegram //= {})
+            | (.channels.whatsapp //= {})
+            | (.channels.imessage //= {})
+            | .channels.feishu.groupPolicy = "open"
+            | .channels.telegram.groupPolicy = "open"
+            | .channels.whatsapp.groupPolicy = "open"
+            | .channels.imessage.groupPolicy = "open"
+        ' "$cfg" > "$tmp" 2>/dev/null && [ -s "$tmp" ]; then
+            mv "$tmp" "$cfg"
+            return 0
+        fi
+        rm -f "$tmp" 2>/dev/null || true
+    fi
+    if command -v python3 >/dev/null 2>&1; then
+        python3 - "$cfg" <<'PY' 2>/dev/null || true
+import json, sys
+path = sys.argv[1]
+channels = ("feishu", "telegram", "whatsapp", "imessage")
+try:
+    with open(path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+    root = data.get("channels") or {}
+    if not isinstance(root, dict):
+        root = {}
+    for ch in channels:
+        item = root.get(ch) or {}
+        if not isinstance(item, dict):
+            item = {}
+        item["groupPolicy"] = "open"
+        root[ch] = item
+    data["channels"] = root
     with open(path, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
 except Exception:
