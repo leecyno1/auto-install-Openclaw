@@ -1707,17 +1707,27 @@ ensure_minimax_mcp_for_skills() {
         return 1
     fi
 
-    if uvx minimax-coding-plan-mcp --help >/dev/null 2>&1; then
+    local probe_host
+    probe_host="${MINIMAX_API_HOST:-https://api.minimaxi.com}"
+
+    # minimax-coding-plan-mcp 在某些版本下即使 --help 也要求 MINIMAX_API_HOST。
+    if MINIMAX_API_HOST="$probe_host" uvx minimax-coding-plan-mcp --help >/dev/null 2>&1; then
         log_info "minimax-coding-plan-mcp 已可用"
         return 0
     fi
 
     local log_file
     log_file="$(mktemp /tmp/minimax-mcp-install.XXXXXX.log)"
-    if uvx install minimax-coding-plan-mcp >"$log_file" 2>&1; then
-        log_info "minimax-coding-plan-mcp 安装完成"
-        rm -f "$log_file" 2>/dev/null || true
-        return 0
+
+    # 正确安装方式是 uv tool install；uvx install 会被当作包名 install 导致报错。
+    if check_command uv; then
+        if uv tool install minimax-coding-plan-mcp >"$log_file" 2>&1; then
+            if MINIMAX_API_HOST="$probe_host" uvx minimax-coding-plan-mcp --help >/dev/null 2>&1; then
+                log_info "minimax-coding-plan-mcp 安装完成"
+                rm -f "$log_file" 2>/dev/null || true
+                return 0
+            fi
+        fi
     fi
 
     log_warn "minimax-coding-plan-mcp 自动安装失败，MiniMax Web Search 可能不可用。"

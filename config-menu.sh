@@ -7668,10 +7668,15 @@ install_skill_runtime_dependencies_menu() {
     done
 
     if command -v uvx >/dev/null 2>&1; then
-        if uvx minimax-coding-plan-mcp --help >/dev/null 2>&1 || uvx install minimax-coding-plan-mcp >/dev/null 2>&1; then
+        local minimax_probe_host
+        minimax_probe_host="${MINIMAX_API_HOST:-https://api.minimaxi.com}"
+        if MINIMAX_API_HOST="$minimax_probe_host" uvx minimax-coding-plan-mcp --help >/dev/null 2>&1; then
             log_info "MiniMax MCP 依赖就绪"
+        elif command -v uv >/dev/null 2>&1 && uv tool install minimax-coding-plan-mcp >/dev/null 2>&1 && \
+            MINIMAX_API_HOST="$minimax_probe_host" uvx minimax-coding-plan-mcp --help >/dev/null 2>&1; then
+            log_info "MiniMax MCP 依赖安装完成"
         else
-            log_warn "MiniMax MCP 自动安装失败，请稍后手动执行: uvx install minimax-coding-plan-mcp"
+            log_warn "MiniMax MCP 自动安装失败，请稍后手动执行: uv tool install minimax-coding-plan-mcp"
         fi
     else
         log_warn "未检测到 uvx，MiniMax Web Search 可能不可用"
