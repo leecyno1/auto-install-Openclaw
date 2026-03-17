@@ -106,10 +106,8 @@ SKILL_PIP_PACKAGES="${OPENCLAW_SKILL_PIP_PACKAGES:-$SKILL_PIP_PACKAGES_DEFAULT}"
 SKILL_PIP_PACKAGES_FILE_REL="skills/requirements-runtime.txt"
 AUTO_FIX_ATTEMPTED=0
 GATEWAY_CONVERGED_ONCE=0
-# 默认官方消息渠道插件：
-# - feishu / discord / whatsapp 为内置 stock 插件，只需要启用即可
-# - wechat / qqbot / dingtalk 依赖额外插件包，优先使用本仓库 plugins/official/archives 内置 tgz
-DEFAULT_OFFICIAL_PLUGINS="@openclaw/feishu @wecom/wecom-openclaw-plugin @openclaw/discord @openclaw/whatsapp openclaw-wechat-channel @sliverp/qqbot openclaw-channel-dingtalk"
+# 默认官方消息渠道插件（仅保留通用官方渠道；微信/企业微信/钉钉/QQ 改为用户手动安装）
+DEFAULT_OFFICIAL_PLUGINS="@openclaw/feishu @openclaw/discord @openclaw/whatsapp"
 DEFAULT_BUILTIN_CHANNEL_PLUGINS="telegram imessage"
 RULE_PROFILE_DEFAULT="${OPENCLAW_RULE_PROFILE:-medium}"
 RULE_PROFILE_SELECTED="$(echo "${RULE_PROFILE_DEFAULT}" | tr '[:upper:]' '[:lower:]')"
@@ -2302,6 +2300,8 @@ EOF
             log_info "已创建 openclaw 命令兼容 shim: $shim_target"
         fi
 
+        # 先做 JSON 级清洗，避免 openclaw 命令加载历史残留渠道时刷出 Config invalid/warnings
+        cleanup_stale_channel_keys_in_json_install || true
         log_info "OpenClaw 安装成功: $("$claw_bin" --version 2>/dev/null || echo 'installed')"
         init_openclaw_config
     else
@@ -2485,6 +2485,7 @@ resolve_install_skills_bundle_dir() {
 }
 
 cleanup_stale_plugin_state() {
+    cleanup_stale_channel_keys_in_json_install || true
     if check_command openclaw; then
         # 清理已知的陈旧插件配置项，避免 Config warnings
         openclaw config unset "plugins.entries.gemini" >/dev/null 2>&1 || true
@@ -2492,7 +2493,15 @@ cleanup_stale_plugin_state() {
         openclaw config unset "plugins.entries.wechat" >/dev/null 2>&1 || true
         openclaw config unset "plugins.entries.wecom" >/dev/null 2>&1 || true
         openclaw config unset "plugins.entries.openclaw-wecom" >/dev/null 2>&1 || true
+        openclaw config unset "plugins.entries.wecom-openclaw-plugin" >/dev/null 2>&1 || true
+        openclaw config unset "plugins.entries.dingtalk" >/dev/null 2>&1 || true
         openclaw config unset "plugins.entries.openclaw-channel-dingtalk" >/dev/null 2>&1 || true
+        openclaw config unset "plugins.entries.qqbot" >/dev/null 2>&1 || true
+        openclaw config unset "plugins.entries.openclaw-qqbot" >/dev/null 2>&1 || true
+        openclaw config unset "channels.wechat" >/dev/null 2>&1 || true
+        openclaw config unset "channels.wecom" >/dev/null 2>&1 || true
+        openclaw config unset "channels.dingtalk" >/dev/null 2>&1 || true
+        openclaw config unset "channels.qqbot" >/dev/null 2>&1 || true
         # 清理历史错误 channel 键（插件 id 被误写入 channels.* 导致 Config invalid）
         openclaw config unset "channels.wecom-openclaw-plugin" >/dev/null 2>&1 || true
         openclaw config unset "channels.openclaw-wecom" >/dev/null 2>&1 || true
@@ -2501,7 +2510,6 @@ cleanup_stale_plugin_state() {
         openclaw config unset "channels.openclaw-qqbot" >/dev/null 2>&1 || true
         cleanup_unknown_plugin_entries_install || true
     fi
-    cleanup_stale_channel_keys_in_json_install || true
 
     # 清理历史飞书社区扩展目录，避免与官方 feishu 插件重复加载
     local legacy_dir
@@ -2520,7 +2528,36 @@ cleanup_stale_channel_keys_in_json_install() {
         local tmp
         tmp="$(mktemp)"
         if jq '
+            .plugins = (.plugins // {})
+            | .plugins.entries = ((.plugins.entries // {})
+              | del(.wechat)
+              | del(.wecom)
+              | del(.["openclaw-wecom"])
+              | del(.["wecom-openclaw-plugin"])
+              | del(.dingtalk)
+              | del(.["openclaw-channel-dingtalk"])
+              | del(.qqbot)
+              | del(.["openclaw-qqbot"]))
+            | .plugins.allow = ((.plugins.allow // [])
+              | map(select(
+                  . != "wechat" and
+                  . != "openclaw-wechat-channel" and
+                  . != "wecom" and
+                  . != "openclaw-wecom" and
+                  . != "wecom-openclaw-plugin" and
+                  . != "@wecom/wecom-openclaw-plugin" and
+                  . != "dingtalk" and
+                  . != "openclaw-channel-dingtalk" and
+                  . != "qqbot" and
+                  . != "openclaw-qqbot" and
+                  . != "@sliverp/qqbot" and
+                  . != "@tencent-connect/openclaw-qqbot"
+              )))
             .channels = ((.channels // {})
+              | del(.wechat)
+              | del(.wecom)
+              | del(.dingtalk)
+              | del(.qqbot)
               | del(.["wecom-openclaw-plugin"])
               | del(.["openclaw-wecom"])
               | del(.["openclaw-channel-dingtalk"])
@@ -2536,13 +2573,41 @@ cleanup_stale_channel_keys_in_json_install() {
         python3 - "$cfg" <<'PY' 2>/dev/null || true
 import json, sys
 path = sys.argv[1]
-drop = {"wecom-openclaw-plugin","openclaw-wecom","openclaw-channel-dingtalk","openclaw-wechat-channel","openclaw-qqbot"}
+drop_channels = {
+    "wechat", "wecom", "dingtalk", "qqbot",
+    "wecom-openclaw-plugin", "openclaw-wecom", "openclaw-channel-dingtalk",
+    "openclaw-wechat-channel", "openclaw-qqbot"
+}
+drop_entries = {
+    "wechat", "wecom", "openclaw-wecom", "wecom-openclaw-plugin",
+    "dingtalk", "openclaw-channel-dingtalk", "qqbot", "openclaw-qqbot"
+}
+drop_allow = {
+    "wechat", "openclaw-wechat-channel",
+    "wecom", "openclaw-wecom", "wecom-openclaw-plugin", "@wecom/wecom-openclaw-plugin",
+    "dingtalk", "openclaw-channel-dingtalk",
+    "qqbot", "openclaw-qqbot", "@sliverp/qqbot", "@tencent-connect/openclaw-qqbot"
+}
 try:
     with open(path, "r", encoding="utf-8") as f:
         data = json.load(f)
+
+    plugins = data.get("plugins") or {}
+    if not isinstance(plugins, dict):
+        plugins = {}
+    entries = plugins.get("entries") or {}
+    if isinstance(entries, dict):
+        for k in drop_entries:
+            entries.pop(k, None)
+        plugins["entries"] = entries
+    allow = plugins.get("allow") or []
+    if isinstance(allow, list):
+        plugins["allow"] = [x for x in allow if x not in drop_allow]
+    data["plugins"] = plugins
+
     ch = data.get("channels") or {}
     if isinstance(ch, dict):
-        for k in drop:
+        for k in drop_channels:
             ch.pop(k, None)
         data["channels"] = ch
     with open(path, "w", encoding="utf-8") as f:
@@ -2729,7 +2794,7 @@ is_plugin_entry_available_install() {
 is_legacy_plugin_entry_alias_install() {
     local entry_id="$1"
     case "$entry_id" in
-        wechat|wecom|openclaw-wecom|openclaw-channel-dingtalk)
+        wechat|openclaw-wechat-channel|wecom|openclaw-wecom|wecom-openclaw-plugin|dingtalk|openclaw-channel-dingtalk|qqbot|openclaw-qqbot)
             return 0
             ;;
         *)
@@ -2984,9 +3049,8 @@ install_channel_assets() {
 
 关键渠道推荐：
 - 飞书（官方）：`@openclaw/feishu`
-- 企业微信（官方）：`@wecom/wecom-openclaw-plugin`
-- 微信（社区）：`openclaw-wechat-channel`
-- QQ（社区）：`@sliverp/qqbot`
+- Telegram（内置）：`telegram`
+- iMessage（内置）：`imessage`
 
 完整文档请查看仓库 `docs/channels-configuration-guide.md`。
 EOF
@@ -3009,7 +3073,7 @@ EOF
 目标：当用户提供消息渠道信息时，交互式收集缺失参数，并执行命令行完成配置。
 
 执行原则：
-1. 先确认渠道类型（telegram/discord/slack/feishu/wecom/wechat/qq/others）。
+1. 先确认渠道类型（telegram/discord/slack/feishu/whatsapp/imessage/others）。
 2. 明确必填项，缺失项逐个询问，不一次性抛出过多字段。
 3. 执行前回显将执行的命令，并让用户确认。
 4. 执行后输出：成功/失败、下一步验证命令、常见排障命令。
@@ -3021,9 +3085,8 @@ EOF
 
 重点渠道字段：
 - Feishu: `appId`, `appSecret`
-- WeCom(official): `botId`, `secret`
-- WeChatPad: `proxyUrl`, `apiKey`, `webhookHost`, `webhookPort`, `webhookPath`
-- QQ: `appId`, `appSecret`, `allowFrom`
+- Telegram: `botToken`
+- WhatsApp: `session` / `pairing`
 
 配置完成后必须执行：
 1) `openclaw doctor --fix`

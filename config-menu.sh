@@ -133,7 +133,7 @@ AUTO_FIX_OPENCLAW_BIN="$AUTO_FIX_OPENCLAW_DIR/bin/auto-fix-openclaw"
 PLUGIN_INSTALL_RETRIES="${OPENCLAW_PLUGIN_INSTALL_RETRIES:-2}"
 PLUGIN_INSTALL_BACKOFF_SECONDS="${OPENCLAW_PLUGIN_INSTALL_BACKOFF_SECONDS:-2}"
 
-DEFAULT_OFFICIAL_PLUGINS="@openclaw/feishu @wecom/wecom-openclaw-plugin @openclaw/discord @openclaw/whatsapp openclaw-wechat-channel @sliverp/qqbot openclaw-channel-dingtalk"
+DEFAULT_OFFICIAL_PLUGINS="@openclaw/feishu @openclaw/discord @openclaw/whatsapp"
 DEFAULT_BUILTIN_CHANNEL_PLUGINS="telegram imessage"
 ENHANCED_SKILLS_LIST="capability-evolver openclaw-cron-setup proactive-agent self-improving-agent-cn brainstorming reflection find-skills skill-creator agent-browser chrome-devtools-mcp github mcp-builder model-usage shell minimax-understand-image tavily-search web-search minimax-web-search news-radar url-to-markdown pdf docx pptx xlsx frontend-design web-design stock-monitor-skill multi-search-engine akshare-stock gemini-image-service nano-banana-service"
 RULE_PROFILE_DEFAULT="${OPENCLAW_RULE_PROFILE:-medium}"
@@ -6114,13 +6114,22 @@ config_imessage() {
 }
 
 cleanup_stale_plugin_state_menu() {
+    cleanup_stale_channel_keys_in_json_menu || true
     if check_openclaw_installed; then
         openclaw config unset "plugins.entries.gemini" >/dev/null 2>&1 || true
         openclaw config unset "plugins.entries.nano-banana-pro" >/dev/null 2>&1 || true
         openclaw config unset "plugins.entries.wechat" >/dev/null 2>&1 || true
         openclaw config unset "plugins.entries.wecom" >/dev/null 2>&1 || true
         openclaw config unset "plugins.entries.openclaw-wecom" >/dev/null 2>&1 || true
+        openclaw config unset "plugins.entries.wecom-openclaw-plugin" >/dev/null 2>&1 || true
+        openclaw config unset "plugins.entries.dingtalk" >/dev/null 2>&1 || true
         openclaw config unset "plugins.entries.openclaw-channel-dingtalk" >/dev/null 2>&1 || true
+        openclaw config unset "plugins.entries.qqbot" >/dev/null 2>&1 || true
+        openclaw config unset "plugins.entries.openclaw-qqbot" >/dev/null 2>&1 || true
+        openclaw config unset "channels.wechat" >/dev/null 2>&1 || true
+        openclaw config unset "channels.wecom" >/dev/null 2>&1 || true
+        openclaw config unset "channels.dingtalk" >/dev/null 2>&1 || true
+        openclaw config unset "channels.qqbot" >/dev/null 2>&1 || true
         # 清理历史错误 channel 键（插件 id 被误写入 channels.* 导致 Config invalid）
         openclaw config unset "channels.wecom-openclaw-plugin" >/dev/null 2>&1 || true
         openclaw config unset "channels.openclaw-wecom" >/dev/null 2>&1 || true
@@ -6129,7 +6138,6 @@ cleanup_stale_plugin_state_menu() {
         openclaw config unset "channels.openclaw-qqbot" >/dev/null 2>&1 || true
         cleanup_unknown_plugin_entries_menu || true
     fi
-    cleanup_stale_channel_keys_in_json_menu || true
     normalize_channel_policy_in_json_menu || true
 
     local legacy_dir
@@ -6164,7 +6172,36 @@ cleanup_stale_channel_keys_in_json_menu() {
         local tmp
         tmp="$(mktemp)"
         if jq '
+            .plugins = (.plugins // {})
+            | .plugins.entries = ((.plugins.entries // {})
+              | del(.wechat)
+              | del(.wecom)
+              | del(.["openclaw-wecom"])
+              | del(.["wecom-openclaw-plugin"])
+              | del(.dingtalk)
+              | del(.["openclaw-channel-dingtalk"])
+              | del(.qqbot)
+              | del(.["openclaw-qqbot"]))
+            | .plugins.allow = ((.plugins.allow // [])
+              | map(select(
+                  . != "wechat" and
+                  . != "openclaw-wechat-channel" and
+                  . != "wecom" and
+                  . != "openclaw-wecom" and
+                  . != "wecom-openclaw-plugin" and
+                  . != "@wecom/wecom-openclaw-plugin" and
+                  . != "dingtalk" and
+                  . != "openclaw-channel-dingtalk" and
+                  . != "qqbot" and
+                  . != "openclaw-qqbot" and
+                  . != "@sliverp/qqbot" and
+                  . != "@tencent-connect/openclaw-qqbot"
+              )))
             .channels = ((.channels // {})
+              | del(.wechat)
+              | del(.wecom)
+              | del(.dingtalk)
+              | del(.qqbot)
               | del(.["wecom-openclaw-plugin"])
               | del(.["openclaw-wecom"])
               | del(.["openclaw-channel-dingtalk"])
@@ -6180,13 +6217,41 @@ cleanup_stale_channel_keys_in_json_menu() {
         python3 - "$cfg" <<'PY' 2>/dev/null || true
 import json, sys
 path = sys.argv[1]
-drop = {"wecom-openclaw-plugin","openclaw-wecom","openclaw-channel-dingtalk","openclaw-wechat-channel","openclaw-qqbot"}
+drop_channels = {
+    "wechat", "wecom", "dingtalk", "qqbot",
+    "wecom-openclaw-plugin", "openclaw-wecom", "openclaw-channel-dingtalk",
+    "openclaw-wechat-channel", "openclaw-qqbot"
+}
+drop_entries = {
+    "wechat", "wecom", "openclaw-wecom", "wecom-openclaw-plugin",
+    "dingtalk", "openclaw-channel-dingtalk", "qqbot", "openclaw-qqbot"
+}
+drop_allow = {
+    "wechat", "openclaw-wechat-channel",
+    "wecom", "openclaw-wecom", "wecom-openclaw-plugin", "@wecom/wecom-openclaw-plugin",
+    "dingtalk", "openclaw-channel-dingtalk",
+    "qqbot", "openclaw-qqbot", "@sliverp/qqbot", "@tencent-connect/openclaw-qqbot"
+}
 try:
     with open(path, "r", encoding="utf-8") as f:
         data = json.load(f)
+
+    plugins = data.get("plugins") or {}
+    if not isinstance(plugins, dict):
+        plugins = {}
+    entries = plugins.get("entries") or {}
+    if isinstance(entries, dict):
+        for k in drop_entries:
+            entries.pop(k, None)
+        plugins["entries"] = entries
+    allow = plugins.get("allow") or []
+    if isinstance(allow, list):
+        plugins["allow"] = [x for x in allow if x not in drop_allow]
+    data["plugins"] = plugins
+
     ch = data.get("channels") or {}
     if isinstance(ch, dict):
-        for k in drop:
+        for k in drop_channels:
             ch.pop(k, None)
         data["channels"] = ch
     with open(path, "w", encoding="utf-8") as f:
@@ -6338,7 +6403,7 @@ is_plugin_entry_available_menu() {
 is_legacy_plugin_entry_alias_menu() {
     local entry_id="$1"
     case "$entry_id" in
-        wechat|wecom|openclaw-wecom|openclaw-channel-dingtalk)
+        wechat|openclaw-wechat-channel|wecom|openclaw-wecom|wecom-openclaw-plugin|dingtalk|openclaw-channel-dingtalk|qqbot|openclaw-qqbot)
             return 0
             ;;
         *)
