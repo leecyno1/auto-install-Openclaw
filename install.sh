@@ -3277,6 +3277,118 @@ init_openclaw_config() {
         echo "export OPENCLAW_GATEWAY_PORT=$GATEWAY_PORT" >> "$env_file"
     fi
     chmod 600 "$env_file" 2>/dev/null || true
+
+    # 自动写入 Dashboard 反向代理/内嵌场景所需 Origin 白名单
+    ensure_gateway_controlui_allowed_origins
+}
+
+# 为 Gateway Control UI 自动补齐 allowedOrigins，避免 Dashboard 内嵌/代理后出现 origin not allowed。
+ensure_gateway_controlui_allowed_origins() {
+    local openclaw_json="$HOME/.openclaw/openclaw.json"
+    if [ ! -f "$openclaw_json" ]; then
+        log_warn "未找到 $openclaw_json，跳过 gateway.controlUi.allowedOrigins 自动配置"
+        return 0
+    fi
+
+    local py_bin=""
+    if command -v python3 >/dev/null 2>&1; then
+        py_bin="python3"
+    elif command -v python >/dev/null 2>&1; then
+        py_bin="python"
+    else
+        log_warn "未检测到 Python，跳过 gateway.controlUi.allowedOrigins 自动配置"
+        return 0
+    fi
+
+    local extra_origins="${OPENCLAW_DASHBOARD_ALLOWED_ORIGINS:-}"
+    local disable_pairing="${OPENCLAW_DASHBOARD_DISABLE_PAIRING:-1}"
+    local result
+    result=$("$py_bin" - "$openclaw_json" "$GATEWAY_PORT" "$disable_pairing" "$extra_origins" <<'PYEOF'
+import json
+import os
+import secrets
+import sys
+
+cfg_path = os.path.expanduser(sys.argv[1])
+gateway_port = str(sys.argv[2]).strip() or "13145"
+disable_pairing = str(sys.argv[3]).strip() != "0"
+extra_raw = str(sys.argv[4]).strip()
+
+with open(cfg_path, "r", encoding="utf-8") as f:
+    cfg = json.load(f)
+
+gateway = cfg.setdefault("gateway", {})
+control_ui = gateway.setdefault("controlUi", {})
+auth = gateway.setdefault("auth", {})
+existing = control_ui.get("allowedOrigins", [])
+if not isinstance(existing, list):
+    existing = []
+
+required = [
+    f"http://127.0.0.1:{gateway_port}",
+    f"https://127.0.0.1:{gateway_port}",
+    f"http://localhost:{gateway_port}",
+    f"https://localhost:{gateway_port}",
+    "https://monkeykingfury.com",
+    "https://www.monkeykingfury.com",
+]
+if extra_raw:
+    required.extend([x.strip() for x in extra_raw.split(",") if x.strip()])
+
+merged = []
+seen = set()
+for item in [*existing, *required]:
+    v = str(item).strip()
+    if not v or v in seen:
+        continue
+    seen.add(v)
+    merged.append(v)
+
+if merged == existing:
+    origins_changed = False
+else:
+    control_ui["allowedOrigins"] = merged
+    origins_changed = True
+
+changed = origins_changed
+if str(auth.get("mode", "")).strip().lower() != "token":
+    auth["mode"] = "token"
+    changed = True
+
+if not str(auth.get("token", "")).strip():
+    auth["token"] = secrets.token_hex(24)
+    changed = True
+
+if disable_pairing:
+    if control_ui.get("allowInsecureAuth") is not True:
+        control_ui["allowInsecureAuth"] = True
+        changed = True
+    if control_ui.get("dangerouslyDisableDeviceAuth") is not True:
+        control_ui["dangerouslyDisableDeviceAuth"] = True
+        changed = True
+
+if not changed:
+    print("NOCHANGE")
+    raise SystemExit(0)
+
+with open(cfg_path, "w", encoding="utf-8") as f:
+    json.dump(cfg, f, ensure_ascii=False, indent=2)
+    f.write("\n")
+print("UPDATED")
+PYEOF
+)
+
+    if [ "$result" = "UPDATED" ]; then
+        log_info "已自动补齐 gateway.controlUi.allowedOrigins"
+        if check_command openclaw; then
+            openclaw gateway restart 2>/dev/null || openclaw gateway start 2>/dev/null || true
+            log_info "Gateway 已重启以应用 allowedOrigins 配置"
+        fi
+    elif [ "$result" = "NOCHANGE" ]; then
+        log_info "gateway.controlUi.allowedOrigins 已符合要求"
+    else
+        log_warn "gateway.controlUi.allowedOrigins 自动配置失败（可手动检查 ~/.openclaw/openclaw.json）"
+    fi
 }
 
 # 为 MiniMax 写入官方兼容 provider 配置，避免旧版本出现 Unknown model

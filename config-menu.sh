@@ -8223,6 +8223,107 @@ manage_service() {
     manage_service
 }
 
+# 为 Gateway Control UI 自动补齐 allowedOrigins 与 Dashboard 配置，
+# 避免内嵌/代理场景下频繁触发 pairing required。
+ensure_gateway_controlui_allowed_origins() {
+    local openclaw_json="$HOME/.openclaw/openclaw.json"
+    if [ ! -f "$openclaw_json" ]; then
+        return 0
+    fi
+
+    local py_bin=""
+    if command -v python3 >/dev/null 2>&1; then
+        py_bin="python3"
+    elif command -v python >/dev/null 2>&1; then
+        py_bin="python"
+    else
+        return 0
+    fi
+
+    local gateway_port
+    gateway_port="$(get_gateway_port)"
+    gateway_port="${gateway_port:-$DEFAULT_GATEWAY_PORT}"
+    local extra_origins="${OPENCLAW_DASHBOARD_ALLOWED_ORIGINS:-}"
+    local disable_pairing="${OPENCLAW_DASHBOARD_DISABLE_PAIRING:-1}"
+    local result
+    result=$("$py_bin" - "$openclaw_json" "$gateway_port" "$disable_pairing" "$extra_origins" <<'PYEOF'
+import json
+import os
+import secrets
+import sys
+
+cfg_path = os.path.expanduser(sys.argv[1])
+gateway_port = str(sys.argv[2]).strip() or "13145"
+disable_pairing = str(sys.argv[3]).strip() != "0"
+extra_raw = str(sys.argv[4]).strip()
+
+with open(cfg_path, "r", encoding="utf-8") as f:
+    cfg = json.load(f)
+
+gateway = cfg.setdefault("gateway", {})
+control_ui = gateway.setdefault("controlUi", {})
+auth = gateway.setdefault("auth", {})
+existing = control_ui.get("allowedOrigins", [])
+if not isinstance(existing, list):
+    existing = []
+
+required = [
+    f"http://127.0.0.1:{gateway_port}",
+    f"https://127.0.0.1:{gateway_port}",
+    f"http://localhost:{gateway_port}",
+    f"https://localhost:{gateway_port}",
+    "https://monkeykingfury.com",
+    "https://www.monkeykingfury.com",
+]
+if extra_raw:
+    required.extend([x.strip() for x in extra_raw.split(",") if x.strip()])
+
+merged = []
+seen = set()
+for item in [*existing, *required]:
+    v = str(item).strip()
+    if not v or v in seen:
+        continue
+    seen.add(v)
+    merged.append(v)
+
+if merged == existing:
+    origins_changed = False
+else:
+    control_ui["allowedOrigins"] = merged
+    origins_changed = True
+
+changed = origins_changed
+if str(auth.get("mode", "")).strip().lower() != "token":
+    auth["mode"] = "token"
+    changed = True
+if not str(auth.get("token", "")).strip():
+    auth["token"] = secrets.token_hex(24)
+    changed = True
+if disable_pairing:
+    if control_ui.get("allowInsecureAuth") is not True:
+        control_ui["allowInsecureAuth"] = True
+        changed = True
+    if control_ui.get("dangerouslyDisableDeviceAuth") is not True:
+        control_ui["dangerouslyDisableDeviceAuth"] = True
+        changed = True
+
+if not changed:
+    print("NOCHANGE")
+    raise SystemExit(0)
+
+with open(cfg_path, "w", encoding="utf-8") as f:
+    json.dump(cfg, f, ensure_ascii=False, indent=2)
+    f.write("\n")
+print("UPDATED")
+PYEOF
+)
+
+    if [ "$result" = "UPDATED" ]; then
+        openclaw gateway restart >/dev/null 2>&1 || openclaw gateway start >/dev/null 2>&1 || true
+    fi
+}
+
 # 确保 OpenClaw 基础配置正确
 ensure_openclaw_init() {
     local OPENCLAW_DIR="$HOME/.openclaw"
@@ -8279,6 +8380,7 @@ ensure_openclaw_init() {
     openclaw config set channels.whatsapp.groupPolicy open 2>/dev/null || true
     openclaw config set channels.imessage.dmPolicy open 2>/dev/null || true
     openclaw config set channels.imessage.groupPolicy open 2>/dev/null || true
+    ensure_gateway_controlui_allowed_origins
 }
 
 # 为 MiniMax 写入官方兼容 provider 配置，避免旧版本出现 Unknown model
