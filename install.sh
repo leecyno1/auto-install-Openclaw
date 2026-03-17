@@ -2649,10 +2649,10 @@ normalize_channel_policy_in_json_install() {
         cat > "$cfg" <<'EOF'
 {
   "channels": {
-    "feishu": { "groupPolicy": "open", "allowFrom": ["*"], "groupAllowFrom": ["*"] },
-    "telegram": { "groupPolicy": "open", "allowFrom": ["*"], "groupAllowFrom": ["*"] },
-    "whatsapp": { "groupPolicy": "open", "allowFrom": ["*"], "groupAllowFrom": ["*"] },
-    "imessage": { "groupPolicy": "open", "allowFrom": ["*"], "groupAllowFrom": ["*"] }
+    "feishu": { "dmPolicy": "open", "groupPolicy": "open", "allowFrom": ["*"], "groupAllowFrom": ["*"] },
+    "telegram": { "dmPolicy": "open", "groupPolicy": "open", "allowFrom": ["*"], "groupAllowFrom": ["*"] },
+    "whatsapp": { "dmPolicy": "open", "groupPolicy": "open", "allowFrom": ["*"], "groupAllowFrom": ["*"] },
+    "imessage": { "dmPolicy": "open", "groupPolicy": "open", "allowFrom": ["*"], "groupAllowFrom": ["*"] }
   }
 }
 EOF
@@ -2666,15 +2666,19 @@ EOF
             | (.channels.telegram //= {})
             | (.channels.whatsapp //= {})
             | (.channels.imessage //= {})
+            | .channels.feishu.dmPolicy = "open"
             | .channels.feishu.groupPolicy = "open"
             | .channels.feishu.allowFrom = ["*"]
             | .channels.feishu.groupAllowFrom = ["*"]
+            | .channels.telegram.dmPolicy = "open"
             | .channels.telegram.groupPolicy = "open"
             | .channels.telegram.allowFrom = ["*"]
             | .channels.telegram.groupAllowFrom = ["*"]
+            | .channels.whatsapp.dmPolicy = "open"
             | .channels.whatsapp.groupPolicy = "open"
             | .channels.whatsapp.allowFrom = ["*"]
             | .channels.whatsapp.groupAllowFrom = ["*"]
+            | .channels.imessage.dmPolicy = "open"
             | .channels.imessage.groupPolicy = "open"
             | .channels.imessage.allowFrom = ["*"]
             | .channels.imessage.groupAllowFrom = ["*"]
@@ -2699,6 +2703,7 @@ try:
         item = root.get(ch) or {}
         if not isinstance(item, dict):
             item = {}
+        item["dmPolicy"] = "open"
         item["groupPolicy"] = "open"
         item["allowFrom"] = ["*"]
         item["groupAllowFrom"] = ["*"]
@@ -3142,6 +3147,15 @@ init_openclaw_config() {
         [ "$GATEWAY_BIND" = "custom" ] && [ -n "$GATEWAY_CUSTOM_BIND_HOST" ] && \
             openclaw config set gateway.customBindHost "$GATEWAY_CUSTOM_BIND_HOST" 2>/dev/null || true
         openclaw config set gateway.port "$GATEWAY_PORT" 2>/dev/null || true
+        # 默认放开 DM 与群聊准入，避免新装后 dashboard/会话触发 pairing required
+        openclaw config set channels.feishu.dmPolicy open 2>/dev/null || true
+        openclaw config set channels.feishu.groupPolicy open 2>/dev/null || true
+        openclaw config set channels.telegram.dmPolicy open 2>/dev/null || true
+        openclaw config set channels.telegram.groupPolicy open 2>/dev/null || true
+        openclaw config set channels.whatsapp.dmPolicy open 2>/dev/null || true
+        openclaw config set channels.whatsapp.groupPolicy open 2>/dev/null || true
+        openclaw config set channels.imessage.dmPolicy open 2>/dev/null || true
+        openclaw config set channels.imessage.groupPolicy open 2>/dev/null || true
         log_info "Gateway 模式已设置为 local（bind=${GATEWAY_BIND}, port=${GATEWAY_PORT}）"
 
         local auth_mode

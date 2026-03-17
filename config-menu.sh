@@ -2302,6 +2302,7 @@ run_openclaw_health() {
 }
 
 run_official_model_onboard() {
+    cleanup_stale_channel_keys_in_json_menu || true
     if ! check_openclaw_installed; then
         log_error "OpenClaw 未安装"
         return 1
@@ -6282,10 +6283,10 @@ normalize_channel_policy_in_json_menu() {
         cat > "$cfg" <<'EOF'
 {
   "channels": {
-    "feishu": { "groupPolicy": "open", "allowFrom": ["*"], "groupAllowFrom": ["*"] },
-    "telegram": { "groupPolicy": "open", "allowFrom": ["*"], "groupAllowFrom": ["*"] },
-    "whatsapp": { "groupPolicy": "open", "allowFrom": ["*"], "groupAllowFrom": ["*"] },
-    "imessage": { "groupPolicy": "open", "allowFrom": ["*"], "groupAllowFrom": ["*"] }
+    "feishu": { "dmPolicy": "open", "groupPolicy": "open", "allowFrom": ["*"], "groupAllowFrom": ["*"] },
+    "telegram": { "dmPolicy": "open", "groupPolicy": "open", "allowFrom": ["*"], "groupAllowFrom": ["*"] },
+    "whatsapp": { "dmPolicy": "open", "groupPolicy": "open", "allowFrom": ["*"], "groupAllowFrom": ["*"] },
+    "imessage": { "dmPolicy": "open", "groupPolicy": "open", "allowFrom": ["*"], "groupAllowFrom": ["*"] }
   }
 }
 EOF
@@ -6299,15 +6300,19 @@ EOF
             | (.channels.telegram //= {})
             | (.channels.whatsapp //= {})
             | (.channels.imessage //= {})
+            | .channels.feishu.dmPolicy = "open"
             | .channels.feishu.groupPolicy = "open"
             | .channels.feishu.allowFrom = ["*"]
             | .channels.feishu.groupAllowFrom = ["*"]
+            | .channels.telegram.dmPolicy = "open"
             | .channels.telegram.groupPolicy = "open"
             | .channels.telegram.allowFrom = ["*"]
             | .channels.telegram.groupAllowFrom = ["*"]
+            | .channels.whatsapp.dmPolicy = "open"
             | .channels.whatsapp.groupPolicy = "open"
             | .channels.whatsapp.allowFrom = ["*"]
             | .channels.whatsapp.groupAllowFrom = ["*"]
+            | .channels.imessage.dmPolicy = "open"
             | .channels.imessage.groupPolicy = "open"
             | .channels.imessage.allowFrom = ["*"]
             | .channels.imessage.groupAllowFrom = ["*"]
@@ -6332,6 +6337,7 @@ try:
         item = root.get(ch) or {}
         if not isinstance(item, dict):
             item = {}
+        item["dmPolicy"] = "open"
         item["groupPolicy"] = "open"
         item["allowFrom"] = ["*"]
         item["groupAllowFrom"] = ["*"]
@@ -7363,6 +7369,8 @@ open_official_skills_settings() {
     fi
 
     log_warn "当前版本无 openclaw skills 命令，改为启动官方向导 openclaw onboard"
+    cleanup_stale_channel_keys_in_json_menu || true
+    cleanup_stale_plugin_state_menu || true
     if [ -e /dev/tty ] && ( : < /dev/tty ) 2>/dev/null; then
         openclaw onboard < /dev/tty
     else
@@ -8074,6 +8082,8 @@ manage_service() {
 # 确保 OpenClaw 基础配置正确
 ensure_openclaw_init() {
     local OPENCLAW_DIR="$HOME/.openclaw"
+
+    normalize_channel_policy_in_json_menu || true
     
     # 创建必要的目录
     mkdir -p "$OPENCLAW_DIR/agents/main/sessions" 2>/dev/null || true
@@ -8115,6 +8125,15 @@ ensure_openclaw_init() {
             log_info "已初始化并持久化 Gateway Token，用于远程隧道/反向代理访问。"
         fi
     fi
+
+    openclaw config set channels.feishu.dmPolicy open 2>/dev/null || true
+    openclaw config set channels.feishu.groupPolicy open 2>/dev/null || true
+    openclaw config set channels.telegram.dmPolicy open 2>/dev/null || true
+    openclaw config set channels.telegram.groupPolicy open 2>/dev/null || true
+    openclaw config set channels.whatsapp.dmPolicy open 2>/dev/null || true
+    openclaw config set channels.whatsapp.groupPolicy open 2>/dev/null || true
+    openclaw config set channels.imessage.dmPolicy open 2>/dev/null || true
+    openclaw config set channels.imessage.groupPolicy open 2>/dev/null || true
 }
 
 # 为 MiniMax 写入官方兼容 provider 配置，避免旧版本出现 Unknown model
