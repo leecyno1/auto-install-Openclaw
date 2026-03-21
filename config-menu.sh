@@ -592,6 +592,21 @@ if (bin) process.stdout.write(path.resolve(path.dirname(process.argv[1]), bin));
     return 1
 }
 
+expand_home_path_menu() {
+    local path_value="${1:-}"
+    case "$path_value" in
+        "~")
+            echo "$HOME"
+            ;;
+        "~/"*)
+            echo "$HOME/${path_value#\~/}"
+            ;;
+        *)
+            echo "$path_value"
+            ;;
+    esac
+}
+
 ensure_openclaw_alias() {
     if command -v openclaw &> /dev/null; then
         return 0
@@ -6169,13 +6184,18 @@ cleanup_stale_plugin_state_menu() {
 }
 
 resolve_openclaw_json_path_menu() {
-    local cfg="$OPENCLAW_JSON"
+    local cfg="${1:-$OPENCLAW_JSON}"
+    local mode="${2:-runtime}"
+
+    if [ "$mode" = "fast" ]; then
+        echo "$cfg"
+        return 0
+    fi
+
     if check_openclaw_installed; then
         local active_cfg
         active_cfg="$(openclaw config file 2>/dev/null | head -n 1 | tr -d '\r')"
-        case "$active_cfg" in
-            "~/"*) active_cfg="$HOME/${active_cfg#~/}" ;;
-        esac
+        active_cfg="$(expand_home_path_menu "$active_cfg")"
         if [ -n "$active_cfg" ] && [ "$active_cfg" != "undefined" ]; then
             cfg="$active_cfg"
         fi
@@ -6185,7 +6205,7 @@ resolve_openclaw_json_path_menu() {
 
 cleanup_stale_channel_keys_in_json_menu() {
     local cfg
-    cfg="$(resolve_openclaw_json_path_menu)"
+    cfg="$(resolve_openclaw_json_path_menu "${1:-$OPENCLAW_JSON}" "${2:-runtime}")"
     [ -f "$cfg" ] || return 0
     if command -v jq >/dev/null 2>&1; then
         local tmp
@@ -6283,7 +6303,7 @@ PY
 
 normalize_channel_policy_in_json_menu() {
     local cfg
-    cfg="$(resolve_openclaw_json_path_menu)"
+    cfg="$(resolve_openclaw_json_path_menu "${1:-$OPENCLAW_JSON}" "${2:-runtime}")"
     if [ ! -f "$cfg" ]; then
         mkdir -p "$(dirname "$cfg")" 2>/dev/null || true
         cat > "$cfg" <<'EOF'
@@ -6375,6 +6395,11 @@ except Exception:
     pass
 PY
     fi
+}
+
+startup_fast_config_sanitize_menu() {
+    cleanup_stale_channel_keys_in_json_menu "$OPENCLAW_JSON" "fast" || true
+    normalize_channel_policy_in_json_menu "$OPENCLAW_JSON" "fast" || true
 }
 
 apply_dashboard_pairing_bypass_menu() {
@@ -10193,10 +10218,8 @@ main() {
     mkdir -p "$CONFIG_DIR"
     mkdir -p "$BACKUP_DIR"
 
-    # 启动时先清理历史陈旧插件项，减少 Config warnings
-    if check_openclaw_installed; then
-        cleanup_stale_plugin_state_menu || true
-    fi
+    # 启动阶段只做本地 JSON 快速修复，避免旧服务器在进入菜单前卡死。
+    startup_fast_config_sanitize_menu || true
 
     # 快捷模式：安装脚本可直接跳转到指定配置页
     case "${1:-}" in
