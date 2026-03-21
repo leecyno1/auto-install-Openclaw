@@ -37,6 +37,17 @@ resolve_tty_input() {
 }
 TTY_INPUT="$(resolve_tty_input)"
 
+resolve_onboard_term() {
+    case "${TERM:-}" in
+        ""|dumb|unknown)
+            echo "xterm-256color"
+            ;;
+        *)
+            echo "${TERM}"
+            ;;
+    esac
+}
+
 # ================================ 颜色定义 ================================
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -2405,10 +2416,15 @@ run_official_onboard() {
     fi
 
     log_step "启动官方配置向导（openclaw onboard）..."
-    if [ -e /dev/tty ]; then
-        openclaw onboard < /dev/tty
+    local onboard_term
+    onboard_term="$(resolve_onboard_term)"
+    if [ "$onboard_term" != "${TERM:-}" ]; then
+        log_warn "检测到当前终端 TERM=${TERM:-unset}，临时切换为 ${onboard_term} 以兼容官方向导。"
+    fi
+    if [ -e /dev/tty ] && ( : < /dev/tty ) 2>/dev/null; then
+        env TERM="$onboard_term" COLORTERM="${COLORTERM:-truecolor}" openclaw onboard < /dev/tty > /dev/tty 2>&1
     else
-        openclaw onboard
+        env TERM="$onboard_term" COLORTERM="${COLORTERM:-truecolor}" openclaw onboard
     fi
 }
 

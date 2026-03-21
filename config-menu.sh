@@ -30,6 +30,17 @@ resolve_tty_input() {
     return 1
 }
 
+resolve_onboard_term_menu() {
+    case "${TERM:-}" in
+        ""|dumb|unknown)
+            echo "xterm-256color"
+            ;;
+        *)
+            echo "${TERM}"
+            ;;
+    esac
+}
+
 if ! TTY_INPUT="$(resolve_tty_input)"; then
     echo "错误: 无法获取终端输入，请直接运行此脚本"
     echo "用法: bash config-menu.sh"
@@ -2318,22 +2329,26 @@ run_openclaw_health() {
 }
 
 run_official_model_onboard() {
-    cleanup_stale_channel_keys_in_json_menu || true
     if ! check_openclaw_installed; then
         log_error "OpenClaw 未安装"
         return 1
     fi
-    if ! repair_runtime_config_preserve_data 1; then
-        log_error "进入官方模型配置前的预修复失败"
-        return 1
-    fi
-    cleanup_stale_plugin_state_menu || true
+
+    # 模型入口仅做轻量本地修正，避免在 Web/弱终端里先跑重修复导致长时间无输出。
+    startup_fast_config_sanitize_menu || true
+
+    local onboard_term
+    onboard_term="$(resolve_onboard_term_menu)"
+
     echo ""
+    if [ "$onboard_term" != "${TERM:-}" ]; then
+        log_warn "检测到当前终端 TERM=${TERM:-unset}，临时切换为 ${onboard_term} 以兼容官方向导。"
+    fi
     log_info "启动官方模型配置向导: openclaw onboard"
-    if [ -e /dev/tty ]; then
-        openclaw onboard < /dev/tty
+    if [ -e /dev/tty ] && ( : < /dev/tty ) 2>/dev/null; then
+        env TERM="$onboard_term" COLORTERM="${COLORTERM:-truecolor}" openclaw onboard < /dev/tty > /dev/tty 2>&1
     else
-        openclaw onboard
+        env TERM="$onboard_term" COLORTERM="${COLORTERM:-truecolor}" openclaw onboard
     fi
 }
 
@@ -7509,12 +7524,16 @@ open_official_skills_settings() {
     fi
 
     log_warn "当前版本无 openclaw skills 命令，改为启动官方向导 openclaw onboard"
-    cleanup_stale_channel_keys_in_json_menu || true
-    cleanup_stale_plugin_state_menu || true
+    startup_fast_config_sanitize_menu || true
+    local onboard_term
+    onboard_term="$(resolve_onboard_term_menu)"
+    if [ "$onboard_term" != "${TERM:-}" ]; then
+        log_warn "检测到当前终端 TERM=${TERM:-unset}，临时切换为 ${onboard_term} 以兼容官方向导。"
+    fi
     if [ -e /dev/tty ] && ( : < /dev/tty ) 2>/dev/null; then
-        openclaw onboard < /dev/tty
+        env TERM="$onboard_term" COLORTERM="${COLORTERM:-truecolor}" openclaw onboard < /dev/tty > /dev/tty 2>&1
     else
-        openclaw onboard
+        env TERM="$onboard_term" COLORTERM="${COLORTERM:-truecolor}" openclaw onboard
     fi
 }
 
