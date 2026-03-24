@@ -146,10 +146,10 @@ PLUGIN_INSTALL_BACKOFF_SECONDS="${OPENCLAW_PLUGIN_INSTALL_BACKOFF_SECONDS:-2}"
 
 DEFAULT_OFFICIAL_PLUGINS="@openclaw/feishu @openclaw/discord @openclaw/whatsapp"
 DEFAULT_BUILTIN_CHANNEL_PLUGINS="telegram imessage"
-ENHANCED_SKILLS_LIST="capability-evolver openclaw-cron-setup proactive-agent self-improving-agent-cn brainstorming reflection find-skills skill-creator agent-browser chrome-devtools-mcp github mcp-builder model-usage shell minimax-understand-image tavily-search web-search minimax-web-search news-radar url-to-markdown pdf docx pptx xlsx frontend-design web-design stock-monitor-skill multi-search-engine akshare-stock gemini-image-service nano-banana-service"
+ENHANCED_SKILLS_LIST="capability-evolver openclaw-cron-setup proactive-agent self-improving-agent-cn brainstorming reflection find-skills skill-creator agent-browser chrome-devtools-mcp github mcp-builder model-usage shell minimax-understand-image tavily-search web-search minimax-web-search news-radar url-to-markdown pdf docx pptx xlsx frontend-design web-design stock-monitor-skill multi-search-engine akshare-stock content-strategy social-content ai-image-generation marketingskills inference-skills gemini-image-service nano-banana-service agentmail agentmail-cli agentmail-mcp agentmail-toolkit"
 RULE_PROFILE_DEFAULT="${OPENCLAW_RULE_PROFILE:-medium}"
-PROFILE_BASIC_SKILLS="capability-evolver openclaw-cron-setup proactive-agent self-improving-agent-cn brainstorming reflection find-skills skill-creator agent-browser chrome-devtools-mcp github mcp-builder model-usage shell minimax-understand-image tavily-search web-search minimax-web-search news-radar url-to-markdown pdf docx pptx xlsx stock-monitor-skill multi-search-engine akshare-stock"
-PROFILE_EXTENDED_SKILLS="capability-evolver openclaw-cron-setup proactive-agent self-improving-agent-cn brainstorming reflection find-skills skill-creator agent-browser chrome-devtools-mcp github mcp-builder model-usage shell minimax-understand-image tavily-search web-search minimax-web-search news-radar url-to-markdown pdf docx pptx xlsx stock-monitor-skill multi-search-engine akshare-stock gemini-image-service nano-banana-service"
+PROFILE_BASIC_SKILLS="capability-evolver openclaw-cron-setup proactive-agent self-improving-agent-cn brainstorming reflection find-skills skill-creator agent-browser chrome-devtools-mcp github mcp-builder model-usage shell minimax-understand-image tavily-search web-search minimax-web-search news-radar url-to-markdown pdf docx pptx xlsx stock-monitor-skill multi-search-engine akshare-stock content-strategy social-content ai-image-generation marketingskills inference-skills agentmail agentmail-cli agentmail-mcp agentmail-toolkit"
+PROFILE_EXTENDED_SKILLS="capability-evolver openclaw-cron-setup proactive-agent self-improving-agent-cn brainstorming reflection find-skills skill-creator agent-browser chrome-devtools-mcp github mcp-builder model-usage shell minimax-understand-image tavily-search web-search minimax-web-search news-radar url-to-markdown pdf docx pptx xlsx stock-monitor-skill multi-search-engine akshare-stock content-strategy social-content ai-image-generation marketingskills inference-skills gemini-image-service nano-banana-service agentmail agentmail-cli agentmail-mcp agentmail-toolkit"
 PROFILE_SUPER_SKILLS="__ALL_DEFAULT__"
 RULE_PROFILE_MENU_SELECTED=""
 GEMINI_BASE_URL_DEFAULT="${GEMINI_BASE_URL:-${GOOGLE_BASE_URL:-}}"
@@ -171,6 +171,7 @@ SKILL_PIP_PACKAGES="${OPENCLAW_SKILL_PIP_PACKAGES:-$SKILL_PIP_PACKAGES_DEFAULT}"
 SKILL_PIP_PACKAGES_FILE_REL="skills/requirements-runtime.txt"
 WELCOME_DOC_URL_GITEE="https://gitee.com/leecyno1/auto-install-openclaw/blob/main/docs/channels-configuration-guide.md"
 WELCOME_DOC_URL_GITHUB="https://github.com/leecyno1/auto-install-Openclaw/blob/main/docs/channels-configuration-guide.md"
+PERSONA_ROLE_MENU_SELECTED="$(echo "${OPENCLAW_PERSONA_ROLE:-druid}" | tr '[:upper:]' '[:lower:]')"
 
 # ================================ 工具函数 ================================
 
@@ -215,6 +216,118 @@ log_warn() {
 
 log_error() {
     echo -e "${RED}✗${NC} $1"
+}
+
+normalize_persona_role_id_menu() {
+    local role
+    role="$(echo "$1" | tr '[:upper:]' '[:lower:]' | tr '_' '-' | xargs)"
+    case "$role" in
+        druid|generalist|wanjinyou) echo "druid" ;;
+        assassin|analyst|fenxiyuan) echo "assassin" ;;
+        mage|researcher|yanjiuzhe) echo "mage" ;;
+        summoner|manager|guanlizhe) echo "summoner" ;;
+        warrior|technician|jishuyuan) echo "warrior" ;;
+        paladin|marketer|yingxiaozhe) echo "paladin" ;;
+        designer|archer|yunyingzhe) echo "designer" ;;
+        *) echo "druid" ;;
+    esac
+}
+
+set_persona_role_profile_menu() {
+    local role
+    role="$(normalize_persona_role_id_menu "$1")"
+    PERSONA_ROLE_MENU_SELECTED="$role"
+
+    case "$role" in
+        druid)
+            PERSONA_ROLE_NAME_MENU="万金油·德鲁伊"
+            PERSONA_ROLE_EMOJI_MENU="🦞"
+            PERSONA_ROLE_DESC_MENU="通用总管，覆盖日常助理、任务推进、沟通协作与结果回报。"
+            PERSONA_ROLE_AGENCY_MENU="specialized/agents-orchestrator + project-management/project-manager-senior"
+            PERSONA_ROLE_DEFAULT_GOAL_MENU="综合的小助理，帮我制定日程，邮件，写作，搜索，投资分析等"
+            PERSONA_ROLE_DEFAULT_STYLE_MENU="严谨、适当幽默、务实"
+            PERSONA_ROLE_DEFAULT_WORK_MENU="整段回复，主动汇报，积极响应并调用skills"
+            PERSONA_ROLE_CORE_SKILLS_MENU="proactive-agent, openclaw-cron-setup, reflection, find-skills, shell, web-search, summarize, docx, xlsx, agentmail"
+            PERSONA_ROLE_EXTRA_SKILLS_MENU="task, todo, todoist-api, ai-meeting-notes, openclaw-feeds, weather"
+            ;;
+        assassin)
+            PERSONA_ROLE_NAME_MENU="分析员·刺客"
+            PERSONA_ROLE_EMOJI_MENU="🗡️"
+            PERSONA_ROLE_DESC_MENU="券商式深挖分析，负责数据采集、价值挖掘与投资机会研究。"
+            PERSONA_ROLE_AGENCY_MENU="sales/sales-pipeline-analyst + support/support-finance-tracker + product/product-trend-researcher"
+            PERSONA_ROLE_DEFAULT_GOAL_MENU="帮我做投资研究、机会筛选、估值拆解和风险提示"
+            PERSONA_ROLE_DEFAULT_STYLE_MENU="冷静、数据驱动、结论导向"
+            PERSONA_ROLE_DEFAULT_WORK_MENU="先给结论与风险，再给证据链与可执行建议"
+            PERSONA_ROLE_CORE_SKILLS_MENU="akshare-stock, stock-monitor-skill, multi-search-engine, web-search, tavily-search, news-radar, summarize, url-to-markdown, xlsx"
+            PERSONA_ROLE_EXTRA_SKILLS_MENU="finance-data, data-analyst, google-trends, openclaw-feeds, reddit, requesthunt, producthunt, session-logs"
+            ;;
+        mage)
+            PERSONA_ROLE_NAME_MENU="研究者·大法师"
+            PERSONA_ROLE_EMOJI_MENU="🧙"
+            PERSONA_ROLE_DESC_MENU="学术与知识生产角色，擅长论文、科研、读书与结构化笔记。"
+            PERSONA_ROLE_AGENCY_MENU="marketing/marketing-book-co-author + specialized/specialized-document-generator + testing/testing-evidence-collector"
+            PERSONA_ROLE_DEFAULT_GOAL_MENU="帮我完成论文写作、科研资料整理、读书笔记与知识沉淀"
+            PERSONA_ROLE_DEFAULT_STYLE_MENU="严谨、学术化、条理清晰"
+            PERSONA_ROLE_DEFAULT_WORK_MENU="先给研究框架与提纲，再给逐步产出与引用建议"
+            PERSONA_ROLE_CORE_SKILLS_MENU="brainstorming, summarize, web-search, tavily-search, url-to-markdown, docx, pdf, nano-pdf, pptx, xlsx"
+            PERSONA_ROLE_EXTRA_SKILLS_MENU="ai-meeting-notes, ai-ppt-generate, paperless-docs, paperless-ngx-tools, format-pro, byterover"
+            ;;
+        summoner)
+            PERSONA_ROLE_NAME_MENU="管理者·召唤师"
+            PERSONA_ROLE_EMOJI_MENU="🪄"
+            PERSONA_ROLE_DESC_MENU="企业管理角色，覆盖招聘、人力、流程、组织协同与团队激励。"
+            PERSONA_ROLE_AGENCY_MENU="specialized/recruitment-specialist + project-management/project-management-studio-operations + project-management/project-manager-senior"
+            PERSONA_ROLE_DEFAULT_GOAL_MENU="帮我管理团队目标、人员分工、流程制度和执行节奏"
+            PERSONA_ROLE_DEFAULT_STYLE_MENU="稳健、结构化、目标导向"
+            PERSONA_ROLE_DEFAULT_WORK_MENU="先给优先级和里程碑，再给分工、风险和跟进机制"
+            PERSONA_ROLE_CORE_SKILLS_MENU="proactive-agent, openclaw-cron-setup, docx, xlsx, pptx, agentmail, github, reflection"
+            PERSONA_ROLE_EXTRA_SKILLS_MENU="task, todo, todoist-api, ai-meeting-notes, lark-calendar, data-reconciliation-exceptions, publish-guard, session-logs"
+            ;;
+        warrior)
+            PERSONA_ROLE_NAME_MENU="技术员·战士"
+            PERSONA_ROLE_EMOJI_MENU="⚔️"
+            PERSONA_ROLE_DESC_MENU="工程交付角色，负责编码实现、测试排障、稳定性与上线。"
+            PERSONA_ROLE_AGENCY_MENU="engineering/engineering-senior-developer + engineering/engineering-code-reviewer + engineering/engineering-devops-automator + engineering/engineering-sre"
+            PERSONA_ROLE_DEFAULT_GOAL_MENU="帮我做编程工程交付、代码测试、故障排查和上线保障"
+            PERSONA_ROLE_DEFAULT_STYLE_MENU="直接、工程化、可验证"
+            PERSONA_ROLE_DEFAULT_WORK_MENU="先给可运行结果，再给验证步骤和回滚方案"
+            PERSONA_ROLE_CORE_SKILLS_MENU="shell, github, mcp-builder, chrome-devtools-mcp, agent-browser, model-usage, web-search, minimax-understand-image, reflection"
+            PERSONA_ROLE_EXTRA_SKILLS_MENU="tdd, test-driven-development, subagent-driven-development, skill-security-auditor, github-actions-generator, gitclassic, prisma-database-setup, database, preflight-checks, tmux"
+            ;;
+        paladin)
+            PERSONA_ROLE_NAME_MENU="营销者·圣骑士"
+            PERSONA_ROLE_EMOJI_MENU="🛡️"
+            PERSONA_ROLE_DESC_MENU="增长运营角色，覆盖SEO、广告、内容分发、客户关系与客服协同。"
+            PERSONA_ROLE_AGENCY_MENU="marketing/marketing-growth-hacker + marketing/marketing-seo-specialist + marketing/marketing-social-media-strategist + marketing/marketing-content-creator"
+            PERSONA_ROLE_DEFAULT_GOAL_MENU="帮我做市场运营、内容增长、渠道分发、SEO和客户关系管理"
+            PERSONA_ROLE_DEFAULT_STYLE_MENU="增长导向、创意与数据并重"
+            PERSONA_ROLE_DEFAULT_WORK_MENU="先给增长目标与漏斗，再给渠道方案、内容节奏和复盘指标"
+            PERSONA_ROLE_CORE_SKILLS_MENU="web-search, tavily-search, news-radar, summarize, url-to-markdown, docx, xlsx, agentmail, frontend-design, web-design"
+            PERSONA_ROLE_EXTRA_SKILLS_MENU="programmatic-seo, seo-geo, social-content, content-strategy, google-trends, twitter, weibo-manager, weibo-fresh-posts, xiaohongshu-ops, xiaohongshu-auto, douyin-hot-trend, douyin-upload-skill, bilibili-hot-monitor, baoyu-post-to-wechat, baoyu-post-to-x"
+            ;;
+        designer)
+            PERSONA_ROLE_NAME_MENU="设计师·弓箭手"
+            PERSONA_ROLE_EMOJI_MENU="🏹"
+            PERSONA_ROLE_DESC_MENU="综合设计角色，覆盖前端设计、艺术设计、UI/UX、平面/工业/建筑概念与自媒体视觉。"
+            PERSONA_ROLE_AGENCY_MENU="design/design-ui-designer + design/design-ux-architect + design/design-visual-storyteller + design/design-image-prompt-engineer"
+            PERSONA_ROLE_DEFAULT_GOAL_MENU="帮我做前端界面设计、视觉创作、图文内容与多场景设计方案"
+            PERSONA_ROLE_DEFAULT_STYLE_MENU="审美驱动、可落地、强调风格一致性"
+            PERSONA_ROLE_DEFAULT_WORK_MENU="先给风格方向与版式，再给素材清单、实现路径和交付规格"
+            PERSONA_ROLE_CORE_SKILLS_MENU="frontend-design, web-design, gemini-image-service, nano-banana-service, grok-imagine-1.0-video, pptx, docx, summarize"
+            PERSONA_ROLE_EXTRA_SKILLS_MENU="ai-image-generation, banner-creator, logo-creator, infographic-pro, ai-ppt-generate, baoyu-article-illustrator, baoyu-comic, baoyu-cover-image, baoyu-infographic, baoyu-slide-deck, video-frames, tailwind-design-system, web-design-guidelines"
+            ;;
+    esac
+}
+
+show_persona_role_cards_menu() {
+    echo -e "${CYAN}职业人格（7选1）${NC}"
+    echo "  [1] 🦞 万金油·德鲁伊   - 通用总管，适合绝大多数用户"
+    echo "  [2] 🗡️ 分析员·刺客   - 数据深挖、价值发现、投资机会"
+    echo "  [3] 🧙 研究者·大法师  - 学术科研、论文写作、知识沉淀"
+    echo "  [4] 🪄 管理者·召唤师  - 团队管理、流程制度、组织协同"
+    echo "  [5] ⚔️ 技术员·战士   - 编程交付、测试排障、工程上线"
+    echo "  [6] 🛡️ 营销者·圣骑士  - 市场增长、SEO投放、渠道运营"
+    echo "  [7] 🏹 设计师·弓箭手  - 前端/UI/视觉/平面/工业/建筑概念"
 }
 
 press_enter() {
@@ -1160,6 +1273,8 @@ write_profile_policy_files_menu() {
     local gemini_url gemini_model nano_url nano_image_model nano_video_model
     local persona_user_name persona_timezone persona_location persona_goal
     local persona_style persona_work_mode persona_agent_name persona_agent_emoji
+    local persona_role_id persona_role_name persona_role_emoji persona_role_desc
+    local persona_role_agency persona_role_core_skills persona_role_extra_skills
     local policy_dir soul_dir agent_dir memory_dir session_dir
     local persona_dir
     local system_rule_file memory_rule_file session_rule_file soul_rule_file policy_json prompt_file
@@ -1205,14 +1320,23 @@ write_profile_policy_files_menu() {
     policy_json="$policy_dir/vendor-control-profile.json"
     prompt_file="$policy_dir/vendor-control-prompts.md"
 
+    set_persona_role_profile_menu "${OPENCLAW_PERSONA_ROLE:-druid}"
+    persona_role_id="$PERSONA_ROLE_MENU_SELECTED"
+    persona_role_name="$PERSONA_ROLE_NAME_MENU"
+    persona_role_emoji="$PERSONA_ROLE_EMOJI_MENU"
+    persona_role_desc="$PERSONA_ROLE_DESC_MENU"
+    persona_role_agency="$PERSONA_ROLE_AGENCY_MENU"
+    persona_role_core_skills="$PERSONA_ROLE_CORE_SKILLS_MENU"
+    persona_role_extra_skills="$PERSONA_ROLE_EXTRA_SKILLS_MENU"
+
     persona_user_name="${OPENCLAW_USER_NAME:-主人}"
     persona_timezone="${OPENCLAW_USER_TIMEZONE:-Asia/Shanghai}"
     persona_location="${OPENCLAW_USER_REGION:-中国大陆}"
-    persona_goal="${OPENCLAW_USER_GOAL:-综合的小助理，帮我制定日程，邮件，写作，搜索，投资分析等}"
-    persona_style="${OPENCLAW_ASSISTANT_PERSONALITY:-严谨、适当幽默、务实}"
-    persona_work_mode="${OPENCLAW_ASSISTANT_WORK_MODE:-整段回复，主动汇报，积极响应并调用skills}"
+    persona_goal="${OPENCLAW_USER_GOAL:-$PERSONA_ROLE_DEFAULT_GOAL_MENU}"
+    persona_style="${OPENCLAW_ASSISTANT_PERSONALITY:-$PERSONA_ROLE_DEFAULT_STYLE_MENU}"
+    persona_work_mode="${OPENCLAW_ASSISTANT_WORK_MODE:-${OPENCLAW_ASSISTANT_WORK_STYLE:-$PERSONA_ROLE_DEFAULT_WORK_MENU}}"
     persona_agent_name="${OPENCLAW_ASSISTANT_NAME:-龙虾小助理}"
-    persona_agent_emoji="${OPENCLAW_ASSISTANT_EMOJI:-🦞}"
+    persona_agent_emoji="${OPENCLAW_ASSISTANT_EMOJI:-$PERSONA_ROLE_EMOJI_MENU}"
 
     mkdir -p "$policy_dir" "$soul_dir" "$agent_dir" "$memory_dir" "$session_dir" "$persona_dir" 2>/dev/null || true
 
@@ -1285,6 +1409,10 @@ EOF
     cat > "$persona_soul_file" <<EOF
 # SOUL.md - 基础人格规则
 
+## 职业人格
+- ${persona_role_emoji} ${persona_role_name}
+- ${persona_role_desc}
+
 ## 性格
 - ${persona_style}
 - 反应快、务实、先结论后细节，不说空话。
@@ -1301,6 +1429,12 @@ EOF
 
     cat > "$persona_agents_file" <<EOF
 # AGENTS.md - 基础工作手册
+
+## 职业设定
+- 角色: ${persona_role_emoji} ${persona_role_name}
+- 对照: ${persona_role_agency}
+- 核心技能: ${persona_role_core_skills}
+- 扩展技能: ${persona_role_extra_skills}
 
 ## 任务流程（SOP）
 1. 接收任务并复述目标与验收标准。
@@ -1341,6 +1475,7 @@ EOF
 
 - Name: ${persona_agent_name}
 - Emoji: ${persona_agent_emoji}
+- Persona Role: ${persona_role_emoji} ${persona_role_name}
 - Role: OpenClaw 综合助理（调度、执行、汇报）
 - Work Mode: ${persona_work_mode}
 - Language: 简体中文
@@ -1401,6 +1536,15 @@ EOF
     "agents": "${persona_agents_file}",
     "user": "${persona_user_file}",
     "identity": "${persona_identity_file}"
+  },
+  "roleProfile": {
+    "id": "${persona_role_id}",
+    "name": "${persona_role_name}",
+    "emoji": "${persona_role_emoji}",
+    "description": "${persona_role_desc}",
+    "agencyMapping": "${persona_role_agency}",
+    "coreSkills": "${persona_role_core_skills}",
+    "extraSkills": "${persona_role_extra_skills}"
   }
 }
 EOF
@@ -1450,6 +1594,9 @@ EOF
         openclaw config set "vendor.control.files.persona.user" "$persona_user_file" >/dev/null 2>&1 || true
         openclaw config set "vendor.control.files.persona.identity" "$persona_identity_file" >/dev/null 2>&1 || true
         openclaw config set "vendor.control.persona.enabled" true >/dev/null 2>&1 || true
+        openclaw config set "vendor.control.persona.role.id" "$persona_role_id" >/dev/null 2>&1 || true
+        openclaw config set "vendor.control.persona.role.name" "$persona_role_name" >/dev/null 2>&1 || true
+        openclaw config set "vendor.control.persona.role.emoji" "$persona_role_emoji" >/dev/null 2>&1 || true
         openclaw config set "boot-md.enabled" true >/dev/null 2>&1 || true
         openclaw config set "session-memory.enabled" true >/dev/null 2>&1 || true
     fi
@@ -7044,7 +7191,7 @@ config_identity() {
     print_divider
     echo ""
 
-    local current_name current_user current_region current_timezone current_goal current_personality current_work_style current_welcome_message
+    local current_name current_user current_region current_timezone current_goal current_personality current_work_style current_welcome_message current_role_id
     current_name="$(openclaw config get identity.name 2>/dev/null || true)"
     current_user="$(openclaw config get identity.user_name 2>/dev/null || true)"
     current_region="$(openclaw config get identity.region 2>/dev/null || true)"
@@ -7053,6 +7200,7 @@ config_identity() {
     current_personality="$(openclaw config get identity.personality 2>/dev/null || true)"
     current_work_style="$(openclaw config get identity.work_style 2>/dev/null || true)"
     current_welcome_message="$(openclaw config get identity.welcome.message 2>/dev/null || true)"
+    current_role_id="$(openclaw config get identity.role.id 2>/dev/null || true)"
 
     current_name="${current_name:-Clawd}"
     current_user="${current_user:-主人}"
@@ -7062,8 +7210,46 @@ config_identity() {
     current_personality="${current_personality:-严谨、适当幽默、务实}"
     current_work_style="${current_work_style:-整段回复，主动汇报，积极响应并调用skills}"
     current_welcome_message="${current_welcome_message:-你好我的主人，我是你的龙虾小助理，现在我已经上线了。现在你可以通过简单设置与飞书/钉钉/tele等进行配对，你就可以在通讯平台中给我布置任务啦！具体参照页面下方的配对指南}"
+    current_role_id="$(normalize_persona_role_id_menu "${current_role_id:-${OPENCLAW_PERSONA_ROLE:-druid}}")"
+    set_persona_role_profile_menu "$current_role_id"
 
-    local bot_name user_name region timezone user_goal personality work_style greeting profile_doc welcome_message welcome_doc
+    local bot_name user_name region timezone user_goal personality work_style greeting profile_doc role_doc welcome_message welcome_doc
+    local role_choice role_default_choice current_rule_profile
+    show_persona_role_cards_menu
+    case "$current_role_id" in
+        druid) role_default_choice="1" ;;
+        assassin) role_default_choice="2" ;;
+        mage) role_default_choice="3" ;;
+        summoner) role_default_choice="4" ;;
+        warrior) role_default_choice="5" ;;
+        paladin) role_default_choice="6" ;;
+        designer) role_default_choice="7" ;;
+        *) role_default_choice="1" ;;
+    esac
+    read_input "${YELLOW}请选择职业 [1-7] (默认: ${role_default_choice}): ${NC}" role_choice
+    role_choice="${role_choice:-$role_default_choice}"
+    case "$role_choice" in
+        1) set_persona_role_profile_menu "druid" ;;
+        2) set_persona_role_profile_menu "assassin" ;;
+        3) set_persona_role_profile_menu "mage" ;;
+        4) set_persona_role_profile_menu "summoner" ;;
+        5) set_persona_role_profile_menu "warrior" ;;
+        6) set_persona_role_profile_menu "paladin" ;;
+        7) set_persona_role_profile_menu "designer" ;;
+        *)
+            log_warn "无效选择，回退默认职业：万金油·德鲁伊"
+            set_persona_role_profile_menu "druid"
+            ;;
+    esac
+    echo ""
+    echo -e "${CYAN}当前职业:${NC} ${WHITE}${PERSONA_ROLE_EMOJI_MENU} ${PERSONA_ROLE_NAME_MENU}${NC}"
+    echo -e "${GRAY}${PERSONA_ROLE_DESC_MENU}${NC}"
+    echo ""
+
+    current_goal="${PERSONA_ROLE_DEFAULT_GOAL_MENU}"
+    current_personality="${PERSONA_ROLE_DEFAULT_STYLE_MENU}"
+    current_work_style="${PERSONA_ROLE_DEFAULT_WORK_MENU}"
+
     read_input "${YELLOW}助手名称 (默认: ${current_name}): ${NC}" bot_name
     bot_name="${bot_name:-$current_name}"
     read_input "${YELLOW}如何称呼你 (默认: ${current_user}): ${NC}" user_name
@@ -7092,6 +7278,10 @@ config_identity() {
     openclaw config set identity.goal "$user_goal" 2>/dev/null || true
     openclaw config set identity.personality "$personality" 2>/dev/null || true
     openclaw config set identity.work_style "$work_style" 2>/dev/null || true
+    openclaw config set identity.role.id "$PERSONA_ROLE_MENU_SELECTED" 2>/dev/null || true
+    openclaw config set identity.role.name "$PERSONA_ROLE_NAME_MENU" 2>/dev/null || true
+    openclaw config set identity.role.emoji "$PERSONA_ROLE_EMOJI_MENU" 2>/dev/null || true
+    openclaw config set identity.role.description "$PERSONA_ROLE_DESC_MENU" 2>/dev/null || true
     openclaw config set identity.greeting "$greeting" 2>/dev/null || true
     openclaw config set identity.welcome.message "$welcome_message" 2>/dev/null || true
     openclaw config unset identity.welcome.channel 2>/dev/null || true
@@ -7099,6 +7289,12 @@ config_identity() {
     openclaw config set "boot-md.enabled" true 2>/dev/null || true
     openclaw config set "session-memory.enabled" true 2>/dev/null || true
     upsert_env_export "OPENCLAW_WELCOME_MESSAGE" "$welcome_message"
+    upsert_env_export "OPENCLAW_PERSONA_ROLE" "$PERSONA_ROLE_MENU_SELECTED"
+    upsert_env_export "OPENCLAW_ASSISTANT_EMOJI" "$PERSONA_ROLE_EMOJI_MENU"
+    upsert_env_export "OPENCLAW_USER_GOAL" "$user_goal"
+    upsert_env_export "OPENCLAW_ASSISTANT_PERSONALITY" "$personality"
+    upsert_env_export "OPENCLAW_ASSISTANT_WORK_MODE" "$work_style"
+    upsert_env_export "OPENCLAW_ASSISTANT_WORK_STYLE" "$work_style"
     remove_env_export "OPENCLAW_WELCOME_CHANNEL"
     remove_env_export "OPENCLAW_WELCOME_TARGET"
 
@@ -7108,6 +7304,7 @@ config_identity() {
 # OpenClaw 基础人设配置
 
 - 助手名称: ${bot_name}
+- 职业人格: ${PERSONA_ROLE_EMOJI_MENU} ${PERSONA_ROLE_NAME_MENU}
 - 用户称呼: ${user_name}
 - 所在地区: ${region}
 - 时区: ${timezone}
@@ -7132,8 +7329,32 @@ ${welcome_doc}
 EOF
     chmod 600 "$profile_doc" 2>/dev/null || true
 
+    role_doc="$CONFIG_DIR/docs/persona-role-profile.md"
+    cat > "$role_doc" <<EOF
+# 职业人格档案
+
+- 角色ID: ${PERSONA_ROLE_MENU_SELECTED}
+- 角色: ${PERSONA_ROLE_EMOJI_MENU} ${PERSONA_ROLE_NAME_MENU}
+- 定位: ${PERSONA_ROLE_DESC_MENU}
+- agency-agents 对照: ${PERSONA_ROLE_AGENCY_MENU}
+
+## 核心技能（默认包内优先）
+${PERSONA_ROLE_CORE_SKILLS_MENU}
+
+## 扩展技能（按需安装）
+${PERSONA_ROLE_EXTRA_SKILLS_MENU}
+EOF
+    chmod 600 "$role_doc" 2>/dev/null || true
+
+    current_rule_profile="$(openclaw config get vendor.control.profile 2>/dev/null || true)"
+    current_rule_profile="$(normalize_rule_profile_level "${current_rule_profile:-${OPENCLAW_RULE_PROFILE:-medium}}")"
+    if [ "$current_rule_profile" != "none" ]; then
+        write_profile_policy_files_menu "$current_rule_profile"
+    fi
+
     echo ""
     log_info "身份配置已更新！"
+    echo -e "  ${CYAN}职业人格:${NC} ${WHITE}${PERSONA_ROLE_EMOJI_MENU} ${PERSONA_ROLE_NAME_MENU}${NC}"
     echo -e "  ${CYAN}首次欢迎语:${NC} ${WHITE}${greeting}${NC}"
     echo -e "  ${CYAN}已写入:${NC} ${WHITE}${profile_doc}${NC}"
     
@@ -7451,6 +7672,87 @@ list_installed_skills() {
         return 0
     fi
     echo "$skills" | sed 's/^/  - /'
+}
+
+resolve_skill_guide_path() {
+    local skill_name="$1"
+    local bundle_dir=""
+    local candidate=""
+
+    for candidate in \
+        "$CONFIG_DIR/skills/$skill_name/GUIDE.md" \
+        "$CONFIG_DIR/skills/$skill_name/SKILL.md"
+    do
+        if [ -f "$candidate" ]; then
+            echo "$candidate"
+            return 0
+        fi
+    done
+
+    bundle_dir="$(resolve_default_skills_bundle_dir 2>/dev/null || true)"
+    if [ -n "$bundle_dir" ]; then
+        for candidate in \
+            "$bundle_dir/$skill_name/GUIDE.md" \
+            "$bundle_dir/$skill_name/SKILL.md"
+        do
+            if [ -f "$candidate" ]; then
+                echo "$candidate"
+                return 0
+            fi
+        done
+    fi
+
+    return 1
+}
+
+show_skill_usage_guide() {
+    local skill_name=""
+    local guide_path=""
+    local index_path=""
+    local bundle_dir=""
+
+    echo ""
+    echo -e "${CYAN}已安装 Skills:${NC}"
+    list_installed_skills
+    echo ""
+    echo -e "${GRAY}提示: 输入 skill 名查看单个指南；输入 all 查看总览。${NC}"
+    read_input "${YELLOW}输入 Skill 名: ${NC}" skill_name
+
+    if [ -z "$skill_name" ]; then
+        log_error "Skill 名不能为空"
+        return 1
+    fi
+
+    if [ "$skill_name" = "all" ] || [ "$skill_name" = "*" ]; then
+        bundle_dir="$(resolve_default_skills_bundle_dir 2>/dev/null || true)"
+        for index_path in \
+            "$CONFIG_DIR/docs/skills-guides.md" \
+            "$bundle_dir/../../docs/skills-guides.md" \
+            "$bundle_dir/../docs/skills-guides.md"
+        do
+            if [ -f "$index_path" ]; then
+                echo ""
+                echo -e "${CYAN}Skills 使用指南总览${NC}"
+                print_divider
+                sed -n '1,260p' "$index_path"
+                return 0
+            fi
+        done
+        log_error "未找到 Skills 使用指南总览，请先同步默认技能包或更新仓库缓存"
+        return 1
+    fi
+
+    if ! guide_path="$(resolve_skill_guide_path "$skill_name")"; then
+        log_error "未找到 ${skill_name} 的使用指南"
+        return 1
+    fi
+
+    echo ""
+    echo -e "${CYAN}${skill_name} 使用指南${NC}"
+    print_divider
+    sed -n '1,260p' "$guide_path"
+    echo ""
+    echo -e "${GRAY}完整文件: ${guide_path}${NC}"
 }
 
 add_skill_from_local_path() {
@@ -7838,9 +8140,10 @@ manage_skills() {
     print_menu_item "7" "从本地目录添加 Skill" "➕"
     print_menu_item "8" "删除已安装 Skill" "🗑️"
     print_menu_item "9" "安装/修复 Skills 运行依赖" "🛠️"
+    print_menu_item "10" "查看 Skill 使用提示" "📘"
     print_menu_item "0" "返回主菜单" "↩️"
     echo ""
-    read_input "${YELLOW}请选择 [0-9]: ${NC}" skills_choice
+    read_input "${YELLOW}请选择 [0-10]: ${NC}" skills_choice
 
     case "$skills_choice" in
         1)
@@ -7871,6 +8174,9 @@ manage_skills() {
             ;;
         9)
             install_skill_runtime_dependencies_menu
+            ;;
+        10)
+            show_skill_usage_guide
             ;;
         0)
             return

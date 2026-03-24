@@ -122,8 +122,8 @@ DEFAULT_OFFICIAL_PLUGINS="@openclaw/feishu @openclaw/discord @openclaw/whatsapp"
 DEFAULT_BUILTIN_CHANNEL_PLUGINS="telegram imessage"
 RULE_PROFILE_DEFAULT="${OPENCLAW_RULE_PROFILE:-medium}"
 RULE_PROFILE_SELECTED="$(echo "${RULE_PROFILE_DEFAULT}" | tr '[:upper:]' '[:lower:]')"
-PROFILE_BASIC_SKILLS="capability-evolver openclaw-cron-setup proactive-agent self-improving-agent-cn brainstorming reflection find-skills skill-creator agent-browser chrome-devtools-mcp github mcp-builder model-usage shell minimax-understand-image tavily-search web-search minimax-web-search news-radar url-to-markdown pdf docx pptx xlsx stock-monitor-skill multi-search-engine akshare-stock"
-PROFILE_EXTENDED_SKILLS="capability-evolver openclaw-cron-setup proactive-agent self-improving-agent-cn brainstorming reflection find-skills skill-creator agent-browser chrome-devtools-mcp github mcp-builder model-usage shell minimax-understand-image tavily-search web-search minimax-web-search news-radar url-to-markdown pdf docx pptx xlsx stock-monitor-skill multi-search-engine akshare-stock gemini-image-service nano-banana-service"
+PROFILE_BASIC_SKILLS="capability-evolver openclaw-cron-setup proactive-agent self-improving-agent-cn brainstorming reflection find-skills skill-creator agent-browser chrome-devtools-mcp github mcp-builder model-usage shell minimax-understand-image tavily-search web-search minimax-web-search news-radar url-to-markdown pdf docx pptx xlsx stock-monitor-skill multi-search-engine akshare-stock content-strategy social-content ai-image-generation marketingskills inference-skills agentmail agentmail-cli agentmail-mcp agentmail-toolkit"
+PROFILE_EXTENDED_SKILLS="capability-evolver openclaw-cron-setup proactive-agent self-improving-agent-cn brainstorming reflection find-skills skill-creator agent-browser chrome-devtools-mcp github mcp-builder model-usage shell minimax-understand-image tavily-search web-search minimax-web-search news-radar url-to-markdown pdf docx pptx xlsx stock-monitor-skill multi-search-engine akshare-stock content-strategy social-content ai-image-generation marketingskills inference-skills gemini-image-service nano-banana-service agentmail agentmail-cli agentmail-mcp agentmail-toolkit"
 PROFILE_SUPER_SKILLS="__ALL_DEFAULT__"
 GEMINI_BASE_URL_DEFAULT="${GEMINI_BASE_URL:-${GOOGLE_BASE_URL:-}}"
 GEMINI_IMAGE_MODEL_DEFAULT="${GEMINI_IMAGE_MODEL:-gemini-2.5-flash-image-preview}"
@@ -134,6 +134,7 @@ SILICONFLOW_FALLBACK_API_URL="${OPENCLAW_UNOFFICIAL_OPENAI_API_URL:-https://api.
 SILICONFLOW_FALLBACK_MODEL="${OPENCLAW_UNOFFICIAL_OPENAI_MODEL:-Qwen/Qwen3-8B}"
 WELCOME_DOC_URL_GITEE="https://gitee.com/leecyno1/auto-install-openclaw/blob/main/docs/channels-configuration-guide.md"
 WELCOME_DOC_URL_GITHUB="https://github.com/leecyno1/auto-install-Openclaw/blob/main/docs/channels-configuration-guide.md"
+PERSONA_ROLE_SELECTED="$(echo "${OPENCLAW_PERSONA_ROLE:-druid}" | tr '[:upper:]' '[:lower:]')"
 
 NO_ONBOARD="${OPENCLAW_NO_ONBOARD:-0}"
 NO_PROMPT="${OPENCLAW_NO_PROMPT:-0}"
@@ -194,6 +195,119 @@ log_error() {
 
 log_step() {
     echo -e "${BLUE}[STEP]${NC} $1"
+}
+
+normalize_persona_role_id_install() {
+    local role
+    role="$(echo "$1" | tr '[:upper:]' '[:lower:]' | tr '_' '-' | xargs)"
+    case "$role" in
+        druid|generalist|wanjinyou) echo "druid" ;;
+        assassin|analyst|fenxiyuan) echo "assassin" ;;
+        mage|researcher|yanjiuzhe) echo "mage" ;;
+        summoner|manager|guanlizhe) echo "summoner" ;;
+        warrior|technician|jishuyuan) echo "warrior" ;;
+        paladin|marketer|yingxiaozhe) echo "paladin" ;;
+        designer|archer|yunyingzhe) echo "designer" ;;
+        *) echo "druid" ;;
+    esac
+}
+
+set_persona_role_profile_install() {
+    local role
+    role="$(normalize_persona_role_id_install "$1")"
+    PERSONA_ROLE_SELECTED="$role"
+
+    case "$role" in
+        druid)
+            PERSONA_ROLE_NAME="万金油·德鲁伊"
+            PERSONA_ROLE_EMOJI="🦞"
+            PERSONA_ROLE_DESC="通用总管，覆盖日常助理、任务推进、沟通协作与结果回报。"
+            PERSONA_ROLE_AGENCY="specialized/agents-orchestrator + project-management/project-manager-senior"
+            PERSONA_ROLE_DEFAULT_GOAL="综合的小助理，帮我制定日程，邮件，写作，搜索，投资分析等"
+            PERSONA_ROLE_DEFAULT_STYLE="严谨、适当幽默、务实"
+            PERSONA_ROLE_DEFAULT_WORK="整段回复，主动汇报，积极响应并调用skills"
+            PERSONA_ROLE_CORE_SKILLS="proactive-agent, openclaw-cron-setup, reflection, find-skills, shell, web-search, summarize, docx, xlsx, agentmail"
+            PERSONA_ROLE_EXTRA_SKILLS="task, todo, todoist-api, ai-meeting-notes, openclaw-feeds, weather"
+            ;;
+        assassin)
+            PERSONA_ROLE_NAME="分析员·刺客"
+            PERSONA_ROLE_EMOJI="🗡️"
+            PERSONA_ROLE_DESC="券商式深挖分析，负责数据采集、价值挖掘与投资机会研究。"
+            PERSONA_ROLE_AGENCY="sales/sales-pipeline-analyst + support/support-finance-tracker + product/product-trend-researcher"
+            PERSONA_ROLE_DEFAULT_GOAL="帮我做投资研究、机会筛选、估值拆解和风险提示"
+            PERSONA_ROLE_DEFAULT_STYLE="冷静、数据驱动、结论导向"
+            PERSONA_ROLE_DEFAULT_WORK="先给结论与风险，再给证据链与可执行建议"
+            PERSONA_ROLE_CORE_SKILLS="akshare-stock, stock-monitor-skill, multi-search-engine, web-search, tavily-search, news-radar, summarize, url-to-markdown, xlsx"
+            PERSONA_ROLE_EXTRA_SKILLS="finance-data, data-analyst, google-trends, openclaw-feeds, reddit, requesthunt, producthunt, session-logs"
+            ;;
+        mage)
+            PERSONA_ROLE_NAME="研究者·大法师"
+            PERSONA_ROLE_EMOJI="🧙"
+            PERSONA_ROLE_DESC="学术与知识生产角色，擅长论文、科研、读书与结构化笔记。"
+            PERSONA_ROLE_AGENCY="marketing/marketing-book-co-author + specialized/specialized-document-generator + testing/testing-evidence-collector"
+            PERSONA_ROLE_DEFAULT_GOAL="帮我完成论文写作、科研资料整理、读书笔记与知识沉淀"
+            PERSONA_ROLE_DEFAULT_STYLE="严谨、学术化、条理清晰"
+            PERSONA_ROLE_DEFAULT_WORK="先给研究框架与提纲，再给逐步产出与引用建议"
+            PERSONA_ROLE_CORE_SKILLS="brainstorming, summarize, web-search, tavily-search, url-to-markdown, docx, pdf, nano-pdf, pptx, xlsx"
+            PERSONA_ROLE_EXTRA_SKILLS="ai-meeting-notes, ai-ppt-generate, paperless-docs, paperless-ngx-tools, format-pro, byterover"
+            ;;
+        summoner)
+            PERSONA_ROLE_NAME="管理者·召唤师"
+            PERSONA_ROLE_EMOJI="🪄"
+            PERSONA_ROLE_DESC="企业管理角色，覆盖招聘、人力、流程、组织协同与团队激励。"
+            PERSONA_ROLE_AGENCY="specialized/recruitment-specialist + project-management/project-management-studio-operations + project-management/project-manager-senior"
+            PERSONA_ROLE_DEFAULT_GOAL="帮我管理团队目标、人员分工、流程制度和执行节奏"
+            PERSONA_ROLE_DEFAULT_STYLE="稳健、结构化、目标导向"
+            PERSONA_ROLE_DEFAULT_WORK="先给优先级和里程碑，再给分工、风险和跟进机制"
+            PERSONA_ROLE_CORE_SKILLS="proactive-agent, openclaw-cron-setup, docx, xlsx, pptx, agentmail, github, reflection"
+            PERSONA_ROLE_EXTRA_SKILLS="task, todo, todoist-api, ai-meeting-notes, lark-calendar, data-reconciliation-exceptions, publish-guard, session-logs"
+            ;;
+        warrior)
+            PERSONA_ROLE_NAME="技术员·战士"
+            PERSONA_ROLE_EMOJI="⚔️"
+            PERSONA_ROLE_DESC="工程交付角色，负责编码实现、测试排障、稳定性与上线。"
+            PERSONA_ROLE_AGENCY="engineering/engineering-senior-developer + engineering/engineering-code-reviewer + engineering/engineering-devops-automator + engineering/engineering-sre"
+            PERSONA_ROLE_DEFAULT_GOAL="帮我做编程工程交付、代码测试、故障排查和上线保障"
+            PERSONA_ROLE_DEFAULT_STYLE="直接、工程化、可验证"
+            PERSONA_ROLE_DEFAULT_WORK="先给可运行结果，再给验证步骤和回滚方案"
+            PERSONA_ROLE_CORE_SKILLS="shell, github, mcp-builder, chrome-devtools-mcp, agent-browser, model-usage, web-search, minimax-understand-image, reflection"
+            PERSONA_ROLE_EXTRA_SKILLS="tdd, test-driven-development, subagent-driven-development, skill-security-auditor, github-actions-generator, gitclassic, prisma-database-setup, database, preflight-checks, tmux"
+            ;;
+        paladin)
+            PERSONA_ROLE_NAME="营销者·圣骑士"
+            PERSONA_ROLE_EMOJI="🛡️"
+            PERSONA_ROLE_DESC="增长运营角色，覆盖SEO、广告、内容分发、客户关系与客服协同。"
+            PERSONA_ROLE_AGENCY="marketing/marketing-growth-hacker + marketing/marketing-seo-specialist + marketing/marketing-social-media-strategist + marketing/marketing-content-creator"
+            PERSONA_ROLE_DEFAULT_GOAL="帮我做市场运营、内容增长、渠道分发、SEO和客户关系管理"
+            PERSONA_ROLE_DEFAULT_STYLE="增长导向、创意与数据并重"
+            PERSONA_ROLE_DEFAULT_WORK="先给增长目标与漏斗，再给渠道方案、内容节奏和复盘指标"
+            PERSONA_ROLE_CORE_SKILLS="web-search, tavily-search, news-radar, summarize, url-to-markdown, docx, xlsx, agentmail, frontend-design, web-design"
+            PERSONA_ROLE_EXTRA_SKILLS="programmatic-seo, seo-geo, social-content, content-strategy, google-trends, twitter, weibo-manager, weibo-fresh-posts, xiaohongshu-ops, xiaohongshu-auto, douyin-hot-trend, douyin-upload-skill, bilibili-hot-monitor, baoyu-post-to-wechat, baoyu-post-to-x"
+            ;;
+        designer)
+            PERSONA_ROLE_NAME="设计师·弓箭手"
+            PERSONA_ROLE_EMOJI="🏹"
+            PERSONA_ROLE_DESC="综合设计角色，覆盖前端设计、艺术设计、UI/UX、平面/工业/建筑概念与自媒体视觉。"
+            PERSONA_ROLE_AGENCY="design/design-ui-designer + design/design-ux-architect + design/design-visual-storyteller + design/design-image-prompt-engineer"
+            PERSONA_ROLE_DEFAULT_GOAL="帮我做前端界面设计、视觉创作、图文内容与多场景设计方案"
+            PERSONA_ROLE_DEFAULT_STYLE="审美驱动、可落地、强调风格一致性"
+            PERSONA_ROLE_DEFAULT_WORK="先给风格方向与版式，再给素材清单、实现路径和交付规格"
+            PERSONA_ROLE_CORE_SKILLS="frontend-design, web-design, gemini-image-service, nano-banana-service, grok-imagine-1.0-video, pptx, docx, summarize"
+            PERSONA_ROLE_EXTRA_SKILLS="ai-image-generation, banner-creator, logo-creator, infographic-pro, ai-ppt-generate, baoyu-article-illustrator, baoyu-comic, baoyu-cover-image, baoyu-infographic, baoyu-slide-deck, video-frames, tailwind-design-system, web-design-guidelines"
+            ;;
+    esac
+}
+
+show_persona_role_cards_install() {
+    echo -e "${CYAN}请选择初始化职业人格（7选1）:${NC}"
+    echo "  [1] 🦞 万金油·德鲁伊   - 通用总管，适合绝大多数用户"
+    echo "  [2] 🗡️ 分析员·刺客   - 数据深挖、价值发现、投资机会"
+    echo "  [3] 🧙 研究者·大法师  - 学术科研、论文写作、知识沉淀"
+    echo "  [4] 🪄 管理者·召唤师  - 团队管理、流程制度、组织协同"
+    echo "  [5] ⚔️ 技术员·战士   - 编程交付、测试排障、工程上线"
+    echo "  [6] 🛡️ 营销者·圣骑士  - 市场增长、SEO投放、渠道运营"
+    echo "  [7] 🏹 设计师·弓箭手  - 前端/UI/视觉/平面/工业/建筑概念"
+    echo ""
 }
 
 run_auto_fix_once() {
@@ -1074,6 +1188,8 @@ write_profile_policy_files() {
     local gemini_url gemini_model nano_url nano_image_model nano_video_model
     local persona_user_name persona_timezone persona_location persona_goal
     local persona_style persona_work_mode persona_agent_name persona_agent_emoji
+    local persona_role_id persona_role_name persona_role_emoji persona_role_desc
+    local persona_role_agency persona_role_core_skills persona_role_extra_skills
 
     limits="$(get_profile_token_limits "$level")"
     window_hours="$(echo "$limits" | awk '{print $1}')"
@@ -1110,14 +1226,23 @@ write_profile_policy_files() {
     local policy_json="$policy_dir/vendor-control-profile.json"
     local prompt_file="$policy_dir/vendor-control-prompts.md"
 
+    set_persona_role_profile_install "${OPENCLAW_PERSONA_ROLE:-druid}"
+    persona_role_id="$PERSONA_ROLE_SELECTED"
+    persona_role_name="$PERSONA_ROLE_NAME"
+    persona_role_emoji="$PERSONA_ROLE_EMOJI"
+    persona_role_desc="$PERSONA_ROLE_DESC"
+    persona_role_agency="$PERSONA_ROLE_AGENCY"
+    persona_role_core_skills="$PERSONA_ROLE_CORE_SKILLS"
+    persona_role_extra_skills="$PERSONA_ROLE_EXTRA_SKILLS"
+
     persona_user_name="${OPENCLAW_USER_NAME:-主人}"
     persona_timezone="${OPENCLAW_USER_TIMEZONE:-Asia/Shanghai}"
     persona_location="${OPENCLAW_USER_REGION:-中国大陆}"
-    persona_goal="${OPENCLAW_USER_GOAL:-综合的小助理，帮我制定日程，邮件，写作，搜索，投资分析等}"
-    persona_style="${OPENCLAW_ASSISTANT_PERSONALITY:-严谨、适当幽默、务实}"
-    persona_work_mode="${OPENCLAW_ASSISTANT_WORK_MODE:-整段回复，主动汇报，积极响应并调用skills}"
+    persona_goal="${OPENCLAW_USER_GOAL:-$PERSONA_ROLE_DEFAULT_GOAL}"
+    persona_style="${OPENCLAW_ASSISTANT_PERSONALITY:-$PERSONA_ROLE_DEFAULT_STYLE}"
+    persona_work_mode="${OPENCLAW_ASSISTANT_WORK_MODE:-${OPENCLAW_ASSISTANT_WORK_STYLE:-$PERSONA_ROLE_DEFAULT_WORK}}"
     persona_agent_name="${OPENCLAW_ASSISTANT_NAME:-龙虾小助理}"
-    persona_agent_emoji="${OPENCLAW_ASSISTANT_EMOJI:-🦞}"
+    persona_agent_emoji="${OPENCLAW_ASSISTANT_EMOJI:-$PERSONA_ROLE_EMOJI}"
 
     mkdir -p "$policy_dir" "$soul_dir" "$agent_dir" "$memory_dir" "$session_dir" "$persona_dir" 2>/dev/null || true
 
@@ -1190,6 +1315,10 @@ EOF
     cat > "$persona_soul_file" <<EOF
 # SOUL.md - 基础人格规则
 
+## 职业人格
+- ${persona_role_emoji} ${persona_role_name}
+- ${persona_role_desc}
+
 ## 性格
 - ${persona_style}
 - 反应快、务实、先结论后细节，不说空话。
@@ -1206,6 +1335,12 @@ EOF
 
     cat > "$persona_agents_file" <<EOF
 # AGENTS.md - 基础工作手册
+
+## 职业设定
+- 角色: ${persona_role_emoji} ${persona_role_name}
+- 对照: ${persona_role_agency}
+- 核心技能: ${persona_role_core_skills}
+- 扩展技能: ${persona_role_extra_skills}
 
 ## 任务流程（SOP）
 1. 接收任务并复述目标与验收标准。
@@ -1246,6 +1381,7 @@ EOF
 
 - Name: ${persona_agent_name}
 - Emoji: ${persona_agent_emoji}
+- Persona Role: ${persona_role_emoji} ${persona_role_name}
 - Role: OpenClaw 综合助理（调度、执行、汇报）
 - Work Mode: ${persona_work_mode}
 - Language: 简体中文
@@ -1306,6 +1442,15 @@ EOF
     "agents": "${persona_agents_file}",
     "user": "${persona_user_file}",
     "identity": "${persona_identity_file}"
+  },
+  "roleProfile": {
+    "id": "${persona_role_id}",
+    "name": "${persona_role_name}",
+    "emoji": "${persona_role_emoji}",
+    "description": "${persona_role_desc}",
+    "agencyMapping": "${persona_role_agency}",
+    "coreSkills": "${persona_role_core_skills}",
+    "extraSkills": "${persona_role_extra_skills}"
   }
 }
 EOF
@@ -1355,6 +1500,9 @@ EOF
         openclaw config set "vendor.control.files.persona.user" "$persona_user_file" >/dev/null 2>&1 || true
         openclaw config set "vendor.control.files.persona.identity" "$persona_identity_file" >/dev/null 2>&1 || true
         openclaw config set "vendor.control.persona.enabled" true >/dev/null 2>&1 || true
+        openclaw config set "vendor.control.persona.role.id" "$persona_role_id" >/dev/null 2>&1 || true
+        openclaw config set "vendor.control.persona.role.name" "$persona_role_name" >/dev/null 2>&1 || true
+        openclaw config set "vendor.control.persona.role.emoji" "$persona_role_emoji" >/dev/null 2>&1 || true
         openclaw config set "boot-md.enabled" true >/dev/null 2>&1 || true
         openclaw config set "session-memory.enabled" true >/dev/null 2>&1 || true
     fi
@@ -4693,40 +4841,71 @@ test_api_connection() {
 setup_identity() {
     echo ""
     echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-    echo -e "${WHITE}  第 4 步: 首次欢迎与身份人设${NC}"
+    echo -e "${WHITE}  第 4 步: 初始化职业人格${NC}"
     echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
     echo ""
 
-    local bot_name="${OPENCLAW_ASSISTANT_NAME:-Clawd}"
+    local role_choice role_default_choice
+    local bot_name="${OPENCLAW_ASSISTANT_NAME:-龙虾小助理}"
     local user_name="${OPENCLAW_USER_NAME:-主人}"
     local region="${OPENCLAW_USER_REGION:-中国大陆}"
     local timezone="${OPENCLAW_USER_TIMEZONE:-Asia/Shanghai}"
-    local user_goal="${OPENCLAW_USER_GOAL:-综合的小助理，帮我制定日程，邮件，写作，搜索，投资分析等}"
-    local personality="${OPENCLAW_ASSISTANT_PERSONALITY:-严谨、适当幽默、务实}"
-    local work_style="${OPENCLAW_ASSISTANT_WORK_STYLE:-整段回复，主动汇报，积极响应并调用skills}"
+    local user_goal personality work_style
     local welcome_text="${OPENCLAW_WELCOME_MESSAGE:-你好我的主人，我是你的龙虾小助理，现在我已经上线了。现在你可以通过简单设置与飞书/钉钉/tele等进行配对，你就可以在通讯平台中给我布置任务啦！具体参照页面下方的配对指南}"
     local profile_doc="$CONFIG_DIR/docs/assistant-base-profile.md"
+    local role_doc="$CONFIG_DIR/docs/persona-role-profile.md"
+
+    set_persona_role_profile_install "${OPENCLAW_PERSONA_ROLE:-druid}"
 
     if [ "$NO_PROMPT" != "1" ] && [ "$TTY_INPUT" != "/dev/null" ]; then
+        show_persona_role_cards_install
+        case "$PERSONA_ROLE_SELECTED" in
+            druid) role_default_choice="1" ;;
+            assassin) role_default_choice="2" ;;
+            mage) role_default_choice="3" ;;
+            summoner) role_default_choice="4" ;;
+            warrior) role_default_choice="5" ;;
+            paladin) role_default_choice="6" ;;
+            designer) role_default_choice="7" ;;
+            *) role_default_choice="1" ;;
+        esac
+        read_input "${YELLOW}请选择职业 [1-7] (默认: ${role_default_choice}): ${NC}" role_choice
+        role_choice="${role_choice:-$role_default_choice}"
+        case "$role_choice" in
+            1) set_persona_role_profile_install "druid" ;;
+            2) set_persona_role_profile_install "assassin" ;;
+            3) set_persona_role_profile_install "mage" ;;
+            4) set_persona_role_profile_install "summoner" ;;
+            5) set_persona_role_profile_install "warrior" ;;
+            6) set_persona_role_profile_install "paladin" ;;
+            7) set_persona_role_profile_install "designer" ;;
+            *)
+                log_warn "无效选择，回退默认职业：万金油·德鲁伊"
+                set_persona_role_profile_install "druid"
+                ;;
+        esac
+        echo ""
+        echo -e "${CYAN}已选择:${NC} ${WHITE}${PERSONA_ROLE_EMOJI} ${PERSONA_ROLE_NAME}${NC}"
+        echo -e "${GRAY}${PERSONA_ROLE_DESC}${NC}"
+        echo ""
         read_input "${YELLOW}助手名称 (默认: ${bot_name}): ${NC}" bot_name
-        bot_name="${bot_name:-${OPENCLAW_ASSISTANT_NAME:-Clawd}}"
-        read_input "${YELLOW}机器人如何称呼你 (默认: ${user_name}): ${NC}" user_name
-        user_name="${user_name:-${OPENCLAW_USER_NAME:-主人}}"
-        read_input "${YELLOW}你所在地区 (默认: ${region}): ${NC}" region
-        region="${region:-${OPENCLAW_USER_REGION:-中国大陆}}"
-        read_input "${YELLOW}你的时区 (默认: ${timezone}): ${NC}" timezone
-        timezone="${timezone:-${OPENCLAW_USER_TIMEZONE:-Asia/Shanghai}}"
-        read_input "${YELLOW}你希望机器人主要做什么: ${NC}" user_goal
-        user_goal="${user_goal:-${OPENCLAW_USER_GOAL:-综合的小助理，帮我制定日程，邮件，写作，搜索，投资分析等}}"
-        read_input "${YELLOW}你希望机器人的性格: ${NC}" personality
-        personality="${personality:-${OPENCLAW_ASSISTANT_PERSONALITY:-严谨、适当幽默、务实}}"
-        read_input "${YELLOW}你希望机器人的工作方式: ${NC}" work_style
-        work_style="${work_style:-${OPENCLAW_ASSISTANT_WORK_STYLE:-整段回复，主动汇报，积极响应并调用skills}}"
+        bot_name="${bot_name:-${OPENCLAW_ASSISTANT_NAME:-龙虾小助理}}"
         echo ""
         read_input "${YELLOW}欢迎消息（留空使用默认）: ${NC}" welcome_text
         welcome_text="${welcome_text:-${OPENCLAW_WELCOME_MESSAGE:-你好我的主人，我是你的龙虾小助理，现在我已经上线了。现在你可以通过简单设置与飞书/钉钉/tele等进行配对，你就可以在通讯平台中给我布置任务啦！具体参照页面下方的配对指南}}"
     fi
 
+    user_goal="${OPENCLAW_USER_GOAL:-$PERSONA_ROLE_DEFAULT_GOAL}"
+    personality="${OPENCLAW_ASSISTANT_PERSONALITY:-$PERSONA_ROLE_DEFAULT_STYLE}"
+    work_style="${OPENCLAW_ASSISTANT_WORK_MODE:-${OPENCLAW_ASSISTANT_WORK_STYLE:-$PERSONA_ROLE_DEFAULT_WORK}}"
+
+    upsert_env_export_install "OPENCLAW_PERSONA_ROLE" "$PERSONA_ROLE_SELECTED"
+    upsert_env_export_install "OPENCLAW_ASSISTANT_NAME" "$bot_name"
+    upsert_env_export_install "OPENCLAW_ASSISTANT_EMOJI" "$PERSONA_ROLE_EMOJI"
+    upsert_env_export_install "OPENCLAW_USER_GOAL" "$user_goal"
+    upsert_env_export_install "OPENCLAW_ASSISTANT_PERSONALITY" "$personality"
+    upsert_env_export_install "OPENCLAW_ASSISTANT_WORK_MODE" "$work_style"
+    upsert_env_export_install "OPENCLAW_ASSISTANT_WORK_STYLE" "$work_style"
     upsert_env_export_install "OPENCLAW_WELCOME_MESSAGE" "$welcome_text"
     remove_env_export_install "OPENCLAW_WELCOME_CHANNEL"
     remove_env_export_install "OPENCLAW_WELCOME_TARGET"
@@ -4739,6 +4918,10 @@ setup_identity() {
         openclaw config set identity.goal "$user_goal" >/dev/null 2>&1 || true
         openclaw config set identity.personality "$personality" >/dev/null 2>&1 || true
         openclaw config set identity.work_style "$work_style" >/dev/null 2>&1 || true
+        openclaw config set identity.role.id "$PERSONA_ROLE_SELECTED" >/dev/null 2>&1 || true
+        openclaw config set identity.role.name "$PERSONA_ROLE_NAME" >/dev/null 2>&1 || true
+        openclaw config set identity.role.emoji "$PERSONA_ROLE_EMOJI" >/dev/null 2>&1 || true
+        openclaw config set identity.role.description "$PERSONA_ROLE_DESC" >/dev/null 2>&1 || true
         openclaw config set identity.greeting "$welcome_text" >/dev/null 2>&1 || true
         openclaw config set identity.welcome.message "$welcome_text" >/dev/null 2>&1 || true
         openclaw config unset identity.welcome.channel >/dev/null 2>&1 || true
@@ -4753,6 +4936,7 @@ setup_identity() {
 # OpenClaw 基础人设配置
 
 - 助手名称: ${bot_name}
+- 职业人格: ${PERSONA_ROLE_EMOJI} ${PERSONA_ROLE_NAME}
 - 用户称呼: ${user_name}
 - 所在地区: ${region}
 - 时区: ${timezone}
@@ -4774,12 +4958,28 @@ ${welcome_text}
 EOF
     chmod 600 "$profile_doc" 2>/dev/null || true
 
+    cat > "$role_doc" <<EOF
+# 职业人格档案
+
+- 角色ID: ${PERSONA_ROLE_SELECTED}
+- 角色: ${PERSONA_ROLE_EMOJI} ${PERSONA_ROLE_NAME}
+- 定位: ${PERSONA_ROLE_DESC}
+- agency-agents 对照: ${PERSONA_ROLE_AGENCY}
+
+## 核心技能（默认包内优先）
+${PERSONA_ROLE_CORE_SKILLS}
+
+## 扩展技能（按需安装）
+${PERSONA_ROLE_EXTRA_SKILLS}
+EOF
+    chmod 600 "$role_doc" 2>/dev/null || true
+
     echo ""
-    log_info "首次欢迎与身份人设已写入"
-    echo -e "  助手名称: ${WHITE}$bot_name${NC}"
-    echo -e "  用户称呼: ${WHITE}$user_name${NC}"
-    echo -e "  时区: ${WHITE}$timezone${NC}"
-    echo -e "  人设文档: ${WHITE}$profile_doc${NC}"
+    log_info "初始化职业人格已写入"
+    echo -e "  职业人格: ${WHITE}${PERSONA_ROLE_EMOJI} ${PERSONA_ROLE_NAME}${NC}"
+    echo -e "  助手名称: ${WHITE}${bot_name}${NC}"
+    echo -e "  人设文档: ${WHITE}${profile_doc}${NC}"
+    echo -e "  角色文档: ${WHITE}${role_doc}${NC}"
 }
 
 build_post_install_welcome_message() {
@@ -5225,7 +5425,7 @@ main() {
         fi
     fi
     apply_default_feishu_runtime_flags
-    log_info "已禁用安装阶段机器人初始化设置，保持 OpenClaw 默认身份配置。"
+    setup_identity
     apply_vendor_rule_profile
     apply_default_security_baseline
     reset_gateway_chat_history_for_fresh_start

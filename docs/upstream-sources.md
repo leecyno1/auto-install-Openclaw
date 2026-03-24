@@ -62,17 +62,25 @@
 | Skill | 本地目录 | 上游更新地址 |
 |---|---|---|
 | agent-browser | `skills/default/agent-browser` | /Users/lichengyin/.codex/skills/agent-browser |
+| agentmail | `skills/default/agentmail` | https://github.com/agentmail-to/agentmail-skills |
+| agentmail-cli | `skills/default/agentmail-cli` | https://github.com/agentmail-to/agentmail-skills |
+| agentmail-mcp | `skills/default/agentmail-mcp` | https://github.com/agentmail-to/agentmail-skills |
+| agentmail-toolkit | `skills/default/agentmail-toolkit` | https://github.com/agentmail-to/agentmail-skills |
 | akshare-stock | `skills/default/akshare-stock` | /Users/lichengyin/.codex/skills/akshare-stock |
+| ai-image-generation | `skills/default/ai-image-generation` | https://github.com/inference-sh/skills/tree/main/tools/image/ai-image-generation |
 | blogwatcher | `skills/default/blogwatcher` | https://github.com/Hyaxia/blogwatcher |
 | brainstorming | `skills/default/brainstorming` | /Users/lichengyin/.codex/skills/brainstorming |
 | capability-evolver | `skills/default/capability-evolver` | /Users/lichengyin/.codex/skills/capability-evolver |
 | chrome-devtools-mcp | `skills/default/chrome-devtools-mcp` | https://github.com/ChromeDevTools/chrome-devtools-mcp |
+| content-strategy | `skills/default/content-strategy` | https://github.com/coreyhaines31/marketingskills/tree/main/skills/content-strategy |
 | docx | `skills/default/docx` | /Users/lichengyin/.codex/skills/docx |
 | find-skills | `skills/default/find-skills` | /Users/lichengyin/.codex/skills/find-skills |
 | frontend-design | `skills/default/frontend-design` | /Users/lichengyin/.codex/skills/frontend-design |
 | gemini-image-service | `skills/default/gemini-image-service` | /Users/lichengyin/.codex/skills/gemini-image-service |
 | github | `skills/default/github` | /Users/lichengyin/.codex/skills/github |
 | grok-imagine-1.0-video | `skills/default/grok-imagine-1.0-video` | /Users/lichengyin/.codex/skills/grok-imagine-1.0-video |
+| inference-skills | `skills/default/inference-skills` | https://github.com/inference-sh/skills |
+| marketingskills | `skills/default/marketingskills` | https://github.com/coreyhaines31/marketingskills |
 | mcp-builder | `skills/default/mcp-builder` | /Users/lichengyin/.codex/skills/mcp-builder |
 | minimax-understand-image | `skills/default/minimax-understand-image` | /Users/lichengyin/.codex/skills/minimax-understand-image |
 | minimax-web-search | `skills/default/minimax-web-search` | /Users/lichengyin/.codex/skills/minimax-web-search |
@@ -89,6 +97,7 @@
 | self-improving-agent-cn | `skills/default/self-improving-agent-cn` | /Users/lichengyin/.codex/skills/self-improving-agent-cn |
 | shell | `skills/default/shell` | /Users/lichengyin/.codex/skills/shell |
 | skill-creator | `skills/default/skill-creator` | /Users/lichengyin/.codex/skills/skill-creator |
+| social-content | `skills/default/social-content` | https://github.com/coreyhaines31/marketingskills/tree/main/skills/social-content |
 | stock-monitor-skill | `skills/default/stock-monitor-skill` | /Users/lichengyin/.codex/skills/stock-monitor-skill |
 | summarize | `skills/default/summarize` | https://summarize.sh |
 | tavily-search | `skills/default/tavily-search` | /Users/lichengyin/.codex/skills/tavily-search |

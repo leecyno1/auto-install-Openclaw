@@ -38,6 +38,15 @@ Bundled skills:
 - stock-monitor-skill
 - multi-search-engine
 - akshare-stock
+- content-strategy
+- social-content
+- ai-image-generation
+- marketingskills
+- inference-skills
+- agentmail
+- agentmail-cli
+- agentmail-mcp
+- agentmail-toolkit
 - gemini-image-service
 - nano-banana-service
 - grok-imagine-1.0-video
