@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-SUBPROJECT_SERVER="$ROOT_DIR/subprojects/lobster-sanctum-ui/dev-server.sh"
-LEGACY_WEB_DIR="$ROOT_DIR/web-config"
+PORT="${CONFIG_UI_PORT:-18188}"
+HOST="${CONFIG_UI_HOST:-0.0.0.0}"
+UI_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/web" && pwd)"
+PID_FILE="/tmp/lobster-sanctum-ui-${PORT}.pid"
+LOG_FILE="/tmp/lobster-sanctum-ui-${PORT}.log"
 
 usage() {
   cat <<USAGE
@@ -11,17 +13,6 @@ Usage: $0 {start|stop|restart|status}
   CONFIG_UI_HOST=0.0.0.0 CONFIG_UI_PORT=18188 $0 start
 USAGE
 }
-
-if [[ -x "$SUBPROJECT_SERVER" ]]; then
-  exec "$SUBPROJECT_SERVER" "${1:-}"
-fi
-
-# Legacy fallback (if subproject is unavailable)
-PORT="${CONFIG_UI_PORT:-18188}"
-HOST="${CONFIG_UI_HOST:-0.0.0.0}"
-UI_DIR="$LEGACY_WEB_DIR"
-PID_FILE="/tmp/openclaw-config-ui-${PORT}.pid"
-LOG_FILE="/tmp/openclaw-config-ui-${PORT}.log"
 
 listen_pid() {
   lsof -tiTCP:"$PORT" -sTCP:LISTEN 2>/dev/null | head -n 1 || true
@@ -31,18 +22,16 @@ is_running() {
   [[ -n "$(listen_pid)" ]]
 }
 
-start_ui() {
+start_server() {
   if [[ ! -d "$UI_DIR" ]]; then
     echo "[ERROR] UI directory not found: $UI_DIR"
-    echo "[ERROR] Missing subproject server: $SUBPROJECT_SERVER"
     exit 1
   fi
-
   if is_running; then
     local pid
     pid="$(listen_pid)"
     [[ -n "$pid" ]] && echo "$pid" > "$PID_FILE"
-    echo "[INFO] Config UI already running (legacy fallback, PID: ${pid:-unknown}, port: $PORT)"
+    echo "[INFO] Lobster Sanctum Studio already running (PID: ${pid:-unknown}, port: $PORT)"
     exit 0
   fi
 
@@ -62,17 +51,17 @@ start_ui() {
     local lp
     lp="$(listen_pid)"
     echo "${lp:-$pid}" > "$PID_FILE"
-    echo "[OK] Config UI started (legacy fallback): http://$HOST:$PORT (PID: ${lp:-$pid})"
+    echo "[OK] Lobster Sanctum Studio started: http://$HOST:$PORT (PID: ${lp:-$pid})"
   else
     rm -f "$PID_FILE"
-    echo "[ERROR] Failed to start Config UI. Check log: $LOG_FILE"
+    echo "[ERROR] Failed to start Lobster Sanctum Studio. Check log: $LOG_FILE"
     exit 1
   fi
 }
 
-stop_ui() {
+stop_server() {
   if ! is_running; then
-    echo "[INFO] Config UI is not running on port $PORT"
+    echo "[INFO] Lobster Sanctum Studio not running on port $PORT"
     rm -f "$PID_FILE"
     return 0
   fi
@@ -87,23 +76,23 @@ stop_ui() {
   pid_port="$(listen_pid)"
   [[ -n "$pid_port" ]] && kill -9 "$pid_port" 2>/dev/null || true
   rm -f "$PID_FILE"
-  echo "[OK] Config UI stopped"
+  echo "[OK] Lobster Sanctum Studio stopped"
 }
 
-status_ui() {
+status_server() {
   if is_running; then
     local pid
     pid="$(listen_pid)"
-    echo "[OK] Running (legacy fallback): http://$HOST:$PORT (PID: $pid)"
+    echo "[OK] Running: http://$HOST:$PORT (PID: $pid)"
   else
     echo "[INFO] Not running on port $PORT"
   fi
 }
 
 case "${1:-}" in
-  start) start_ui ;;
-  stop) stop_ui ;;
-  restart) stop_ui || true; start_ui ;;
-  status) status_ui ;;
+  start) start_server ;;
+  stop) stop_server ;;
+  restart) stop_server || true; start_server ;;
+  status) status_server ;;
   *) usage; exit 1 ;;
 esac

@@ -56,6 +56,7 @@
 - [快速开始](#快速开始)
 - [操作手册](#操作手册)
 - [配置说明](#配置说明)
+- [可视化子项目（独立）](#可视化子项目独立)
 - [职业人格（7选1）](#职业人格7选1)
 - [默认技能包](#默认技能包)
 - [渠道配置文档](#渠道配置文档)
@@ -297,6 +298,34 @@ auto-install-Openclaw 当前推荐配置模型：
 ├── env
 ├── backups/
 └── logs/
+```
+
+## 可视化子项目（独立）
+
+当前可视化配置页面已拆分为独立子项目：
+
+- 项目名：`Lobster Sanctum Studio`
+- 目录：`subprojects/lobster-sanctum-ui`
+- 前端文件：`subprojects/lobster-sanctum-ui/web/*`
+- 子项目文档：`subprojects/lobster-sanctum-ui/README.md`
+- 新 session 定义：`subprojects/lobster-sanctum-ui/SESSION.md`
+
+启动方式（保持原命令兼容）：
+
+```bash
+bash scripts/config-ui.sh start
+```
+
+也可直接使用子项目开发服务：
+
+```bash
+bash subprojects/lobster-sanctum-ui/dev-server.sh start
+```
+
+UI 美术开发可使用独立 session 启动器：
+
+```bash
+bash scripts/ui-studio-session.sh
 ```
 
 ## 职业人格（7选1）
