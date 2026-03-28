@@ -189,6 +189,7 @@ GAME_PROFILE_DIR="$CONFIG_DIR/profile"
 GAME_PROFILE_JSON="$GAME_PROFILE_DIR/game-profile.json"
 GAME_PROGRESS_JSON="$GAME_PROFILE_DIR/game-progress.json"
 GAME_ACHIEVEMENTS_JSON="$GAME_PROFILE_DIR/game-achievements.json"
+GATEWAY_SERVICE_INSTALLED_ONCE_MENU=0
 
 # ================================ 工具函数 ================================
 
@@ -2534,6 +2535,7 @@ converge_gateway_single_instance_menu() {
     local gateway_port="${1:-$(get_gateway_port)}"
     local gateway_bind="${2:-$(get_gateway_bind)}"
     local gateway_custom_host="${3:-$(get_gateway_custom_bind_host)}"
+    local converge_mode="${4:-light}" # light | repair | force-install
     local restart_output=""
 
     if ! check_openclaw_installed; then
@@ -2541,12 +2543,12 @@ converge_gateway_single_instance_menu() {
         return 1
     fi
 
-    openclaw config set gateway.mode local >/dev/null 2>&1 || true
-    openclaw config set gateway.bind "$gateway_bind" >/dev/null 2>&1 || true
+    openclaw_config_set_if_changed_menu "gateway.mode" "local"
+    openclaw_config_set_if_changed_menu "gateway.bind" "$gateway_bind"
     if [ "$gateway_bind" = "custom" ] && [ -n "$gateway_custom_host" ]; then
-        openclaw config set gateway.customBindHost "$gateway_custom_host" >/dev/null 2>&1 || true
+        openclaw_config_set_if_changed_menu "gateway.customBindHost" "$gateway_custom_host"
     fi
-    openclaw config set gateway.port "$gateway_port" >/dev/null 2>&1 || true
+    openclaw_config_set_if_changed_menu "gateway.port" "$gateway_port"
     apply_dashboard_pairing_bypass_menu
     upsert_env_export "OPENCLAW_GATEWAY_BIND" "$gateway_bind"
     upsert_env_export "OPENCLAW_GATEWAY_HOST" "$(gateway_bind_display_host "$gateway_bind" "$gateway_custom_host")"
@@ -2556,10 +2558,29 @@ converge_gateway_single_instance_menu() {
     upsert_env_export "OPENCLAW_GATEWAY_PORT" "$gateway_port"
 
     cleanup_legacy_gateway_runtime_menu
-    yes | openclaw doctor --fix >/dev/null 2>&1 || true
+    if [ "$converge_mode" = "repair" ] || [ "$converge_mode" = "force-install" ]; then
+        yes | openclaw doctor --fix >/dev/null 2>&1 || true
+    fi
 
-    if ! install_official_gateway_service_menu "$gateway_port"; then
-        return 1
+    if [ "$converge_mode" = "force-install" ] || [ "${GATEWAY_SERVICE_INSTALLED_ONCE_MENU:-0}" != "1" ]; then
+        local need_install=0
+        if [ "$converge_mode" = "force-install" ]; then
+            need_install=1
+        elif command -v systemctl >/dev/null 2>&1; then
+            if systemctl list-unit-files 2>/dev/null | grep -q '^openclaw-gateway\.service'; then
+                need_install=0
+            elif systemctl status openclaw-gateway.service >/dev/null 2>&1; then
+                need_install=0
+            else
+                need_install=1
+            fi
+        fi
+        if [ "$need_install" -eq 1 ]; then
+            if ! install_official_gateway_service_menu "$gateway_port"; then
+                return 1
+            fi
+        fi
+        GATEWAY_SERVICE_INSTALLED_ONCE_MENU=1
     fi
 
     enforce_gateway_service_precedence_menu
@@ -5645,7 +5666,7 @@ config_discord() {
             
             # 设置 groupPolicy 为 open（只响应 @ 机器人的消息）
             echo -e "${YELLOW}设置消息响应策略...${NC}"
-            openclaw config set channels.discord.groupPolicy open 2>/dev/null || true
+            openclaw config set channels.discord.groupPolicy open >/dev/null 2>&1 || true
             log_info "已设置为: 响应 @机器人 的消息"
             
             echo ""
@@ -7158,6 +7179,20 @@ resolve_openclaw_json_path_menu() {
     local mode="${2:-runtime}"
 
     if [ "$mode" = "fast" ]; then
+        if [ -n "${OPENCLAW_CONFIG:-}" ]; then
+            cfg="$(expand_home_path_menu "$OPENCLAW_CONFIG")"
+            [ -n "$cfg" ] && { echo "$cfg"; return 0; }
+        fi
+        if check_openclaw_installed; then
+            local active_cfg=""
+            if command -v timeout >/dev/null 2>&1; then
+                active_cfg="$(timeout 2s openclaw config file 2>/dev/null | head -n 1 | tr -d '\r' || true)"
+            fi
+            active_cfg="$(expand_home_path_menu "$active_cfg")"
+            if [ -n "$active_cfg" ] && [ "$active_cfg" != "undefined" ]; then
+                cfg="$active_cfg"
+            fi
+        fi
         echo "$cfg"
         return 0
     fi
@@ -7372,22 +7407,38 @@ startup_fast_config_sanitize_menu() {
     normalize_channel_policy_in_json_menu "$OPENCLAW_JSON" "fast" || true
 }
 
+openclaw_config_set_if_changed_menu() {
+    local key="$1"
+    local value="$2"
+    [ -n "$key" ] || return 0
+    if ! check_openclaw_installed; then
+        return 0
+    fi
+    local current
+    current="$(openclaw config get "$key" 2>/dev/null || true)"
+    current="$(echo "$current" | tr -d '\r' | sed 's/^"//; s/"$//')"
+    if [ "$current" = "$value" ]; then
+        return 0
+    fi
+    openclaw config set "$key" "$value" >/dev/null 2>&1 || true
+}
+
 apply_dashboard_pairing_bypass_menu() {
     if ! check_openclaw_installed; then
         return 0
     fi
     # 允许 Control UI 远程浏览器隧道使用 token 直连，避免出现 dashboard pairing required。
-    openclaw config set gateway.controlUi.allowInsecureAuth true >/dev/null 2>&1 || true
-    openclaw config set gateway.controlUi.dangerouslyDisableDeviceAuth true >/dev/null 2>&1 || true
+    openclaw_config_set_if_changed_menu "gateway.controlUi.allowInsecureAuth" "true"
+    openclaw_config_set_if_changed_menu "gateway.controlUi.dangerouslyDisableDeviceAuth" "true"
 }
 
 apply_default_feishu_runtime_flags_menu() {
     if ! check_openclaw_installed; then
         return 0
     fi
-    openclaw config set channels.feishu.streaming true >/dev/null 2>&1 || true
-    openclaw config set channels.feishu.footer.elapsed true >/dev/null 2>&1 || true
-    openclaw config set channels.feishu.footer.status true >/dev/null 2>&1 || true
+    openclaw_config_set_if_changed_menu "channels.feishu.streaming" "true"
+    openclaw_config_set_if_changed_menu "channels.feishu.footer.elapsed" "true"
+    openclaw_config_set_if_changed_menu "channels.feishu.footer.status" "true"
 }
 
 get_plugins_entries_keys_menu() {
@@ -8103,23 +8154,23 @@ config_identity() {
     greeting="$welcome_message"
     welcome_doc="$(build_identity_welcome_message_menu "$welcome_message")"
 
-    openclaw config set identity.name "$bot_name" 2>/dev/null || true
-    openclaw config set identity.user_name "$user_name" 2>/dev/null || true
-    openclaw config set identity.region "$region" 2>/dev/null || true
-    openclaw config set identity.timezone "$timezone" 2>/dev/null || true
-    openclaw config set identity.goal "$user_goal" 2>/dev/null || true
-    openclaw config set identity.personality "$personality" 2>/dev/null || true
-    openclaw config set identity.work_style "$work_style" 2>/dev/null || true
-    openclaw config set identity.role.id "$PERSONA_ROLE_MENU_SELECTED" 2>/dev/null || true
-    openclaw config set identity.role.name "$PERSONA_ROLE_NAME_MENU" 2>/dev/null || true
-    openclaw config set identity.role.emoji "$PERSONA_ROLE_EMOJI_MENU" 2>/dev/null || true
-    openclaw config set identity.role.description "$PERSONA_ROLE_DESC_MENU" 2>/dev/null || true
-    openclaw config set identity.greeting "$greeting" 2>/dev/null || true
-    openclaw config set identity.welcome.message "$welcome_message" 2>/dev/null || true
+    openclaw config set identity.name "$bot_name" >/dev/null 2>&1 || true
+    openclaw config set identity.user_name "$user_name" >/dev/null 2>&1 || true
+    openclaw config set identity.region "$region" >/dev/null 2>&1 || true
+    openclaw config set identity.timezone "$timezone" >/dev/null 2>&1 || true
+    openclaw config set identity.goal "$user_goal" >/dev/null 2>&1 || true
+    openclaw config set identity.personality "$personality" >/dev/null 2>&1 || true
+    openclaw config set identity.work_style "$work_style" >/dev/null 2>&1 || true
+    openclaw config set identity.role.id "$PERSONA_ROLE_MENU_SELECTED" >/dev/null 2>&1 || true
+    openclaw config set identity.role.name "$PERSONA_ROLE_NAME_MENU" >/dev/null 2>&1 || true
+    openclaw config set identity.role.emoji "$PERSONA_ROLE_EMOJI_MENU" >/dev/null 2>&1 || true
+    openclaw config set identity.role.description "$PERSONA_ROLE_DESC_MENU" >/dev/null 2>&1 || true
+    openclaw config set identity.greeting "$greeting" >/dev/null 2>&1 || true
+    openclaw config set identity.welcome.message "$welcome_message" >/dev/null 2>&1 || true
     openclaw config unset identity.welcome.channel 2>/dev/null || true
     openclaw config unset identity.welcome.target 2>/dev/null || true
-    openclaw config set "boot-md.enabled" true 2>/dev/null || true
-    openclaw config set "session-memory.enabled" true 2>/dev/null || true
+    openclaw config set "boot-md.enabled" true >/dev/null 2>&1 || true
+    openclaw config set "session-memory.enabled" true >/dev/null 2>&1 || true
     upsert_env_export "OPENCLAW_WELCOME_MESSAGE" "$welcome_message"
     upsert_env_export "OPENCLAW_PERSONA_ROLE" "$PERSONA_ROLE_MENU_SELECTED"
     upsert_env_export "OPENCLAW_ASSISTANT_EMOJI" "$PERSONA_ROLE_EMOJI_MENU"
@@ -8226,7 +8277,7 @@ config_security() {
                 enable_shell="true"
             fi
             if check_openclaw_installed; then
-                openclaw config set security.enable_shell_commands "$enable_shell" 2>/dev/null || true
+                openclaw config set security.enable_shell_commands "$enable_shell" >/dev/null 2>&1 || true
             fi
             [ "$enable_shell" = "true" ] && log_info "已启用系统命令执行" || log_info "已禁用系统命令执行"
             ;;
@@ -8236,7 +8287,7 @@ config_security() {
                 enable_file="true"
             fi
             if check_openclaw_installed; then
-                openclaw config set security.enable_file_access "$enable_file" 2>/dev/null || true
+                openclaw config set security.enable_file_access "$enable_file" >/dev/null 2>&1 || true
             fi
             [ "$enable_file" = "true" ] && log_info "已启用文件访问" || log_info "已禁用文件访问"
             ;;
@@ -8246,7 +8297,7 @@ config_security() {
                 enable_web="true"
             fi
             if check_openclaw_installed; then
-                openclaw config set security.enable_web_browsing "$enable_web" 2>/dev/null || true
+                openclaw config set security.enable_web_browsing "$enable_web" >/dev/null 2>&1 || true
             fi
             [ "$enable_web" = "true" ] && log_info "已启用网络浏览" || log_info "已禁用网络浏览"
             ;;
@@ -8256,7 +8307,7 @@ config_security() {
                 sandbox_mode="true"
             fi
             if check_openclaw_installed; then
-                openclaw config set security.sandbox_mode "$sandbox_mode" 2>/dev/null || true
+                openclaw config set security.sandbox_mode "$sandbox_mode" >/dev/null 2>&1 || true
             fi
             [ "$sandbox_mode" = "true" ] && log_info "已启用沙箱模式" || log_warn "已禁用沙箱模式，请注意安全风险"
             ;;
@@ -8269,9 +8320,9 @@ config_security() {
                 enable_bootmd="true"
             fi
             if check_openclaw_installed; then
-                openclaw config set "boot-md.enabled" "$enable_bootmd" 2>/dev/null || true
-                openclaw config set "boot_md.enabled" "$enable_bootmd" 2>/dev/null || true
-                openclaw config set "memory.boot.enabled" "$enable_bootmd" 2>/dev/null || true
+                openclaw config set "boot-md.enabled" "$enable_bootmd" >/dev/null 2>&1 || true
+                openclaw config set "boot_md.enabled" "$enable_bootmd" >/dev/null 2>&1 || true
+                openclaw config set "memory.boot.enabled" "$enable_bootmd" >/dev/null 2>&1 || true
             fi
             [ "$enable_bootmd" = "true" ] && log_info "已启用 Boot-MD" || log_info "已禁用 Boot-MD"
             ;;
@@ -8281,9 +8332,9 @@ config_security() {
                 enable_session_memory="true"
             fi
             if check_openclaw_installed; then
-                openclaw config set "session-memory.enabled" "$enable_session_memory" 2>/dev/null || true
-                openclaw config set "session_memory.enabled" "$enable_session_memory" 2>/dev/null || true
-                openclaw config set "memory.session.enabled" "$enable_session_memory" 2>/dev/null || true
+                openclaw config set "session-memory.enabled" "$enable_session_memory" >/dev/null 2>&1 || true
+                openclaw config set "session_memory.enabled" "$enable_session_memory" >/dev/null 2>&1 || true
+                openclaw config set "memory.session.enabled" "$enable_session_memory" >/dev/null 2>&1 || true
             fi
             [ "$enable_session_memory" = "true" ] && log_info "已启用 Session-Memory" || log_info "已禁用 Session-Memory"
             ;;
@@ -8318,7 +8369,7 @@ config_whitelist() {
     read -p "$(echo -e "${YELLOW}输入允许访问的目录 (逗号分隔): ${NC}")" paths
     
     if [ -n "$paths" ]; then
-        openclaw config set security.allowed_paths "$paths" 2>/dev/null
+        openclaw config set security.allowed_paths "$paths" >/dev/null 2>&1
         log_info "白名单配置已保存"
     fi
 }
@@ -9246,7 +9297,7 @@ manage_service() {
                     fi
                 fi
 
-                if converge_gateway_single_instance_menu "$port" "$host"; then
+                if converge_gateway_single_instance_menu "$port" "$bind"; then
                     local dashboard_url
                     dashboard_url="$(openclaw dashboard --no-open 2>/dev/null | grep -E "^https?://" | head -1)"
                     echo ""
@@ -9322,7 +9373,7 @@ manage_service() {
                 svc_custom_host="$(get_gateway_custom_bind_host)"
                 svc_port="$(get_gateway_port)"
                 log_info "正在执行官方服务收敛安装..."
-                if converge_gateway_single_instance_menu "$svc_port" "$svc_bind" "$svc_custom_host"; then
+                if converge_gateway_single_instance_menu "$svc_port" "$svc_bind" "$svc_custom_host" "force-install"; then
                     log_info "系统服务已安装并生效"
                     echo ""
                     echo -e "${CYAN}现在可以使用以下命令管理服务:${NC}"
@@ -9527,14 +9578,14 @@ ensure_openclaw_init() {
     local current_mode current_bind current_custom_host
     current_mode=$(openclaw config get gateway.mode 2>/dev/null)
     if [ -z "$current_mode" ] || [ "$current_mode" = "undefined" ]; then
-        openclaw config set gateway.mode local 2>/dev/null || true
+        openclaw_config_set_if_changed_menu "gateway.mode" "local"
     fi
 
     current_bind="$(get_gateway_bind)"
     current_custom_host="$(get_gateway_custom_bind_host)"
-    openclaw config set gateway.bind "$current_bind" 2>/dev/null || true
+    openclaw_config_set_if_changed_menu "gateway.bind" "$current_bind"
     if [ "$current_bind" = "custom" ] && [ -n "$current_custom_host" ]; then
-        openclaw config set gateway.customBindHost "$current_custom_host" 2>/dev/null || true
+        openclaw_config_set_if_changed_menu "gateway.customBindHost" "$current_custom_host"
     fi
     apply_dashboard_pairing_bypass_menu
 
@@ -9542,7 +9593,7 @@ ensure_openclaw_init() {
     auth_mode=$(openclaw config get gateway.auth.mode 2>/dev/null || true)
     auth_mode="$(echo "$auth_mode" | tr -d '"'\''[:space:]')"
     if [ -z "$auth_mode" ] || [ "$auth_mode" = "undefined" ]; then
-        openclaw config set gateway.auth.mode token 2>/dev/null || true
+        openclaw_config_set_if_changed_menu "gateway.auth.mode" "token"
         auth_mode="token"
     fi
     if [ "$auth_mode" = "token" ]; then
@@ -9552,19 +9603,19 @@ ensure_openclaw_init() {
         if [ -z "$auth_token" ] || [ "$auth_token" = "undefined" ]; then
             local new_token
             new_token=$(openssl rand -hex 32 2>/dev/null || cat /dev/urandom | head -c 32 | xxd -p 2>/dev/null || date +%s%N | sha256sum | head -c 64)
-            openclaw config set gateway.auth.token "$new_token" 2>/dev/null || true
+            openclaw_config_set_if_changed_menu "gateway.auth.token" "$new_token"
             log_info "已初始化并持久化 Gateway Token，用于远程隧道/反向代理访问。"
         fi
     fi
 
-    openclaw config set channels.feishu.dmPolicy open 2>/dev/null || true
-    openclaw config set channels.feishu.groupPolicy open 2>/dev/null || true
-    openclaw config set channels.telegram.dmPolicy open 2>/dev/null || true
-    openclaw config set channels.telegram.groupPolicy open 2>/dev/null || true
-    openclaw config set channels.whatsapp.dmPolicy open 2>/dev/null || true
-    openclaw config set channels.whatsapp.groupPolicy open 2>/dev/null || true
-    openclaw config set channels.imessage.dmPolicy open 2>/dev/null || true
-    openclaw config set channels.imessage.groupPolicy open 2>/dev/null || true
+    openclaw config set channels.feishu.dmPolicy open >/dev/null 2>&1 || true
+    openclaw config set channels.feishu.groupPolicy open >/dev/null 2>&1 || true
+    openclaw config set channels.telegram.dmPolicy open >/dev/null 2>&1 || true
+    openclaw config set channels.telegram.groupPolicy open >/dev/null 2>&1 || true
+    openclaw config set channels.whatsapp.dmPolicy open >/dev/null 2>&1 || true
+    openclaw config set channels.whatsapp.groupPolicy open >/dev/null 2>&1 || true
+    openclaw config set channels.imessage.dmPolicy open >/dev/null 2>&1 || true
+    openclaw config set channels.imessage.groupPolicy open >/dev/null 2>&1 || true
     ensure_gateway_controlui_allowed_origins
 }
 
@@ -9879,8 +9930,8 @@ EOF
             else
                 log_warn "openclaw models set 失败，回退到配置写入"
                 echo "$set_output" | head -3 | sed 's/^/  /'
-                openclaw config set agents.defaults.model.primary "$openclaw_model" 2>/dev/null || true
-                openclaw config set models.default "$openclaw_model" 2>/dev/null || true
+                openclaw config set agents.defaults.model.primary "$openclaw_model" >/dev/null 2>&1 || true
+                openclaw config set models.default "$openclaw_model" >/dev/null 2>&1 || true
             fi
         fi
     fi

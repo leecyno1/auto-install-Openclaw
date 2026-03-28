@@ -2898,6 +2898,7 @@ cleanup_stale_plugin_state() {
         openclaw config unset "channels.openclaw-wechat-channel" >/dev/null 2>&1 || true
         openclaw config unset "channels.openclaw-qqbot" >/dev/null 2>&1 || true
         cleanup_unknown_plugin_entries_install || true
+        cleanup_unknown_plugins_allow_install || true
     fi
 
     # 清理历史/已下线渠道扩展目录，避免被 openclaw 自动发现后触发告警
@@ -3123,22 +3124,38 @@ PY
     fi
 }
 
+openclaw_config_set_if_changed_install() {
+    local key="$1"
+    local value="$2"
+    [ -n "$key" ] || return 0
+    if ! check_command openclaw; then
+        return 0
+    fi
+    local current
+    current="$(openclaw config get "$key" 2>/dev/null || true)"
+    current="$(echo "$current" | tr -d '\r' | sed 's/^"//; s/"$//')"
+    if [ "$current" = "$value" ]; then
+        return 0
+    fi
+    openclaw config set "$key" "$value" >/dev/null 2>&1 || true
+}
+
 apply_dashboard_pairing_bypass_install() {
     if ! check_command openclaw; then
         return 0
     fi
     # 禁用 Control UI 设备配对门槛，避免远程浏览器隧道反复出现 pairing required。
-    openclaw config set gateway.controlUi.allowInsecureAuth true >/dev/null 2>&1 || true
-    openclaw config set gateway.controlUi.dangerouslyDisableDeviceAuth true >/dev/null 2>&1 || true
+    openclaw_config_set_if_changed_install "gateway.controlUi.allowInsecureAuth" "true"
+    openclaw_config_set_if_changed_install "gateway.controlUi.dangerouslyDisableDeviceAuth" "true"
 }
 
 apply_default_feishu_runtime_flags() {
     if ! check_command openclaw; then
         return 0
     fi
-    openclaw config set channels.feishu.streaming true >/dev/null 2>&1 || true
-    openclaw config set channels.feishu.footer.elapsed true >/dev/null 2>&1 || true
-    openclaw config set channels.feishu.footer.status true >/dev/null 2>&1 || true
+    openclaw_config_set_if_changed_install "channels.feishu.streaming" "true"
+    openclaw_config_set_if_changed_install "channels.feishu.footer.elapsed" "true"
+    openclaw_config_set_if_changed_install "channels.feishu.footer.status" "true"
 }
 
 openclaw_plugins_install_with_retry_install() {
@@ -3167,7 +3184,8 @@ openclaw_plugins_install_with_retry_install() {
 }
 
 get_plugins_entries_keys_install() {
-    local config_json="$CONFIG_DIR/openclaw.json"
+    local config_json
+    config_json="$(resolve_openclaw_json_path_install)"
     [ -f "$config_json" ] || return 0
 
     if check_command jq; then
@@ -3199,6 +3217,101 @@ try{
 }catch(e){}
 ' "$config_json" 2>/dev/null || true
     fi
+}
+
+resolve_openclaw_json_path_install() {
+    local cfg="$CONFIG_DIR/openclaw.json"
+    if check_command openclaw; then
+        local active_cfg
+        active_cfg="$(openclaw config file 2>/dev/null | head -n 1 | tr -d '\r')"
+        case "$active_cfg" in
+            "~/"*) active_cfg="$HOME/${active_cfg#~/}" ;;
+        esac
+        if [ -n "$active_cfg" ] && [ "$active_cfg" != "undefined" ]; then
+            cfg="$active_cfg"
+        fi
+    fi
+    echo "$cfg"
+}
+
+get_plugins_allow_ids_install() {
+    local config_json
+    config_json="$(resolve_openclaw_json_path_install)"
+    [ -f "$config_json" ] || return 0
+
+    if check_command jq; then
+        jq -r '.plugins.allow // [] | .[]' "$config_json" 2>/dev/null || true
+        return 0
+    fi
+
+    if check_command python3; then
+        python3 - "$config_json" <<'PY' 2>/dev/null || true
+import json, sys
+path = sys.argv[1]
+try:
+    with open(path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+    for p in (data.get("plugins", {}).get("allow", []) or []):
+        if isinstance(p, str):
+            print(p)
+except Exception:
+    pass
+PY
+        return 0
+    fi
+
+    if check_command node; then
+        node -e '
+const fs=require("fs");
+try{
+  const d=JSON.parse(fs.readFileSync(process.argv[1],"utf8"));
+  ((d.plugins&&d.plugins.allow)||[]).forEach(p=>typeof p==="string"&&console.log(p));
+}catch(e){}
+' "$config_json" 2>/dev/null || true
+    fi
+}
+
+remove_plugin_allow_only_install() {
+    local plugin_id="$1"
+    local config_json
+    config_json="$(resolve_openclaw_json_path_install)"
+    [ -n "$plugin_id" ] || return 0
+
+    if check_command python3; then
+        python3 - "$config_json" "$plugin_id" <<'PY' 2>/dev/null || true
+import json, sys
+path = sys.argv[1]
+plugin_id = sys.argv[2]
+try:
+    with open(path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+    plugins = data.get("plugins") or {}
+    allow = plugins.get("allow") or []
+    if isinstance(allow, list):
+        plugins["allow"] = [x for x in allow if x != plugin_id]
+    data["plugins"] = plugins
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=2, ensure_ascii=False)
+except Exception:
+    pass
+PY
+        return 0
+    fi
+
+    if check_command jq; then
+        local tmp_file
+        tmp_file="$(mktemp)"
+        jq --arg plugin "$plugin_id" '
+            .plugins //= {"allow": [], "entries": {}} |
+            .plugins.allow = ((.plugins.allow // []) | map(select(. != $plugin)))
+        ' "$config_json" > "$tmp_file" 2>/dev/null || true
+        if [ -s "$tmp_file" ]; then
+            mv "$tmp_file" "$config_json"
+            return 0
+        fi
+        rm -f "$tmp_file" 2>/dev/null || true
+    fi
+    return 0
 }
 
 plugin_entry_candidate_ids_install() {
@@ -3262,6 +3375,34 @@ cleanup_unknown_plugin_entries_install() {
 
     if [ "$removed" -gt 0 ]; then
         log_warn "已清理 ${removed}/${inspected} 个无效插件配置项（plugins.entries.*），减少启动告警。"
+    fi
+}
+
+cleanup_unknown_plugins_allow_install() {
+    local ids plugin_id
+    local removed=0
+    local inspected=0
+
+    ids="$(get_plugins_allow_ids_install)"
+    [ -n "$ids" ] || return 0
+
+    while IFS= read -r plugin_id; do
+        [ -n "$plugin_id" ] || continue
+        inspected=$((inspected + 1))
+        if is_legacy_plugin_entry_alias_install "$plugin_id"; then
+            remove_plugin_allow_only_install "$plugin_id" || true
+            removed=$((removed + 1))
+            continue
+        fi
+        if is_plugin_entry_available_install "$plugin_id"; then
+            continue
+        fi
+        remove_plugin_allow_only_install "$plugin_id" || true
+        removed=$((removed + 1))
+    done <<< "$ids"
+
+    if [ "$removed" -gt 0 ]; then
+        log_warn "已清理 ${removed}/${inspected} 个无效插件授权项（plugins.allow），减少启动告警。"
     fi
 }
 
@@ -3330,6 +3471,7 @@ install_default_official_plugins() {
 
     log_info "默认消息渠道插件安装完成：包安装成功 ${ok}，包安装失败 ${fail}，内置启用成功 ${builtins_ok}，内置跳过 ${builtins_skip}"
     cleanup_unknown_plugin_entries_install || true
+    cleanup_unknown_plugins_allow_install || true
 }
 
 plugin_bundle_slug_from_spec_install() {
@@ -3557,28 +3699,28 @@ init_openclaw_config() {
     
     # 设置 gateway.mode 为 local
     if check_command openclaw; then
-        openclaw config set gateway.mode local 2>/dev/null || true
-        openclaw config set gateway.bind "$GATEWAY_BIND" 2>/dev/null || true
+        openclaw_config_set_if_changed_install "gateway.mode" "local"
+        openclaw_config_set_if_changed_install "gateway.bind" "$GATEWAY_BIND"
         [ "$GATEWAY_BIND" = "custom" ] && [ -n "$GATEWAY_CUSTOM_BIND_HOST" ] && \
-            openclaw config set gateway.customBindHost "$GATEWAY_CUSTOM_BIND_HOST" 2>/dev/null || true
-        openclaw config set gateway.port "$GATEWAY_PORT" 2>/dev/null || true
+            openclaw_config_set_if_changed_install "gateway.customBindHost" "$GATEWAY_CUSTOM_BIND_HOST"
+        openclaw_config_set_if_changed_install "gateway.port" "$GATEWAY_PORT"
         apply_dashboard_pairing_bypass_install
         # 默认放开消息渠道 DM/群聊准入，避免渠道侧触发 pairing 审批
-        openclaw config set channels.feishu.dmPolicy open 2>/dev/null || true
-        openclaw config set channels.feishu.groupPolicy open 2>/dev/null || true
-        openclaw config set channels.telegram.dmPolicy open 2>/dev/null || true
-        openclaw config set channels.telegram.groupPolicy open 2>/dev/null || true
-        openclaw config set channels.whatsapp.dmPolicy open 2>/dev/null || true
-        openclaw config set channels.whatsapp.groupPolicy open 2>/dev/null || true
-        openclaw config set channels.imessage.dmPolicy open 2>/dev/null || true
-        openclaw config set channels.imessage.groupPolicy open 2>/dev/null || true
+        openclaw_config_set_if_changed_install "channels.feishu.dmPolicy" "open"
+        openclaw_config_set_if_changed_install "channels.feishu.groupPolicy" "open"
+        openclaw_config_set_if_changed_install "channels.telegram.dmPolicy" "open"
+        openclaw_config_set_if_changed_install "channels.telegram.groupPolicy" "open"
+        openclaw_config_set_if_changed_install "channels.whatsapp.dmPolicy" "open"
+        openclaw_config_set_if_changed_install "channels.whatsapp.groupPolicy" "open"
+        openclaw_config_set_if_changed_install "channels.imessage.dmPolicy" "open"
+        openclaw_config_set_if_changed_install "channels.imessage.groupPolicy" "open"
         log_info "Gateway 模式已设置为 local（bind=${GATEWAY_BIND}, port=${GATEWAY_PORT}）"
 
         local auth_mode
         auth_mode="$(openclaw config get gateway.auth.mode 2>/dev/null || true)"
         auth_mode="$(echo "$auth_mode" | tr -d '"'\''[:space:]')"
         if [ -z "$auth_mode" ] || [ "$auth_mode" = "undefined" ]; then
-            openclaw config set gateway.auth.mode token 2>/dev/null || true
+            openclaw_config_set_if_changed_install "gateway.auth.mode" "token"
             auth_mode="token"
         fi
         if [ "$auth_mode" = "token" ]; then
@@ -3588,7 +3730,7 @@ init_openclaw_config() {
             if [ -z "$auth_token" ] || [ "$auth_token" = "undefined" ]; then
                 local new_token
                 new_token="$(openssl rand -hex 32 2>/dev/null || cat /dev/urandom | head -c 32 | xxd -p 2>/dev/null || date +%s%N | sha256sum | head -c 64)"
-                openclaw config set gateway.auth.token "$new_token" 2>/dev/null || true
+                openclaw_config_set_if_changed_install "gateway.auth.token" "$new_token"
                 log_info "已初始化并持久化 Gateway Token，用于远程隧道/反向代理访问。"
             fi
         fi
@@ -4081,8 +4223,8 @@ EOF
                 
                 # 尝试直接使用 config set
                 log_info "尝试使用 config set 设置模型..."
-                openclaw config set agents.defaults.model.primary "$openclaw_model" 2>/dev/null || true
-                openclaw config set models.default "$openclaw_model" 2>/dev/null || true
+                openclaw config set agents.defaults.model.primary "$openclaw_model" >/dev/null 2>&1 || true
+                openclaw config set models.default "$openclaw_model" >/dev/null 2>&1 || true
             fi
         fi
     fi
@@ -5374,12 +5516,12 @@ converge_gateway_single_instance() {
     cleanup_legacy_gateway_runtime
     normalize_channel_policy_in_json_install || true
 
-    openclaw config set gateway.mode local >/dev/null 2>&1 || true
-    openclaw config set gateway.bind "$GATEWAY_BIND" >/dev/null 2>&1 || true
+    openclaw_config_set_if_changed_install "gateway.mode" "local"
+    openclaw_config_set_if_changed_install "gateway.bind" "$GATEWAY_BIND"
     if [ "$GATEWAY_BIND" = "custom" ] && [ -n "$GATEWAY_CUSTOM_BIND_HOST" ]; then
-        openclaw config set gateway.customBindHost "$GATEWAY_CUSTOM_BIND_HOST" >/dev/null 2>&1 || true
+        openclaw_config_set_if_changed_install "gateway.customBindHost" "$GATEWAY_CUSTOM_BIND_HOST"
     fi
-    openclaw config set gateway.port "$GATEWAY_PORT" >/dev/null 2>&1 || true
+    openclaw_config_set_if_changed_install "gateway.port" "$GATEWAY_PORT"
     apply_dashboard_pairing_bypass_install
 
     if ! install_official_gateway_service; then
