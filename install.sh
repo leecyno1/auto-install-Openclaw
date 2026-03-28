@@ -122,16 +122,34 @@ DEFAULT_OFFICIAL_PLUGINS="@openclaw/feishu @openclaw/discord @openclaw/whatsapp"
 DEFAULT_BUILTIN_CHANNEL_PLUGINS="telegram imessage"
 RULE_PROFILE_DEFAULT="${OPENCLAW_RULE_PROFILE:-medium}"
 RULE_PROFILE_SELECTED="$(echo "${RULE_PROFILE_DEFAULT}" | tr '[:upper:]' '[:lower:]')"
-PROFILE_BASIC_SKILLS="capability-evolver openclaw-cron-setup proactive-agent self-improving-agent-cn brainstorming reflection find-skills skill-creator agent-browser chrome-devtools-mcp github mcp-builder model-usage shell minimax-understand-image tavily-search web-search minimax-web-search news-radar url-to-markdown pdf docx pptx xlsx stock-monitor-skill multi-search-engine akshare-stock content-strategy social-content ai-image-generation marketingskills inference-skills agentmail agentmail-cli agentmail-mcp agentmail-toolkit"
-PROFILE_EXTENDED_SKILLS="capability-evolver openclaw-cron-setup proactive-agent self-improving-agent-cn brainstorming reflection find-skills skill-creator agent-browser chrome-devtools-mcp github mcp-builder model-usage shell minimax-understand-image tavily-search web-search minimax-web-search news-radar url-to-markdown pdf docx pptx xlsx stock-monitor-skill multi-search-engine akshare-stock content-strategy social-content ai-image-generation marketingskills inference-skills gemini-image-service nano-banana-service agentmail agentmail-cli agentmail-mcp agentmail-toolkit"
-PROFILE_SUPER_SKILLS="__ALL_DEFAULT__"
+PROFILE_BASIC_SKILLS="capability-evolver openclaw-cron-setup proactive-agent self-improving-agent-cn brainstorming reflection find-skills skill-creator subagent-driven-development using-superpowers verification-before-completion writing-skills agent-browser chrome-devtools-mcp github mcp-builder model-usage shell minimax-image-understanding tavily-search web-search minimax-web-search news-radar url-to-markdown pdf nano-pdf docx pptx xlsx stock-monitor-skill multi-search-engine akshare-stock content-strategy social-content ai-image-generation media-downloader marketingskills inference-skills agentmail agentmail-cli agentmail-mcp agentmail-toolkit lark-calendar notebooklm-skill skill-security-auditor weather data-analyst finance-data task todo"
+PROFILE_EXTENDED_SKILLS="capability-evolver openclaw-cron-setup proactive-agent self-improving-agent-cn brainstorming reflection find-skills skill-creator subagent-driven-development using-superpowers verification-before-completion writing-skills agent-browser chrome-devtools-mcp github mcp-builder model-usage shell minimax-image-understanding tavily-search web-search minimax-web-search news-radar url-to-markdown pdf nano-pdf docx pptx xlsx stock-monitor-skill multi-search-engine akshare-stock content-strategy social-content ai-image-generation animation media-downloader marketingskills inference-skills gemini-image-service oracle paperless-docs paperless-ngx-tools writing-plans agentmail agentmail-cli agentmail-mcp agentmail-toolkit lark-calendar notebooklm-skill skill-security-auditor weather data-analyst finance-data task todo"
+SUPER_CURATED_SKILLS_LIST="baoyu-skills baoyu-article-illustrator baoyu-comic baoyu-compress-image baoyu-cover-image baoyu-danger-gemini-web baoyu-danger-x-to-markdown baoyu-format-markdown baoyu-image-gen baoyu-infographic baoyu-markdown-to-html baoyu-post-to-wechat baoyu-post-to-weibo baoyu-post-to-x baoyu-slide-deck baoyu-translate baoyu-url-to-markdown baoyu-xhs-images baoyu-youtube-transcript"
+PROFILE_SUPER_SKILLS="${PROFILE_EXTENDED_SKILLS} planning-with-files ${SUPER_CURATED_SKILLS_LIST}"
 GEMINI_BASE_URL_DEFAULT="${GEMINI_BASE_URL:-${GOOGLE_BASE_URL:-}}"
 GEMINI_IMAGE_MODEL_DEFAULT="${GEMINI_IMAGE_MODEL:-gemini-2.5-flash-image-preview}"
-NANO_BANANA_BASE_URL_DEFAULT="${NANO_BANANA_BASE_URL:-}"
-NANO_BANANA_IMAGE_MODEL_DEFAULT="${NANO_BANANA_IMAGE_MODEL:-nano-banana-pro-image}"
-NANO_BANANA_VIDEO_MODEL_DEFAULT="${NANO_BANANA_VIDEO_MODEL:-nano-banana-pro-video}"
+QIHANG_IMAGE_API_KEY_DEFAULT="${QIHANG_IMAGE_API_KEY:-}"
+QIHANG_IMAGE_BASE_URL_DEFAULT="${QIHANG_IMAGE_BASE_URL:-https://api.qhaigc.net}"
+QIHANG_IMAGE_ENDPOINT_DEFAULT="${QIHANG_IMAGE_ENDPOINT:-/v1/images/generations}"
+QIHANG_GEMINI_ENDPOINT_DEFAULT="${QIHANG_GEMINI_ENDPOINT:-/v1/chat/completions}"
+QIHANG_IMAGE_MODEL_DEFAULT="${QIHANG_IMAGE_MODEL:-seedream-5}"
+QIHANG_IMAGE_MODEL_SEEDREAM46_DEFAULT="${QIHANG_IMAGE_MODEL_SEEDREAM46:-seedream-4.6}"
+QIHANG_IMAGE_MODEL_GEMINI_DEFAULT="${QIHANG_IMAGE_MODEL_GEMINI:-gemini-2.5-flash-image}"
+MOLIFANG_IMAGE_API_KEY_DEFAULT="${MOLIFANG_IMAGE_API_KEY:-}"
+MOLIFANG_IMAGE_BASE_URL_DEFAULT="${MOLIFANG_IMAGE_BASE_URL:-https://ai.gitee.com}"
+MOLIFANG_IMAGE_ENDPOINT_DEFAULT="${MOLIFANG_IMAGE_ENDPOINT:-/v1/images/generations}"
+MOLIFANG_IMAGE_MODEL_DEFAULT="${MOLIFANG_IMAGE_MODEL:-Qwen-Image}"
+MOLIFANG_IMAGE_MODEL_GLM_DEFAULT="${MOLIFANG_IMAGE_MODEL_GLM:-GLM-Image}"
+MOLIFANG_IMAGE_MODEL_LONGCAT_DEFAULT="${MOLIFANG_IMAGE_MODEL_LONGCAT:-LongCat-Image}"
+MOLIFANG_IMAGE_MODEL_ZTURBO_DEFAULT="${MOLIFANG_IMAGE_MODEL_ZTURBO:-z-image-turbo}"
 SILICONFLOW_FALLBACK_API_URL="${OPENCLAW_UNOFFICIAL_OPENAI_API_URL:-https://api.siliconflow.cn/v1}"
 SILICONFLOW_FALLBACK_MODEL="${OPENCLAW_UNOFFICIAL_OPENAI_MODEL:-Qwen/Qwen3-8B}"
+UNOFFICIAL_ADVANCED_DEFAULT_TYPE="${OPENCLAW_UNOFFICIAL_ADVANCED_API_TYPE:-openai}"
+UNOFFICIAL_ADVANCED_DEFAULT_URL_OPENAI="${OPENCLAW_UNOFFICIAL_ADVANCED_OPENAI_API_URL:-https://www.leishen-ai.cn/openai}"
+UNOFFICIAL_ADVANCED_DEFAULT_MODEL_GPT="${OPENCLAW_UNOFFICIAL_ADVANCED_GPT_MODEL:-Gpt-5.4}"
+UNOFFICIAL_ADVANCED_DEFAULT_API_KEY="${OPENCLAW_UNOFFICIAL_ADVANCED_API_KEY:-}"
+UNOFFICIAL_ROUTING_DEFAULT_STRATEGY="${OPENCLAW_UNOFFICIAL_ROUTING_STRATEGY:-auto}"
+UNOFFICIAL_ROUTING_DEFAULT_FAILOVER="${OPENCLAW_UNOFFICIAL_ROUTING_FAILOVER:-1}"
 WELCOME_DOC_URL_GITEE="https://gitee.com/leecyno1/auto-install-openclaw/blob/main/docs/channels-configuration-guide.md"
 WELCOME_DOC_URL_GITHUB="https://github.com/leecyno1/auto-install-Openclaw/blob/main/docs/channels-configuration-guide.md"
 PERSONA_ROLE_SELECTED="$(echo "${OPENCLAW_PERSONA_ROLE:-druid}" | tr '[:upper:]' '[:lower:]')"
@@ -219,7 +237,7 @@ set_persona_role_profile_install() {
 
     case "$role" in
         druid)
-            PERSONA_ROLE_NAME="万金油·德鲁伊"
+            PERSONA_ROLE_NAME="综合助理（通用）"
             PERSONA_ROLE_EMOJI="🦞"
             PERSONA_ROLE_DESC="通用总管，覆盖日常助理、任务推进、沟通协作与结果回报。"
             PERSONA_ROLE_AGENCY="specialized/agents-orchestrator + project-management/project-manager-senior"
@@ -230,7 +248,7 @@ set_persona_role_profile_install() {
             PERSONA_ROLE_EXTRA_SKILLS="task, todo, todoist-api, ai-meeting-notes, openclaw-feeds, weather"
             ;;
         assassin)
-            PERSONA_ROLE_NAME="分析员·刺客"
+            PERSONA_ROLE_NAME="分析研究（投资）"
             PERSONA_ROLE_EMOJI="🗡️"
             PERSONA_ROLE_DESC="券商式深挖分析，负责数据采集、价值挖掘与投资机会研究。"
             PERSONA_ROLE_AGENCY="sales/sales-pipeline-analyst + support/support-finance-tracker + product/product-trend-researcher"
@@ -241,7 +259,7 @@ set_persona_role_profile_install() {
             PERSONA_ROLE_EXTRA_SKILLS="finance-data, data-analyst, google-trends, openclaw-feeds, reddit, requesthunt, producthunt, session-logs"
             ;;
         mage)
-            PERSONA_ROLE_NAME="研究者·大法师"
+            PERSONA_ROLE_NAME="学术研究"
             PERSONA_ROLE_EMOJI="🧙"
             PERSONA_ROLE_DESC="学术与知识生产角色，擅长论文、科研、读书与结构化笔记。"
             PERSONA_ROLE_AGENCY="marketing/marketing-book-co-author + specialized/specialized-document-generator + testing/testing-evidence-collector"
@@ -249,10 +267,10 @@ set_persona_role_profile_install() {
             PERSONA_ROLE_DEFAULT_STYLE="严谨、学术化、条理清晰"
             PERSONA_ROLE_DEFAULT_WORK="先给研究框架与提纲，再给逐步产出与引用建议"
             PERSONA_ROLE_CORE_SKILLS="brainstorming, summarize, web-search, tavily-search, url-to-markdown, docx, pdf, nano-pdf, pptx, xlsx"
-            PERSONA_ROLE_EXTRA_SKILLS="ai-meeting-notes, ai-ppt-generate, paperless-docs, paperless-ngx-tools, format-pro, byterover"
+            PERSONA_ROLE_EXTRA_SKILLS="ai-meeting-notes, paperless-docs, paperless-ngx-tools, format-pro, byterover"
             ;;
         summoner)
-            PERSONA_ROLE_NAME="管理者·召唤师"
+            PERSONA_ROLE_NAME="团队管理"
             PERSONA_ROLE_EMOJI="🪄"
             PERSONA_ROLE_DESC="企业管理角色，覆盖招聘、人力、流程、组织协同与团队激励。"
             PERSONA_ROLE_AGENCY="specialized/recruitment-specialist + project-management/project-management-studio-operations + project-management/project-manager-senior"
@@ -263,18 +281,18 @@ set_persona_role_profile_install() {
             PERSONA_ROLE_EXTRA_SKILLS="task, todo, todoist-api, ai-meeting-notes, lark-calendar, data-reconciliation-exceptions, publish-guard, session-logs"
             ;;
         warrior)
-            PERSONA_ROLE_NAME="技术员·战士"
+            PERSONA_ROLE_NAME="工程开发"
             PERSONA_ROLE_EMOJI="⚔️"
             PERSONA_ROLE_DESC="工程交付角色，负责编码实现、测试排障、稳定性与上线。"
             PERSONA_ROLE_AGENCY="engineering/engineering-senior-developer + engineering/engineering-code-reviewer + engineering/engineering-devops-automator + engineering/engineering-sre"
             PERSONA_ROLE_DEFAULT_GOAL="帮我做编程工程交付、代码测试、故障排查和上线保障"
             PERSONA_ROLE_DEFAULT_STYLE="直接、工程化、可验证"
             PERSONA_ROLE_DEFAULT_WORK="先给可运行结果，再给验证步骤和回滚方案"
-            PERSONA_ROLE_CORE_SKILLS="shell, github, mcp-builder, chrome-devtools-mcp, agent-browser, model-usage, web-search, minimax-understand-image, reflection"
+            PERSONA_ROLE_CORE_SKILLS="shell, github, mcp-builder, chrome-devtools-mcp, agent-browser, model-usage, web-search, minimax-image-understanding, reflection"
             PERSONA_ROLE_EXTRA_SKILLS="tdd, test-driven-development, subagent-driven-development, skill-security-auditor, github-actions-generator, gitclassic, prisma-database-setup, database, preflight-checks, tmux"
             ;;
         paladin)
-            PERSONA_ROLE_NAME="营销者·圣骑士"
+            PERSONA_ROLE_NAME="市场增长"
             PERSONA_ROLE_EMOJI="🛡️"
             PERSONA_ROLE_DESC="增长运营角色，覆盖SEO、广告、内容分发、客户关系与客服协同。"
             PERSONA_ROLE_AGENCY="marketing/marketing-growth-hacker + marketing/marketing-seo-specialist + marketing/marketing-social-media-strategist + marketing/marketing-content-creator"
@@ -282,31 +300,31 @@ set_persona_role_profile_install() {
             PERSONA_ROLE_DEFAULT_STYLE="增长导向、创意与数据并重"
             PERSONA_ROLE_DEFAULT_WORK="先给增长目标与漏斗，再给渠道方案、内容节奏和复盘指标"
             PERSONA_ROLE_CORE_SKILLS="web-search, tavily-search, news-radar, summarize, url-to-markdown, docx, xlsx, agentmail, frontend-design, web-design"
-            PERSONA_ROLE_EXTRA_SKILLS="programmatic-seo, seo-geo, social-content, content-strategy, google-trends, twitter, weibo-manager, weibo-fresh-posts, xiaohongshu-ops, xiaohongshu-auto, douyin-hot-trend, douyin-upload-skill, bilibili-hot-monitor, baoyu-post-to-wechat, baoyu-post-to-x"
+            PERSONA_ROLE_EXTRA_SKILLS="programmatic-seo, seo-geo, social-content, content-strategy, google-trends, twitter, weibo-manager, weibo-fresh-posts, xiaohongshu-ops, xiaohongshu-auto, douyin-hot-trend, douyin-upload-skill, baoyu-post-to-wechat, baoyu-post-to-x"
             ;;
         designer)
-            PERSONA_ROLE_NAME="设计师·弓箭手"
+            PERSONA_ROLE_NAME="设计创作"
             PERSONA_ROLE_EMOJI="🏹"
             PERSONA_ROLE_DESC="综合设计角色，覆盖前端设计、艺术设计、UI/UX、平面/工业/建筑概念与自媒体视觉。"
             PERSONA_ROLE_AGENCY="design/design-ui-designer + design/design-ux-architect + design/design-visual-storyteller + design/design-image-prompt-engineer"
             PERSONA_ROLE_DEFAULT_GOAL="帮我做前端界面设计、视觉创作、图文内容与多场景设计方案"
             PERSONA_ROLE_DEFAULT_STYLE="审美驱动、可落地、强调风格一致性"
             PERSONA_ROLE_DEFAULT_WORK="先给风格方向与版式，再给素材清单、实现路径和交付规格"
-            PERSONA_ROLE_CORE_SKILLS="frontend-design, web-design, gemini-image-service, nano-banana-service, grok-imagine-1.0-video, pptx, docx, summarize"
-            PERSONA_ROLE_EXTRA_SKILLS="ai-image-generation, banner-creator, logo-creator, infographic-pro, ai-ppt-generate, baoyu-article-illustrator, baoyu-comic, baoyu-cover-image, baoyu-infographic, baoyu-slide-deck, video-frames, tailwind-design-system, web-design-guidelines"
+            PERSONA_ROLE_CORE_SKILLS="frontend-design, web-design, gemini-image-service, grok-imagine-1.0-video, pptx, docx, summarize"
+            PERSONA_ROLE_EXTRA_SKILLS="ai-image-generation, logo-creator, infographic-pro, baoyu-article-illustrator, baoyu-comic, baoyu-cover-image, baoyu-infographic, baoyu-slide-deck, video-frames, tailwind-design-system, web-design-guidelines"
             ;;
     esac
 }
 
 show_persona_role_cards_install() {
-    echo -e "${CYAN}请选择初始化职业人格（7选1）:${NC}"
-    echo "  [1] 🦞 万金油·德鲁伊   - 通用总管，适合绝大多数用户"
-    echo "  [2] 🗡️ 分析员·刺客   - 数据深挖、价值发现、投资机会"
-    echo "  [3] 🧙 研究者·大法师  - 学术科研、论文写作、知识沉淀"
-    echo "  [4] 🪄 管理者·召唤师  - 团队管理、流程制度、组织协同"
-    echo "  [5] ⚔️ 技术员·战士   - 编程交付、测试排障、工程上线"
-    echo "  [6] 🛡️ 营销者·圣骑士  - 市场增长、SEO投放、渠道运营"
-    echo "  [7] 🏹 设计师·弓箭手  - 前端/UI/视觉/平面/工业/建筑概念"
+    echo -e "${CYAN}请选择初始化工作档案（7选1）:${NC}"
+    echo "  [1] 🦞 综合助理（通用）   - 通用总管，适合绝大多数用户"
+    echo "  [2] 🗡️ 分析研究（投资）   - 数据深挖、价值发现、投资机会"
+    echo "  [3] 🧙 学术研究  - 学术科研、论文写作、知识沉淀"
+    echo "  [4] 🪄 团队管理  - 团队管理、流程制度、组织协同"
+    echo "  [5] ⚔️ 工程开发   - 编程交付、测试排障、工程上线"
+    echo "  [6] 🛡️ 市场增长  - 市场增长、SEO投放、渠道运营"
+    echo "  [7] 🏹 设计创作  - 前端/UI/视觉/平面/工业/建筑概念"
     echo ""
 }
 
@@ -462,7 +480,7 @@ ${INSTALLER_NAME} (OpenClaw 安装增强版)
   --reset-chat-history                安装后重置聊天历史 (默认开启)
   --keep-chat-history                 安装后保留历史聊天记录
   --rule-profile <low|medium|high|none> token规划规则档位 (默认: medium)
-  --persona <role>                    人格角色: druid|assassin|mage|summoner|warrior|paladin|designer
+  --persona <role>                    工作档案: druid|assassin|mage|summoner|warrior|paladin|designer
   --model-route <route>               记录前端模型路由选择
   --skill-pack <low|medium|high>      记录前端技能包选择
   --token-rule <low|medium|high|none> 等价于 --rule-profile
@@ -470,7 +488,7 @@ ${INSTALLER_NAME} (OpenClaw 安装增强版)
   --user-goal <text>                  用户主要目标
   --assistant-personality <text>      机器人性格
   --assistant-work-mode <text>        机器人工作方式
-  --tool-suite <csv>                  记录前端装备工具套装
+  --tool-suite <csv>                  记录前端工具集
   --security <csv>                    记录前端安全策略列表
   --help, -h                           显示帮助
 
@@ -507,11 +525,20 @@ ${INSTALLER_NAME} (OpenClaw 安装增强版)
   OPENCLAW_SKILL_PIP_PACKAGES="<覆盖默认依赖包列表>"
   OPENCLAW_SKILLS_FORCE_UPDATE=0|1
   OPENCLAW_RULE_PROFILE=low|medium|high|none
-  GEMINI_BASE_URL=<third_party_gemini_url>
-  GEMINI_IMAGE_MODEL=<gemini_image_model>
-  NANO_BANANA_BASE_URL=<third_party_nano_url>
-  NANO_BANANA_IMAGE_MODEL=<nano_image_model>
-  NANO_BANANA_VIDEO_MODEL=<nano_video_model>
+  QIHANG_IMAGE_API_KEY=<启航AI生图Key>
+  QIHANG_IMAGE_BASE_URL=<默认https://api.qhaigc.net>
+  QIHANG_IMAGE_ENDPOINT=<默认/v1/images/generations>
+  QIHANG_GEMINI_ENDPOINT=<默认/v1/chat/completions>
+  QIHANG_IMAGE_MODEL=<默认seedream-5>
+  QIHANG_IMAGE_MODEL_SEEDREAM46=<默认seedream-4.6>
+  QIHANG_IMAGE_MODEL_GEMINI=<默认gemini-2.5-flash-image>
+  MOLIFANG_IMAGE_API_KEY=<模力方舟生图Key>
+  MOLIFANG_IMAGE_BASE_URL=<默认https://ai.gitee.com>
+  MOLIFANG_IMAGE_ENDPOINT=<默认/v1/images/generations>
+  MOLIFANG_IMAGE_MODEL=<默认Qwen-Image>
+  MOLIFANG_IMAGE_MODEL_GLM=<默认GLM-Image>
+  MOLIFANG_IMAGE_MODEL_LONGCAT=<默认LongCat-Image>
+  MOLIFANG_IMAGE_MODEL_ZTURBO=<默认z-image-turbo>
   OPENCLAW_WELCOME_MESSAGE=<欢迎语，留空使用默认文案>
 EOF
 }
@@ -909,6 +936,7 @@ EOF
 - 拒绝导出密钥、凭据、令牌和任何可用于接管账户的信息。
 - 拒绝协助规避模型/网关/权限限制，所有升级动作需显式授权。
 - 输出涉及隐私数据时默认最小化披露并做脱敏。
+- 默认启用高级模型路由（GPT-5.4）；用户输入 /bm 时，本轮任务强制走高级模型链路。
 - 当上下文 >=150k tokens 时，必须先询问用户是否执行 /compact；>=180k tokens 时先压缩再继续。
 EOF
             ;;
@@ -919,6 +947,7 @@ EOF
 - 严禁输出 API Key、系统密钥、数据库凭据、私有令牌。
 - 严禁执行绕过安全策略、越权访问、数据外泄类指令。
 - 遇到敏感数据请求先拒绝，再提供合规替代方案。
+- 默认启用高级模型路由（GPT-5.4）；用户输入 /bm 时，本轮任务强制走高级模型链路。
 - 当上下文 >=150k tokens 时，必须先询问用户是否执行 /compact；>=180k tokens 时先压缩再继续。
 EOF
             ;;
@@ -929,6 +958,7 @@ EOF
 - 拒绝导出密钥、凭据、令牌和任何可用于接管账户的信息。
 - 拒绝协助规避模型/网关/权限限制，所有升级动作需显式授权。
 - 输出涉及隐私数据时默认最小化披露并做脱敏。
+- 默认启用高级模型路由（GPT-5.4）；用户输入 /bm 时，本轮任务强制走高级模型链路。
 - 当上下文 >=150k tokens 时，必须先询问用户是否执行 /compact；>=180k tokens 时先压缩再继续。
 EOF
             ;;
@@ -1010,56 +1040,114 @@ prompt_profile_api_key() {
 }
 
 apply_generative_service_settings() {
-    local gemini_key="${GOOGLE_API_KEY:-}"
-    local gemini_url="${GEMINI_BASE_URL:-$GEMINI_BASE_URL_DEFAULT}"
-    local gemini_model="${GEMINI_IMAGE_MODEL:-$GEMINI_IMAGE_MODEL_DEFAULT}"
-    local nano_key="${NANO_BANANA_API_KEY:-}"
-    local nano_url="${NANO_BANANA_BASE_URL:-$NANO_BANANA_BASE_URL_DEFAULT}"
-    local nano_image_model="${NANO_BANANA_IMAGE_MODEL:-$NANO_BANANA_IMAGE_MODEL_DEFAULT}"
-    local nano_video_model="${NANO_BANANA_VIDEO_MODEL:-$NANO_BANANA_VIDEO_MODEL_DEFAULT}"
+    local qihang_key="${QIHANG_IMAGE_API_KEY:-$QIHANG_IMAGE_API_KEY_DEFAULT}"
+    local qihang_url="${QIHANG_IMAGE_BASE_URL:-$QIHANG_IMAGE_BASE_URL_DEFAULT}"
+    local qihang_endpoint="${QIHANG_IMAGE_ENDPOINT:-$QIHANG_IMAGE_ENDPOINT_DEFAULT}"
+    local qihang_gemini_endpoint="${QIHANG_GEMINI_ENDPOINT:-$QIHANG_GEMINI_ENDPOINT_DEFAULT}"
+    local qihang_seedream5="${QIHANG_IMAGE_MODEL:-$QIHANG_IMAGE_MODEL_DEFAULT}"
+    local qihang_seedream46="${QIHANG_IMAGE_MODEL_SEEDREAM46:-$QIHANG_IMAGE_MODEL_SEEDREAM46_DEFAULT}"
+    local qihang_gemini_model="${QIHANG_IMAGE_MODEL_GEMINI:-$QIHANG_IMAGE_MODEL_GEMINI_DEFAULT}"
+    local molifang_key="${MOLIFANG_IMAGE_API_KEY:-$MOLIFANG_IMAGE_API_KEY_DEFAULT}"
+    local molifang_url="${MOLIFANG_IMAGE_BASE_URL:-$MOLIFANG_IMAGE_BASE_URL_DEFAULT}"
+    local molifang_endpoint="${MOLIFANG_IMAGE_ENDPOINT:-$MOLIFANG_IMAGE_ENDPOINT_DEFAULT}"
+    local molifang_qwen="${MOLIFANG_IMAGE_MODEL:-$MOLIFANG_IMAGE_MODEL_DEFAULT}"
+    local molifang_glm="${MOLIFANG_IMAGE_MODEL_GLM:-$MOLIFANG_IMAGE_MODEL_GLM_DEFAULT}"
+    local molifang_longcat="${MOLIFANG_IMAGE_MODEL_LONGCAT:-$MOLIFANG_IMAGE_MODEL_LONGCAT_DEFAULT}"
+    local molifang_zturbo="${MOLIFANG_IMAGE_MODEL_ZTURBO:-$MOLIFANG_IMAGE_MODEL_ZTURBO_DEFAULT}"
+    local gemini_key="$qihang_key"
+    local gemini_url="$qihang_url"
+    local gemini_model="$qihang_gemini_model"
 
+    upsert_env_export_install "QIHANG_IMAGE_API_KEY" "$qihang_key"
+    upsert_env_export_install "QIHANG_IMAGE_BASE_URL" "$qihang_url"
+    upsert_env_export_install "QIHANG_IMAGE_ENDPOINT" "$qihang_endpoint"
+    upsert_env_export_install "QIHANG_GEMINI_ENDPOINT" "$qihang_gemini_endpoint"
+    upsert_env_export_install "QIHANG_IMAGE_MODEL" "$qihang_seedream5"
+    upsert_env_export_install "QIHANG_IMAGE_MODEL_SEEDREAM46" "$qihang_seedream46"
+    upsert_env_export_install "QIHANG_IMAGE_MODEL_GEMINI" "$qihang_gemini_model"
+    upsert_env_export_install "MOLIFANG_IMAGE_API_KEY" "$molifang_key"
+    upsert_env_export_install "MOLIFANG_IMAGE_BASE_URL" "$molifang_url"
+    upsert_env_export_install "MOLIFANG_IMAGE_ENDPOINT" "$molifang_endpoint"
+    upsert_env_export_install "MOLIFANG_IMAGE_MODEL" "$molifang_qwen"
+    upsert_env_export_install "MOLIFANG_IMAGE_MODEL_GLM" "$molifang_glm"
+    upsert_env_export_install "MOLIFANG_IMAGE_MODEL_LONGCAT" "$molifang_longcat"
+    upsert_env_export_install "MOLIFANG_IMAGE_MODEL_ZTURBO" "$molifang_zturbo"
+
+    upsert_env_export_install "GEMINI_API_KEY" "$gemini_key"
+    upsert_env_export_install "GOOGLE_API_KEY" "$gemini_key"
     upsert_env_export_install "GEMINI_BASE_URL" "$gemini_url"
     upsert_env_export_install "GEMINI_IMAGE_MODEL" "$gemini_model"
-    upsert_env_export_install "NANO_BANANA_BASE_URL" "$nano_url"
-    upsert_env_export_install "NANO_BANANA_IMAGE_MODEL" "$nano_image_model"
-    upsert_env_export_install "NANO_BANANA_VIDEO_MODEL" "$nano_video_model"
+    upsert_env_export_install "GEMINI_IMAGE_ENDPOINT" "$qihang_gemini_endpoint"
     upsert_env_export_install "OPENCLAW_GEMINI_BASE_URL" "$gemini_url"
     upsert_env_export_install "OPENCLAW_GEMINI_IMAGE_MODEL" "$gemini_model"
-    upsert_env_export_install "OPENCLAW_NANO_BANANA_BASE_URL" "$nano_url"
-    upsert_env_export_install "OPENCLAW_NANO_BANANA_IMAGE_MODEL" "$nano_image_model"
-    upsert_env_export_install "OPENCLAW_NANO_BANANA_VIDEO_MODEL" "$nano_video_model"
+
+    # 为 baoyu-image-gen 提供开箱即用的 OpenAI 兼容图像通道（默认启航AI）
+    upsert_env_export_install "OPENCLAW_IMAGE_PROVIDER" "qihang"
+    upsert_env_export_install "OPENAI_API_KEY" "$qihang_key"
+    upsert_env_export_install "OPENAI_BASE_URL" "$qihang_url"
+    upsert_env_export_install "OPENAI_IMAGE_MODEL" "$qihang_seedream5"
+    upsert_env_export_install "OPENAI_IMAGE_USE_CHAT" "false"
 
     if check_command openclaw; then
         openclaw config set "vendor.media.gemini.apiKey" "$gemini_key" >/dev/null 2>&1 || true
         openclaw config set "vendor.media.gemini.baseUrl" "$gemini_url" >/dev/null 2>&1 || true
         openclaw config set "vendor.media.gemini.imageModel" "$gemini_model" >/dev/null 2>&1 || true
-        openclaw config set "vendor.media.nanobanana.apiKey" "$nano_key" >/dev/null 2>&1 || true
-        openclaw config set "vendor.media.nanobanana.baseUrl" "$nano_url" >/dev/null 2>&1 || true
-        openclaw config set "vendor.media.nanobanana.imageModel" "$nano_image_model" >/dev/null 2>&1 || true
-        openclaw config set "vendor.media.nanobanana.videoModel" "$nano_video_model" >/dev/null 2>&1 || true
-        # gemini/nano-banana 属于 skills 服务，不是 openclaw 插件；清理历史陈旧插件项
+        # 清理历史陈旧项
         openclaw config unset "plugins.entries.gemini" >/dev/null 2>&1 || true
         openclaw config unset "plugins.entries.nano-banana-pro" >/dev/null 2>&1 || true
     fi
 
     local skills_root="$CONFIG_DIR/skills"
     local gemini_skill_cfg="$skills_root/gemini-image-service/service.env"
-    local nano_skill_cfg="$skills_root/nano-banana-service/service.env"
-    mkdir -p "$(dirname "$gemini_skill_cfg")" "$(dirname "$nano_skill_cfg")" 2>/dev/null || true
+    local baoyu_env="$HOME/.baoyu-skills/.env"
+    local begin_marker="# >>> OPENCLAW_IMAGE_APIS >>>"
+    local end_marker="# <<< OPENCLAW_IMAGE_APIS <<<"
+    mkdir -p "$(dirname "$gemini_skill_cfg")" "$(dirname "$baoyu_env")" 2>/dev/null || true
 
     cat > "$gemini_skill_cfg" <<EOF
 GEMINI_API_KEY=${gemini_key}
 GEMINI_BASE_URL=${gemini_url}
 GEMINI_IMAGE_MODEL=${gemini_model}
+GEMINI_IMAGE_ENDPOINT=${qihang_gemini_endpoint}
 EOF
+    chmod 600 "$gemini_skill_cfg" 2>/dev/null || true
 
-    cat > "$nano_skill_cfg" <<EOF
-NANO_BANANA_API_KEY=${nano_key}
-NANO_BANANA_BASE_URL=${nano_url}
-NANO_BANANA_IMAGE_MODEL=${nano_image_model}
-NANO_BANANA_VIDEO_MODEL=${nano_video_model}
-EOF
-    chmod 600 "$gemini_skill_cfg" "$nano_skill_cfg" 2>/dev/null || true
+    local tmp_file
+    tmp_file="$(mktemp /tmp/openclaw-baoyu-env.XXXXXX)"
+    if [ -f "$baoyu_env" ]; then
+        awk -v b="$begin_marker" -v e="$end_marker" '
+            $0==b {skip=1; next}
+            $0==e {skip=0; next}
+            !skip {print}
+        ' "$baoyu_env" >"$tmp_file" 2>/dev/null || true
+    fi
+    {
+        cat "$tmp_file" 2>/dev/null || true
+        echo "$begin_marker"
+        echo "OPENCLAW_IMAGE_PROVIDER=qihang"
+        echo "QIHANG_IMAGE_API_KEY=${qihang_key}"
+        echo "QIHANG_IMAGE_BASE_URL=${qihang_url}"
+        echo "QIHANG_IMAGE_ENDPOINT=${qihang_endpoint}"
+        echo "QIHANG_GEMINI_ENDPOINT=${qihang_gemini_endpoint}"
+        echo "QIHANG_IMAGE_MODEL=${qihang_seedream5}"
+        echo "QIHANG_IMAGE_MODEL_SEEDREAM46=${qihang_seedream46}"
+        echo "QIHANG_IMAGE_MODEL_GEMINI=${qihang_gemini_model}"
+        echo "MOLIFANG_IMAGE_API_KEY=${molifang_key}"
+        echo "MOLIFANG_IMAGE_BASE_URL=${molifang_url}"
+        echo "MOLIFANG_IMAGE_ENDPOINT=${molifang_endpoint}"
+        echo "MOLIFANG_IMAGE_MODEL=${molifang_qwen}"
+        echo "MOLIFANG_IMAGE_MODEL_GLM=${molifang_glm}"
+        echo "MOLIFANG_IMAGE_MODEL_LONGCAT=${molifang_longcat}"
+        echo "MOLIFANG_IMAGE_MODEL_ZTURBO=${molifang_zturbo}"
+        echo "OPENAI_API_KEY=${qihang_key}"
+        echo "OPENAI_BASE_URL=${qihang_url}"
+        echo "OPENAI_IMAGE_MODEL=${qihang_seedream5}"
+        echo "OPENAI_IMAGE_USE_CHAT=false"
+        echo "$end_marker"
+    } > "${tmp_file}.new"
+    mv "${tmp_file}.new" "$baoyu_env"
+    chmod 600 "$baoyu_env" 2>/dev/null || true
+    rm -f "$tmp_file" 2>/dev/null || true
 }
 
 configure_profile_api_keys() {
@@ -1071,53 +1159,100 @@ configure_profile_api_keys() {
     fi
 
     echo ""
-    log_step "配置档位 API 参数（BraveSearch / NanoBanana / Gemini）..."
+    log_step "配置档位 API 参数（启航AI / 模力方舟）..."
     case "$level" in
         low)
             log_info "LOW 档默认不强制配置工具 API Key（可后续在配置菜单补充）"
             ;;
         medium)
-            prompt_profile_api_key "GOOGLE_API_KEY" "Gemini" "1"
-            prompt_profile_api_key "BRAVE_API_KEY" "BraveSearch" "1"
-            prompt_profile_api_key "NANO_BANANA_API_KEY" "NanoBanana" "0"
+            prompt_profile_api_key "QIHANG_IMAGE_API_KEY" "启航AI生图" "1"
+            prompt_profile_api_key "MOLIFANG_IMAGE_API_KEY" "模力方舟生图" "1"
             ;;
         high)
-            prompt_profile_api_key "GOOGLE_API_KEY" "Gemini" "1"
-            prompt_profile_api_key "BRAVE_API_KEY" "BraveSearch" "1"
-            prompt_profile_api_key "NANO_BANANA_API_KEY" "NanoBanana" "1"
+            prompt_profile_api_key "QIHANG_IMAGE_API_KEY" "启航AI生图" "1"
+            prompt_profile_api_key "MOLIFANG_IMAGE_API_KEY" "模力方舟生图" "1"
             ;;
         *)
-            prompt_profile_api_key "GOOGLE_API_KEY" "Gemini" "1"
-            prompt_profile_api_key "BRAVE_API_KEY" "BraveSearch" "1"
-            prompt_profile_api_key "NANO_BANANA_API_KEY" "NanoBanana" "0"
+            prompt_profile_api_key "QIHANG_IMAGE_API_KEY" "启航AI生图" "1"
+            prompt_profile_api_key "MOLIFANG_IMAGE_API_KEY" "模力方舟生图" "1"
             ;;
     esac
 
-    if [ -n "${GOOGLE_API_KEY:-}" ]; then
-        upsert_env_export_install "GOOGLE_API_KEY" "$GOOGLE_API_KEY"
-        upsert_env_export_install "GEMINI_API_KEY" "$GOOGLE_API_KEY"
-    else
-        remove_env_export_install "GOOGLE_API_KEY"
-        remove_env_export_install "GEMINI_API_KEY"
-    fi
-
-    if [ -n "${BRAVE_API_KEY:-}" ]; then
-        upsert_env_export_install "BRAVE_API_KEY" "$BRAVE_API_KEY"
-        upsert_env_export_install "BRAVESEARCH_API_KEY" "$BRAVE_API_KEY"
-    else
-        remove_env_export_install "BRAVE_API_KEY"
-        remove_env_export_install "BRAVESEARCH_API_KEY"
-    fi
-
-    if [ -n "${NANO_BANANA_API_KEY:-}" ]; then
-        upsert_env_export_install "NANO_BANANA_API_KEY" "$NANO_BANANA_API_KEY"
-        upsert_env_export_install "NANOBANANA_API_KEY" "$NANO_BANANA_API_KEY"
-    else
-        remove_env_export_install "NANO_BANANA_API_KEY"
-        remove_env_export_install "NANOBANANA_API_KEY"
-    fi
+    QIHANG_IMAGE_API_KEY="${QIHANG_IMAGE_API_KEY:-$QIHANG_IMAGE_API_KEY_DEFAULT}"
+    MOLIFANG_IMAGE_API_KEY="${MOLIFANG_IMAGE_API_KEY:-$MOLIFANG_IMAGE_API_KEY_DEFAULT}"
+    upsert_env_export_install "QIHANG_IMAGE_API_KEY" "$QIHANG_IMAGE_API_KEY"
+    upsert_env_export_install "MOLIFANG_IMAGE_API_KEY" "$MOLIFANG_IMAGE_API_KEY"
+    remove_env_export_install "BRAVE_API_KEY"
+    remove_env_export_install "BRAVESEARCH_API_KEY"
+    remove_env_export_install "NANO_BANANA_API_KEY"
+    remove_env_export_install "NANOBANANA_API_KEY"
+    remove_env_export_install "NANO_BANANA_BASE_URL"
+    remove_env_export_install "NANO_BANANA_IMAGE_MODEL"
+    remove_env_export_install "NANO_BANANA_VIDEO_MODEL"
 
     apply_generative_service_settings
+}
+
+apply_profile_advanced_model_routing() {
+    local level
+    level="$(normalize_rule_profile_level "$1")"
+    case "$level" in
+        medium|high) ;;
+        *) return 0 ;;
+    esac
+
+    local adv_type="${UNOFFICIAL_ADVANCED_DEFAULT_TYPE:-openai}"
+    local adv_api_type="openai"
+    local adv_url="${UNOFFICIAL_ADVANCED_DEFAULT_URL_OPENAI:-https://www.leishen-ai.cn/openai}"
+    local adv_model="${UNOFFICIAL_ADVANCED_DEFAULT_MODEL_GPT:-Gpt-5.4}"
+    local adv_key="${UNOFFICIAL_ADVANCED_DEFAULT_API_KEY:-}"
+    local routing_strategy="${UNOFFICIAL_ROUTING_DEFAULT_STRATEGY:-auto}"
+    local routing_failover="${UNOFFICIAL_ROUTING_DEFAULT_FAILOVER:-1}"
+
+    if [ -z "$adv_key" ]; then
+        log_warn "高级模型默认 Key 为空，已跳过中/高档自动路由注入。"
+        return 0
+    fi
+
+    upsert_env_export_install "OPENCLAW_UNOFFICIAL_ADVANCED_MODEL_TYPE" "$adv_type"
+    upsert_env_export_install "OPENCLAW_UNOFFICIAL_ADVANCED_API_TYPE" "$adv_api_type"
+    upsert_env_export_install "OPENCLAW_UNOFFICIAL_ADVANCED_OPENAI_API_URL" "$adv_url"
+    upsert_env_export_install "OPENCLAW_UNOFFICIAL_ADVANCED_MODEL" "$adv_model"
+    upsert_env_export_install "OPENCLAW_UNOFFICIAL_ADVANCED_API_KEY" "$adv_key"
+    upsert_env_export_install "OPENCLAW_UNOFFICIAL_ROUTING_ENABLED" "1"
+    upsert_env_export_install "OPENCLAW_UNOFFICIAL_ROUTING_STRATEGY" "$routing_strategy"
+    upsert_env_export_install "OPENCLAW_UNOFFICIAL_ROUTING_PRIMARY" "advanced"
+    upsert_env_export_install "OPENCLAW_UNOFFICIAL_ROUTING_SECONDARY" "fallback"
+    upsert_env_export_install "OPENCLAW_UNOFFICIAL_ROUTING_FAILOVER" "$routing_failover"
+    upsert_env_export_install "OPENCLAW_BM_COMMAND" "/bm"
+
+    if check_command openclaw; then
+        openclaw config set channels.unofficial.advanced.enabled true >/dev/null 2>&1 || true
+        openclaw config set channels.unofficial.advanced.type "$adv_type" >/dev/null 2>&1 || true
+        openclaw config set channels.unofficial.advanced.apiType "$adv_api_type" >/dev/null 2>&1 || true
+        openclaw config set channels.unofficial.advanced.openaiApiUrl "$adv_url" >/dev/null 2>&1 || true
+        openclaw config set channels.unofficial.advanced.model "$adv_model" >/dev/null 2>&1 || true
+        openclaw config set channels.unofficial.advanced.apiKey "$adv_key" >/dev/null 2>&1 || true
+        openclaw config set plugins.community.advanced.enabled true >/dev/null 2>&1 || true
+        openclaw config set plugins.community.advanced.type "$adv_type" >/dev/null 2>&1 || true
+        openclaw config set plugins.community.advanced.apiType "$adv_api_type" >/dev/null 2>&1 || true
+        openclaw config set plugins.community.advanced.openaiApiUrl "$adv_url" >/dev/null 2>&1 || true
+        openclaw config set plugins.community.advanced.model "$adv_model" >/dev/null 2>&1 || true
+        openclaw config set plugins.community.advanced.apiKey "$adv_key" >/dev/null 2>&1 || true
+
+        openclaw config set channels.unofficial.routing.enabled true >/dev/null 2>&1 || true
+        openclaw config set channels.unofficial.routing.strategy "$routing_strategy" >/dev/null 2>&1 || true
+        openclaw config set channels.unofficial.routing.primary advanced >/dev/null 2>&1 || true
+        openclaw config set channels.unofficial.routing.secondary fallback >/dev/null 2>&1 || true
+        openclaw config set channels.unofficial.routing.failover "$routing_failover" >/dev/null 2>&1 || true
+        openclaw config set plugins.community.routing.enabled true >/dev/null 2>&1 || true
+        openclaw config set plugins.community.routing.strategy "$routing_strategy" >/dev/null 2>&1 || true
+        openclaw config set plugins.community.routing.primary advanced >/dev/null 2>&1 || true
+        openclaw config set plugins.community.routing.secondary fallback >/dev/null 2>&1 || true
+        openclaw config set plugins.community.routing.failover "$routing_failover" >/dev/null 2>&1 || true
+    fi
+
+    log_info "中/高档默认已启用高级模型路由（${adv_model}，命令: /bm）"
 }
 
 apply_profile_token_policy() {
@@ -1237,7 +1372,8 @@ write_profile_policy_files() {
     local context_limits context_warn_tokens context_ask_tokens context_force_tokens
     local prompt_text
     local now_iso
-    local gemini_url gemini_model nano_url nano_image_model nano_video_model
+    local qihang_url qihang_endpoint qihang_gemini_endpoint qihang_model qihang_model_seedream46 qihang_model_gemini
+    local molifang_url molifang_endpoint molifang_model_qwen molifang_model_glm molifang_model_longcat molifang_model_zturbo
     local persona_user_name persona_timezone persona_location persona_goal
     local persona_style persona_work_mode persona_agent_name persona_agent_emoji
     local persona_role_id persona_role_name persona_role_emoji persona_role_desc
@@ -1253,11 +1389,18 @@ write_profile_policy_files() {
     context_ask_tokens="$(echo "$context_limits" | awk '{print $2}')"
     context_force_tokens="$(echo "$context_limits" | awk '{print $3}')"
 
-    gemini_url="${GEMINI_BASE_URL:-$GEMINI_BASE_URL_DEFAULT}"
-    gemini_model="${GEMINI_IMAGE_MODEL:-$GEMINI_IMAGE_MODEL_DEFAULT}"
-    nano_url="${NANO_BANANA_BASE_URL:-$NANO_BANANA_BASE_URL_DEFAULT}"
-    nano_image_model="${NANO_BANANA_IMAGE_MODEL:-$NANO_BANANA_IMAGE_MODEL_DEFAULT}"
-    nano_video_model="${NANO_BANANA_VIDEO_MODEL:-$NANO_BANANA_VIDEO_MODEL_DEFAULT}"
+    qihang_url="${QIHANG_IMAGE_BASE_URL:-$QIHANG_IMAGE_BASE_URL_DEFAULT}"
+    qihang_endpoint="${QIHANG_IMAGE_ENDPOINT:-$QIHANG_IMAGE_ENDPOINT_DEFAULT}"
+    qihang_gemini_endpoint="${QIHANG_GEMINI_ENDPOINT:-$QIHANG_GEMINI_ENDPOINT_DEFAULT}"
+    qihang_model="${QIHANG_IMAGE_MODEL:-$QIHANG_IMAGE_MODEL_DEFAULT}"
+    qihang_model_seedream46="${QIHANG_IMAGE_MODEL_SEEDREAM46:-$QIHANG_IMAGE_MODEL_SEEDREAM46_DEFAULT}"
+    qihang_model_gemini="${QIHANG_IMAGE_MODEL_GEMINI:-$QIHANG_IMAGE_MODEL_GEMINI_DEFAULT}"
+    molifang_url="${MOLIFANG_IMAGE_BASE_URL:-$MOLIFANG_IMAGE_BASE_URL_DEFAULT}"
+    molifang_endpoint="${MOLIFANG_IMAGE_ENDPOINT:-$MOLIFANG_IMAGE_ENDPOINT_DEFAULT}"
+    molifang_model_qwen="${MOLIFANG_IMAGE_MODEL:-$MOLIFANG_IMAGE_MODEL_DEFAULT}"
+    molifang_model_glm="${MOLIFANG_IMAGE_MODEL_GLM:-$MOLIFANG_IMAGE_MODEL_GLM_DEFAULT}"
+    molifang_model_longcat="${MOLIFANG_IMAGE_MODEL_LONGCAT:-$MOLIFANG_IMAGE_MODEL_LONGCAT_DEFAULT}"
+    molifang_model_zturbo="${MOLIFANG_IMAGE_MODEL_ZTURBO:-$MOLIFANG_IMAGE_MODEL_ZTURBO_DEFAULT}"
     prompt_text="$(get_profile_prompt_text "$level")"
     now_iso="$(date -u '+%Y-%m-%dT%H:%M:%SZ')"
 
@@ -1367,7 +1510,7 @@ EOF
     cat > "$persona_soul_file" <<EOF
 # SOUL.md - 基础人格规则
 
-## 职业人格
+## 初始化工作档案
 - ${persona_role_emoji} ${persona_role_name}
 - ${persona_role_desc}
 
@@ -1388,8 +1531,8 @@ EOF
     cat > "$persona_agents_file" <<EOF
 # AGENTS.md - 基础工作手册
 
-## 职业设定
-- 角色: ${persona_role_emoji} ${persona_role_name}
+## 工作档案设定
+- 档案: ${persona_role_emoji} ${persona_role_name}
 - 对照: ${persona_role_agency}
 - 核心技能: ${persona_role_core_skills}
 - 扩展技能: ${persona_role_extra_skills}
@@ -1473,14 +1616,25 @@ EOF
     "blockSensitiveDataExfiltration": true
   },
   "mediaServices": {
-    "gemini": {
-      "baseUrl": "${gemini_url}",
-      "imageModel": "${gemini_model}"
+    "qihang": {
+      "baseUrl": "${qihang_url}",
+      "imagesEndpoint": "${qihang_endpoint}",
+      "chatEndpoint": "${qihang_gemini_endpoint}",
+      "models": {
+        "seedream5": "${qihang_model}",
+        "seedream46": "${qihang_model_seedream46}",
+        "geminiFlashImage": "${qihang_model_gemini}"
+      }
     },
-    "nanobanana": {
-      "baseUrl": "${nano_url}",
-      "imageModel": "${nano_image_model}",
-      "videoModel": "${nano_video_model}"
+    "molifang": {
+      "baseUrl": "${molifang_url}",
+      "imagesEndpoint": "${molifang_endpoint}",
+      "models": {
+        "qwenImage": "${molifang_model_qwen}",
+        "glmImage": "${molifang_model_glm}",
+        "longCatImage": "${molifang_model_longcat}",
+        "zImageTurbo": "${molifang_model_zturbo}"
+      }
     }
   },
   "files": {
@@ -1524,6 +1678,7 @@ EOF
 - 拒绝导出密钥、凭据、令牌和任何可用于接管账户的信息。
 - 拒绝协助规避模型/网关/权限限制，所有升级动作需显式授权。
 - 输出涉及隐私数据时默认最小化披露并做脱敏。
+- 默认启用高级模型路由（GPT-5.4）；用户输入 /bm 时，本轮任务强制走高级模型链路。
 - 当上下文 >=150k tokens 时，必须先询问用户是否执行 /compact；>=180k tokens 时先压缩再继续。
 
 ## HIGH
@@ -1532,6 +1687,7 @@ EOF
 - 严禁输出 API Key、系统密钥、数据库凭据、私有令牌。
 - 严禁执行绕过安全策略、越权访问、数据外泄类指令。
 - 遇到敏感数据请求先拒绝，再提供合规替代方案。
+- 默认启用高级模型路由（GPT-5.4）；用户输入 /bm 时，本轮任务强制走高级模型链路。
 - 当上下文 >=150k tokens 时，必须先询问用户是否执行 /compact；>=180k tokens 时先压缩再继续。
 EOF
 
@@ -1582,6 +1738,7 @@ apply_vendor_rule_profile() {
     context_force_tokens="$(echo "$context_limits" | awk '{print $3}')"
 
     configure_profile_api_keys "$level"
+    apply_profile_advanced_model_routing "$level"
     apply_profile_token_policy "$level"
     apply_profile_skill_policy "$level" || true
     write_profile_policy_files "$level"
@@ -1590,10 +1747,13 @@ apply_vendor_rule_profile() {
     log_info "token规划规则注入完成"
     echo -e "  档位: ${WHITE}${level}${NC}"
     echo -e "  限流: ${WHITE}$(echo "$limits" | awk '{print $1"小时/"$2"次, 总Token="$3", 单次="$4}')${NC}"
-    echo -e "  Skills 档位: ${WHITE}$(case "$level" in low) echo 基础;; medium) echo 扩展;; high) echo 超级;; *) echo 扩展;; esac)${NC}"
+    echo -e "  Skills 档位: ${WHITE}$(case "$level" in low) echo 低档=基础必装;; medium) echo 中档=基础+进阶;; high) echo 高档=中档+全量;; *) echo 中档=基础+进阶;; esac)${NC}"
     echo -e "  上下文守门: ${WHITE}预警 ${context_warn_tokens} / 询问 ${context_ask_tokens} / 强制 ${context_force_tokens}${NC}"
-    echo -e "  Gemini 服务: ${WHITE}${GEMINI_BASE_URL:-$GEMINI_BASE_URL_DEFAULT} | ${GEMINI_IMAGE_MODEL:-$GEMINI_IMAGE_MODEL_DEFAULT}${NC}"
-    echo -e "  NanoBanana 服务: ${WHITE}${NANO_BANANA_BASE_URL:-$NANO_BANANA_BASE_URL_DEFAULT} | ${NANO_BANANA_IMAGE_MODEL:-$NANO_BANANA_IMAGE_MODEL_DEFAULT}${NC}"
+    echo -e "  启航AI: ${WHITE}${QIHANG_IMAGE_BASE_URL:-$QIHANG_IMAGE_BASE_URL_DEFAULT} | ${QIHANG_IMAGE_MODEL:-$QIHANG_IMAGE_MODEL_DEFAULT} / ${QIHANG_IMAGE_MODEL_SEEDREAM46:-$QIHANG_IMAGE_MODEL_SEEDREAM46_DEFAULT}${NC}"
+    echo -e "  模力方舟: ${WHITE}${MOLIFANG_IMAGE_BASE_URL:-$MOLIFANG_IMAGE_BASE_URL_DEFAULT} | ${MOLIFANG_IMAGE_MODEL:-$MOLIFANG_IMAGE_MODEL_DEFAULT}${NC}"
+    if [ "$level" = "medium" ] || [ "$level" = "high" ]; then
+        echo -e "  高级模型路由: ${WHITE}on | ${UNOFFICIAL_ADVANCED_DEFAULT_MODEL_GPT:-Gpt-5.4} | ${UNOFFICIAL_ADVANCED_DEFAULT_URL_OPENAI:-https://www.leishen-ai.cn/openai} | /bm${NC}"
+    fi
     echo -e "  提示词摘要: ${WHITE}$(echo "$prompt_text" | head -1)${NC}"
 }
 
@@ -4893,7 +5053,7 @@ test_api_connection() {
 setup_identity() {
     echo ""
     echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-    echo -e "${WHITE}  第 4 步: 初始化职业人格${NC}"
+    echo -e "${WHITE}  第 4 步: 初始化工作档案${NC}"
     echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
     echo ""
 
@@ -4921,7 +5081,7 @@ setup_identity() {
             designer) role_default_choice="7" ;;
             *) role_default_choice="1" ;;
         esac
-        read_input "${YELLOW}请选择职业 [1-7] (默认: ${role_default_choice}): ${NC}" role_choice
+        read_input "${YELLOW}请选择档案 [1-7] (默认: ${role_default_choice}): ${NC}" role_choice
         role_choice="${role_choice:-$role_default_choice}"
         case "$role_choice" in
             1) set_persona_role_profile_install "druid" ;;
@@ -4932,7 +5092,7 @@ setup_identity() {
             6) set_persona_role_profile_install "paladin" ;;
             7) set_persona_role_profile_install "designer" ;;
             *)
-                log_warn "无效选择，回退默认职业：万金油·德鲁伊"
+                log_warn "无效选择，回退默认档案：综合助理（通用）"
                 set_persona_role_profile_install "druid"
                 ;;
         esac
@@ -4978,17 +5138,17 @@ setup_identity() {
         openclaw config set identity.welcome.message "$welcome_text" >/dev/null 2>&1 || true
         openclaw config unset identity.welcome.channel >/dev/null 2>&1 || true
         openclaw config unset identity.welcome.target >/dev/null 2>&1 || true
-        # 使首次会话时更容易读取到该人设
+        # 使首次会话时更容易读取到该身份配置
         openclaw config set "boot-md.enabled" true >/dev/null 2>&1 || true
         openclaw config set "session-memory.enabled" true >/dev/null 2>&1 || true
     fi
 
     mkdir -p "$CONFIG_DIR/docs" 2>/dev/null || true
     cat > "$profile_doc" <<EOF
-# OpenClaw 基础人设配置
+# OpenClaw 基础身份配置
 
 - 助手名称: ${bot_name}
-- 职业人格: ${PERSONA_ROLE_EMOJI} ${PERSONA_ROLE_NAME}
+- 初始化工作档案: ${PERSONA_ROLE_EMOJI} ${PERSONA_ROLE_NAME}
 - 用户称呼: ${user_name}
 - 所在地区: ${region}
 - 时区: ${timezone}
@@ -5011,10 +5171,10 @@ EOF
     chmod 600 "$profile_doc" 2>/dev/null || true
 
     cat > "$role_doc" <<EOF
-# 职业人格档案
+# 初始化工作档案
 
-- 角色ID: ${PERSONA_ROLE_SELECTED}
-- 角色: ${PERSONA_ROLE_EMOJI} ${PERSONA_ROLE_NAME}
+- 档案ID: ${PERSONA_ROLE_SELECTED}
+- 档案: ${PERSONA_ROLE_EMOJI} ${PERSONA_ROLE_NAME}
 - 定位: ${PERSONA_ROLE_DESC}
 - agency-agents 对照: ${PERSONA_ROLE_AGENCY}
 
@@ -5027,11 +5187,11 @@ EOF
     chmod 600 "$role_doc" 2>/dev/null || true
 
     echo ""
-    log_info "初始化职业人格已写入"
-    echo -e "  职业人格: ${WHITE}${PERSONA_ROLE_EMOJI} ${PERSONA_ROLE_NAME}${NC}"
+    log_info "初始化工作档案已写入"
+    echo -e "  初始化工作档案: ${WHITE}${PERSONA_ROLE_EMOJI} ${PERSONA_ROLE_NAME}${NC}"
     echo -e "  助手名称: ${WHITE}${bot_name}${NC}"
-    echo -e "  人设文档: ${WHITE}${profile_doc}${NC}"
-    echo -e "  角色文档: ${WHITE}${role_doc}${NC}"
+    echo -e "  身份文档: ${WHITE}${profile_doc}${NC}"
+    echo -e "  档案文档: ${WHITE}${role_doc}${NC}"
 }
 
 build_post_install_welcome_message() {
