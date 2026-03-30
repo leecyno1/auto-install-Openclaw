@@ -1440,7 +1440,7 @@ def _build_openclaw_status_summary():
         "policy": {
             "ruleProfile": str(policy.get("ruleProfile") or env_data.get("OPENCLAW_RULE_PROFILE") or "medium"),
             "windowHours": int(_to_int(policy.get("windowHours"), _to_int(env_data.get("OPENCLAW_RULE_WINDOW_HOURS"), 5))),
-            "maxRequests": int(_to_int(policy.get("maxRequests"), _to_int(env_data.get("OPENCLAW_RULE_MAX_REQUESTS"), 160))),
+            "maxRequests": int(_to_int(policy.get("maxRequests"), _to_int(env_data.get("OPENCLAW_RULE_MAX_REQUESTS"), 300))),
             "maxTokens": int(_to_int(policy.get("maxTokens"), _to_int(env_data.get("OPENCLAW_RULE_MAX_TOKENS"), 2400000))),
             "maxTokensPerRequest": int(_to_int(policy.get("maxTokensPerRequest"), _to_int(env_data.get("OPENCLAW_RULE_MAX_TOKENS_PER_REQUEST"), 48000))),
         },

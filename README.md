@@ -1,571 +1,178 @@
 # auto-install-Openclaw
 
+<p align="center">
+  <img src="photo/openclaw-installer-logo.svg" alt="auto-install-Openclaw Logo" width="820" />
+</p>
+
+<p align="center">
+  <strong>OpenClaw 自动安装、配置修复与像素化工作台整合方案</strong><br />
+  把命令行部署、官方模型接入、插件治理、技能包同步、配置修复、像素小屋工作台收敛到一个仓库里。
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/version-v1.0.5-1f6feb?style=for-the-badge" alt="Version" />
+  <img src="https://img.shields.io/badge/platform-macOS%20%7C%20Linux-0f766e?style=for-the-badge" alt="Platform" />
+  <img src="https://img.shields.io/badge/node-22.12%2B-15803d?style=for-the-badge" alt="Node" />
+  <img src="https://img.shields.io/badge/gateway-13145-7c3aed?style=for-the-badge" alt="Gateway Port" />
+  <img src="https://img.shields.io/badge/pixel%20house-19000-b91c1c?style=for-the-badge" alt="Pixel House Port" />
+</p>
+
 > [!IMPORTANT]
-> **一键安装（推荐，国内优先）**
-> ```bash
-> curl -fsSL --proto '=https' --tlsv1.2 --connect-timeout 8 --max-time 25 https://gitee.com/leecyno1/auto-install-openclaw/raw/main/install.sh | bash
-> ```
-> **全自动安装（跳过官方向导与模型配置，安装后手动配置）**
-> ```bash
-> curl -fsSL --proto '=https' --tlsv1.2 --connect-timeout 8 --max-time 25 https://gitee.com/leecyno1/auto-install-openclaw/raw/main/install.sh | bash -s -- --auto-confirm-all
-> ```
-> **配置菜单（安装后推荐）**
-> ```bash
-> bash ~/.openclaw/config-menu.sh
-> ```
-> **配置修复 / 迁移（保留记忆与对话）**
-> ```bash
-> bash ~/.openclaw/config-menu.sh --repair-config
-> ```
-> **像素小屋补装 / 修复并自动挂钩 OpenClaw**
-> ```bash
-> bash ~/.openclaw/config-menu.sh --install-pixel-house
-> ```
-> **配置修复 / 迁移（保留记忆与对话）**
-> ```bash
-> curl -fsSL --proto '=https' --tlsv1.2 --connect-timeout 8 --max-time 25 https://gitee.com/leecyno1/auto-install-openclaw/raw/main/config-menu.sh | bash -s -- --repair-config
-> ```
-> **多源容灾安装（备用）**
-> ```bash
-> bash -c 'set -e; tmp="$(mktemp)"; for u in "https://gitee.com/leecyno1/auto-install-openclaw/raw/main/install.sh" "https://raw.githubusercontent.com/leecyno1/auto-install-Openclaw/main/install.sh" "https://mirror.ghproxy.com/https://raw.githubusercontent.com/leecyno1/auto-install-Openclaw/main/install.sh" "https://cdn.jsdelivr.net/gh/leecyno1/auto-install-Openclaw@main/install.sh"; do echo "Try: $u"; if curl -fsSL --proto "=https" --tlsv1.2 --connect-timeout 8 --max-time 25 "$u" -o "$tmp"; then bash "$tmp"; rm -f "$tmp"; exit 0; fi; done; rm -f "$tmp"; echo "All sources failed. 请稍后重试或更换网络。"; exit 1'
-> ```
-> **多源容灾配置（备用）**
-> ```bash
-> bash -c 'set -e; tmp="$(mktemp)"; for u in "https://gitee.com/leecyno1/auto-install-openclaw/raw/main/config-menu.sh" "https://raw.githubusercontent.com/leecyno1/auto-install-Openclaw/main/config-menu.sh" "https://mirror.ghproxy.com/https://raw.githubusercontent.com/leecyno1/auto-install-Openclaw/main/config-menu.sh" "https://cdn.jsdelivr.net/gh/leecyno1/auto-install-Openclaw@main/config-menu.sh"; do echo "Try: $u"; if curl -fsSL --proto "=https" --tlsv1.2 --connect-timeout 8 --max-time 25 "$u" -o "$tmp"; then bash "$tmp"; rm -f "$tmp"; exit 0; fi; done; rm -f "$tmp"; echo "All sources failed. 请稍后重试或更换网络。"; exit 1'
-> ```
-> **2026-03-17 更新**：已修复 Dashboard 远程访问 `pairing required`（默认关闭 Control UI 设备配对拦截，保留 token 鉴权）。
+> 这个仓库现在不是单纯的安装脚本，而是一个完整的 OpenClaw 落地方案：
+> `安装器 + 配置菜单 + 配置修复 + 本地 Skills 仓 + 像素小屋工作台 + 角色化配置入口`。
 
-<p align="center">
-  <img src="photo/openclaw-installer-logo.svg" alt="auto-install-Openclaw Logo" width="780" />
-</p>
+## 快速入口
 
-<p align="center">
-  <strong>OpenClaw 自动安装与配置助手</strong><br/>
-  🔖 Version: v1.0.5
-</p>
-
-<p align="center">
-  <img src="https://img.shields.io/badge/Version-1.0.5-blue.svg" alt="Version">
-  <img src="https://img.shields.io/badge/Platform-macOS%20%7C%20Linux-green.svg" alt="Platform">
-  <img src="https://img.shields.io/badge/Node.js-22%2B-brightgreen.svg" alt="Node">
-  <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License">
-</p>
-
-> 一条命令安装 OpenClaw，自动完成依赖检查、模型配置、渠道接入、升级与诊断。
-
----
-
-## 目录
-
-- [项目定位](#项目定位)
-- [一键安装的来由](#一键安装的来由)
-- [核心优势](#核心优势)
-- [界面截图](#界面截图)
-- [快速开始](#快速开始)
-- [操作手册](#操作手册)
-- [配置说明](#配置说明)
-- [可视化子项目（独立）](#可视化子项目独立)
-- [初始化工作档案（7选1）](#初始化工作档案7选1)
-- [默认技能包](#默认技能包)
-- [渠道配置文档](#渠道配置文档)
-- [飞书插件说明](#飞书插件说明)
-- [微信适配说明（社区）](#微信适配说明社区)
-- [升级与维护](#升级与维护)
-- [安全建议](#安全建议)
-- [常见问题](#常见问题)
-- [相关链接](#相关链接)
-
----
-
-## 项目定位
-
-`auto-install-Openclaw` 是 OpenClaw 的命令行安装与配置中心，解决从“拿到 API Key”到“机器人在线可用”这一整段落地流程。
-
-适用场景：
-
-- 第一次部署 OpenClaw，希望快速上线
-- 需要在多模型、多渠道之间快速切换
-- 需要稳定的升级流程（含 doctor / plugins update）
-- 希望把配置与运维操作标准化
-
----
-
-## 一键安装的来由
-
-OpenClaw 本身能力很强，但在实际部署中，用户常会遇到四类成本：
-
-1. 环境成本：Node、依赖、权限、目录初始化。
-2. 配置成本：模型提供商、API 地址、模型 ID、渠道凭证。
-3. 验证成本：配置完不确定是否真正可用。
-4. 升级成本：核心版本和插件版本容易不同步，导致“更新后不能用”。
-
-本项目的一键安装，就是把这四类成本压缩到一条可重复执行的流程里：
-
-- 装得上（依赖与目录自动处理）
-- 配得起（交互式配置菜单）
-- 跑得通（测试与诊断）
-- 升得稳（官方升级链路 + 插件更新）
-
----
-
-## 核心优势
-
-- 一条命令完成主流程，降低上手门槛。
-- 支持多模型提供商与多消息渠道，覆盖常见部署形态。
-- 升级流程对齐官方建议：`openclaw update --restart` → `openclaw doctor` → `openclaw plugins update --all`。
-- 飞书渠道仅使用官方插件 `@openclaw/feishu`，避免社区包冲突导致的升级不稳定。
-- 配置菜单提供诊断、重启、连通性测试与安全项设置。
-
----
-
-## 界面截图
-
-### 配置中心主界面
-
-<p align="center">
-  <img src="photo/menu.png" alt="配置中心主界面" width="780" />
-</p>
-
-### AI 模型配置
-
-<p align="center">
-  <img src="photo/llm.png" alt="AI 模型配置" width="780" />
-</p>
-
-### 消息渠道配置
-
-<p align="center">
-  <img src="photo/social.png" alt="消息渠道配置" width="780" />
-</p>
-
-### 连通性测试与验证
-
-<p align="center">
-  <img src="photo/messages.png" alt="连通性测试" width="780" />
-</p>
-
----
-
-## 快速开始
-
-### 系统要求
-
-| 项目 | 要求 |
-|---|---|
-| 操作系统 | macOS 12+ / Ubuntu 20.04+ / Debian 11+ / CentOS 8+ |
-| Node.js | v22.12+ |
-| 内存 | 最低 2GB，推荐 4GB+ |
-| 磁盘空间 | 最低 1GB |
-
-### 一键安装（推荐）
+### 1. 一键安装
 
 ```bash
 curl -fsSL --proto '=https' --tlsv1.2 --connect-timeout 8 --max-time 25 https://gitee.com/leecyno1/auto-install-openclaw/raw/main/install.sh | bash
 ```
 
-### 全自动安装（跳过模型配置，安装后手动配置）
+### 2. 全自动安装
 
 ```bash
 curl -fsSL --proto '=https' --tlsv1.2 --connect-timeout 8 --max-time 25 https://gitee.com/leecyno1/auto-install-openclaw/raw/main/install.sh | bash -s -- --auto-confirm-all
 ```
 
-### 配置菜单（建议安装后立即执行）
+### 3. 安装后打开配置中心
 
 ```bash
 bash ~/.openclaw/config-menu.sh
 ```
 
-### 配置修复 / 迁移（保留记忆与对话）
+### 4. 修复历史错误配置并保留记忆/对话
 
 ```bash
 bash ~/.openclaw/config-menu.sh --repair-config
 ```
 
-### 像素小屋补装 / 修复并自动挂钩 OpenClaw
+### 5. 补装或修复像素小屋工作台
 
 ```bash
 bash ~/.openclaw/config-menu.sh --install-pixel-house
 ```
 
-### 配置修复 / 迁移（保留记忆与对话）
+## 这套东西解决什么问题
 
-```bash
-curl -fsSL --proto '=https' --tlsv1.2 --connect-timeout 8 --max-time 25 https://gitee.com/leecyno1/auto-install-openclaw/raw/main/config-menu.sh | bash -s -- --repair-config
+- 把 OpenClaw 首次部署压缩成一条可重复执行的流程，减少环境差异、版本漂移和手工误配。
+- 保留官方模型配置流程，不再用脚本硬接管 `openclaw onboard`，但会在进入前自动修复已知坏配置。
+- 自动清理历史残留插件项，避免 `pairing required`、`plugin not found`、`unknown channel id` 这类老问题反复出现。
+- 默认内置本地 Skills 仓，尽量避免安装时依赖外网动态拉取，降低大规模部署的不确定性。
+- 提供像素小屋工作台，把角色、技能、装备、状态、任务和 OpenClaw 后端配置映射到可视化页面。
+
+## 视觉预览
+
+### 配置中心与模型配置
+
+| 配置中心 | 模型配置 |
+| --- | --- |
+| <img src="photo/menu.png" alt="配置中心主界面" width="100%" /> | <img src="photo/llm.png" alt="AI 模型配置" width="100%" /> |
+
+| 消息与测试 | 像素小屋工作台 |
+| --- | --- |
+| <img src="photo/social.png" alt="消息渠道配置" width="100%" /> | <img src="subprojects/lobster-sanctum-ui/vendor/star-office-ui/docs/screenshots/readme-cover-1.jpg" alt="像素小屋封面 1" width="100%" /> |
+
+### 像素小屋与工作台
+
+| 运行世界 | 房屋场景 |
+| --- | --- |
+| <img src="subprojects/lobster-sanctum-ui/vendor/star-office-ui/docs/screenshots/readme-cover-2.jpg" alt="像素小屋封面 2" width="100%" /> | <img src="subprojects/lobster-sanctum-ui/vendor/star-office-ui/docs/screenshots/office-preview-20260301.jpg" alt="像素小屋预览" width="100%" /> |
+
+<p align="center">
+  <img src="photo/messages.png" alt="连通性与验证界面" width="900" />
+</p>
+
+## 核心能力
+
+| 模块 | 现在能做什么 |
+| --- | --- |
+| 安装器 | 安装 OpenClaw、依赖、默认运行环境、配置入口、像素小屋启动器 |
+| 配置菜单 | 模型配置、官方插件管理、权限设置、技能管理、身份配置、服务管理、配置修复 |
+| 配置修复 | 清理历史残留插件/错误渠道配置，保留用户 Memory、Session、对话历史与 API Key |
+| Skills 仓 | 内置基础 / 扩展 / 超级技能包，支持本地同步、缓存重建、缺失修复 |
+| 像素小屋 | 默认工作台端口 `19000`，映射角色、技能、装备、状态与后端运行世界 |
+| Gateway | 默认收敛到 `127.0.0.1:13145`，降低误暴露风险 |
+
+## 档位规则
+
+| 档位 | 请求预算 | 总 Token | 单次 Token | 默认策略 |
+| --- | --- | --- | --- | --- |
+| 基础档 `low` | 每 5 小时 100 次 | 600000 | 24000 | 基础技能包，适合轻量部署与低成本值守 |
+| 扩展档 `medium` | 每 5 小时 300 次 | 2400000 | 48000 | 扩展技能包，默认启用高级模型路由 |
+| 超级档 `high` | 请求次数不限 | 6000000 | 80000 | 超级技能包，请求数不限，但仍受 Token 预算与安全规则约束 |
+
+> [!TIP]
+> 超级档的“请求次数不限”在策略文件里会写成 `maxRequests=0`，约定 `0` 表示不限，不表示禁用。
+
+## 推荐工作流
+
+```text
+安装脚本 -> 官方 onboard -> 配置菜单 -> 修复旧配置 -> 同步本地技能包 -> 启动 Gateway -> 打开像素小屋工作台
 ```
 
-### 配置命令（多源容灾备用）
+### 建议顺序
 
-```bash
-bash -c 'set -e; tmp="$(mktemp)"; for u in "https://gitee.com/leecyno1/auto-install-openclaw/raw/main/config-menu.sh" "https://raw.githubusercontent.com/leecyno1/auto-install-Openclaw/main/config-menu.sh" "https://mirror.ghproxy.com/https://raw.githubusercontent.com/leecyno1/auto-install-Openclaw/main/config-menu.sh" "https://cdn.jsdelivr.net/gh/leecyno1/auto-install-Openclaw@main/config-menu.sh"; do echo "Try: $u"; if curl -fsSL --proto "=https" --tlsv1.2 --connect-timeout 8 --max-time 25 "$u" -o "$tmp"; then bash "$tmp"; rm -f "$tmp"; exit 0; fi; done; rm -f "$tmp"; echo "All sources failed. 请稍后重试或更换网络。"; exit 1'
+1. 先运行安装脚本，完成 OpenClaw 与依赖初始化。
+2. 安装后执行 `bash ~/.openclaw/config-menu.sh`，走一次模型配置与服务检查。
+3. 对历史服务器执行 `bash ~/.openclaw/config-menu.sh --repair-config`，刷新本地技能缓存并修复旧配置。
+4. 需要可视化界面时执行 `bash ~/.openclaw/config-menu.sh --install-pixel-house`，然后访问 `http://127.0.0.1:19000/`。
+
+## 仓库结构
+
+```text
+.
+├── install.sh                          # 主安装脚本
+├── config-menu.sh                      # 配置中心
+├── docs/                               # 配套文档
+├── skills/default/                     # 本地默认技能仓
+├── scripts/                            # 启动器、同步器、像素小屋桥接脚本
+├── photo/                              # README 与文档展示素材
+└── subprojects/lobster-sanctum-ui/     # 像素小屋 / Lobster Sanctum Studio
 ```
 
-如需自定义镜像源（自建 CDN/Gitee Raw），可在执行前设置：
+## 常用命令
 
-```bash
-export OPENCLAW_INSTALLER_MIRROR_RAW_URL="https://your-mirror.example.com/leecyno1/auto-install-Openclaw/main"
-export OPENCLAW_OFFICIAL_INSTALL_MIRROR_URL="https://your-mirror.example.com/openclaw/install.sh"
-```
-
-安装脚本会自动执行：
-
-1. 系统与依赖检查
-2. OpenClaw 安装
-3. 默认 Skills 运行依赖安装（Python 包、`uvx`、MiniMax MCP 组件）
-4. AI 模型向导配置
-5. API 连通性验证
-6. 可选启动 Gateway
-7. 可选进入配置菜单
-
-Gateway 默认监听地址已调整为：`127.0.0.1:13145`（本地回环，避免沿用常见默认端口）。
-
-如需自定义 Gateway 地址/端口，可在安装命令后追加参数：
-
-```bash
-bash install.sh --gateway-host 127.0.0.1 --gateway-port 15000
-```
-
-或使用环境变量：
-
-```bash
-export OPENCLAW_GATEWAY_HOST=127.0.0.1
-export OPENCLAW_GATEWAY_PORT=15000
-```
-
-### 手动安装
-
-```bash
-git clone https://github.com/leecyno1/auto-install-Openclaw.git
-cd auto-install-Openclaw
-chmod +x install.sh config-menu.sh
-./install.sh
-```
-
----
-
-## 操作手册
-
-### 1) 首次安装后
-
-```bash
-# 前台调试运行
-source ~/.openclaw/env && openclaw gateway --port "${OPENCLAW_GATEWAY_PORT:-13145}"
-
-# 后台服务运行
-openclaw gateway start
-
-# 查看状态
-openclaw gateway status
-```
-
-### 2) 打开配置菜单
+### 配置与修复
 
 ```bash
 bash ~/.openclaw/config-menu.sh
+bash ~/.openclaw/config-menu.sh --repair-config
+bash ~/.openclaw/config-menu.sh --install-pixel-house
 ```
 
-常用菜单路径：
-
-- `[1]` 系统状态（运行状态 + 核心指标 + Skills 分层）
-- `[2]` 模型配置（官方，`openclaw onboard`）
-- `[3]` 消息渠道插件（官方）
-- `[5]` Skills 管理（官方/增强/超级 + 默认技能包同步）
-- `[5]` Skills 管理 → `[11]` Skills 安装概览（分层/缺失）
-- `[5]` Skills 管理 → `[9]` 安装/修复 Skills 运行依赖
-- `[6]` 高级设置（升级、备份、恢复）
-- `[6]` 高级设置 → `[8]` AI 自动修复 OpenClaw（集成 `auto-fix-openclaw`，支持 Codex/Claude CLI）
-- `[6]` 高级设置 → `[10]` 配置修复 / 迁移（`--repair-config` 同能力，保留记忆与会话）
-- `[6]` 高级设置 → `[4]` 一键重置（初始化）：清空 API Key、渠道配对与敏感配置（保留 skills/plugins）
-- `[9]` 服务管理（含连通性） → `[5]` 连通性测试（API/渠道）
-- `[9]` 服务管理（含连通性） → `[8]` 卸载中心（全局卸载 / 目录卸载保留 skills+plugins / 完全卸载）
-- `[10]` 像素小屋 → `[1]` 安装/修复像素小屋并挂钩 OpenClaw
-
-AI 自动修复前置要求：
-
-- 已安装并登录 Codex CLI（`codex login`）。
-- 启动 AI 修复后，系统会自动读取错误日志摘要并向所选 CLI 发起修复请求。
-
-### 3) 典型配置流程（建议）
-
-1. 先配 AI 模型（并测试 API）。
-2. 再配渠道（Telegram / Discord / Slack / 飞书等）。
-3. 重启 Gateway 使渠道生效。
-4. 执行连通性测试与 doctor。
-
-### 4) 飞书配置流程（简版）
-
-1. 飞书开放平台创建应用，启用机器人能力。
-2. 配置权限：`im:message`、`im:message:send_as_bot`、`im:chat:readonly`。
-3. 在配置菜单中输入 `App ID` 与 `App Secret`。
-4. 启动/重启 Gateway。
-5. 在飞书后台启用长连接接收事件，添加 `im.message.receive_v1`。
-
-详细说明见：`docs/feishu-setup.md`
-
----
-
-## 配置说明
-
-auto-install-Openclaw 当前推荐配置模型：
-
-- 环境变量：`~/.openclaw/env`
-- OpenClaw 主配置：`~/.openclaw/openclaw.json`
-
-目录示例：
-
-```text
-~/.openclaw/
-├── openclaw.json
-├── env
-├── backups/
-└── logs/
-```
-
-## 可视化子项目（独立）
-
-当前可视化配置页面已拆分为独立子项目：
-
-- 项目名：`Lobster Sanctum Studio`
-- 目录：`subprojects/lobster-sanctum-ui`
-- 前端文件：`subprojects/lobster-sanctum-ui/web/*`
-- 子项目文档：`subprojects/lobster-sanctum-ui/README.md`
-- 新 session 定义：`subprojects/lobster-sanctum-ui/SESSION.md`
-
-启动方式（保持原命令兼容）：
+### Gateway
 
 ```bash
-bash scripts/config-ui.sh start
+source ~/.openclaw/env && openclaw gateway status
+source ~/.openclaw/env && openclaw doctor
+source ~/.openclaw/env && openclaw health
 ```
 
-该命令现在直接启动可视化控制台主入口：
-
-- `http://127.0.0.1:19000/`
-
-如需脱离像素房屋单独预览 workbench 前端，才使用子项目静态开发服务：
+### 像素小屋
 
 ```bash
-bash subprojects/lobster-sanctum-ui/dev-server.sh start
+~/.openclaw/lobster-world.sh start
+~/.openclaw/lobster-world.sh status
+~/.openclaw/lobster-world.sh stop
 ```
 
-UI 美术开发可使用独立 session 启动器：
+## 相关文档
 
-```bash
-bash scripts/ui-studio-session.sh
-```
+- [渠道配置总览](docs/channels-configuration-guide.md)
+- [飞书配置说明](docs/feishu-setup.md)
+- [规则档位说明](docs/vendor-control-profiles.md)
+- [技能指南汇总](docs/skills-guides.md)
+- [人格角色设计](docs/persona-roles.md)
+- [像素小屋与工作台设计](docs/roadmaps/2026-03-26-pixel-house-workbench-design.md)
 
-## 初始化工作档案（7选1）
+## 适合谁
 
-安装脚本与配置菜单已支持 7 选 1 的工作档案初始化，并可在后续随时切换：
+- 需要在多台服务器上批量部署 OpenClaw 的用户
+- 不想每台机器都手动装插件、配模型、修坏配置的用户
+- 希望把角色、技能、工具与后端运行状态做成可视化工作台的用户
+- 希望把安装、配置、修复、升级统一进一个仓库管理的人
 
-- 菜单入口：`9 身份配置`
-- 档案说明文档：`docs/persona-roles.md`
-- 运行时写入：
-  - `~/.openclaw/agents/main/persona/SOUL.md`
-  - `~/.openclaw/agents/main/persona/AGENTS.md`
-  - `~/.openclaw/agents/main/persona/USER.md`
-  - `~/.openclaw/agents/main/persona/IDENTITY.md`
+## License
 
-说明：工作档案仅影响身份、工作风格与技能建议，不覆盖安全与 token 规划规则。
-
-## 默认技能包
-
-安装脚本会默认将仓库内 `skills/default/*` 同步到 `~/.openclaw/skills/`（已存在同名技能默认保留，不覆盖）。  
-如需强制覆盖更新同名技能，可在安装前设置：
-
-```bash
-export OPENCLAW_SKILLS_FORCE_UPDATE=1
-```
-
-如需跳过自动安装 Skills 运行依赖（默认开启）：
-
-```bash
-export OPENCLAW_INSTALL_SKILL_DEPS=0
-```
-
-依赖清单存放在仓库内：
-
-```text
-skills/requirements-runtime.txt
-```
-
-当前默认打包技能：
-
-- capability-evolver
-- openclaw-cron-setup
-- proactive-agent
-- self-improving-agent-cn
-- brainstorming
-- reflection
-- find-skills
-- skill-creator
-- agent-browser
-- chrome-devtools-mcp
-- github
-- mcp-builder
-- model-usage
-- shell
-- minimax-image-understanding
-- tavily-search
-- web-search
-- minimax-web-search
-- blogwatcher
-- news-radar
-- summarize
-- url-to-markdown
-- pdf
-- nano-pdf
-- docx
-- pptx
-- xlsx
-- frontend-design
-- web-design
-- stock-monitor-skill（Stock Monitor）
-- multi-search-engine（Multi Search Engine）
-- akshare-stock（AkShare Stock）
-- agentmail
-- agentmail-cli
-- agentmail-mcp
-- agentmail-toolkit
-- notebooklm-skill（高级技能包）
-- baoyu-skills（高级技能包，含 baoyu 全套子技能）
-
-## 渠道配置文档
-
-- 仓库文档：`docs/channels-configuration-guide.md`
-- 上游索引：`docs/upstream-sources.md`
-- Skills 总览：`docs/skills-guides.md`
-- 配置规范（历史版）：`docs/gamified-config-spec-v1.md`
-- 安装后本地文档：`~/.openclaw/docs/channels-configuration-guide.md`
-- 安装后本地索引：`~/.openclaw/docs/upstream-sources.md`
-- 安装后 Skill：`~/.openclaw/skills/channel-setup-assistant/SKILL.md`
-- 安装后 Skills 指南：`~/.openclaw/skills/<skill>/GUIDE.md`
-
-该文档覆盖官方与社区渠道（含飞书、微信、QQ、企业微信）的字段要求、菜单路径、排障命令与版本策略。
-
-### Docker 配置兼容说明
-
-- 推荐与命令行安装一致：`env + openclaw.json`
-- Docker 仍保留 `config.yaml.example` 作为历史兼容模板
-- 旧配置迁移建议执行：
-
-```bash
-openclaw doctor --fix
-openclaw plugins update --all
-```
-
----
-
-## 飞书插件说明
-
-本仓库已统一为 **仅官方插件**：
-
-- `@openclaw/feishu`
-
-这样做的目的：
-
-- 减少升级后插件冲突
-- 降低社区包与官方核心版本漂移带来的故障
-- 对齐官方渠道生态，便于维护与排障
-
----
-
-## 微信适配说明（社区）
-
-微信接入已重构为 **LangBot WeChatPad 适配流程**（社区方案）：
-
-- 社区插件：`openclaw-wechat-channel`（固定版本安装）
-- 配置入口：`消息渠道配置 -> 微信（LangBot WeChatPad，社区）`
-- 关键参数：
-  - `WECHATPADPRO_BASEURL`
-  - `WECHATPADPRO_API_KEY`
-  - 回调地址（Host/Port/Path）
-
-说明：该方案非 OpenClaw 官方渠道，请在生产环境前先做稳定性与安全评估。
-
-## 默认消息插件预装策略
-
-安装完成后会优先从仓库本地包同步以下渠道能力，避免远端安装失败：
-
-- 包安装：`feishu / wechat / dingtalk / qq / discord / whatsapp`
-- 内置启用：`telegram / imessage`（随 core 版本能力）
-
----
-
-## 升级与维护
-
-推荐升级链路：
-
-```bash
-openclaw update --restart
-openclaw doctor --fix
-openclaw plugins update --all
-```
-
-通过配置菜单升级：
-
-```bash
-bash ~/.openclaw/config-menu.sh
-# [6] 高级设置 -> [6] 更新 OpenClaw
-```
-
-常用运维命令：
-
-```bash
-openclaw gateway start
-openclaw gateway stop
-openclaw gateway restart
-openclaw logs --follow
-openclaw doctor
-openclaw health
-```
-
----
-
-## 安全建议
-
-- 建议在专用机器/容器部署，不要直接放在主力办公机。
-- API Key 统一放环境变量，不提交到仓库。
-- 如启用系统命令与文件访问，请配合白名单路径与沙箱策略。
-- 定期备份 `~/.openclaw` 目录。
-
----
-
-## 常见问题
-
-### Q1: 安装完成后命令找不到？
-
-```bash
-source ~/.openclaw/env
-openclaw --version
-```
-
-必要时重开终端或检查 shell 配置是否已加载 env。
-
-### Q2: 升级后某个渠道异常？
-
-优先执行：
-
-```bash
-openclaw doctor --fix
-openclaw plugins update --all
-openclaw gateway restart
-```
-
-### Q3: 飞书不回复？
-
-检查：
-
-1. 插件是否安装：`openclaw plugins list | grep feishu`
-2. 渠道是否注册：`openclaw channels list`
-3. 事件订阅是否添加 `im.message.receive_v1`
-4. Gateway 是否在运行：`openclaw gateway status`
-
----
-
-## 相关链接
-
-- OpenClaw 官网：https://openclaw.ai
-- OpenClaw 文档：https://docs.openclaw.ai
-- OpenClaw 主仓库：https://github.com/openclaw/openclaw
-- Installer 仓库（当前项目）：https://github.com/leecyno1/auto-install-Openclaw
-
----
+MIT

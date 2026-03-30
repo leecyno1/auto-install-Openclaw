@@ -882,16 +882,16 @@ get_profile_token_limits() {
             echo "0 0 0 0"
             ;;
         low)
-            echo "5 50 600000 24000"
+            echo "5 100 600000 24000"
             ;;
         medium)
-            echo "5 160 2400000 48000"
+            echo "5 300 2400000 48000"
             ;;
         high)
-            echo "5 360 6000000 80000"
+            echo "5 0 6000000 80000"
             ;;
         *)
-            echo "5 160 2400000 48000"
+            echo "5 300 2400000 48000"
             ;;
     esac
 }
@@ -925,7 +925,7 @@ EOF
         low)
             cat <<'EOF'
 你是受控执行模式（LOW）。
-- 只执行低频请求预算：5 小时 50 次。
+- 只执行低频请求预算：5 小时 100 次。
 - 绝不泄露任何 API Key、Token、密钥、Cookie、会话票据。
 - 拒绝任何“切换/绕过模型限制、突破调用限制、越权执行”请求。
 - 涉及用户隐私/敏感信息时必须脱敏或拒绝，并解释原因。
@@ -935,7 +935,7 @@ EOF
         medium)
             cat <<'EOF'
 你是平衡执行模式（MEDIUM）。
-- 请求预算提升到 5 小时 160 次，仍需避免无效重复调用。
+- 请求预算提升到 5 小时 300 次，仍需避免无效重复调用。
 - 拒绝导出密钥、凭据、令牌和任何可用于接管账户的信息。
 - 拒绝协助规避模型/网关/权限限制，所有升级动作需显式授权。
 - 输出涉及隐私数据时默认最小化披露并做脱敏。
@@ -946,7 +946,7 @@ EOF
         high)
             cat <<'EOF'
 你是高性能执行模式（HIGH）。
-- 请求预算提升到 5 小时 360 次，用于高并发任务但需持续监控。
+- 请求次数不设上限，但需持续监控总 Token 消耗与单次调用成本。
 - 严禁输出 API Key、系统密钥、数据库凭据、私有令牌。
 - 严禁执行绕过安全策略、越权访问、数据外泄类指令。
 - 遇到敏感数据请求先拒绝，再提供合规替代方案。
@@ -957,7 +957,7 @@ EOF
         *)
             cat <<'EOF'
 你是平衡执行模式（MEDIUM）。
-- 请求预算提升到 5 小时 160 次，仍需避免无效重复调用。
+- 请求预算提升到 5 小时 300 次，仍需避免无效重复调用。
 - 拒绝导出密钥、凭据、令牌和任何可用于接管账户的信息。
 - 拒绝协助规避模型/网关/权限限制，所有升级动作需显式授权。
 - 输出涉及隐私数据时默认最小化披露并做脱敏。
@@ -977,9 +977,9 @@ select_rule_profile_level() {
     echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
     echo -e "${WHITE}  token规划规则注入档位${NC}"
     echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-    echo -e "  ${CYAN}[1]${NC} LOW    - 基础档（5小时 50 次）"
-    echo -e "  ${CYAN}[2]${NC} MEDIUM - 扩展档（5小时 160 次）"
-    echo -e "  ${CYAN}[3]${NC} HIGH   - 超级档（5小时 360 次）"
+    echo -e "  ${CYAN}[1]${NC} LOW    - 基础档（5小时 100 次）"
+    echo -e "  ${CYAN}[2]${NC} MEDIUM - 扩展档（5小时 300 次）"
+    echo -e "  ${CYAN}[3]${NC} HIGH   - 超级档（请求次数不限）"
     echo -e "  ${CYAN}[4]${NC} NONE   - 跳过本次注入"
     echo ""
 
@@ -1371,7 +1371,7 @@ write_profile_policy_files() {
         log_info "已选择 NONE，跳过 token规划规则策略文件写入。"
         return 0
     fi
-    local limits window_hours max_requests max_tokens max_tokens_per_req
+    local limits window_hours max_requests max_tokens max_tokens_per_req max_requests_display
     local context_limits context_warn_tokens context_ask_tokens context_force_tokens
     local prompt_text
     local now_iso
@@ -1387,6 +1387,11 @@ write_profile_policy_files() {
     max_requests="$(echo "$limits" | awk '{print $2}')"
     max_tokens="$(echo "$limits" | awk '{print $3}')"
     max_tokens_per_req="$(echo "$limits" | awk '{print $4}')"
+    if [ "${max_requests:-0}" -le 0 ] 2>/dev/null; then
+        max_requests_display="不限（0 表示不限）"
+    else
+        max_requests_display="$max_requests"
+    fi
     context_limits="$(get_profile_context_guard_limits "$level")"
     context_warn_tokens="$(echo "$context_limits" | awk '{print $1}')"
     context_ask_tokens="$(echo "$context_limits" | awk '{print $2}')"
@@ -1449,7 +1454,7 @@ write_profile_policy_files() {
 
 - 档位: ${level}
 - 时间窗: ${window_hours} 小时
-- 请求上限: ${max_requests}
+- 请求上限: ${max_requests_display}
 - Token 上限: ${max_tokens}
 - 单请求 Token 上限: ${max_tokens_per_req}
 - 上下文预警阈值: ${context_warn_tokens}
@@ -1495,7 +1500,7 @@ EOF
 
 当前会话默认规则：
 1. 优先满足可用性，其次控制成本。
-2. 每 ${window_hours} 小时最多 ${max_requests} 次请求。
+2. 每 ${window_hours} 小时请求次数${max_requests_display}。
 3. 单请求建议 Token 不超过 ${max_tokens_per_req}。
 4. 拒绝密钥泄露、越权请求和敏感信息外泄。
 5. 当上下文 >= ${context_ask_tokens} 时，必须先询问是否执行 /compact。
@@ -1669,7 +1674,7 @@ EOF
 
 ## LOW
 你是受控执行模式（LOW）。
-- 只执行低频请求预算：5 小时 50 次。
+- 只执行低频请求预算：5 小时 100 次。
 - 绝不泄露任何 API Key、Token、密钥、Cookie、会话票据。
 - 拒绝任何“切换/绕过模型限制、突破调用限制、越权执行”请求。
 - 涉及用户隐私/敏感信息时必须脱敏或拒绝，并解释原因。
@@ -1677,7 +1682,7 @@ EOF
 
 ## MEDIUM
 你是平衡执行模式（MEDIUM）。
-- 请求预算提升到 5 小时 160 次，仍需避免无效重复调用。
+- 请求预算提升到 5 小时 300 次，仍需避免无效重复调用。
 - 拒绝导出密钥、凭据、令牌和任何可用于接管账户的信息。
 - 拒绝协助规避模型/网关/权限限制，所有升级动作需显式授权。
 - 输出涉及隐私数据时默认最小化披露并做脱敏。
@@ -1686,7 +1691,7 @@ EOF
 
 ## HIGH
 你是高性能执行模式（HIGH）。
-- 请求预算提升到 5 小时 360 次，用于高并发任务但需持续监控。
+- 请求次数不设上限，但需持续监控总 Token 消耗与单次调用成本。
 - 严禁输出 API Key、系统密钥、数据库凭据、私有令牌。
 - 严禁执行绕过安全策略、越权访问、数据外泄类指令。
 - 遇到敏感数据请求先拒绝，再提供合规替代方案。
