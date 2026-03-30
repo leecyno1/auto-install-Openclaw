@@ -4,6 +4,7 @@ const RUNTIME_PROJECTION_KEY = "openclaw.runtime.world";
 const OFFICE_PLAQUE_STORAGE_KEY = "officePlaqueCustomTitle";
 const STATUS_ENDPOINT = "/status";
 const PAGE_PARAMS = new URLSearchParams(window.location.search);
+const CATALOG_ENDPOINT = "/openclaw/catalog";
 const routeLabelMap = {
   balanced: "均衡协作",
   analysis: "深度分析",
@@ -46,6 +47,8 @@ let currentRole = "druid";
 let currentStation = "role";
 let currentRuntime = { state: "idle", detail: "等待任务", progress: 0, updatedAt: "-", officeName: "" };
 let resizeTimer = null;
+let serverRole = "";
+let currentCatalogPayload = null;
 
 function safeParse(value, fallback) {
   try {
@@ -62,8 +65,47 @@ function notifyParent(type, payload) {
 }
 
 function readRole() {
-  const role = PAGE_PARAMS.get("role") || window.localStorage.getItem(PERSONA_KEY) || "druid";
+  const role =
+    PAGE_PARAMS.get("role") ||
+    serverRole ||
+    window.localStorage.getItem(PERSONA_KEY) ||
+    "druid";
   return roleProfiles[role] ? role : "druid";
+}
+
+function equipSlotsFromCatalog(payload) {
+  const equipped = {};
+  const items = Array.isArray(payload?.equipment) ? payload.equipment : [];
+  items.forEach((item) => {
+    const slot = String(item?.slot || "").trim();
+    const id = String(item?.id || "").trim();
+    if (!slot || !id || equipped[slot]) return;
+    equipped[slot] = id;
+  });
+  return equipped;
+}
+
+function buildProjectionFromCatalog(payload) {
+  if (!payload?.ok) return null;
+  const role = roleProfiles[payload.role] ? payload.role : "druid";
+  const roleState = readRoleState(role) || {};
+  const meta = roleProfiles[role] || roleProfiles.druid;
+  const installedSkills = Array.isArray(payload?.skills?.installed) ? payload.skills.installed : [];
+  const dynamicEquipped = equipSlotsFromCatalog(payload);
+  return {
+    role,
+    persona: {
+      title: meta.title,
+      className: meta.className,
+    },
+    build: {
+      modelRoute: roleState.modelRoute || "balanced",
+      tokenRule: roleState.tokenRule || "medium",
+      skillPack: roleState.skillPack || "medium",
+      installedSkills,
+      equipped: Object.keys(roleState.equipped || {}).length ? roleState.equipped : dynamicEquipped,
+    },
+  };
 }
 
 function readRoleState(role) {
@@ -144,20 +186,43 @@ function readOfficeName() {
 function activeSummary() {
   const role = currentRole;
   const projection = readProjection();
+  const catalogProjection = buildProjectionFromCatalog(currentCatalogPayload);
   const roleState = readRoleState(role) || {};
   const meta = roleProfiles[role] || roleProfiles.druid;
-  const build = projection?.role === role ? projection.build || {} : {};
+  const build =
+    catalogProjection?.role === role
+      ? catalogProjection.build || {}
+      : projection?.role === role
+        ? projection.build || {}
+        : {};
   const installedSkills = Array.isArray(build.installedSkills) ? build.installedSkills.length : Array.isArray(roleState.installedSkills) ? roleState.installedSkills.length : 0;
   const equippedCount = Object.values(build.equipped || roleState.equipped || {}).filter(Boolean).length;
   return {
     role,
-    title: projection?.role === role ? projection.persona?.title || meta.title : meta.title,
-    className: projection?.role === role ? projection.persona?.className || meta.className : meta.className,
+    title: catalogProjection?.role === role ? catalogProjection.persona?.title || meta.title : projection?.role === role ? projection.persona?.title || meta.title : meta.title,
+    className: catalogProjection?.role === role ? catalogProjection.persona?.className || meta.className : projection?.role === role ? projection.persona?.className || meta.className : meta.className,
     route: build.modelRoute || roleState.modelRoute || "balanced",
     rule: build.tokenRule || roleState.tokenRule || "medium",
     pack: build.skillPack || roleState.skillPack || "medium",
     buildText: `${installedSkills} 技能 / ${equippedCount} 装备`,
   };
+}
+
+async function hydrateCatalog() {
+  try {
+    const response = await fetch(CATALOG_ENDPOINT, { cache: "no-store" });
+    if (!response.ok) return;
+    const payload = await response.json();
+    if (!payload?.ok) return;
+    currentCatalogPayload = payload;
+    serverRole = roleProfiles[payload.role] ? payload.role : "";
+    if (!PAGE_PARAMS.get("role") && serverRole) {
+      currentRole = serverRole;
+      window.localStorage.setItem(PERSONA_KEY, serverRole);
+    }
+  } catch {
+    // ignore and fall back to local storage
+  }
 }
 
 function buildFrameUrl(station) {
@@ -265,14 +330,22 @@ function bindEvents() {
   });
 }
 
-function init() {
+async function init() {
+  await hydrateCatalog();
   currentRole = readRole();
   const requested = PAGE_PARAMS.get("station") || PAGE_PARAMS.get("mode") || "role";
   bindEvents();
   renderStation(stations[requested] ? requested : requested === "levels" ? "status" : requested === "items" ? "equipment" : "role");
-  fetchStatus();
+  await fetchStatus();
   window.setInterval(fetchStatus, 4000);
   renderShell();
 }
 
-window.addEventListener("DOMContentLoaded", init);
+window.addEventListener("DOMContentLoaded", () => {
+  init().catch(() => {
+    currentRole = readRole();
+    bindEvents();
+    renderStation("role");
+    fetchStatus();
+  });
+});

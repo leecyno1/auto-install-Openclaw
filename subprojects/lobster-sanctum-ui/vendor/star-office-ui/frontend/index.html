@@ -1799,6 +1799,7 @@
         const COMMAND_CENTER_STORAGE_KEY = 'openclaw.command.center';
         const RUNTIME_PROJECTION_STORAGE_KEY = 'openclaw.runtime.world';
         const OFFICE_PLAQUE_STORAGE_KEY = 'officePlaqueCustomTitle';
+        const CATALOG_ENDPOINT = '/openclaw/catalog';
         const HOUSE_ROLE_META = {
             druid: { title: '万金油 · 德鲁伊', className: '通用总管' },
             assassin: { title: '分析员 · 刺客', className: '投资分析' },
@@ -1878,10 +1879,81 @@
             try {
                 const queryRole = roleFromQueryParam();
                 if (queryRole) return normalizeHouseRole(queryRole);
+                if (window.openclawRoleFromServer) return normalizeHouseRole(window.openclawRoleFromServer);
                 return normalizeHouseRole(localStorage.getItem(PERSONA_STORAGE_KEY) || 'druid');
             } catch (e) {
                 return 'druid';
             }
+        }
+
+        function buildEquippedSlotsFromCatalog(payload) {
+            const equipped = {};
+            const items = Array.isArray(payload?.equipment) ? payload.equipment : [];
+            items.forEach((item) => {
+                const slot = String(item?.slot || '').trim();
+                const id = String(item?.id || '').trim();
+                if (!slot || !id || equipped[slot]) return;
+                equipped[slot] = id;
+            });
+            return equipped;
+        }
+
+        function syncRoleFromServer(rawRole) {
+            const normalized = normalizeHouseRole(rawRole || 'druid');
+            window.openclawRoleFromServer = normalized;
+            try {
+                if (!roleFromQueryParam()) {
+                    localStorage.setItem(PERSONA_STORAGE_KEY, normalized);
+                }
+            } catch (e) {
+                // ignore storage failures
+            }
+            return normalized;
+        }
+
+        function mergeCatalogProjection(payload) {
+            if (!payload || !payload.ok) return;
+            const role = syncRoleFromServer(payload.role);
+            const meta = roleMeta(role);
+            const roleState = readRoleStateFromStorage(role) || {};
+            const installedSkills = Array.isArray(payload?.skills?.installed) ? payload.skills.installed : [];
+            const equipped = Object.keys(roleState.equipped || {}).length ? roleState.equipped : buildEquippedSlotsFromCatalog(payload);
+            const inventory = Array.isArray(payload?.equipment) ? payload.equipment.map((item) => item.id).filter(Boolean) : [];
+            currentHouseProjection = {
+                role,
+                persona: {
+                    title: meta.title,
+                    className: meta.className
+                },
+                build: {
+                    skillPack: roleState.skillPack || 'medium',
+                    tokenRule: roleState.tokenRule || 'medium',
+                    modelRoute: roleState.modelRoute || 'balanced',
+                    installedSkills,
+                    equipped,
+                    inventory,
+                    activeSynergies: Array.isArray(roleState.activeSynergies) ? roleState.activeSynergies : []
+                },
+                runtime: normalizeHouseRuntime(currentHouseRuntime)
+            };
+            try {
+                localStorage.setItem(RUNTIME_PROJECTION_STORAGE_KEY, JSON.stringify(currentHouseProjection));
+            } catch (e) {
+                // ignore storage failures
+            }
+        }
+
+        function fetchCatalog() {
+            return fetch(CATALOG_ENDPOINT, { cache: 'no-store' })
+                .then(response => response.ok ? response.json() : null)
+                .then(data => {
+                    if (data && data.ok) {
+                        mergeCatalogProjection(data);
+                        syncHouseProjectionUI(true);
+                    }
+                    return data;
+                })
+                .catch(() => null);
         }
 
         // Performance policy:
@@ -2286,8 +2358,15 @@
             if (frame) {
                 frame.addEventListener('load', handleWorkbenchLoad);
             }
-            syncHouseProjectionUI(true);
-            updateRoomWorkbenchHud();
+            Promise.allSettled([fetchCatalog(), fetchStatus()]).finally(() => {
+                syncHouseProjectionUI(true);
+                updateRoomWorkbenchHud();
+                const params = new URLSearchParams(window.location.search || '');
+                const autoWorkbenchMode = params.get('workbench') || ((window.self !== window.top && !params.get('roomOnly')) ? 'role' : '');
+                if (autoWorkbenchMode && WORKBENCH_ROUTES[autoWorkbenchMode]) {
+                    window.setTimeout(() => openWorkbench(autoWorkbenchMode, { originKey: 'portalConsole' }), 260);
+                }
+            });
         });
 
         window.addEventListener('message', (event) => {
@@ -5565,12 +5644,16 @@ function toggleBrokerPanel() {
         }
 
         function applyVisualState(nextState) {
+            if (!sofa || !star || !sofa.anims || !star.anims) {
+                return;
+            }
+
             // Idle: show Star idle animation (main character)
             if (nextState === 'idle') {
                 sofa.anims.stop();
                 sofa.setTexture('sofa_idle');
 
-                if (window.starWorking) {
+                if (window.starWorking && window.starWorking.anims) {
                     window.starWorking.setVisible(false);
                     window.starWorking.anims.stop();
                 }
@@ -5585,7 +5668,7 @@ function toggleBrokerPanel() {
                 sofa.setTexture('sofa_idle');
                 star.setVisible(false);
                 star.anims.stop();
-                if (window.starWorking) {
+                if (window.starWorking && window.starWorking.anims) {
                     window.starWorking.setVisible(false);
                     window.starWorking.anims.stop();
                 }
@@ -5595,7 +5678,7 @@ function toggleBrokerPanel() {
                 sofa.setTexture('sofa_idle');
                 star.setVisible(false);
                 star.anims.stop();
-                if (window.starWorking) {
+                if (window.starWorking && window.starWorking.anims) {
                     window.starWorking.setVisible(false);
                     window.starWorking.anims.stop();
                 }
@@ -5606,14 +5689,14 @@ function toggleBrokerPanel() {
                 // Hide moving star, show desk star
                 star.setVisible(false);
                 star.anims.stop();
-                if (window.starWorking) {
+                if (window.starWorking && window.starWorking.anims) {
                     window.starWorking.setVisible(true);
                     window.starWorking.anims.play('star_working', true);
                 }
             }
 
             // Server room logic
-            if (serverroom) {
+            if (serverroom && serverroom.anims) {
                 if (nextState === 'idle') {
                     serverroom.anims.stop();
                     serverroom.setFrame(0);

@@ -2,6 +2,7 @@ const defaultRole = "druid";
 const stateKey = "openclaw.command.center";
 const runtimeProjectionKey = "openclaw.runtime.world";
 const identityKey = "openclaw.identity.profile";
+let serverCatalogRole = null;
 const runtimeWorldPort = 19000;
 const HOTBAR_SIZE = 6;
 const BAG_PAGE_SIZE = 20;
@@ -401,7 +402,11 @@ const synergies = [
 
 function readRole() {
   const params = new URLSearchParams(window.location.search);
-  return params.get("role") || window.localStorage.getItem("openclaw.persona.role") || defaultRole;
+  const queryRole = normalizeRoleIdForUi(params.get("role"));
+  if (roleProfiles[queryRole]) return queryRole;
+  if (roleProfiles[serverCatalogRole]) return serverCatalogRole;
+  const storedRole = normalizeRoleIdForUi(window.localStorage.getItem("openclaw.persona.role"));
+  return roleProfiles[storedRole] ? storedRole : defaultRole;
 }
 
 function readRequestedTab() {
@@ -802,6 +807,7 @@ function mergeRemoteCatalogData(payload) {
   });
 
   if (remoteRole && ALL_ROLE_IDS.includes(remoteRole)) {
+    serverCatalogRole = remoteRole;
     currentRole = remoteRole;
   }
 }
