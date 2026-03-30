@@ -3,6 +3,7 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 BACKEND_DIR="$ROOT_DIR/subprojects/lobster-sanctum-ui/vendor/star-office-ui/backend"
+FRONTEND_DIR="$ROOT_DIR/subprojects/lobster-sanctum-ui/vendor/star-office-ui/frontend"
 REQUIREMENTS_FILE="$BACKEND_DIR/requirements.txt"
 PORT="${STAR_BACKEND_PORT:-19000}"
 HOST="${STAR_BACKEND_HOST:-0.0.0.0}"
@@ -11,6 +12,10 @@ LOG_FILE="/tmp/lobster-world-${PORT}.log"
 VENV_DIR="$BACKEND_DIR/.venv"
 TMP_VENV="/tmp/lobster-star-office-venv"
 THEME_MARKER="$HOME/.openclaw/profile/lobster-theme-initialized"
+DEFAULT_BG_PRIMARY="$ROOT_DIR/subprojects/lobster-sanctum-ui/materials/packs/mvp-character-bg/office_bg_small.webp"
+DEFAULT_BG_PRIMARY_LARGE="$ROOT_DIR/subprojects/lobster-sanctum-ui/materials/packs/mvp-character-bg/office_bg.webp"
+DEFAULT_BG_FALLBACK="$ROOT_DIR/subprojects/lobster-sanctum-ui/vendor/star-office-ui/assets/room-reference.webp"
+DEFAULT_BG_MIN_BYTES=25000
 
 usage() {
   cat <<USAGE
@@ -43,17 +48,81 @@ verify_world_response() {
 }
 
 apply_default_theme_once() {
-  if [[ -f "$THEME_MARKER" ]]; then
+  local bg_small="$FRONTEND_DIR/office_bg_small.webp"
+  local bg_large="$FRONTEND_DIR/office_bg.webp"
+  local bg_source=""
+  local should_repair="0"
+
+  if [[ -f "$DEFAULT_BG_PRIMARY" ]]; then
+    bg_source="$DEFAULT_BG_PRIMARY"
+  elif [[ -f "$DEFAULT_BG_FALLBACK" ]]; then
+    bg_source="$DEFAULT_BG_FALLBACK"
+  else
+    echo "[WARN] No default Lobster World background source found."
+    return 1
+  fi
+
+  if [[ ! -f "$bg_small" ]]; then
+    should_repair="1"
+  elif [[ ! -s "$bg_small" ]]; then
+    should_repair="1"
+  else
+    local current_bytes
+    current_bytes="$(wc -c <"$bg_small" 2>/dev/null || echo 0)"
+    if [[ "${current_bytes:-0}" -lt "$DEFAULT_BG_MIN_BYTES" ]]; then
+      should_repair="1"
+    fi
+  fi
+
+  if [[ ! -f "$THEME_MARKER" ]]; then
+    should_repair="1"
+  fi
+
+  if [[ "$should_repair" != "1" ]]; then
     return 0
   fi
+
   mkdir -p "$(dirname "$THEME_MARKER")" >/dev/null 2>&1 || true
-  if curl -fsS --max-time 8 -X POST "http://127.0.0.1:$PORT/openclaw/theme/red-blue-default" >/dev/null 2>&1; then
-    touch "$THEME_MARKER"
-    echo "[INFO] Applied default red-blue pixel house theme."
-    return 0
+  cp -f "$bg_source" "$bg_small"
+  if [[ -f "$DEFAULT_BG_PRIMARY_LARGE" ]]; then
+    cp -f "$DEFAULT_BG_PRIMARY_LARGE" "$bg_large"
+  elif [[ -f "$bg_source" ]]; then
+    cp -f "$bg_source" "$bg_large"
   fi
-  echo "[WARN] Unable to apply default red-blue theme now; you can retry from menu."
-  return 1
+  touch "$THEME_MARKER"
+  echo "[INFO] Applied default Lobster World room background."
+  return 0
+}
+
+apply_pixel_house_ui_patch() {
+  local dist_web_dir="$ROOT_DIR/subprojects/lobster-sanctum-ui/dist/lobster-sanctum-runtime/web"
+  local workbench_dir="$ROOT_DIR/subprojects/lobster-sanctum-ui/web"
+  local frontend_index="$FRONTEND_DIR/index.html"
+  local workbench_css="$workbench_dir/configure.css"
+  local dist_index="$dist_web_dir/index.html"
+  local dist_css="$dist_web_dir/configure.css"
+
+  # Keep dist snapshot aligned with runtime sources when dist exists.
+  if [[ -d "$dist_web_dir" ]]; then
+    if [[ -f "$frontend_index" ]]; then
+      cp -f "$frontend_index" "$dist_index" 2>/dev/null || true
+    fi
+    if [[ -f "$workbench_css" ]]; then
+      cp -f "$workbench_css" "$dist_css" 2>/dev/null || true
+    fi
+  fi
+
+  # Self-heal missing runtime files from dist fallback.
+  if [[ ! -s "$frontend_index" && -f "$dist_index" ]]; then
+    cp -f "$dist_index" "$frontend_index"
+    echo "[INFO] Pixel house UI repaired: frontend/index.html" >&2
+  fi
+  if [[ ! -s "$workbench_css" && -f "$dist_css" ]]; then
+    cp -f "$dist_css" "$workbench_css"
+    echo "[INFO] Pixel house UI repaired: web/configure.css" >&2
+  fi
+
+  return 0
 }
 
 spawn_detached_world_server() {
@@ -198,6 +267,8 @@ start_server() {
 
   local py_bin
   py_bin="$(ensure_python)"
+  apply_default_theme_once || true
+  apply_pixel_house_ui_patch || true
 
   if is_running; then
     local pid
@@ -231,7 +302,6 @@ start_server() {
     local pid
     pid="$(listen_pid)"
     echo "${pid:-$(cat "$PID_FILE" 2>/dev/null || true)}" > "$PID_FILE"
-    apply_default_theme_once || true
     echo "[OK] Lobster World started: http://$HOST:$PORT (PID: ${pid:-unknown})"
   else
     rm -f "$PID_FILE"

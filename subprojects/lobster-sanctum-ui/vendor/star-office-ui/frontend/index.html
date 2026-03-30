@@ -53,6 +53,7 @@
             max-height: none;
             aspect-ratio: auto;
             overflow: hidden;
+            background: url('/static/office_bg_small.webp?v={{VERSION_TIMESTAMP}}') center/cover no-repeat;
         }
         #game-container canvas {
             width: 100% !important;
@@ -70,21 +71,11 @@
             position: absolute;
             inset: 0;
             z-index: 5;
-            background: radial-gradient(ellipse at center, #2a2a45 0%, #1a1a2e 65%, #151522 100%);
+            background: url('/static/office_bg_small.webp?v={{VERSION_TIMESTAMP}}') center/cover no-repeat;
             overflow: hidden;
         }
         #game-skeleton::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: repeating-linear-gradient(
-                0deg,
-                rgba(255,255,255,0.03) 0px,
-                rgba(255,255,255,0.03) 1px,
-                transparent 1px,
-                transparent 12px
-            );
-            opacity: .6;
+            content: none;
         }
         #game-skeleton .hint {
             position: absolute;
@@ -103,11 +94,12 @@
             width: 100%;
             height: 100%;
             background: #1a1a2e;
-            display: flex;
+            display: none !important;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             z-index: 100000;
+            pointer-events: none;
         }
         #loading-text {
             color: #ffd700;
@@ -1448,17 +1440,24 @@
                 justify-content: flex-start;
             }
         }
+        /* Low-GPU mode: remove expensive blur/shadow compositing */
+        body.pixel-lowfx *,
+        body.pixel-lowfx *::before,
+        body.pixel-lowfx *::after {
+            backdrop-filter: none !important;
+            filter: none !important;
+            text-shadow: none !important;
+        }
+        body.pixel-lowfx #game-container canvas,
+        body.pixel-lowfx #asset-drawer,
+        body.pixel-lowfx #control-bar,
+        body.pixel-lowfx #status-text {
+            box-shadow: none !important;
+        }
     </style>
 </head>
-<body>
-    <!-- 加载遮罩 -->
-    <div id="loading-overlay">
-        <div id="loading-text">Loading Star’s pixel office...</div>
-        <div id="loading-progress-container">
-            <div id="loading-progress-bar"></div>
-        </div>
-    </div>
-    
+<body class="pixel-lowfx">
+
     <div id="main-stage">
         <div id="game-container">
             <div id="game-skeleton"><div class="hint">正在进入像素办公室…</div></div>
@@ -1788,11 +1787,11 @@
 
         function t(key) { return (I18N[uiLang] && I18N[uiLang][key]) || key; }
         const WORKBENCH_ROUTES = {
-            role: { path: '/workbench/world-console.html?station=role', titleKey: 'btnRole', descKey: 'workbenchRoleDesc' },
-            skills: { path: '/workbench/world-console.html?station=skills', titleKey: 'btnSkills', descKey: 'workbenchSkillsDesc' },
-            equipment: { path: '/workbench/world-console.html?station=equipment', titleKey: 'btnEquipment', descKey: 'workbenchEquipmentDesc' },
-            status: { path: '/workbench/world-console.html?station=status', titleKey: 'btnStatus', descKey: 'workbenchStatusDesc' },
-            tasks: { path: '/workbench/world-console.html?station=tasks', titleKey: 'btnTasks', descKey: 'workbenchTasksDesc' }
+            role: { path: '/workbench/configure.html?tab=role', titleKey: 'btnRole', descKey: 'workbenchRoleDesc' },
+            skills: { path: '/workbench/configure.html?tab=skills', titleKey: 'btnSkills', descKey: 'workbenchSkillsDesc' },
+            equipment: { path: '/workbench/configure.html?tab=equipment', titleKey: 'btnEquipment', descKey: 'workbenchEquipmentDesc' },
+            status: { path: '/workbench/configure.html?tab=status', titleKey: 'btnStatus', descKey: 'workbenchStatusDesc' },
+            tasks: { path: '/workbench/configure.html?tab=tasks', titleKey: 'btnTasks', descKey: 'workbenchTasksDesc' }
         };
         const ENABLE_ROOM_WORKBENCH_PORTALS = false;
         const PERSONA_STORAGE_KEY = 'openclaw.persona.role';
@@ -2190,6 +2189,7 @@
                 url.searchParams.set('role', currentWorkbenchRole());
             }
             url.searchParams.set('embedded', '1');
+            url.searchParams.set('chrome', '0');
             url.searchParams.set('theme', 'pixel-house');
             url.searchParams.set('source', 'star-office');
             url.searchParams.set('mode', mode);
@@ -2507,7 +2507,7 @@
                 panBtn.textContent = on ? t('lockView') : t('moveView');
             }
             ensureMemoBgVisible();
-            renderBootLoadingText(Number(loadingProgressBar?.style?.width?.replace('%','') || 0));
+            renderBootLoadingText(100);
         }
 
         document.addEventListener('keydown', (event) => {
@@ -2572,6 +2572,8 @@
             height: 720,
             parent: 'game-container',
             pixelArt: true,
+            // P0 perf: idle 12fps / active 24fps (set after create)
+            fps: { target: 24, forceSetTimeOut: false, smoothStep: false },
             // 桌面端保持 FIT；手机端用 RESIZE，并在相机里按高度做 fit（可横向 pan）
             scale: {
                 mode: IS_TOUCH_DEVICE ? Phaser.Scale.RESIZE : Phaser.Scale.FIT,
@@ -2585,7 +2587,6 @@
 
         let totalAssets = 0;
         let loadedAssets = 0;
-        let loadingProgressBar, loadingProgressContainer, loadingOverlay, loadingText;
 
         // Memo 相关函数
         async function loadMemo() {
@@ -2607,33 +2608,6 @@
                 memoContent.innerHTML = '<div id="memo-placeholder">加载失败</div>';
             }
         }
-
-        // 更新加载进度
-        function updateLoadingProgress() {
-            loadedAssets++;
-            const percent = Math.min(100, Math.round((loadedAssets / totalAssets) * 100));
-            if (loadingProgressBar) {
-                loadingProgressBar.style.width = percent + '%';
-            }
-            if (loadingText) {
-                renderBootLoadingText(percent);
-            }
-        }
-
-        // 隐藏加载界面
-        function hideLoadingOverlay() {
-            const overlayEl = loadingOverlay || document.getElementById('loading-overlay');
-            setTimeout(() => {
-                if (overlayEl) {
-                    overlayEl.style.transition = 'opacity 0.35s ease';
-                    overlayEl.style.opacity = '0';
-                    setTimeout(() => {
-                        overlayEl.style.display = 'none';
-                    }, 360);
-                }
-            }, 80);
-        }
-
         // Phaser 就绪后，移除首屏骨架，避免黑屏感
         function hideGameSkeleton() {
             const sk = document.getElementById('game-skeleton');
@@ -2644,15 +2618,6 @@
                 if (sk && sk.parentNode) sk.parentNode.removeChild(sk);
             }, 260);
         }
-
-        // 兜底：某些移动网络/CDN 抖动时，避免一直卡在“加载中”遮罩
-        setTimeout(() => {
-            const overlayEl = loadingOverlay || document.getElementById('loading-overlay');
-            if (overlayEl && getComputedStyle(overlayEl).display !== 'none') {
-                hideLoadingOverlay();
-            }
-        }, 8000);
-        
         // 懒加载逻辑已取消（体验优先：装饰首屏直接出现）
 
         const STATES = {
@@ -2716,6 +2681,8 @@
         let assetThumbTimers = [];
         let homeFavoritesCache = [];
         let homeFavoritesLoadedAt = 0;
+        let deferredDecorLoadStarted = false;
+        let deferredDecorReady = false;
 
         // 坐标以服务端为准；清理历史本地缓存，避免把素材挪飞
         let assetPositionOverrides = {};
@@ -2756,8 +2723,8 @@
         let guestTweens = {};  // agentId -> {move, name}
         let hiddenDemoNames = new Set();
         const DEMO_MODE = new URLSearchParams(window.location.search).get('demo') === '1';
-        const FETCH_INTERVAL = 1000;
-        const GUEST_AGENTS_FETCH_INTERVAL = 3500;
+        const FETCH_INTERVAL = 2500;
+        const GUEST_AGENTS_FETCH_INTERVAL = 5000;
         const BLINK_INTERVAL = 2500;
         const BUBBLE_INTERVAL = 8000;
         const CAT_BUBBLE_INTERVAL = 18000; // cat bubble much less frequent
@@ -2767,6 +2734,37 @@
         const TYPEWRITER_DELAY = 50;
         let lastSeenGuestIds = new Set(); // 用于检测新加入的访客，触发欢迎气泡
         let guestWelcomeInitialized = false;
+        let phaserApp = null;
+        let visibilityPerfHooked = false;
+
+        function setLoopTargetFps(target) {
+            const fps = Math.max(8, Math.min(30, Number(target) || 24));
+            if (!phaserApp || !phaserApp.loop) return;
+            if (phaserApp.loop.targetFps !== fps) {
+                phaserApp.loop.targetFps = fps;
+            }
+        }
+
+        function syncLoopTargetByState(state = null) {
+            const effective = state || pendingDesiredState || currentState || 'idle';
+            const target = document.hidden ? 8 : (effective === 'idle' ? 12 : 24);
+            setLoopTargetFps(target);
+        }
+
+        function initVisibilityPerfHooks() {
+            if (visibilityPerfHooked) return;
+            visibilityPerfHooked = true;
+            document.addEventListener('visibilitychange', () => {
+                if (!phaserApp || !phaserApp.loop) return;
+                if (document.hidden) {
+                    try { phaserApp.loop.sleep(); } catch (e) {}
+                } else {
+                    try { phaserApp.loop.wake(); } catch (e) {}
+                    fetchStatus();
+                }
+                syncLoopTargetByState();
+            });
+        }
 
         // 状态控制栏函数（用于测试）
         function setState(state, detail) {
@@ -4965,7 +4963,10 @@ function toggleBrokerPanel() {
 
             // 直接启动 Phaser，避免首屏被额外接口阻塞
 
-            new Phaser.Game(config);
+            phaserApp = new Phaser.Game(config);
+            window.__lobsterPhaserGame = phaserApp;
+            initVisibilityPerfHooks();
+            syncLoopTargetByState();
 
             // 非关键初始化延后到首屏之后，提升首开速度
             setTimeout(async () => {
@@ -4999,56 +5000,151 @@ function toggleBrokerPanel() {
             }, 600);
         }
 
+        function mountDeferredDecor(scene) {
+            if (!scene || deferredDecorReady) return;
+            deferredDecorReady = true;
+
+            const plantFrameCount = 16;
+            const randomPlantFrame = Math.floor(Math.random() * plantFrameCount);
+            const plant = scene.add.sprite(565, 178, 'plants', randomPlantFrame).setOrigin(0.5);
+            plant.setDepth(5);
+            plant.setInteractive({ useHandCursor: true });
+            window.plantSprite = plant;
+            window.plantFrameCount = plantFrameCount;
+            plant.on('pointerdown', () => {
+                const next = Math.floor(Math.random() * window.plantFrameCount);
+                window.plantSprite.setFrame(next);
+            });
+
+            const plant2Frame = Math.floor(Math.random() * plantFrameCount);
+            const plant2 = scene.add.sprite(230, 185, 'plants', plant2Frame).setOrigin(0.5);
+            plant2.setDepth(5);
+            plant2.setInteractive({ useHandCursor: true });
+            window.plantSprite2 = plant2;
+            plant2.on('pointerdown', () => {
+                const next = Math.floor(Math.random() * window.plantFrameCount);
+                window.plantSprite2.setFrame(next);
+            });
+
+            const plant3Frame = Math.floor(Math.random() * plantFrameCount);
+            const plant3 = scene.add.sprite(977, 496, 'plants', plant3Frame).setOrigin(0.5);
+            plant3.setDepth(5);
+            plant3.setInteractive({ useHandCursor: true });
+            window.plantSprite3 = plant3;
+            plant3.on('pointerdown', () => {
+                const next = Math.floor(Math.random() * window.plantFrameCount);
+                window.plantSprite3.setFrame(next);
+            });
+
+            const postersFrameCount = (scene.textures.get('posters')?.frameTotal || 1) - 1;
+            const randomPosterFrame = Math.floor(Math.random() * Math.max(1, postersFrameCount));
+            const poster = scene.add.sprite(252, 66, 'posters', randomPosterFrame).setOrigin(0.5);
+            poster.setDepth(4);
+            window.posterSprite = poster;
+            window.posterFrameCount = postersFrameCount;
+            registerWorkbenchPortal(poster, { mode: 'role', originKey: 'portalPoster', hoverScale: 1.04 });
+
+            const catsFrameCount = (scene.textures.get('cats')?.frameTotal || 1) - 1;
+            const randomCatFrame = Math.floor(Math.random() * Math.max(1, catsFrameCount));
+            const cat = scene.add.sprite(94, 557, 'cats', randomCatFrame).setOrigin(0.5);
+            cat.setDepth(2000);
+            cat.setInteractive({ useHandCursor: true });
+            window.catSprite = cat;
+            window.catsFrameCount = catsFrameCount;
+            cat.on('pointerdown', () => {
+                const next = Math.floor(Math.random() * Math.max(1, window.catsFrameCount));
+                window.catSprite.setFrame(next);
+            });
+            registerWorkbenchPortal(cat, { mode: 'status', originKey: 'portalCat', hoverScale: 1.08 });
+
+            const coffeeFrameMax = Math.max(0, (scene.textures.get('coffee_machine')?.frameTotal || 1) - 2);
+            if (scene.anims.exists('coffee_machine')) {
+                scene.anims.remove('coffee_machine');
+            }
+            scene.anims.create({
+                key: 'coffee_machine',
+                frames: scene.anims.generateFrameNumbers('coffee_machine', { start: 0, end: coffeeFrameMax }),
+                frameRate: 6,
+                repeat: -1
+            });
+            const coffeeMachine = scene.add.sprite(659, 397, 'coffee_machine').setOrigin(0.5);
+            coffeeMachine.setDepth(99);
+            coffeeMachine.anims.play('coffee_machine', true);
+            registerWorkbenchPortal(coffeeMachine, { mode: 'tasks', originKey: 'portalCoffee', hoverScale: 1.03 });
+
+            const serverFrameMax = Math.max(0, (scene.textures.get('serverroom')?.frameTotal || 1) - 2);
+            if (scene.anims.exists('serverroom_on')) {
+                scene.anims.remove('serverroom_on');
+            }
+            scene.anims.create({
+                key: 'serverroom_on',
+                frames: scene.anims.generateFrameNumbers('serverroom', { start: 0, end: serverFrameMax }),
+                frameRate: 6,
+                repeat: -1
+            });
+            serverroom = scene.add.sprite(1021, 142, 'serverroom', 0).setOrigin(0.5);
+            serverroom.setDepth(2);
+            serverroom.anims.stop();
+            serverroom.setFrame(0);
+            registerWorkbenchPortal(serverroom, { mode: 'status', originKey: 'portalServer', hoverScale: 1.02 });
+
+            const flowerFrameCount = Math.max(1, FLOWERS_FRAME_COLS * FLOWERS_FRAME_ROWS);
+            const randomFlowerFrame = Math.floor(Math.random() * flowerFrameCount);
+            const flower = scene.add.sprite(310, 390, 'flowers', randomFlowerFrame).setOrigin(0.5);
+            flower.setScale(0.8);
+            flower.setDepth(1100);
+            window.flowerSprite = flower;
+            window.flowerFrameCount = flowerFrameCount;
+            registerWorkbenchPortal(flower, { mode: 'equipment', originKey: 'portalFlower', hoverScale: 1.06 });
+
+            if (scene.anims.exists('error_bug')) {
+                scene.anims.remove('error_bug');
+            }
+            scene.anims.create({
+                key: 'error_bug',
+                frames: scene.anims.generateFrameNumbers('error_bug', { start: 0, end: 71 }),
+                frameRate: 8,
+                repeat: -1
+            });
+            const errorBug = scene.add.sprite(1007, 221, 'error_bug', 0).setOrigin(0.5);
+            errorBug.setDepth(50);
+            errorBug.setVisible(false);
+            errorBug.setScale(0.9);
+            errorBug.anims.play('error_bug', true);
+            window.errorBug = errorBug;
+            window.errorBugDir = 1;
+
+            applyVisualState(currentState);
+        }
+
+        function loadDeferredDecor(scene) {
+            if (!scene || deferredDecorLoadStarted || deferredDecorReady) return;
+            deferredDecorLoadStarted = true;
+            scene.load.spritesheet('plants', '/static/plants-spritesheet.webp?v={{VERSION_TIMESTAMP}}', { frameWidth: 160, frameHeight: 160 });
+            scene.load.spritesheet('posters', '/static/posters-spritesheet.webp?v={{VERSION_TIMESTAMP}}', { frameWidth: 160, frameHeight: 160 });
+            scene.load.spritesheet('coffee_machine', '/static/coffee-machine-v3-grid.webp?v={{VERSION_TIMESTAMP}}', { frameWidth: 230, frameHeight: 230 });
+            scene.load.spritesheet('serverroom', '/static/serverroom-spritesheet.webp?v={{VERSION_TIMESTAMP}}', { frameWidth: 180, frameHeight: 251 });
+            scene.load.spritesheet('error_bug', roleSpritePath('error-bug-spritesheet-grid.webp'), { frameWidth: 220, frameHeight: 220 });
+            scene.load.spritesheet('cats', '/static/cats-spritesheet.webp?v={{VERSION_TIMESTAMP}}', { frameWidth: 160, frameHeight: 160 });
+            scene.load.spritesheet('flowers', '/static/flowers-bloom-v2.webp?v={{VERSION_TIMESTAMP}}', { frameWidth: FLOWERS_FRAME_W, frameHeight: FLOWERS_FRAME_H });
+            scene.load.once('complete', () => mountDeferredDecor(scene));
+            scene.load.start();
+        }
         function preload() {
-            // 获取加载界面元素
-            loadingOverlay = document.getElementById('loading-overlay');
-            loadingProgressBar = document.getElementById('loading-progress-bar');
-            loadingText = document.getElementById('loading-text');
-            loadingProgressContainer = document.getElementById('loading-progress-container');
-            window.setTimeout(() => {
-                const overlayEl = loadingOverlay || document.getElementById('loading-overlay');
-                if (overlayEl && getComputedStyle(overlayEl).display !== 'none') {
-                    hideLoadingOverlay();
-                }
-            }, 8000);
-            
-            // 设置资源总数（全部首屏加载：装饰也第一时间出现）
-            totalAssets = 15;
+            // 首屏仅保留核心场景资源；装饰改为延迟加载，减少首次白屏等待。
+            totalAssets = 8;
             loadedAssets = 0;
-            
-            // 加载进度监听
-            this.load.on('filecomplete', () => {
-                updateLoadingProgress();
-            });
-            
-            this.load.on('complete', () => {
-                hideLoadingOverlay();
-            });
 
             // cache-busting to avoid stale background on client/CDN
             // use smaller/new map version provided by user
             this.load.image('office_bg', '/static/office_bg_small.webp?v={{VERSION_TIMESTAMP}}');
-            this.load.spritesheet('star_idle', roleSpritePath('star-idle-v5.png'), { frameWidth: 256, frameHeight: 256 });
+            this.load.spritesheet('star_idle', roleSpritePath(supportsWebP ? 'star-idle-v5.webp' : 'star-idle-v5.png'), { frameWidth: 256, frameHeight: 256 });
 
             // Furniture
             this.load.image('sofa_idle', '/static/sofa-idle-v3.png?v={{VERSION_TIMESTAMP}}');
-            this.load.image('sofa_shadow', '/static/sofa-shadow-v1.png?v={{VERSION_TIMESTAMP}}');
-
-            // Decor
-            this.load.spritesheet('plants', '/static/plants-spritesheet.webp?v={{VERSION_TIMESTAMP}}', { frameWidth: 160, frameHeight: 160 });
-            this.load.spritesheet('posters', '/static/posters-spritesheet.webp?v={{VERSION_TIMESTAMP}}', { frameWidth: 160, frameHeight: 160 });
-            this.load.spritesheet('coffee_machine', '/static/coffee-machine-v3-grid.webp?v={{VERSION_TIMESTAMP}}', { frameWidth: 230, frameHeight: 230 });
-            this.load.image('coffee_machine_shadow', '/static/coffee-machine-shadow-v1.png?v={{VERSION_TIMESTAMP}}');
-            this.load.spritesheet('serverroom', '/static/serverroom-spritesheet.webp?v={{VERSION_TIMESTAMP}}', { frameWidth: 180, frameHeight: 251 });
-
-            // Error / bug animation: 180x180, 96 frames (repacked grid)
-            this.load.spritesheet('error_bug', roleSpritePath('error-bug-spritesheet-grid.webp'), { frameWidth: 220, frameHeight: 220 });
 
             // 运行时 Gemini 配置（用于搬家/中介生图）
             this.geminiConfig = { hasKey: false, model: 'gemini-3.1-flash-image-preview' };
-
-            // Cat spritesheet: 160x160, 4x4=16 cats
-            this.load.spritesheet('cats', '/static/cats-spritesheet.webp?v={{VERSION_TIMESTAMP}}', { frameWidth: 160, frameHeight: 160 });
 
             // Desk
             // Star working animation: repacked to grid to avoid WebGL max texture size limits
@@ -5065,8 +5161,6 @@ function toggleBrokerPanel() {
             this.load.image('memo_bg', '/static/memo-bg.webp?v={{VERSION_TIMESTAMP}}');
             // Desk v2 (webp only)
             this.load.image('desk_v2', '/static/desk-v3.webp?v={{VERSION_TIMESTAMP}}');
-            // Flower spritesheet (65x65, 16 frames)
-            this.load.spritesheet('flowers', '/static/flowers-bloom-v2.webp?v={{VERSION_TIMESTAMP}}', { frameWidth: FLOWERS_FRAME_W, frameHeight: FLOWERS_FRAME_H });
 
             // Guest/Demo agent sprites
             this.load.spritesheet('guest_anim_1', '/static/guest_anim_1.webp?v={{VERSION_TIMESTAMP}}', { frameWidth: 32, frameHeight: 32 });
@@ -5084,8 +5178,6 @@ function toggleBrokerPanel() {
 
             // Place furniture: Sofa
             // NOTE: coordinates are interpreted as the TOP-LEFT corner of the sprite
-            const sofaShadow = this.add.image(IDLE_SOFA_ANCHOR.x, IDLE_SOFA_ANCHOR.y, 'sofa_shadow').setOrigin(0.5);
-            sofaShadow.setDepth(9);
             sofa = this.add.sprite(IDLE_SOFA_ANCHOR.x, IDLE_SOFA_ANCHOR.y, 'sofa_idle').setOrigin(0.5);
             sofa.setDepth(10);
             areas = {
@@ -5104,7 +5196,7 @@ function toggleBrokerPanel() {
             this.anims.create({
                 key: 'star_idle',
                 frames: this.anims.generateFrameNumbers('star_idle', { start: 0, end: starIdleFrameMax }),
-                frameRate: 12,
+                frameRate: 6,
                 repeat: -1
             });
 
@@ -5114,7 +5206,7 @@ function toggleBrokerPanel() {
                 this.anims.create({
                     key: `guest_anim_${i}_idle`,
                     frames: this.anims.generateFrameNumbers(`guest_anim_${i}`, { start: 0, end: 7 }),
-                    frameRate: 8,
+                    frameRate: 6,
                     repeat: -1
                 });
             }
@@ -5155,145 +5247,20 @@ function toggleBrokerPanel() {
             game.add.text(plaqueX + 190, plaqueY, '⭐', { fontFamily: 'ArkPixel, monospace', fontSize: '20px' }).setOrigin(0.5);
             window.officePlaqueText = plaqueText;
 
-            // Random plant at (565,178) (frame 0-15, 160x160 each)
-            const plantFrameCount = 16;
-            const randomPlantFrame = Math.floor(Math.random() * plantFrameCount);
-            const plant = game.add.sprite(565, 178, 'plants', randomPlantFrame).setOrigin(0.5);
-            plant.setDepth(5);
-            plant.setInteractive({ useHandCursor: true });
-            // Expose to global for click handler
-            window.plantSprite = plant;
-            window.plantFrameCount = plantFrameCount;
-            
-            plant.on('pointerdown', () => {
-                const next = Math.floor(Math.random() * window.plantFrameCount);
-                window.plantSprite.setFrame(next);
-            });
-
-            // Random plant at (230,185) (frame 0-15, 160x160 each)
-            const plant2Frame = Math.floor(Math.random() * plantFrameCount);
-            const plant2 = game.add.sprite(230, 185, 'plants', plant2Frame).setOrigin(0.5);
-            plant2.setDepth(5);
-            plant2.setInteractive({ useHandCursor: true });
-            // Expose to global for click handler
-            window.plantSprite2 = plant2;
-            
-            plant2.on('pointerdown', () => {
-                const next = Math.floor(Math.random() * window.plantFrameCount);
-                window.plantSprite2.setFrame(next);
-            });
-
-            // Random plant at (977,496) (frame 0-15, 160x160 each)
-            const plant3Frame = Math.floor(Math.random() * plantFrameCount);
-            const plant3 = game.add.sprite(977, 496, 'plants', plant3Frame).setOrigin(0.5);
-            plant3.setDepth(5);
-            plant3.setInteractive({ useHandCursor: true });
-            // Expose to global for click handler
-            window.plantSprite3 = plant3;
-            
-            plant3.on('pointerdown', () => {
-                const next = Math.floor(Math.random() * window.plantFrameCount);
-                window.plantSprite3.setFrame(next);
-            });
-
-            // Random poster at (252,66) (random frame from spritesheet)
-            const postersFrameCount = (this.textures.get('posters')?.frameTotal || 1) - 1;
-            const randomPosterFrame = Math.floor(Math.random() * Math.max(1, postersFrameCount));
-            const poster = game.add.sprite(252, 66, 'posters', randomPosterFrame).setOrigin(0.5);
-            poster.setDepth(4);
-            // Expose to global for click handler
-            window.posterSprite = poster;
-            window.posterFrameCount = postersFrameCount;
-            registerWorkbenchPortal(poster, { mode: 'role', originKey: 'portalPoster', hoverScale: 1.04 });
-
-            // Random cat at (94,557)
-            const catsFrameCount = (this.textures.get('cats')?.frameTotal || 1) - 1;
-            const randomCatFrame = Math.floor(Math.random() * Math.max(1, catsFrameCount));
-            const cat = game.add.sprite(94, 557, 'cats', randomCatFrame).setOrigin(0.5);
-            cat.setDepth(2000); // top layer
-            cat.setInteractive({ useHandCursor: true });
-            // Expose to global for click handler
-            window.catSprite = cat;
-            window.catsFrameCount = catsFrameCount;
-            cat.on('pointerdown', () => {
-                const next = Math.floor(Math.random() * Math.max(1, window.catsFrameCount));
-                window.catSprite.setFrame(next);
-            });
-            registerWorkbenchPortal(cat, { mode: 'status', originKey: 'portalCat', hoverScale: 1.08 });
-
-            // Coffee machine at (659,397) - animated sprite + shadow
-            const coffeeMachineShadow = this.add.image(659, 397, 'coffee_machine_shadow').setOrigin(0.5);
-            coffeeMachineShadow.setDepth(98);
-            const coffeeFrameMax = Math.max(0, (this.textures.get('coffee_machine')?.frameTotal || 1) - 2);
-            if (this.anims.exists('coffee_machine')) {
-                this.anims.remove('coffee_machine');
-            }
-            this.anims.create({
-                key: 'coffee_machine',
-                frames: this.anims.generateFrameNumbers('coffee_machine', { start: 0, end: coffeeFrameMax }),
-                frameRate: 12.5,
-                repeat: -1
-            });
-            const coffeeMachine = this.add.sprite(659, 397, 'coffee_machine').setOrigin(0.5);
-            coffeeMachine.setDepth(99);
-            coffeeMachine.anims.play('coffee_machine', true);
-            registerWorkbenchPortal(coffeeMachine, { mode: 'tasks', originKey: 'portalCoffee', hoverScale: 1.03 });
-
-            // Server room animation
-            const serverFrameMax = Math.max(0, (this.textures.get('serverroom')?.frameTotal || 1) - 2);
-            this.anims.create({
-                key: 'serverroom_on',
-                frames: this.anims.generateFrameNumbers('serverroom', { start: 0, end: serverFrameMax }),
-                frameRate: 6,
-                repeat: -1
-            });
-            serverroom = this.add.sprite(1021, 142, 'serverroom', 0).setOrigin(0.5);
-            serverroom.setDepth(2);
-            // 默认 idle: 静止第0帧
-            serverroom.anims.stop();
-            serverroom.setFrame(0);
-            registerWorkbenchPortal(serverroom, { mode: 'status', originKey: 'portalServer', hoverScale: 1.02 });
-
             // Desk at (218,417) (v2)
             const desk = this.add.image(218, 417, 'desk_v2').setOrigin(0.5);
             desk.setDepth(1001);  // desk above starWorking
             registerWorkbenchPortal(desk, { mode: 'skills', originKey: 'portalDesk', hoverScale: 1.02 });
-
-            // Random flower pot at (310,390), default scale 0.8 (top layer)
-            const flowerFrameCount = Math.max(1, FLOWERS_FRAME_COLS * FLOWERS_FRAME_ROWS); // 动态帧数
-            const randomFlowerFrame = Math.floor(Math.random() * flowerFrameCount);
-            const flower = this.add.sprite(310, 390, 'flowers', randomFlowerFrame).setOrigin(0.5);
-            flower.setScale(0.8);
-            flower.setDepth(1100); // highest among desk/starWorking
-            window.flowerSprite = flower;
-            window.flowerFrameCount = flowerFrameCount;
-            registerWorkbenchPortal(flower, { mode: 'equipment', originKey: 'portalFlower', hoverScale: 1.06 });
 
             // Star working at desk (217,333)
             this.anims.create({
                 key: 'star_working',
                 // 38 帧（0~37），避免沿用旧 192 帧导致疯狂闪烁
                 frames: this.anims.generateFrameNumbers('star_working', { start: 0, end: 37 }),
-                frameRate: 12,
+                frameRate: 8,
                 repeat: -1
             });
 
-            // Error / bug animation (96 frames)
-            this.anims.create({
-                key: 'error_bug',
-                frames: this.anims.generateFrameNumbers('error_bug', { start: 0, end: 71 }),
-                frameRate: 12,
-                repeat: -1
-            });
-
-            // Error bug character (moves between two points when state=error)
-            const errorBug = this.add.sprite(1007, 221, 'error_bug', 0).setOrigin(0.5);
-            errorBug.setDepth(50); // above serverroom, below desk/bubbles
-            errorBug.setVisible(false);
-            errorBug.setScale(0.9); // shrink 10%
-            errorBug.anims.play('error_bug', true);
-            window.errorBug = errorBug;
-            window.errorBugDir = 1; // 1 -> to right, -1 -> to left
             const starWorking = this.add.sprite(217, 343, 'star_working', 0).setOrigin(0.5);
             starWorking.setVisible(false);
             starWorking.setScale(0.81);
@@ -5316,7 +5283,7 @@ function toggleBrokerPanel() {
             this.anims.create({
                 key: 'sync_anim',
                     frames: this.anims.generateFrameNumbers('sync_anim', { start: syncFrameStart, end: syncFrameEnd }),
-                frameRate: 6,
+                frameRate: 3,
                 repeat: -1
             });
             }
@@ -5529,12 +5496,15 @@ function toggleBrokerPanel() {
 
             // 加载昨日 memo
             loadMemo();
+            syncLoopTargetByState(currentState);
 
             fetchStatus();
             fetchGuestAgents();
+            this.time.delayedCall(1200, () => loadDeferredDecor(this));
         }
 
         function update(time) {
+            if (document.hidden) return;
             if (time - lastFetch > FETCH_INTERVAL) { fetchStatus(); lastFetch = time; }
             if (time - lastGuestAgentsFetch > GUEST_AGENTS_FETCH_INTERVAL) { fetchGuestAgents(); lastGuestAgentsFetch = time; }
 
@@ -5722,6 +5692,8 @@ function toggleBrokerPanel() {
                     syncAnimSprite.setVisible(false);
                 }
             }
+
+            syncLoopTargetByState(nextState);
         }
 
         function fetchStatus() {

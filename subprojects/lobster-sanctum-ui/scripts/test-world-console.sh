@@ -19,6 +19,6 @@ grep -q 'data-station="role"' "$WORLD_HTML" || fail "world-console.html missing 
 grep -q 'data-station="equipment"' "$WORLD_HTML" || fail "world-console.html missing equipment station nav"
 grep -q 'id="worldConsoleFrame"' "$WORLD_HTML" || fail "world-console.html missing iframe shell"
 grep -q 'const STATUS_ENDPOINT = "/status"' "$WORLD_JS" || fail "world-console.js missing /status runtime polling"
-grep -q "world-console.html" "$ROOT_HTML" || fail "root pixel world does not route into world-console"
+grep -q "configure.html?tab=role" "$ROOT_HTML" || fail "root pixel world does not route directly into configure workbench"
 
 echo "[PASS] unified world console wiring present"

@@ -10908,7 +10908,7 @@ manage_pixel_house() {
         print_menu_item "4" "重启像素小屋" "🔄"
         print_menu_item "5" "查看像素小屋状态" "📊"
         print_menu_item "6" "设置端口（默认 19000）" "🌐"
-        print_menu_item "7" "应用默认红蓝背景" "🎨"
+        print_menu_item "7" "修复并应用默认房间背景" "🎨"
         print_menu_item "8" "打开工作台地址" "🧭"
         print_menu_item "0" "返回主菜单" "↩️"
         echo ""
@@ -10960,10 +10960,13 @@ manage_pixel_house() {
                 ;;
             7)
                 echo ""
-                if curl -fsS --max-time 8 -X POST "http://127.0.0.1:${port}/openclaw/theme/red-blue-default" >/dev/null 2>&1; then
-                    log_info "已应用默认红蓝像素背景"
+                local theme_marker
+                theme_marker="$HOME/.openclaw/profile/lobster-theme-initialized"
+                rm -f "$theme_marker" >/dev/null 2>&1 || true
+                if run_lobster_world_action_menu restart >/dev/null 2>&1; then
+                    log_info "默认房间背景已修复并重新加载"
                 else
-                    log_warn "应用失败，请先启动像素小屋后重试"
+                    log_warn "修复失败，请先执行“安装/修复像素小屋并挂钩 OpenClaw”"
                 fi
                 press_enter
                 ;;

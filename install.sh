@@ -2969,12 +2969,23 @@ install_repo_backed_launcher_install() {
     local default_host_value="${4:-}"
     local default_port_var="${5:-}"
     local default_port_value="${6:-}"
+    local current_repo_script=""
+    current_repo_script="$(resolve_repo_file_install "$relative_path" || true)"
 
     cat > "$launcher_path" <<EOF
 #!/usr/bin/env bash
 set -euo pipefail
 
 candidates=(
+EOF
+
+    if [ -n "$current_repo_script" ]; then
+        cat >> "$launcher_path" <<EOF
+  "$current_repo_script"
+EOF
+    fi
+
+    cat >> "$launcher_path" <<EOF
   "$PWD/$relative_path"
   "\$HOME/.openclaw/.cache/auto-install-openclaw-repo/$relative_path"
   "\$HOME/.openclaw/workspace/auto-install-openclaw/$relative_path"

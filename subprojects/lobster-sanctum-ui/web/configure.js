@@ -2220,6 +2220,7 @@ function renderAll() {
 }
 
 async function refreshRuntime() {
+  if (typeof document !== "undefined" && document.hidden) return;
   const projection = safeParseJson(window.localStorage.getItem(runtimeProjectionKey), null);
   if (projection?.runtime) {
     currentRuntime = normalizeRuntime(projection.runtime);
@@ -2362,7 +2363,12 @@ async function bootstrapCompactConfigure() {
   Object.keys(TAB_SAVE_STATUS_IDS).forEach((scope) => setSaveStatus(scope, "待保存"));
   renderAll();
   refreshRuntime();
-  window.setInterval(refreshRuntime, 5000);
+  window.setInterval(() => {
+    if (!document.hidden) refreshRuntime();
+  }, 8000);
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) refreshRuntime();
+  });
 }
 
 bootstrapCompactConfigure().catch(() => {});
