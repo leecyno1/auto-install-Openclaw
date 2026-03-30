@@ -3443,6 +3443,80 @@ PY
     fi
 }
 
+migrate_legacy_feishu_schema_in_json_install() {
+    local cfg="$CONFIG_DIR/openclaw.json"
+    if check_command openclaw; then
+        local active_cfg
+        active_cfg="$(openclaw config file 2>/dev/null | head -n 1 | tr -d '\r')"
+        case "$active_cfg" in
+            "~/"*) active_cfg="$HOME/${active_cfg#~/}" ;;
+        esac
+        if [ -n "$active_cfg" ] && [ "$active_cfg" != "undefined" ]; then
+            cfg="$active_cfg"
+        fi
+    fi
+    [ -f "$cfg" ] || return 0
+
+    if check_command jq; then
+        local tmp
+        tmp="$(mktemp)"
+        if jq '
+            .channels = (.channels // {})
+            | if ((.channels.feishu // null) | type) == "object" then
+                .channels.feishu.accounts = (.channels.feishu.accounts // {})
+                | .channels.feishu.accounts.main = (.channels.feishu.accounts.main // {})
+                | if (.channels.feishu.appId // null) != null and ((.channels.feishu.accounts.main.appId // null) == null) then .channels.feishu.accounts.main.appId = .channels.feishu.appId else . end
+                | if (.channels.feishu.appSecret // null) != null and ((.channels.feishu.accounts.main.appSecret // null) == null) then .channels.feishu.accounts.main.appSecret = .channels.feishu.appSecret else . end
+                | if (.channels.feishu.webhookMode // null) != null and ((.channels.feishu.connectionMode // null) == null) then .channels.feishu.connectionMode = .channels.feishu.webhookMode else . end
+                | del(.channels.feishu.appId, .channels.feishu.appSecret, .channels.feishu.webhookMode, .channels.feishu.footer, .channels.feishu.tools)
+              else .
+              end
+        ' "$cfg" > "$tmp" 2>/dev/null && [ -s "$tmp" ]; then
+            mv "$tmp" "$cfg"
+            return 0
+        fi
+        rm -f "$tmp" 2>/dev/null || true
+    fi
+
+    if check_command python3; then
+        python3 - "$cfg" <<'PY' 2>/dev/null || true
+import json, sys
+path = sys.argv[1]
+try:
+    with open(path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+    channels = data.get("channels") or {}
+    if not isinstance(channels, dict):
+        channels = {}
+    feishu = channels.get("feishu")
+    if isinstance(feishu, dict):
+        accounts = feishu.get("accounts") or {}
+        if not isinstance(accounts, dict):
+            accounts = {}
+        main = accounts.get("main") or {}
+        if not isinstance(main, dict):
+            main = {}
+        if feishu.get("appId") and not main.get("appId"):
+            main["appId"] = feishu.get("appId")
+        if feishu.get("appSecret") and not main.get("appSecret"):
+            main["appSecret"] = feishu.get("appSecret")
+        if feishu.get("webhookMode") and not feishu.get("connectionMode"):
+            feishu["connectionMode"] = feishu.get("webhookMode")
+        accounts["main"] = main
+        feishu["accounts"] = accounts
+        for k in ("appId", "appSecret", "webhookMode", "footer", "tools"):
+            if k in feishu:
+                feishu.pop(k, None)
+        channels["feishu"] = feishu
+    data["channels"] = channels
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+except Exception:
+    pass
+PY
+    fi
+}
+
 openclaw_config_set_if_changed_install() {
     local key="$1"
     local value="$2"
@@ -3477,12 +3551,9 @@ apply_dashboard_pairing_bypass_install() {
 }
 
 apply_default_feishu_runtime_flags() {
-    if ! check_command openclaw; then
-        return 0
-    fi
-    openclaw_config_set_if_changed_install "channels.feishu.streaming" "true"
-    openclaw_config_set_if_changed_install "channels.feishu.footer.elapsed" "true"
-    openclaw_config_set_if_changed_install "channels.feishu.footer.status" "true"
+    # 历史字段 channels.feishu.footer.* 在部分新版本 schema 下会触发 config invalid。
+    # 保留函数以兼容旧调用链，但不再写入该组字段。
+    return 0
 }
 
 openclaw_plugins_install_with_retry_install() {
@@ -4021,8 +4092,9 @@ init_openclaw_config() {
     # 修复权限
     chmod 700 "$OPENCLAW_DIR" 2>/dev/null || true
 
-    # 预先纠正常见渠道策略，避免后续 openclaw config set 时反复输出 doctor 告警
+    # 预先修正 dashboard 配置并迁移历史 Feishu 字段，避免后续出现 config invalid。
     normalize_channel_policy_in_json_install || true
+    migrate_legacy_feishu_schema_in_json_install || true
     
     # 设置 gateway.mode 为 local
     if check_command openclaw; then
@@ -5849,6 +5921,7 @@ converge_gateway_single_instance() {
     log_step "收敛 Gateway 为单实例（bind=${GATEWAY_BIND}, port=${GATEWAY_PORT}）..."
     cleanup_legacy_gateway_runtime
     normalize_channel_policy_in_json_install || true
+    migrate_legacy_feishu_schema_in_json_install || true
 
     openclaw_config_set_if_changed_install "gateway.mode" "local"
     openclaw_config_set_if_changed_install "gateway.bind" "$GATEWAY_BIND"
@@ -5876,6 +5949,16 @@ converge_gateway_single_instance() {
 
     local gateway_pid
     gateway_pid="$(get_gateway_pid)"
+    if [ -z "$gateway_pid" ]; then
+        if echo "$restart_output" | grep -q "channels.feishu: invalid config: must NOT have additional properties"; then
+            log_warn "检测到历史 Feishu 配置与当前 schema 不兼容，正在自动迁移并重试 Gateway..."
+            migrate_legacy_feishu_schema_in_json_install || true
+            restart_output="$(openclaw gateway restart 2>&1)" || true
+            sleep 2
+            gateway_pid="$(get_gateway_pid)"
+        fi
+    fi
+
     if [ -z "$gateway_pid" ]; then
         restart_output="$(openclaw gateway start 2>&1)" || true
         sleep 2

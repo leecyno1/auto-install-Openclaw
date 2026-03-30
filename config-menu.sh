@@ -2773,6 +2773,7 @@ converge_gateway_single_instance_menu() {
     upsert_env_export "OPENCLAW_GATEWAY_PORT" "$gateway_port"
 
     cleanup_legacy_gateway_runtime_menu
+    migrate_legacy_feishu_schema_in_json_menu || true
     if [ "$converge_mode" = "repair" ] || [ "$converge_mode" = "force-install" ]; then
         yes | openclaw doctor --fix >/dev/null 2>&1 || true
     fi
@@ -2805,6 +2806,15 @@ converge_gateway_single_instance_menu() {
 
     local gateway_pid
     gateway_pid="$(get_port_pid "$gateway_port")"
+    if [ -z "$gateway_pid" ]; then
+        if echo "$restart_output" | grep -q "channels.feishu: invalid config: must NOT have additional properties"; then
+            log_warn "检测到历史 Feishu 配置与当前 schema 不兼容，正在自动迁移并重试 Gateway..."
+            migrate_legacy_feishu_schema_in_json_menu || true
+            restart_output="$(openclaw gateway restart 2>&1)" || true
+            sleep 2
+            gateway_pid="$(get_port_pid "$gateway_port")"
+        fi
+    fi
     if [ -z "$gateway_pid" ]; then
         restart_output="$(openclaw gateway start 2>&1)" || true
         sleep 2
@@ -7373,6 +7383,7 @@ cleanup_stale_plugin_state_menu() {
         cleanup_unknown_plugins_allow_menu || true
     fi
     normalize_channel_policy_in_json_menu || true
+    migrate_legacy_feishu_schema_in_json_menu || true
 
     local legacy_dir
     for legacy_dir in \
@@ -7538,12 +7549,6 @@ normalize_channel_policy_in_json_menu() {
       "allowInsecureAuth": true,
       "dangerouslyDisableDeviceAuth": true
     }
-  },
-  "channels": {
-    "feishu": { "dmPolicy": "open", "groupPolicy": "open", "allowFrom": ["*"], "groupAllowFrom": ["*"] },
-    "telegram": { "dmPolicy": "open", "groupPolicy": "open", "allowFrom": ["*"], "groupAllowFrom": ["*"] },
-    "whatsapp": { "dmPolicy": "open", "groupPolicy": "open", "allowFrom": ["*"], "groupAllowFrom": ["*"] },
-    "imessage": { "dmPolicy": "open", "groupPolicy": "open", "allowFrom": ["*"], "groupAllowFrom": ["*"] }
   }
 }
 EOF
@@ -7556,27 +7561,6 @@ EOF
             | .gateway.controlUi = (.gateway.controlUi // {})
             | .gateway.controlUi.allowInsecureAuth = true
             | .gateway.controlUi.dangerouslyDisableDeviceAuth = true
-            | .channels = (.channels // {})
-            | (.channels.feishu //= {})
-            | (.channels.telegram //= {})
-            | (.channels.whatsapp //= {})
-            | (.channels.imessage //= {})
-            | .channels.feishu.dmPolicy = "open"
-            | .channels.feishu.groupPolicy = "open"
-            | .channels.feishu.allowFrom = ["*"]
-            | .channels.feishu.groupAllowFrom = ["*"]
-            | .channels.telegram.dmPolicy = "open"
-            | .channels.telegram.groupPolicy = "open"
-            | .channels.telegram.allowFrom = ["*"]
-            | .channels.telegram.groupAllowFrom = ["*"]
-            | .channels.whatsapp.dmPolicy = "open"
-            | .channels.whatsapp.groupPolicy = "open"
-            | .channels.whatsapp.allowFrom = ["*"]
-            | .channels.whatsapp.groupAllowFrom = ["*"]
-            | .channels.imessage.dmPolicy = "open"
-            | .channels.imessage.groupPolicy = "open"
-            | .channels.imessage.allowFrom = ["*"]
-            | .channels.imessage.groupAllowFrom = ["*"]
         ' "$cfg" > "$tmp" 2>/dev/null && [ -s "$tmp" ]; then
             mv "$tmp" "$cfg"
             return 0
@@ -7587,7 +7571,6 @@ EOF
         python3 - "$cfg" <<'PY' 2>/dev/null || true
 import json, sys
 path = sys.argv[1]
-channels = ("feishu", "telegram", "whatsapp", "imessage")
 try:
     with open(path, "r", encoding="utf-8") as f:
         data = json.load(f)
@@ -7601,19 +7584,71 @@ try:
     control_ui["dangerouslyDisableDeviceAuth"] = True
     gateway["controlUi"] = control_ui
     data["gateway"] = gateway
-    root = data.get("channels") or {}
-    if not isinstance(root, dict):
-        root = {}
-    for ch in channels:
-        item = root.get(ch) or {}
-        if not isinstance(item, dict):
-            item = {}
-        item["dmPolicy"] = "open"
-        item["groupPolicy"] = "open"
-        item["allowFrom"] = ["*"]
-        item["groupAllowFrom"] = ["*"]
-        root[ch] = item
-    data["channels"] = root
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+except Exception:
+    pass
+PY
+    fi
+}
+
+migrate_legacy_feishu_schema_in_json_menu() {
+    local cfg
+    cfg="$(resolve_openclaw_json_path_menu "${1:-$OPENCLAW_JSON}" "${2:-runtime}")"
+    [ -f "$cfg" ] || return 0
+
+    if command -v jq >/dev/null 2>&1; then
+        local tmp
+        tmp="$(mktemp)"
+        if jq '
+            .channels = (.channels // {})
+            | if ((.channels.feishu // null) | type) == "object" then
+                .channels.feishu.accounts = (.channels.feishu.accounts // {})
+                | .channels.feishu.accounts.main = (.channels.feishu.accounts.main // {})
+                | if (.channels.feishu.appId // null) != null and ((.channels.feishu.accounts.main.appId // null) == null) then .channels.feishu.accounts.main.appId = .channels.feishu.appId else . end
+                | if (.channels.feishu.appSecret // null) != null and ((.channels.feishu.accounts.main.appSecret // null) == null) then .channels.feishu.accounts.main.appSecret = .channels.feishu.appSecret else . end
+                | if (.channels.feishu.webhookMode // null) != null and ((.channels.feishu.connectionMode // null) == null) then .channels.feishu.connectionMode = .channels.feishu.webhookMode else . end
+                | del(.channels.feishu.appId, .channels.feishu.appSecret, .channels.feishu.webhookMode, .channels.feishu.footer, .channels.feishu.tools)
+              else .
+              end
+        ' "$cfg" > "$tmp" 2>/dev/null && [ -s "$tmp" ]; then
+            mv "$tmp" "$cfg"
+            return 0
+        fi
+        rm -f "$tmp" 2>/dev/null || true
+    fi
+
+    if command -v python3 >/dev/null 2>&1; then
+        python3 - "$cfg" <<'PY' 2>/dev/null || true
+import json, sys
+path = sys.argv[1]
+try:
+    with open(path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+    channels = data.get("channels") or {}
+    if not isinstance(channels, dict):
+        channels = {}
+    feishu = channels.get("feishu")
+    if isinstance(feishu, dict):
+        accounts = feishu.get("accounts") or {}
+        if not isinstance(accounts, dict):
+            accounts = {}
+        main = accounts.get("main") or {}
+        if not isinstance(main, dict):
+            main = {}
+        if feishu.get("appId") and not main.get("appId"):
+            main["appId"] = feishu.get("appId")
+        if feishu.get("appSecret") and not main.get("appSecret"):
+            main["appSecret"] = feishu.get("appSecret")
+        if feishu.get("webhookMode") and not feishu.get("connectionMode"):
+            feishu["connectionMode"] = feishu.get("webhookMode")
+        accounts["main"] = main
+        feishu["accounts"] = accounts
+        for k in ("appId", "appSecret", "webhookMode", "footer", "tools"):
+            if k in feishu:
+                feishu.pop(k, None)
+        channels["feishu"] = feishu
+    data["channels"] = channels
     with open(path, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
 except Exception:
@@ -7625,6 +7660,7 @@ PY
 startup_fast_config_sanitize_menu() {
     cleanup_stale_channel_keys_in_json_menu "$OPENCLAW_JSON" "fast" || true
     normalize_channel_policy_in_json_menu "$OPENCLAW_JSON" "fast" || true
+    migrate_legacy_feishu_schema_in_json_menu "$OPENCLAW_JSON" "fast" || true
 }
 
 openclaw_config_set_if_changed_menu() {
@@ -7635,12 +7671,20 @@ openclaw_config_set_if_changed_menu() {
         return 0
     fi
     local current
-    current="$(openclaw config get "$key" 2>/dev/null || true)"
+    if command -v timeout >/dev/null 2>&1; then
+        current="$(timeout 15s openclaw config get "$key" 2>/dev/null || true)"
+    else
+        current="$(openclaw config get "$key" 2>/dev/null || true)"
+    fi
     current="$(echo "$current" | tr -d '\r' | sed 's/^"//; s/"$//')"
     if [ "$current" = "$value" ]; then
         return 0
     fi
-    openclaw config set "$key" "$value" >/dev/null 2>&1 || true
+    if command -v timeout >/dev/null 2>&1; then
+        timeout 15s openclaw config set "$key" "$value" >/dev/null 2>&1 || true
+    else
+        openclaw config set "$key" "$value" >/dev/null 2>&1 || true
+    fi
 }
 
 apply_dashboard_pairing_bypass_menu() {
@@ -7653,12 +7697,9 @@ apply_dashboard_pairing_bypass_menu() {
 }
 
 apply_default_feishu_runtime_flags_menu() {
-    if ! check_openclaw_installed; then
-        return 0
-    fi
-    openclaw_config_set_if_changed_menu "channels.feishu.streaming" "true"
-    openclaw_config_set_if_changed_menu "channels.feishu.footer.elapsed" "true"
-    openclaw_config_set_if_changed_menu "channels.feishu.footer.status" "true"
+    # 历史字段 channels.feishu.footer.* 在部分新版本 schema 下会触发 config invalid。
+    # 保留函数以兼容旧调用链，但不再写入该组字段。
+    return 0
 }
 
 get_plugins_entries_keys_menu() {
@@ -9887,6 +9928,7 @@ ensure_openclaw_init() {
     local OPENCLAW_DIR="$HOME/.openclaw"
 
     normalize_channel_policy_in_json_menu || true
+    migrate_legacy_feishu_schema_in_json_menu || true
     
     # 创建必要的目录
     mkdir -p "$OPENCLAW_DIR/agents/main/sessions" 2>/dev/null || true
@@ -9930,14 +9972,6 @@ ensure_openclaw_init() {
         fi
     fi
 
-    openclaw config set channels.feishu.dmPolicy open >/dev/null 2>&1 || true
-    openclaw config set channels.feishu.groupPolicy open >/dev/null 2>&1 || true
-    openclaw config set channels.telegram.dmPolicy open >/dev/null 2>&1 || true
-    openclaw config set channels.telegram.groupPolicy open >/dev/null 2>&1 || true
-    openclaw config set channels.whatsapp.dmPolicy open >/dev/null 2>&1 || true
-    openclaw config set channels.whatsapp.groupPolicy open >/dev/null 2>&1 || true
-    openclaw config set channels.imessage.dmPolicy open >/dev/null 2>&1 || true
-    openclaw config set channels.imessage.groupPolicy open >/dev/null 2>&1 || true
     ensure_gateway_controlui_allowed_origins
 }
 
@@ -11259,6 +11293,7 @@ repair_runtime_config_preserve_data() {
     cleanup_stale_channel_keys_in_json_menu || true
     cleanup_stale_plugin_state_menu || true
     normalize_channel_policy_in_json_menu || true
+    migrate_legacy_feishu_schema_in_json_menu || true
     refresh_default_skills_bundle_cache_menu || true
     apply_dashboard_pairing_bypass_menu || true
     ensure_openclaw_init || true
