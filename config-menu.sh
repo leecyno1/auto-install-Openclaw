@@ -197,7 +197,7 @@ UNOFFICIAL_ROUTING_DEFAULT_FAILOVER="${OPENCLAW_UNOFFICIAL_ROUTING_FAILOVER:-1}"
 SKILL_PIP_PACKAGES_DEFAULT="duckduckgo-search akshare requests pyyaml pypdf pillow openpyxl python-pptx python-docx lxml defusedxml pdf2image"
 SKILL_PIP_PACKAGES="${OPENCLAW_SKILL_PIP_PACKAGES:-$SKILL_PIP_PACKAGES_DEFAULT}"
 SKILL_PIP_PACKAGES_FILE_REL="skills/requirements-runtime.txt"
-DEFAULT_SKILLS_BUNDLE_SENTINELS="agentmail agentmail-cli agentmail-mcp agentmail-toolkit content-strategy social-content ai-image-generation media-downloader minimax-web-search subagent-driven-development using-superpowers verification-before-completion writing-skills lark-calendar notebooklm-skill"
+DEFAULT_SKILLS_BUNDLE_SENTINELS="agentmail agentmail-cli agentmail-mcp agentmail-toolkit content-strategy social-content ai-image-generation media-downloader marketingskills inference-skills minimax-image-understanding minimax-web-search subagent-driven-development using-superpowers verification-before-completion writing-skills lark-calendar notebooklm-skill skill-security-auditor weather data-analyst finance-data task todo"
 WELCOME_DOC_URL_GITEE="https://gitee.com/leecyno1/auto-install-openclaw/blob/main/docs/channels-configuration-guide.md"
 WELCOME_DOC_URL_GITHUB="https://github.com/leecyno1/auto-install-Openclaw/blob/main/docs/channels-configuration-guide.md"
 PERSONA_ROLE_MENU_SELECTED="$(echo "${OPENCLAW_PERSONA_ROLE:-druid}" | tr '[:upper:]' '[:lower:]')"
@@ -8628,7 +8628,7 @@ is_default_skills_bundle_usable_menu() {
     local missing_count=0
     [ -d "$check_dir" ] || return 1
     missing_count="$(count_missing_default_skill_sentinels_menu "$check_dir")"
-    [ "${missing_count:-9999}" -le 4 ]
+    [ "${missing_count:-9999}" -le 2 ]
 }
 
 resolve_default_skills_bundle_dir() {
@@ -8673,16 +8673,16 @@ EOF
             echo "$cache_bundle"
             return 0
         fi
-        log_warn "检测到缓存技能包不完整，正在重建缓存..."
+        log_warn "检测到缓存技能包不完整，正在重建缓存..." >&2
         rm -rf "$cache_repo" 2>/dev/null || true
     fi
 
     if ! command -v git >/dev/null 2>&1; then
-        log_error "未检测到 git，且本地缺少 skills/default，无法拉取默认技能包"
+        log_error "未检测到 git，且本地缺少 skills/default，无法拉取默认技能包" >&2
         return 1
     fi
 
-    log_warn "本地未发现 skills/default，正在从仓库拉取默认技能包..."
+    log_warn "本地未发现 skills/default，正在从仓库拉取默认技能包..." >&2
     tmp_repo="$(mktemp -d "$cache_root/repo.XXXXXX")"
     for url in $(get_installer_repo_urls); do
         rm -rf "$tmp_repo" 2>/dev/null || true
@@ -8740,6 +8740,17 @@ sync_default_skills_bundle() {
 
     log_info "默认技能包同步完成：新增/更新 ${copied}，保留 ${skipped}"
     return 0
+}
+
+refresh_default_skills_bundle_cache_menu() {
+    local bundle_dir=""
+    bundle_dir="$(resolve_default_skills_bundle_dir 2>/dev/null || true)"
+    if [ -n "$bundle_dir" ] && [ -d "$bundle_dir" ]; then
+        log_info "默认技能包缓存已同步: $bundle_dir"
+        return 0
+    fi
+    log_warn "默认技能包缓存刷新失败，后续按需安装技能时将再次重试"
+    return 1
 }
 
 sync_named_skills_from_bundle() {
@@ -11059,6 +11070,7 @@ repair_runtime_config_preserve_data() {
     cleanup_stale_channel_keys_in_json_menu || true
     cleanup_stale_plugin_state_menu || true
     normalize_channel_policy_in_json_menu || true
+    refresh_default_skills_bundle_cache_menu || true
     apply_dashboard_pairing_bypass_menu || true
     ensure_openclaw_init || true
     apply_default_feishu_runtime_flags_menu || true

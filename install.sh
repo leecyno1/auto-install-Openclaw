@@ -127,6 +127,7 @@ PROFILE_BASIC_SKILLS="capability-evolver openclaw-cron-setup proactive-agent sel
 PROFILE_EXTENDED_SKILLS="capability-evolver openclaw-cron-setup proactive-agent self-improving-agent-cn brainstorming reflection find-skills skill-creator subagent-driven-development using-superpowers verification-before-completion writing-skills agent-browser chrome-devtools-mcp github mcp-builder model-usage shell minimax-image-understanding tavily-search web-search minimax-web-search news-radar url-to-markdown pdf nano-pdf docx pptx xlsx stock-monitor-skill multi-search-engine akshare-stock content-strategy social-content ai-image-generation animation media-downloader marketingskills inference-skills gemini-image-service oracle paperless-docs paperless-ngx-tools writing-plans agentmail agentmail-cli agentmail-mcp agentmail-toolkit lark-calendar notebooklm-skill skill-security-auditor weather data-analyst finance-data task todo"
 SUPER_CURATED_SKILLS_LIST="baoyu-skills baoyu-article-illustrator baoyu-comic baoyu-compress-image baoyu-cover-image baoyu-danger-gemini-web baoyu-danger-x-to-markdown baoyu-format-markdown baoyu-image-gen baoyu-infographic baoyu-markdown-to-html baoyu-post-to-wechat baoyu-post-to-weibo baoyu-post-to-x baoyu-slide-deck baoyu-translate baoyu-url-to-markdown baoyu-xhs-images baoyu-youtube-transcript"
 PROFILE_SUPER_SKILLS="${PROFILE_EXTENDED_SKILLS} planning-with-files ${SUPER_CURATED_SKILLS_LIST}"
+DEFAULT_SKILLS_BUNDLE_SENTINELS="agentmail agentmail-cli agentmail-mcp agentmail-toolkit content-strategy social-content ai-image-generation media-downloader marketingskills inference-skills minimax-image-understanding minimax-web-search using-superpowers verification-before-completion writing-skills lark-calendar notebooklm-skill skill-security-auditor weather data-analyst finance-data task todo"
 GEMINI_BASE_URL_DEFAULT="${GEMINI_BASE_URL:-${GOOGLE_BASE_URL:-}}"
 GEMINI_IMAGE_MODEL_DEFAULT="${GEMINI_IMAGE_MODEL:-gemini-2.5-flash-image-preview}"
 QIHANG_IMAGE_API_KEY_DEFAULT="${QIHANG_IMAGE_API_KEY:-}"
@@ -2826,6 +2827,28 @@ refresh_cached_installer_repo() {
     return 0
 }
 
+count_missing_default_skill_sentinels_install() {
+    local check_dir="$1"
+    local missing=0
+    local skill_name
+    [ -d "$check_dir" ] || {
+        echo 9999
+        return 0
+    }
+    for skill_name in $DEFAULT_SKILLS_BUNDLE_SENTINELS; do
+        [ -d "$check_dir/$skill_name" ] || missing=$((missing + 1))
+    done
+    echo "$missing"
+}
+
+is_default_skills_bundle_usable_install() {
+    local check_dir="$1"
+    local missing_count=0
+    [ -d "$check_dir" ] || return 1
+    missing_count="$(count_missing_default_skill_sentinels_install "$check_dir")"
+    [ "${missing_count:-9999}" -le 2 ]
+}
+
 resolve_install_skills_bundle_dir() {
     local script_dir
     local local_bundle
@@ -2837,7 +2860,7 @@ resolve_install_skills_bundle_dir() {
 
     script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
     local_bundle="$script_dir/skills/default"
-    if [ -d "$local_bundle" ]; then
+    if [ -d "$local_bundle" ] && is_default_skills_bundle_usable_install "$local_bundle"; then
         echo "$local_bundle"
         return 0
     fi
@@ -2851,20 +2874,26 @@ resolve_install_skills_bundle_dir() {
         if check_command git && [ "${OPENCLAW_REFRESH_SKILLS_CACHE:-1}" = "1" ]; then
             refresh_cached_installer_repo "$cache_repo" >/dev/null 2>&1 || true
         fi
-        echo "$cache_bundle"
-        return 0
+        if is_default_skills_bundle_usable_install "$cache_bundle"; then
+            echo "$cache_bundle"
+            return 0
+        fi
+        log_warn "检测到旧的默认技能缓存不完整，正在重建..." >&2
+        rm -rf "$cache_repo" 2>/dev/null || true
     fi
 
     if ! check_command git; then
         return 1
     fi
 
-    log_warn "当前安装脚本不在仓库目录内，正在从远端拉取默认技能包..."
+    log_warn "当前安装脚本不在仓库目录内，正在从远端拉取默认技能包..." >&2
     tmp_repo="$(mktemp -d "$cache_root/repo.XXXXXX")"
     for url in $(get_installer_repo_urls); do
         rm -rf "$tmp_repo" 2>/dev/null || true
         tmp_repo="$(mktemp -d "$cache_root/repo.XXXXXX")"
-        if git clone --depth 1 "$url" "$tmp_repo" >/dev/null 2>&1 && [ -d "$tmp_repo/skills/default" ]; then
+        if git clone --depth 1 "$url" "$tmp_repo" >/dev/null 2>&1 \
+            && [ -d "$tmp_repo/skills/default" ] \
+            && is_default_skills_bundle_usable_install "$tmp_repo/skills/default"; then
             rm -rf "$cache_repo" 2>/dev/null || true
             mv "$tmp_repo" "$cache_repo"
             echo "$cache_repo/skills/default"
