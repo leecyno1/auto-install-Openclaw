@@ -21,6 +21,10 @@
 > ```bash
 > bash ~/.openclaw/config-menu.sh --install-pixel-house
 > ```
+> **配置修复 / 迁移（保留记忆与对话）**
+> ```bash
+> curl -fsSL --proto '=https' --tlsv1.2 --connect-timeout 8 --max-time 25 https://gitee.com/leecyno1/auto-install-openclaw/raw/main/config-menu.sh | bash -s -- --repair-config
+> ```
 > **多源容灾安装（备用）**
 > ```bash
 > bash -c 'set -e; tmp="$(mktemp)"; for u in "https://gitee.com/leecyno1/auto-install-openclaw/raw/main/install.sh" "https://raw.githubusercontent.com/leecyno1/auto-install-Openclaw/main/install.sh" "https://mirror.ghproxy.com/https://raw.githubusercontent.com/leecyno1/auto-install-Openclaw/main/install.sh" "https://cdn.jsdelivr.net/gh/leecyno1/auto-install-Openclaw@main/install.sh"; do echo "Try: $u"; if curl -fsSL --proto "=https" --tlsv1.2 --connect-timeout 8 --max-time 25 "$u" -o "$tmp"; then bash "$tmp"; rm -f "$tmp"; exit 0; fi; done; rm -f "$tmp"; echo "All sources failed. 请稍后重试或更换网络。"; exit 1'
@@ -181,6 +185,12 @@ bash ~/.openclaw/config-menu.sh --repair-config
 
 ```bash
 bash ~/.openclaw/config-menu.sh --install-pixel-house
+```
+
+### 配置修复 / 迁移（保留记忆与对话）
+
+```bash
+curl -fsSL --proto '=https' --tlsv1.2 --connect-timeout 8 --max-time 25 https://gitee.com/leecyno1/auto-install-openclaw/raw/main/config-menu.sh | bash -s -- --repair-config
 ```
 
 ### 配置命令（多源容灾备用）

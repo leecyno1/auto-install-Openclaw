@@ -3476,9 +3476,14 @@ run_official_model_onboard() {
     # 模型入口仅做轻量本地修正，避免在 Web/弱终端里先跑重修复导致长时间无输出。
     startup_fast_config_sanitize_menu || true
 
+    if ! repair_runtime_config_preserve_data 1; then
+        log_error "进入官方模型配置前的预修复失败"
+        return 1
+    fi
+    cleanup_stale_plugin_state_menu || true
+
     local onboard_term
     onboard_term="$(resolve_onboard_term_menu)"
-
     echo ""
     if [ "$onboard_term" != "${TERM:-}" ]; then
         log_warn "检测到当前终端 TERM=${TERM:-unset}，临时切换为 ${onboard_term} 以兼容官方向导。"

@@ -56,7 +56,7 @@ uvx minimax-coding-plan-mcp --help
 
 **方法 1: 使用默认源安装**
 ```bash
-uvx install minimax-coding-plan-mcp
+uv tool install minimax-coding-plan-mcp
 ```
 
 **方法 2: 使用国内镜像加速（如果默认源下载失败）**
@@ -64,13 +64,13 @@ uvx install minimax-coding-plan-mcp
 临时使用清华镜像源：
 ```bash
 export UV_INDEX_URL="https://pypi.tuna.tsinghua.edu.cn/simple"
-uvx install minimax-coding-plan-mcp
+uv tool install minimax-coding-plan-mcp
 ```
 
 或者临时使用阿里云镜像源：
 ```bash
 export UV_INDEX_URL="https://mirrors.aliyun.com/pypi/simple/"
-uvx install minimax-coding-plan-mcp
+uv tool install minimax-coding-plan-mcp
 ```
 
 ### 步骤 2: 检查 API Key 配置
