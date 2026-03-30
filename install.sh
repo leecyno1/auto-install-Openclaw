@@ -105,6 +105,11 @@ GATEWAY_HOST="${OPENCLAW_GATEWAY_HOST:-}"
 GATEWAY_CUSTOM_BIND_HOST="${OPENCLAW_GATEWAY_CUSTOM_BIND_HOST:-}"
 GATEWAY_PORT="${OPENCLAW_GATEWAY_PORT:-13145}"
 LOBSTER_WORLD_PORT_DEFAULT="19000"
+PROJECTION_API_HOST_DEFAULT="127.0.0.1"
+PROJECTION_API_PORT_DEFAULT="19100"
+LOBSTER_WORLD_SERVICE_NAME="lobster-world.service"
+LOBSTER_PROJECTION_SERVICE_NAME="lobster-projection-api.service"
+LOBSTER_BRIDGE_SERVICE_NAME="lobster-openclaw-bridge.service"
 GATEWAY_CONVERGE_MARKER="/tmp/openclaw-installer-gateway-converged.$$"
 RESET_CHAT_AFTER_INSTALL="${OPENCLAW_RESET_CHAT_AFTER_INSTALL:-1}"
 AUTO_SWAP_ENABLE="${OPENCLAW_AUTO_SWAP:-1}"
@@ -2910,6 +2915,19 @@ resolve_install_skills_bundle_dir() {
 }
 
 resolve_lobster_world_script_install() {
+    resolve_repo_file_install "scripts/lobster-world.sh"
+}
+
+resolve_projection_api_script_install() {
+    resolve_repo_file_install "subprojects/lobster-sanctum-ui/projection-api.sh"
+}
+
+resolve_bridge_script_install() {
+    resolve_repo_file_install "subprojects/lobster-sanctum-ui/openclaw-runtime-bridge.sh"
+}
+
+resolve_repo_file_install() {
+    local relative_path="$1"
     local script_dir
     local cache_root
     local cache_repo
@@ -2922,10 +2940,10 @@ resolve_lobster_world_script_install() {
     cache_repo="$cache_root/auto-install-openclaw-repo"
 
     for candidate in \
-        "$script_dir/scripts/lobster-world.sh" \
-        "$cache_repo/scripts/lobster-world.sh" \
-        "$CONFIG_DIR/workspace/auto-install-openclaw/scripts/lobster-world.sh" \
-        "$CONFIG_DIR/workspace/auto-install-Openclaw/scripts/lobster-world.sh"; do
+        "$script_dir/$relative_path" \
+        "$cache_repo/$relative_path" \
+        "$CONFIG_DIR/workspace/auto-install-openclaw/$relative_path" \
+        "$CONFIG_DIR/workspace/auto-install-Openclaw/$relative_path"; do
         if [ -f "$candidate" ]; then
             echo "$candidate"
             return 0
@@ -2935,7 +2953,7 @@ resolve_lobster_world_script_install() {
     bundle_dir="$(resolve_install_skills_bundle_dir || true)"
     if [ -n "$bundle_dir" ] && [ -d "$bundle_dir" ]; then
         repo_root="$(cd "$bundle_dir/../.." 2>/dev/null && pwd)"
-        candidate="$repo_root/scripts/lobster-world.sh"
+        candidate="$repo_root/$relative_path"
         if [ -f "$candidate" ]; then
             echo "$candidate"
             return 0
@@ -2944,32 +2962,203 @@ resolve_lobster_world_script_install() {
     return 1
 }
 
-install_lobster_world_launcher() {
-    local launcher="$CONFIG_DIR/lobster-world.sh"
-    cat > "$launcher" <<'EOF'
+install_repo_backed_launcher_install() {
+    local launcher_path="$1"
+    local relative_path="$2"
+    local default_host_var="${3:-}"
+    local default_host_value="${4:-}"
+    local default_port_var="${5:-}"
+    local default_port_value="${6:-}"
+
+    cat > "$launcher_path" <<EOF
 #!/usr/bin/env bash
 set -euo pipefail
 
 candidates=(
-  "$HOME/.openclaw/.cache/auto-install-openclaw-repo/scripts/lobster-world.sh"
-  "$HOME/.openclaw/workspace/auto-install-openclaw/scripts/lobster-world.sh"
-  "$HOME/.openclaw/workspace/auto-install-Openclaw/scripts/lobster-world.sh"
+  "$PWD/$relative_path"
+  "\$HOME/.openclaw/.cache/auto-install-openclaw-repo/$relative_path"
+  "\$HOME/.openclaw/workspace/auto-install-openclaw/$relative_path"
+  "\$HOME/.openclaw/workspace/auto-install-Openclaw/$relative_path"
 )
 
-for script in "${candidates[@]}"; do
-  if [ -f "$script" ]; then
-    STAR_BACKEND_HOST="${STAR_BACKEND_HOST:-0.0.0.0}" \
-    STAR_BACKEND_PORT="${STAR_BACKEND_PORT:-19000}" \
-    bash "$script" "${1:-status}"
+for script in "\${candidates[@]}"; do
+  if [ -f "\$script" ]; then
+EOF
+
+    if [ -n "$default_host_var" ]; then
+        cat >> "$launcher_path" <<EOF
+    export $default_host_var="\${$default_host_var:-$default_host_value}"
+EOF
+    fi
+    if [ -n "$default_port_var" ]; then
+        cat >> "$launcher_path" <<EOF
+    export $default_port_var="\${$default_port_var:-$default_port_value}"
+EOF
+    fi
+
+    cat >> "$launcher_path" <<'EOF'
+    bash "$script" "${@:-status}"
     exit $?
   fi
 done
 
-echo "[ERROR] 未找到像素小屋服务脚本（scripts/lobster-world.sh）"
-echo "请先运行: bash ~/.openclaw/config-menu.sh -> 像素小屋"
+echo "[ERROR] 未找到目标脚本，请先同步安装仓库后重试。"
 exit 1
 EOF
-    chmod +x "$launcher" 2>/dev/null || true
+    chmod +x "$launcher_path" 2>/dev/null || true
+}
+
+install_lobster_world_launcher() {
+    install_repo_backed_launcher_install \
+        "$CONFIG_DIR/lobster-world.sh" \
+        "scripts/lobster-world.sh" \
+        "STAR_BACKEND_HOST" "0.0.0.0" \
+        "STAR_BACKEND_PORT" "$LOBSTER_WORLD_PORT_DEFAULT"
+}
+
+install_projection_api_launcher() {
+    install_repo_backed_launcher_install \
+        "$CONFIG_DIR/lobster-projection-api.sh" \
+        "subprojects/lobster-sanctum-ui/projection-api.sh" \
+        "PROJECTION_API_HOST" "$PROJECTION_API_HOST_DEFAULT" \
+        "PROJECTION_API_PORT" "$PROJECTION_API_PORT_DEFAULT"
+}
+
+install_openclaw_bridge_launcher() {
+    install_repo_backed_launcher_install \
+        "$CONFIG_DIR/lobster-openclaw-bridge.sh" \
+        "subprojects/lobster-sanctum-ui/openclaw-runtime-bridge.sh"
+}
+
+install_pixel_house_launchers_install() {
+    install_lobster_world_launcher
+    install_projection_api_launcher
+    install_openclaw_bridge_launcher
+}
+
+pixel_house_systemd_available_install() {
+    check_command systemctl
+}
+
+install_pixel_house_systemd_units_install() {
+    if ! pixel_house_systemd_available_install; then
+        return 0
+    fi
+
+    local service_user service_group service_home env_file gateway_status_url projection_ingest_url
+    local world_unit projection_unit bridge_unit
+    service_user="$(id -un)"
+    service_group="$(id -gn)"
+    service_home="$HOME"
+    env_file="$CONFIG_DIR/env"
+    gateway_status_url="http://127.0.0.1:${GATEWAY_PORT}/status"
+    projection_ingest_url="http://${PROJECTION_API_HOST_DEFAULT}:${PROJECTION_API_PORT_DEFAULT}/runtime/ingest"
+    world_unit="/etc/systemd/system/${LOBSTER_WORLD_SERVICE_NAME}"
+    projection_unit="/etc/systemd/system/${LOBSTER_PROJECTION_SERVICE_NAME}"
+    bridge_unit="/etc/systemd/system/${LOBSTER_BRIDGE_SERVICE_NAME}"
+
+    run_as_root mkdir -p /etc/systemd/system
+
+    cat <<EOF | run_as_root tee "$world_unit" >/dev/null
+[Unit]
+Description=Lobster World UI
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=forking
+User=${service_user}
+Group=${service_group}
+WorkingDirectory=${service_home}
+EnvironmentFile=-${env_file}
+Environment=STAR_BACKEND_HOST=0.0.0.0
+Environment=STAR_BACKEND_PORT=${LOBSTER_WORLD_PORT_DEFAULT}
+ExecStart=/bin/bash -lc 'source "${env_file}" >/dev/null 2>&1 || true; "${service_home}/.openclaw/lobster-world.sh" start'
+ExecStop=/bin/bash -lc 'source "${env_file}" >/dev/null 2>&1 || true; "${service_home}/.openclaw/lobster-world.sh" stop'
+ExecReload=/bin/bash -lc 'source "${env_file}" >/dev/null 2>&1 || true; "${service_home}/.openclaw/lobster-world.sh" restart'
+PIDFile=/tmp/lobster-world-${LOBSTER_WORLD_PORT_DEFAULT}.pid
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+    cat <<EOF | run_as_root tee "$projection_unit" >/dev/null
+[Unit]
+Description=Lobster Projection API
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=forking
+User=${service_user}
+Group=${service_group}
+WorkingDirectory=${service_home}
+EnvironmentFile=-${env_file}
+Environment=PROJECTION_API_HOST=${PROJECTION_API_HOST_DEFAULT}
+Environment=PROJECTION_API_PORT=${PROJECTION_API_PORT_DEFAULT}
+ExecStart=/bin/bash -lc 'source "${env_file}" >/dev/null 2>&1 || true; "${service_home}/.openclaw/lobster-projection-api.sh" start'
+ExecStop=/bin/bash -lc 'source "${env_file}" >/dev/null 2>&1 || true; "${service_home}/.openclaw/lobster-projection-api.sh" stop'
+ExecReload=/bin/bash -lc 'source "${env_file}" >/dev/null 2>&1 || true; "${service_home}/.openclaw/lobster-projection-api.sh" restart'
+PIDFile=/tmp/lobster-projection-api-${PROJECTION_API_PORT_DEFAULT}.pid
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+    cat <<EOF | run_as_root tee "$bridge_unit" >/dev/null
+[Unit]
+Description=Lobster OpenClaw Runtime Bridge
+After=network-online.target openclaw-gateway.service ${LOBSTER_PROJECTION_SERVICE_NAME}
+Wants=network-online.target
+
+[Service]
+Type=forking
+User=${service_user}
+Group=${service_group}
+WorkingDirectory=${service_home}
+EnvironmentFile=-${env_file}
+Environment=OPENCLAW_STATUS_URL=${gateway_status_url}
+Environment=PROJECTION_API_HOST=${PROJECTION_API_HOST_DEFAULT}
+Environment=PROJECTION_API_PORT=${PROJECTION_API_PORT_DEFAULT}
+Environment=PROJECTION_API_INGEST_URL=${projection_ingest_url}
+ExecStart=/bin/bash -lc 'source "${env_file}" >/dev/null 2>&1 || true; "${service_home}/.openclaw/lobster-openclaw-bridge.sh" start'
+ExecStop=/bin/bash -lc 'source "${env_file}" >/dev/null 2>&1 || true; "${service_home}/.openclaw/lobster-openclaw-bridge.sh" stop'
+ExecReload=/bin/bash -lc 'source "${env_file}" >/dev/null 2>&1 || true; "${service_home}/.openclaw/lobster-openclaw-bridge.sh" restart'
+PIDFile=/tmp/lobster-openclaw-bridge.pid
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+    run_as_root systemctl daemon-reload >/dev/null 2>&1 || true
+    run_as_root systemctl enable "$LOBSTER_WORLD_SERVICE_NAME" "$LOBSTER_PROJECTION_SERVICE_NAME" "$LOBSTER_BRIDGE_SERVICE_NAME" >/dev/null 2>&1 || true
+}
+
+start_pixel_house_stack_install() {
+    if pixel_house_systemd_available_install; then
+        install_pixel_house_systemd_units_install
+        run_as_root systemctl restart "$LOBSTER_PROJECTION_SERVICE_NAME" >/dev/null 2>&1 || true
+        run_as_root systemctl restart "$LOBSTER_BRIDGE_SERVICE_NAME" >/dev/null 2>&1 || true
+        run_as_root systemctl restart "$LOBSTER_WORLD_SERVICE_NAME" >/dev/null 2>&1 || true
+    else
+        PROJECTION_API_HOST="$PROJECTION_API_HOST_DEFAULT" PROJECTION_API_PORT="$PROJECTION_API_PORT_DEFAULT" \
+            "$CONFIG_DIR/lobster-projection-api.sh" restart >/dev/null 2>&1 || true
+        OPENCLAW_STATUS_URL="http://127.0.0.1:${GATEWAY_PORT}/status" PROJECTION_API_HOST="$PROJECTION_API_HOST_DEFAULT" \
+            PROJECTION_API_PORT="$PROJECTION_API_PORT_DEFAULT" PROJECTION_API_INGEST_URL="http://${PROJECTION_API_HOST_DEFAULT}:${PROJECTION_API_PORT_DEFAULT}/runtime/ingest" \
+            "$CONFIG_DIR/lobster-openclaw-bridge.sh" restart >/dev/null 2>&1 || true
+        STAR_BACKEND_HOST="0.0.0.0" STAR_BACKEND_PORT="$LOBSTER_WORLD_PORT_DEFAULT" \
+            "$CONFIG_DIR/lobster-world.sh" restart >/dev/null 2>&1 || true
+    fi
+}
+
+verify_pixel_house_ready_install() {
+    curl -fsS --max-time 3 "http://127.0.0.1:${LOBSTER_WORLD_PORT_DEFAULT}/health" 2>/dev/null | grep -q '"status":"ok"'
 }
 
 install_config_menu_launcher() {
@@ -3012,14 +3201,25 @@ setup_lobster_world_defaults_install() {
     log_step "配置像素小屋默认参数..."
     upsert_env_export_install "STAR_BACKEND_PORT" "$LOBSTER_WORLD_PORT_DEFAULT"
     upsert_env_export_install "STAR_BACKEND_HOST" "0.0.0.0"
+    upsert_env_export_install "PROJECTION_API_HOST" "$PROJECTION_API_HOST_DEFAULT"
+    upsert_env_export_install "PROJECTION_API_PORT" "$PROJECTION_API_PORT_DEFAULT"
+    upsert_env_export_install "OPENCLAW_STATUS_URL" "http://127.0.0.1:${GATEWAY_PORT}/status"
+    upsert_env_export_install "PROJECTION_API_INGEST_URL" "http://${PROJECTION_API_HOST_DEFAULT}:${PROJECTION_API_PORT_DEFAULT}/runtime/ingest"
 
     install_config_menu_launcher
-    install_lobster_world_launcher
+    install_pixel_house_launchers_install
 
     world_script="$(resolve_lobster_world_script_install || true)"
     if [ -n "$world_script" ]; then
-        log_info "像素小屋已就绪: $world_script"
-        log_info "默认访问地址: http://127.0.0.1:${LOBSTER_WORLD_PORT_DEFAULT}"
+        start_pixel_house_stack_install
+        if verify_pixel_house_ready_install; then
+            log_info "像素小屋已启动: http://127.0.0.1:${LOBSTER_WORLD_PORT_DEFAULT}"
+            if pixel_house_systemd_available_install; then
+                log_info "像素小屋已注册 systemd 服务：${LOBSTER_WORLD_SERVICE_NAME}"
+            fi
+        else
+            log_warn "像素小屋脚本已安装，但 19000 端口尚未就绪；可稍后执行: bash ~/.openclaw/config-menu.sh --install-pixel-house"
+        fi
     else
         log_warn "未检测到像素小屋服务脚本，稍后可执行配置菜单自动修复。"
     fi
