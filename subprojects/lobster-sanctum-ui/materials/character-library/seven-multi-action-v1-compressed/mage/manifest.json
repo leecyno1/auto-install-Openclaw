@@ -1,0 +1,303 @@
+{
+  "role_id": "mage",
+  "source_name": "Black Wizard",
+  "source_dir": "materials/character-sets/seven-multi-action-v1/Black Wizard",
+  "runtime_mapping": {
+    "idle": "Idle",
+    "working": "Running",
+    "sync": "Dying",
+    "error": "Hurt"
+  },
+  "action_total": 17,
+  "actions": [
+    {
+      "action_id": "dying",
+      "source_action": "Dying",
+      "normalized_name": "dying",
+      "source_dir": "materials/character-sets/seven-multi-action-v1/Black Wizard/PNG Sequences/Dying",
+      "sample_frame": "materials/character-sets/seven-multi-action-v1/Black Wizard/PNG Sequences/Dying/Dying_000.png",
+      "frame_count": 15,
+      "archive": {
+        "file": "actions/dying.webp",
+        "format": "webp",
+        "frame_width": 160,
+        "frame_height": 160,
+        "columns": 6,
+        "rows": 3,
+        "quality": 86
+      }
+    },
+    {
+      "action_id": "falling-down",
+      "source_action": "Falling Down",
+      "normalized_name": "falling down",
+      "source_dir": "materials/character-sets/seven-multi-action-v1/Black Wizard/PNG Sequences/Falling Down",
+      "sample_frame": "materials/character-sets/seven-multi-action-v1/Black Wizard/PNG Sequences/Falling Down/Falling Down_000.png",
+      "frame_count": 6,
+      "archive": {
+        "file": "actions/falling-down.webp",
+        "format": "webp",
+        "frame_width": 160,
+        "frame_height": 160,
+        "columns": 6,
+        "rows": 1,
+        "quality": 86
+      }
+    },
+    {
+      "action_id": "hurt",
+      "source_action": "Hurt",
+      "normalized_name": "hurt",
+      "source_dir": "materials/character-sets/seven-multi-action-v1/Black Wizard/PNG Sequences/Hurt",
+      "sample_frame": "materials/character-sets/seven-multi-action-v1/Black Wizard/PNG Sequences/Hurt/Hurt_000.png",
+      "frame_count": 12,
+      "archive": {
+        "file": "actions/hurt.webp",
+        "format": "webp",
+        "frame_width": 160,
+        "frame_height": 160,
+        "columns": 6,
+        "rows": 2,
+        "quality": 86
+      }
+    },
+    {
+      "action_id": "idle",
+      "source_action": "Idle",
+      "normalized_name": "idle",
+      "source_dir": "materials/character-sets/seven-multi-action-v1/Black Wizard/PNG Sequences/Idle",
+      "sample_frame": "materials/character-sets/seven-multi-action-v1/Black Wizard/PNG Sequences/Idle/Idle_000.png",
+      "frame_count": 18,
+      "archive": {
+        "file": "actions/idle.webp",
+        "format": "webp",
+        "frame_width": 160,
+        "frame_height": 160,
+        "columns": 6,
+        "rows": 3,
+        "quality": 86
+      }
+    },
+    {
+      "action_id": "idle-blinking",
+      "source_action": "Idle Blinking",
+      "normalized_name": "idle blinking",
+      "source_dir": "materials/character-sets/seven-multi-action-v1/Black Wizard/PNG Sequences/Idle Blinking",
+      "sample_frame": "materials/character-sets/seven-multi-action-v1/Black Wizard/PNG Sequences/Idle Blinking/Idle Blinking_000.png",
+      "frame_count": 18,
+      "archive": {
+        "file": "actions/idle-blinking.webp",
+        "format": "webp",
+        "frame_width": 160,
+        "frame_height": 160,
+        "columns": 6,
+        "rows": 3,
+        "quality": 86
+      }
+    },
+    {
+      "action_id": "jump-loop",
+      "source_action": "Jump Loop",
+      "normalized_name": "jump loop",
+      "source_dir": "materials/character-sets/seven-multi-action-v1/Black Wizard/PNG Sequences/Jump Loop",
+      "sample_frame": "materials/character-sets/seven-multi-action-v1/Black Wizard/PNG Sequences/Jump Loop/Jump Loop_000.png",
+      "frame_count": 6,
+      "archive": {
+        "file": "actions/jump-loop.webp",
+        "format": "webp",
+        "frame_width": 160,
+        "frame_height": 160,
+        "columns": 6,
+        "rows": 1,
+        "quality": 86
+      }
+    },
+    {
+      "action_id": "jump-start",
+      "source_action": "Jump Start",
+      "normalized_name": "jump start",
+      "source_dir": "materials/character-sets/seven-multi-action-v1/Black Wizard/PNG Sequences/Jump Start",
+      "sample_frame": "materials/character-sets/seven-multi-action-v1/Black Wizard/PNG Sequences/Jump Start/Jump Start_000.png",
+      "frame_count": 6,
+      "archive": {
+        "file": "actions/jump-start.webp",
+        "format": "webp",
+        "frame_width": 160,
+        "frame_height": 160,
+        "columns": 6,
+        "rows": 1,
+        "quality": 86
+      }
+    },
+    {
+      "action_id": "kicking",
+      "source_action": "Kicking",
+      "normalized_name": "kicking",
+      "source_dir": "materials/character-sets/seven-multi-action-v1/Black Wizard/PNG Sequences/Kicking",
+      "sample_frame": "materials/character-sets/seven-multi-action-v1/Black Wizard/PNG Sequences/Kicking/Kicking_000.png",
+      "frame_count": 12,
+      "archive": {
+        "file": "actions/kicking.webp",
+        "format": "webp",
+        "frame_width": 160,
+        "frame_height": 160,
+        "columns": 6,
+        "rows": 2,
+        "quality": 86
+      }
+    },
+    {
+      "action_id": "run-swinging-rod",
+      "source_action": "Run Swinging Rod",
+      "normalized_name": "run swinging rod",
+      "source_dir": "materials/character-sets/seven-multi-action-v1/Black Wizard/PNG Sequences/Run Swinging Rod",
+      "sample_frame": "materials/character-sets/seven-multi-action-v1/Black Wizard/PNG Sequences/Run Swinging Rod/Run Swinging Rod_000.png",
+      "frame_count": 12,
+      "archive": {
+        "file": "actions/run-swinging-rod.webp",
+        "format": "webp",
+        "frame_width": 160,
+        "frame_height": 160,
+        "columns": 6,
+        "rows": 2,
+        "quality": 86
+      }
+    },
+    {
+      "action_id": "run-throwing",
+      "source_action": "Run Throwing",
+      "normalized_name": "run throwing",
+      "source_dir": "materials/character-sets/seven-multi-action-v1/Black Wizard/PNG Sequences/Run Throwing",
+      "sample_frame": "materials/character-sets/seven-multi-action-v1/Black Wizard/PNG Sequences/Run Throwing/Run Throwing_000.png",
+      "frame_count": 12,
+      "archive": {
+        "file": "actions/run-throwing.webp",
+        "format": "webp",
+        "frame_width": 160,
+        "frame_height": 160,
+        "columns": 6,
+        "rows": 2,
+        "quality": 86
+      }
+    },
+    {
+      "action_id": "running",
+      "source_action": "Running",
+      "normalized_name": "running",
+      "source_dir": "materials/character-sets/seven-multi-action-v1/Black Wizard/PNG Sequences/Running",
+      "sample_frame": "materials/character-sets/seven-multi-action-v1/Black Wizard/PNG Sequences/Running/Running_000.png",
+      "frame_count": 12,
+      "archive": {
+        "file": "actions/running.webp",
+        "format": "webp",
+        "frame_width": 160,
+        "frame_height": 160,
+        "columns": 6,
+        "rows": 2,
+        "quality": 86
+      }
+    },
+    {
+      "action_id": "sliding",
+      "source_action": "Sliding",
+      "normalized_name": "sliding",
+      "source_dir": "materials/character-sets/seven-multi-action-v1/Black Wizard/PNG Sequences/Sliding",
+      "sample_frame": "materials/character-sets/seven-multi-action-v1/Black Wizard/PNG Sequences/Sliding/Sliding_000.png",
+      "frame_count": 6,
+      "archive": {
+        "file": "actions/sliding.webp",
+        "format": "webp",
+        "frame_width": 160,
+        "frame_height": 160,
+        "columns": 6,
+        "rows": 1,
+        "quality": 86
+      }
+    },
+    {
+      "action_id": "swinging-rod",
+      "source_action": "Swinging Rod",
+      "normalized_name": "swinging rod",
+      "source_dir": "materials/character-sets/seven-multi-action-v1/Black Wizard/PNG Sequences/Swinging Rod",
+      "sample_frame": "materials/character-sets/seven-multi-action-v1/Black Wizard/PNG Sequences/Swinging Rod/Swinging Rod_000.png",
+      "frame_count": 12,
+      "archive": {
+        "file": "actions/swinging-rod.webp",
+        "format": "webp",
+        "frame_width": 160,
+        "frame_height": 160,
+        "columns": 6,
+        "rows": 2,
+        "quality": 86
+      }
+    },
+    {
+      "action_id": "swinging-rod-in-the-air",
+      "source_action": "Swinging Rod in The Air",
+      "normalized_name": "swinging rod in the air",
+      "source_dir": "materials/character-sets/seven-multi-action-v1/Black Wizard/PNG Sequences/Swinging Rod in The Air",
+      "sample_frame": "materials/character-sets/seven-multi-action-v1/Black Wizard/PNG Sequences/Swinging Rod in The Air/Swingin Rod in The Air_000.png",
+      "frame_count": 12,
+      "archive": {
+        "file": "actions/swinging-rod-in-the-air.webp",
+        "format": "webp",
+        "frame_width": 160,
+        "frame_height": 160,
+        "columns": 6,
+        "rows": 2,
+        "quality": 86
+      }
+    },
+    {
+      "action_id": "throwing",
+      "source_action": "Throwing",
+      "normalized_name": "throwing",
+      "source_dir": "materials/character-sets/seven-multi-action-v1/Black Wizard/PNG Sequences/Throwing",
+      "sample_frame": "materials/character-sets/seven-multi-action-v1/Black Wizard/PNG Sequences/Throwing/Throwing_000.png",
+      "frame_count": 12,
+      "archive": {
+        "file": "actions/throwing.webp",
+        "format": "webp",
+        "frame_width": 160,
+        "frame_height": 160,
+        "columns": 6,
+        "rows": 2,
+        "quality": 86
+      }
+    },
+    {
+      "action_id": "throwing-in-the-air",
+      "source_action": "Throwing in The Air",
+      "normalized_name": "throwing in the air",
+      "source_dir": "materials/character-sets/seven-multi-action-v1/Black Wizard/PNG Sequences/Throwing in The Air",
+      "sample_frame": "materials/character-sets/seven-multi-action-v1/Black Wizard/PNG Sequences/Throwing in The Air/Throwing in The Air_000.png",
+      "frame_count": 12,
+      "archive": {
+        "file": "actions/throwing-in-the-air.webp",
+        "format": "webp",
+        "frame_width": 160,
+        "frame_height": 160,
+        "columns": 6,
+        "rows": 2,
+        "quality": 86
+      }
+    },
+    {
+      "action_id": "walking",
+      "source_action": "Walking",
+      "normalized_name": "walking",
+      "source_dir": "materials/character-sets/seven-multi-action-v1/Black Wizard/PNG Sequences/Walking",
+      "sample_frame": "materials/character-sets/seven-multi-action-v1/Black Wizard/PNG Sequences/Walking/Walking_000.png",
+      "frame_count": 24,
+      "archive": {
+        "file": "actions/walking.webp",
+        "format": "webp",
+        "frame_width": 160,
+        "frame_height": 160,
+        "columns": 6,
+        "rows": 4,
+        "quality": 86
+      }
+    }
+  ]
+}

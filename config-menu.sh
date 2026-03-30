@@ -41,16 +41,29 @@ resolve_onboard_term_menu() {
     esac
 }
 
+allow_noninteractive_shortcut_menu() {
+    case "${1:-}" in
+        --repair-config|--install-pixel-house) return 0 ;;
+        *) return 1 ;;
+    esac
+}
+
 if ! TTY_INPUT="$(resolve_tty_input)"; then
-    echo "错误: 无法获取终端输入，请直接运行此脚本"
-    echo "用法: bash config-menu.sh"
-    exit 1
+    if allow_noninteractive_shortcut_menu "${1:-}"; then
+        TTY_INPUT="/dev/null"
+    else
+        echo "错误: 无法获取终端输入，请直接运行此脚本"
+        echo "用法: bash config-menu.sh"
+        exit 1
+    fi
 fi
 
 if [ "$TTY_INPUT" = "/dev/stdin" ] && [ ! -t 0 ]; then
-    echo "错误: 当前会话不可交互（stdin 非终端，且 /dev/tty 不可用）"
-    echo "请在可交互终端中运行: bash config-menu.sh"
-    exit 1
+    if ! allow_noninteractive_shortcut_menu "${1:-}"; then
+        echo "错误: 当前会话不可交互（stdin 非终端，且 /dev/tty 不可用）"
+        echo "请在可交互终端中运行: bash config-menu.sh"
+        exit 1
+    fi
 fi
 
 # 统一的读取函数（支持非 TTY 模式）
@@ -117,6 +130,8 @@ DEFAULT_GATEWAY_BIND="${OPENCLAW_GATEWAY_BIND:-loopback}"
 DEFAULT_GATEWAY_HOST="${OPENCLAW_GATEWAY_HOST:-127.0.0.1}"
 DEFAULT_GATEWAY_CUSTOM_BIND_HOST="${OPENCLAW_GATEWAY_CUSTOM_BIND_HOST:-}"
 DEFAULT_GATEWAY_PORT="${OPENCLAW_GATEWAY_PORT:-13145}"
+DEFAULT_PROJECTION_API_HOST="${PROJECTION_API_HOST:-127.0.0.1}"
+DEFAULT_PROJECTION_API_PORT="${PROJECTION_API_PORT:-19100}"
 
 # 飞书插件策略（仅官方插件，支持版本 pin）
 FEISHU_PLUGIN_OFFICIAL="@openclaw/feishu"
@@ -182,6 +197,7 @@ UNOFFICIAL_ROUTING_DEFAULT_FAILOVER="${OPENCLAW_UNOFFICIAL_ROUTING_FAILOVER:-1}"
 SKILL_PIP_PACKAGES_DEFAULT="duckduckgo-search akshare requests pyyaml pypdf pillow openpyxl python-pptx python-docx lxml defusedxml pdf2image"
 SKILL_PIP_PACKAGES="${OPENCLAW_SKILL_PIP_PACKAGES:-$SKILL_PIP_PACKAGES_DEFAULT}"
 SKILL_PIP_PACKAGES_FILE_REL="skills/requirements-runtime.txt"
+DEFAULT_SKILLS_BUNDLE_SENTINELS="agentmail agentmail-cli agentmail-mcp agentmail-toolkit content-strategy social-content ai-image-generation media-downloader minimax-web-search subagent-driven-development using-superpowers verification-before-completion writing-skills lark-calendar notebooklm-skill"
 WELCOME_DOC_URL_GITEE="https://gitee.com/leecyno1/auto-install-openclaw/blob/main/docs/channels-configuration-guide.md"
 WELCOME_DOC_URL_GITHUB="https://github.com/leecyno1/auto-install-Openclaw/blob/main/docs/channels-configuration-guide.md"
 PERSONA_ROLE_MENU_SELECTED="$(echo "${OPENCLAW_PERSONA_ROLE:-druid}" | tr '[:upper:]' '[:lower:]')"
@@ -1143,6 +1159,7 @@ refresh_game_progress_profile_menu() {
     max_tokens="$(echo "$limits" | awk '{print $3}')"
     max_tokens_per_req="$(echo "$limits" | awk '{print $4}')"
 
+    config_dir="$CONFIG_DIR" \
     role_id="$role_id" \
     role_name="$role_name" \
     role_emoji="$role_emoji" \
@@ -1166,6 +1183,7 @@ refresh_game_progress_profile_menu() {
 import json
 import math
 import os
+import re
 import sys
 import time
 from datetime import datetime, timezone
@@ -1173,6 +1191,9 @@ from datetime import datetime, timezone
 profile_path = os.path.expanduser(sys.argv[1])
 progress_path = os.path.expanduser(sys.argv[2])
 achv_path = os.path.expanduser(sys.argv[3])
+config_dir = os.path.expanduser(os.environ.get("config_dir", os.path.join("~", ".openclaw")))
+sessions_root = os.path.join(config_dir, "agents", "main", "sessions")
+logs_root = os.path.join(config_dir, "logs")
 
 role_id = os.environ.get("role_id", "druid")
 role_name = os.environ.get("role_name", "综合助理（通用）")
@@ -1234,26 +1255,187 @@ def read_json(path, default):
         pass
     return default
 
+def list_runtime_files(paths):
+    files = []
+    for root in paths:
+        if not root or not os.path.isdir(root):
+            continue
+        try:
+            for name in os.listdir(root):
+                full = os.path.join(root, name)
+                if os.path.isdir(full):
+                    try:
+                        for sub in os.listdir(full):
+                            sub_path = os.path.join(full, sub)
+                            if os.path.isfile(sub_path):
+                                files.append(sub_path)
+                    except Exception:
+                        continue
+                elif os.path.isfile(full):
+                    files.append(full)
+        except Exception:
+            continue
+    files = list(dict.fromkeys(files))
+    files.sort(key=lambda p: os.path.getmtime(p) if os.path.exists(p) else 0, reverse=True)
+    return files[:260]
+
+def read_text(path, max_bytes=280000):
+    try:
+        size = os.path.getsize(path)
+        with open(path, "rb") as f:
+            if size > max_bytes:
+                f.seek(max(0, size - max_bytes))
+            data = f.read(max_bytes)
+        return data.decode("utf-8", errors="ignore")
+    except Exception:
+        return ""
+
+def collect_runtime_signals():
+    files = list_runtime_files([sessions_root, logs_root])
+    if not files:
+        return {
+            "earliest": 0,
+            "latest": 0,
+            "tokens": 0,
+            "completed": 0,
+            "success": 0,
+            "failed": 0,
+            "sessionFiles": 0,
+            "textBlob": "",
+        }
+
+    earliest = int(time.time())
+    latest = 0
+    session_files = 0
+    tokens = 0
+    completed = 0
+    success = 0
+    failed = 0
+    chunks = []
+
+    token_regex = re.compile(r'"(?:total_tokens|tokens_used|tokensUsed)"\s*:\s*(\d+)', re.I)
+    completed_regex = re.compile(r'"status"\s*:\s*"(?:completed|done|success)"|(?:task|任务).{0,8}(?:completed|完成)', re.I)
+    success_regex = re.compile(r'"success"\s*:\s*true|"status"\s*:\s*"success"', re.I)
+    failed_regex = re.compile(r'"success"\s*:\s*false|"status"\s*:\s*"(?:failed|error|cancelled|timeout)"|(?:task|任务).{0,8}(?:failed|失败|error)', re.I)
+
+    for path in files:
+        try:
+            mt = int(os.path.getmtime(path))
+            earliest = min(earliest, mt)
+            latest = max(latest, mt)
+            if path.startswith(sessions_root):
+                session_files += 1
+        except Exception:
+            pass
+
+        text = read_text(path)
+        if not text:
+            continue
+        chunks.append(text[:18000])
+        for m in token_regex.findall(text):
+            try:
+                tokens += int(m)
+            except Exception:
+                pass
+        completed += len(completed_regex.findall(text))
+        success += len(success_regex.findall(text))
+        failed += len(failed_regex.findall(text))
+
+    return {
+        "earliest": earliest if earliest <= int(time.time()) else 0,
+        "latest": latest,
+        "tokens": max(0, tokens),
+        "completed": max(0, completed),
+        "success": max(0, success),
+        "failed": max(0, failed),
+        "sessionFiles": max(0, session_files),
+        "textBlob": "\n".join(chunks).lower(),
+    }
+
+def detect_skill_usage(text_blob):
+    installed_names = []
+    if os.path.isdir(os.path.join(config_dir, "skills")):
+        try:
+            for name in os.listdir(os.path.join(config_dir, "skills")):
+                full = os.path.join(config_dir, "skills", name)
+                if os.path.isdir(full):
+                    installed_names.append(name)
+        except Exception:
+            pass
+    used = set()
+    blob = text_blob or ""
+    for name in installed_names:
+        key = (name or "").strip().lower()
+        if not key:
+            continue
+        variants = {key, key.replace("-", "_"), key.replace("_", "-")}
+        if any(v and v in blob for v in variants):
+            used.add(name)
+    return len(installed_names), len(used)
+
 now_epoch = int(time.time())
 now_iso = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 profile = read_json(profile_path, {})
 progress = read_json(progress_path, {})
 achievements = read_json(achv_path, {})
+runtime_signals = collect_runtime_signals()
+installed_skills_auto, used_skills_count = detect_skill_usage(runtime_signals.get("textBlob", ""))
 
 first_seen_epoch = to_int(progress.get("firstSeenEpoch"), 0)
 if first_seen_epoch <= 0:
     first_seen_epoch = to_int(profile.get("firstSeenEpoch"), 0)
+if runtime_signals.get("earliest", 0) > 0 and (
+    first_seen_epoch <= 0 or runtime_signals["earliest"] < first_seen_epoch
+):
+    first_seen_epoch = runtime_signals["earliest"]
 if first_seen_epoch <= 0 or first_seen_epoch > now_epoch:
     first_seen_epoch = now_epoch
 
 hours_played = round(max(0, now_epoch - first_seen_epoch) / 3600.0, 2)
-tokens_used = max(0, to_int(tokens_used_in, to_int(progress.get("stats", {}).get("tokensUsed"), 0)))
-tasks_completed = max(0, to_int(tasks_completed_in, to_int(progress.get("stats", {}).get("tasksCompleted"), 0)))
-tasks_success = max(0, to_int(tasks_success_in, to_int(progress.get("stats", {}).get("tasksSuccess"), 0)))
+tokens_used = max(
+    0,
+    to_int(tokens_used_in, -1),
+    to_int(progress.get("stats", {}).get("tokensUsed"), 0),
+    to_int(runtime_signals.get("tokens"), 0),
+)
+tasks_completed = max(
+    0,
+    to_int(tasks_completed_in, -1),
+    to_int(progress.get("stats", {}).get("tasksCompleted"), 0),
+    to_int(runtime_signals.get("completed"), 0),
+)
+tasks_success = max(
+    0,
+    to_int(tasks_success_in, -1),
+    to_int(progress.get("stats", {}).get("tasksSuccess"), 0),
+    to_int(runtime_signals.get("success"), 0),
+)
+if tasks_completed <= 0 and runtime_signals.get("sessionFiles", 0) > 0:
+    tasks_completed = int(runtime_signals["sessionFiles"])
+if tasks_success <= 0 and tasks_completed > 0:
+    failed_hint = min(tasks_completed, to_int(runtime_signals.get("failed"), 0))
+    if failed_hint > 0:
+        tasks_success = max(0, tasks_completed - failed_hint)
+    else:
+        tasks_success = max(1, int(round(tasks_completed * 0.82)))
 if tasks_success > tasks_completed:
     tasks_success = tasks_completed
 success_rate = round((tasks_success / tasks_completed), 4) if tasks_completed > 0 else 0.0
+
+installed_skills_total = max(to_int(installed_skills_count, 0), installed_skills_auto)
+skill_usage_rate = round((used_skills_count / installed_skills_total) * 100, 2) if installed_skills_total > 0 else 0.0
+if skill_usage_rate <= 0 and installed_skills_total > 0 and tasks_completed > 0:
+    skill_usage_rate = round(min(100.0, (tasks_completed / installed_skills_total) * 100), 2)
+
+tokens_per_success = round(tokens_used / max(1, tasks_success), 2) if tasks_success > 0 else float(tokens_used)
+if tasks_completed <= 0:
+    user_dissatisfaction = 35.0 if tokens_used > 0 else 0.0
+else:
+    failure_ratio = 1.0 - success_rate
+    token_pressure = min(1.0, (tokens_per_success / 200000.0) if tasks_success > 0 else 1.0)
+    skill_idle = max(0.0, 1.0 - (skill_usage_rate / 100.0))
+    user_dissatisfaction = round(min(100.0, (failure_ratio * 0.55 + token_pressure * 0.25 + skill_idle * 0.20) * 100), 1)
 
 if success_rate >= 0.90:
     success_bonus = 120
@@ -1325,7 +1507,13 @@ progress_data = {
         "tasksCompleted": tasks_completed,
         "tasksSuccess": tasks_success,
         "successRate": success_rate,
-        "installedSkillsCount": to_int(installed_skills_count, 0),
+        "installedSkillsCount": installed_skills_total,
+        "usedSkillsCount": used_skills_count,
+        "skillUsageRate": skill_usage_rate,
+        "tokensPerSuccess": tokens_per_success,
+        "userDissatisfaction": user_dissatisfaction,
+        "sessionFilesCount": to_int(runtime_signals.get("sessionFiles"), 0),
+        "signalsSource": "sessions/logs+env+cached",
     },
     "skillTree": {
         "recommendedTier": tier,
@@ -1405,6 +1593,11 @@ completed = stats.get("tasksCompleted", 0)
 success = stats.get("tasksSuccess", 0)
 rate = float(stats.get("successRate", 0) or 0)
 skills_count = stats.get("installedSkillsCount", 0)
+used_skills = stats.get("usedSkillsCount", 0)
+skill_usage_rate = float(stats.get("skillUsageRate", 0) or 0)
+tokens_per_success = float(stats.get("tokensPerSuccess", 0) or 0)
+user_dissatisfaction = float(stats.get("userDissatisfaction", 0) or 0)
+signals_source = stats.get("signalsSource", "cached")
 tier = skill_tree.get("recommendedTier", "basic")
 main_model = gear.get("mainModel", "未配置")
 fallback_model = gear.get("fallbackModel", "未配置")
@@ -1431,12 +1624,16 @@ print(f"  📈 执行评级: Lv.{level}   XP: {xp}/{xp_next}   进度: [{bar}] {
 print(f"  ⏱ 使用时长: {hours} 小时")
 print(f"  🔢 Token消耗: {tokens}")
 print(f"  ✅ 任务完成: {completed}   成功: {success}   成功率: {rate*100:.1f}%")
+print(f"  ⚖️ Token/成功任务比: {tokens_per_success:,.2f}")
+print(f"  🛠 Skill使用率: {skill_usage_rate:.1f}%   使用技能: {used_skills}/{skills_count}")
+print(f"  😠 用户不满度: {user_dissatisfaction:.1f}%")
 print(f"  🧩 Skills 分层: {tier_label}   已安装技能: {skills_count}")
 print(f"  🤖 主模型: {main_model}")
 print(f"  🧯 兜底模型: {fallback_model}")
 print(f"  🧠 记忆模块: boot-md {boot_md} / session-memory {session_memory}")
 print(f"  🔒 安全模块: sandbox {sandbox}")
 print(f"  📜 token规划与安全规则: {rule_profile} 档（{window}小时/{max_req}次, token上限 {max_tok}）")
+print(f"  🧭 统计来源: {signals_source}")
 PYEOF
 }
 
@@ -1591,7 +1788,7 @@ print_equipment_slots_menu() {
     echo -e "  🤖 主模型: ${WHITE}${main_model}${NC}"
     echo -e "  🧯 兜底模型: ${WHITE}${fallback_model}${NC}"
     echo -e "  🧠 记忆设置: ${WHITE}boot-md=${boot_md} | session-memory=${session_memory}${NC}"
-    echo -e "  🔒 安全设置: ${WHITE}sandbox=${sandbox_mode}${NC}"
+    echo -e "  🔒 权限设置: ${WHITE}sandbox=${sandbox_mode}${NC}"
     echo -e "  🖼️ 启航AI: ${WHITE}${qihang_url:-未配置} | ${qihang_model:-未配置} / ${qihang_model_seedream46:-未配置}${NC}"
     echo -e "  🎬 模力方舟: ${WHITE}${molifang_url:-未配置} | ${molifang_model_qwen:-未配置} / ${molifang_model_glm:-未配置}${NC}"
     echo -e "  📜 规则档位（token）: ${WHITE}${rule_profile}${NC}"
@@ -1996,8 +2193,13 @@ apply_profile_skill_policy_menu() {
         src="$bundle_dir/$name"
         dst="$target_dir/$name"
         if [ ! -d "$src" ]; then
-            missing=$((missing + 1))
-            log_warn "技能包缺失: $name"
+            if [ -d "$dst" ] && [ "$force_update" != "1" ]; then
+                skipped=$((skipped + 1))
+                log_warn "包源缺失但本机已安装，保留: $name"
+            else
+                missing=$((missing + 1))
+                log_warn "技能包缺失: $name"
+            fi
             continue
         fi
         if [ -d "$dst" ] && [ "$force_update" != "1" ]; then
@@ -3335,8 +3537,8 @@ show_status() {
         print_menu_item "1" "刷新运行统计" "⭐"
         print_menu_item "2" "查看 OpenClaw 状态" "📡"
         print_menu_item "3" "查看 Gateway 健康" "💚"
-        print_menu_item "4" "运行诊断并修复" "🩺"
-        print_menu_item "5" "运行里程碑（占位）" "📈"
+        print_menu_item "4" "查看实时日志" "📋"
+        print_menu_item "5" "前往服务管理（诊断修复）" "🩺"
         print_menu_item "0" "返回主菜单" "↩️"
         echo ""
         echo -en "${YELLOW}请选择 [0-5]: ${NC}"
@@ -3365,16 +3567,16 @@ show_status() {
             4)
                 echo ""
                 if check_openclaw_installed; then
-                    openclaw doctor --fix || true
+                    echo -e "${CYAN}按 Ctrl+C 退出日志查看${NC}"
+                    sleep 1
+                    openclaw logs --follow
                 else
                     log_error "OpenClaw 未安装"
                 fi
-                press_enter
                 ;;
             5)
-                echo ""
-                show_achievements_bounties_menu || true
-                press_enter
+                manage_service
+                return
                 ;;
             0)
                 return
@@ -8165,12 +8367,18 @@ config_identity() {
     openclaw config set identity.role.name "$PERSONA_ROLE_NAME_MENU" >/dev/null 2>&1 || true
     openclaw config set identity.role.emoji "$PERSONA_ROLE_EMOJI_MENU" >/dev/null 2>&1 || true
     openclaw config set identity.role.description "$PERSONA_ROLE_DESC_MENU" >/dev/null 2>&1 || true
+    openclaw config set vendor.control.persona.role.id "$PERSONA_ROLE_MENU_SELECTED" >/dev/null 2>&1 || true
+    openclaw config set vendor.control.persona.role.name "$PERSONA_ROLE_NAME_MENU" >/dev/null 2>&1 || true
     openclaw config set identity.greeting "$greeting" >/dev/null 2>&1 || true
     openclaw config set identity.welcome.message "$welcome_message" >/dev/null 2>&1 || true
     openclaw config unset identity.welcome.channel 2>/dev/null || true
     openclaw config unset identity.welcome.target 2>/dev/null || true
     openclaw config set "boot-md.enabled" true >/dev/null 2>&1 || true
     openclaw config set "session-memory.enabled" true >/dev/null 2>&1 || true
+    upsert_env_export "OPENCLAW_ASSISTANT_NAME" "$bot_name"
+    upsert_env_export "OPENCLAW_USER_NAME" "$user_name"
+    upsert_env_export "OPENCLAW_REGION" "$region"
+    upsert_env_export "OPENCLAW_TIMEZONE" "$timezone"
     upsert_env_export "OPENCLAW_WELCOME_MESSAGE" "$welcome_message"
     upsert_env_export "OPENCLAW_PERSONA_ROLE" "$PERSONA_ROLE_MENU_SELECTED"
     upsert_env_export "OPENCLAW_ASSISTANT_EMOJI" "$PERSONA_ROLE_EMOJI_MENU"
@@ -8244,13 +8452,13 @@ EOF
     press_enter
 }
 
-# ================================ 安全配置 ================================
+# ================================ 权限配置 ================================
 
 config_security() {
     clear_screen
     print_header
     
-    echo -e "${WHITE}🔒 安全配置${NC}"
+    echo -e "${WHITE}🔒 权限设置${NC}"
     print_divider
     echo ""
     
@@ -8396,7 +8604,31 @@ refresh_cached_installer_repo_menu() {
     return 0
 }
 
+count_missing_default_skill_sentinels_menu() {
+    local check_dir="$1"
+    local missing=0
+    local skill_name
+    [ -d "$check_dir" ] || {
+        echo 9999
+        return 0
+    }
+    for skill_name in $DEFAULT_SKILLS_BUNDLE_SENTINELS; do
+        [ -d "$check_dir/$skill_name" ] || missing=$((missing + 1))
+    done
+    echo "$missing"
+}
+
+is_default_skills_bundle_usable_menu() {
+    local check_dir="$1"
+    local missing_count=0
+    [ -d "$check_dir" ] || return 1
+    missing_count="$(count_missing_default_skill_sentinels_menu "$check_dir")"
+    [ "${missing_count:-9999}" -le 4 ]
+}
+
 resolve_default_skills_bundle_dir() {
+    local candidate
+    local local_candidates
     local script_dir
     local bundle_dir
     local cache_root
@@ -8406,11 +8638,22 @@ resolve_default_skills_bundle_dir() {
     local url
 
     script_dir="$(get_config_menu_script_dir)"
-    bundle_dir="$script_dir/skills/default"
-    if [ -d "$bundle_dir" ]; then
-        echo "$bundle_dir"
-        return 0
-    fi
+    local_candidates="$(cat <<EOF
+${OPENCLAW_SKILLS_BUNDLE_DIR:-}
+$script_dir/skills/default
+$(pwd)/skills/default
+$HOME/auto-install-openclaw/skills/default
+$HOME/auto-install-Openclaw/skills/default
+$HOME/OpenClawInstaller/skills/default
+EOF
+)"
+    for candidate in $local_candidates; do
+        [ -d "$candidate" ] || continue
+        if is_default_skills_bundle_usable_menu "$candidate"; then
+            echo "$candidate"
+            return 0
+        fi
+    done
 
     cache_root="$CONFIG_DIR/.cache"
     cache_repo="$cache_root/auto-install-openclaw-repo"
@@ -8421,8 +8664,12 @@ resolve_default_skills_bundle_dir() {
         if command -v git >/dev/null 2>&1 && [ "${OPENCLAW_REFRESH_SKILLS_CACHE:-1}" = "1" ]; then
             refresh_cached_installer_repo_menu "$cache_repo" >/dev/null 2>&1 || true
         fi
-        echo "$cache_bundle"
-        return 0
+        if is_default_skills_bundle_usable_menu "$cache_bundle"; then
+            echo "$cache_bundle"
+            return 0
+        fi
+        log_warn "检测到缓存技能包不完整，正在重建缓存..."
+        rm -rf "$cache_repo" 2>/dev/null || true
     fi
 
     if ! command -v git >/dev/null 2>&1; then
@@ -8435,7 +8682,7 @@ resolve_default_skills_bundle_dir() {
     for url in $(get_installer_repo_urls); do
         rm -rf "$tmp_repo" 2>/dev/null || true
         tmp_repo="$(mktemp -d "$cache_root/repo.XXXXXX")"
-        if git clone --depth 1 "$url" "$tmp_repo" >/dev/null 2>&1 && [ -d "$tmp_repo/skills/default" ]; then
+        if git clone --depth 1 "$url" "$tmp_repo" >/dev/null 2>&1 && [ -d "$tmp_repo/skills/default" ] && is_default_skills_bundle_usable_menu "$tmp_repo/skills/default"; then
             rm -rf "$cache_repo" 2>/dev/null || true
             mv "$tmp_repo" "$cache_repo"
             echo "$cache_repo/skills/default"
@@ -8510,8 +8757,13 @@ sync_named_skills_from_bundle() {
         dst="$target_dir/$name"
 
         if [ ! -d "$src" ]; then
-            missing=$((missing + 1))
-            log_warn "技能包缺失: $name"
+            if [ -d "$dst" ]; then
+                skipped=$((skipped + 1))
+                log_warn "包源缺失但本机已安装，保留: $name"
+            else
+                missing=$((missing + 1))
+                log_warn "技能包缺失: $name"
+            fi
             continue
         fi
 
@@ -8532,10 +8784,19 @@ list_enhanced_skills_status() {
     local bundle_dir=""
     local name
     bundle_dir="$(resolve_default_skills_bundle_dir 2>/dev/null || true)"
+    if [ -n "$bundle_dir" ]; then
+        echo -e "  ${CYAN}当前包源目录:${NC} ${WHITE}${bundle_dir}${NC}"
+    else
+        echo -e "  ${YELLOW}当前包源目录不可用，将仅显示本机已安装状态${NC}"
+    fi
     for name in $ENHANCED_SKILLS_LIST; do
         local tag_bundle="${RED}缺失${NC}"
         local tag_installed="${RED}未安装${NC}"
-        [ -n "$bundle_dir" ] && [ -d "$bundle_dir/$name" ] && tag_bundle="${GREEN}可安装${NC}"
+        if [ -n "$bundle_dir" ] && [ -d "$bundle_dir/$name" ]; then
+            tag_bundle="${GREEN}可安装${NC}"
+        elif [ -d "$CONFIG_DIR/skills/$name" ]; then
+            tag_bundle="${YELLOW}包源缺失（本机可用）${NC}"
+        fi
         [ -d "$CONFIG_DIR/skills/$name" ] && tag_installed="${GREEN}已安装${NC}"
         echo -e "  - ${WHITE}${name}${NC} | 包源: ${tag_bundle} | 本机: ${tag_installed}"
     done
@@ -8759,7 +9020,7 @@ install_default_official_plugins_menu() {
 manage_official_plugins() {
     clear_screen
     print_header
-    echo -e "${WHITE}🧭 默认消息插件管理${NC}"
+    echo -e "${WHITE}🧭 官方渠道插件管理${NC}"
     print_divider
     echo ""
 
@@ -8769,19 +9030,21 @@ manage_official_plugins() {
         return
     fi
 
-    print_menu_item "1" "查看当前插件列表" "📋"
-    print_menu_item "2" "安装默认消息插件集（官方优先+本地兜底）" "📦"
-    print_menu_item "3" "更新全部插件" "⬆️"
-    print_menu_item "4" "跳转官方 Skills 设置" "🚀"
+    print_menu_item "1" "查看当前官方插件列表" "📋"
+    print_menu_item "2" "安装默认官方渠道插件（官方优先+本地兜底）" "📦"
+    print_menu_item "3" "更新全部官方插件" "⬆️"
+    print_menu_item "4" "官方渠道配置向导（按渠道）" "📡"
+    print_menu_item "5" "跳转官方 Skills/Plugins 设置" "🚀"
     print_menu_item "0" "返回上级菜单" "↩️"
     echo ""
-    read_input "${YELLOW}请选择 [0-4]: ${NC}" official_choice
+    read_input "${YELLOW}请选择 [0-5]: ${NC}" official_choice
 
     case "$official_choice" in
         1) openclaw plugins list 2>/dev/null | head -80 || log_warn "无法读取插件列表" ;;
         2) install_default_official_plugins_menu ;;
         3) openclaw plugins update --all ;;
-        4) open_official_skills_settings ;;
+        4) config_channels_official ;;
+        5) open_official_skills_settings ;;
         0) return ;;
         *) log_error "无效选择" ;;
     esac
@@ -9247,11 +9510,11 @@ openclaw_uninstall_menu() {
 manage_service() {
     clear_screen
     print_header
-    
+
     echo -e "${WHITE}⚡ 服务管理${NC}"
     print_divider
     echo ""
-    
+
     # 使用端口检测判断服务状态（更可靠）
     local menu_status_pid
     menu_status_pid=$(get_gateway_pid)
@@ -9261,24 +9524,24 @@ manage_service() {
         echo -e "  当前状态: ${RED}● 已停止${NC}"
     fi
     echo ""
-    
+
     print_menu_item "1" "启动服务" "▶️"
     print_menu_item "2" "停止服务" "⏹️"
     print_menu_item "3" "重启服务" "🔄"
-    print_menu_item "4" "查看状态" "📊"
-    print_menu_item "5" "查看日志" "📋"
-    print_menu_item "6" "运行诊断并修复" "🔍"
-    print_menu_item "7" "安装为系统服务" "⚙️"
-    print_menu_item "9" "修改 Gateway 地址/端口" "🌐"
+    print_menu_item "4" "运行诊断与配置修复" "🔍"
+    print_menu_item "5" "连通性测试（API/渠道）" "🧪"
+    print_menu_item "6" "安装为系统服务" "⚙️"
+    print_menu_item "7" "修改 Gateway 地址/端口" "🌐"
     echo ""
     echo -e "  ${RED}[8]${NC} 🗑️  卸载 OpenClaw"
+    echo -e "  ${GRAY}说明: 安装为系统服务会注册 openclaw-gateway.service（开机自启、单实例守护、统一管理）。${NC}"
     echo ""
     print_menu_item "0" "返回主菜单" "↩️"
     echo ""
-    
-    echo -en "${YELLOW}请选择 [0-9]: ${NC}"
+
+    echo -en "${YELLOW}请选择 [0-8]: ${NC}"
     read choice < "$TTY_INPUT"
-    
+
     case $choice in
         1)
             echo ""
@@ -9318,7 +9581,6 @@ manage_service() {
             if check_openclaw_installed; then
                 openclaw gateway stop 2>/dev/null || true
                 sleep 1
-                # 使用端口检测判断服务是否已停止（更可靠）
                 local stop_pid
                 stop_pid=$(get_gateway_pid)
                 if [ -z "$stop_pid" ]; then
@@ -9342,30 +9604,21 @@ manage_service() {
         4)
             echo ""
             if check_openclaw_installed; then
-                openclaw status
+                if repair_runtime_config_preserve_data "1"; then
+                    log_info "诊断与配置修复完成"
+                else
+                    log_error "诊断与配置修复失败，请检查日志后重试"
+                fi
             else
                 log_error "OpenClaw 未安装"
             fi
             ;;
         5)
-            echo ""
-            if check_openclaw_installed; then
-                echo -e "${CYAN}按 Ctrl+C 退出日志查看${NC}"
-                sleep 1
-                openclaw logs --follow
-            else
-                log_error "OpenClaw 未安装"
-            fi
+            quick_test_menu
+            manage_service
+            return
             ;;
         6)
-            echo ""
-            if check_openclaw_installed; then
-                openclaw doctor --fix
-            else
-                log_error "OpenClaw 未安装"
-            fi
-            ;;
-        7)
             echo ""
             if check_openclaw_installed; then
                 local svc_bind svc_port svc_custom_host
@@ -9385,12 +9638,7 @@ manage_service() {
                 log_error "OpenClaw 未安装"
             fi
             ;;
-        8)
-            openclaw_uninstall_menu
-            manage_service
-            return
-            ;;
-        9)
+        7)
             echo ""
             if ! check_openclaw_installed; then
                 log_error "OpenClaw 未安装"
@@ -9450,11 +9698,19 @@ manage_service() {
             manage_service
             return
             ;;
+        8)
+            openclaw_uninstall_menu
+            manage_service
+            return
+            ;;
         0)
             return
             ;;
+        *)
+            log_error "无效选择"
+            ;;
     esac
-    
+
     press_enter
     manage_service
 }
@@ -10221,6 +10477,317 @@ print('Custom provider configured: ' + vars['provider_id'])
     fi
 }
 
+# ================================ 像素小屋 ================================
+
+get_pixel_house_port_menu() {
+    local port
+    port="$(get_env_value STAR_BACKEND_PORT)"
+    port="$(echo "$port" | tr -d '"'\''[:space:]')"
+    if ! is_valid_port "$port"; then
+        port="19000"
+    fi
+    echo "$port"
+}
+
+get_projection_api_port_menu() {
+    local port
+    port="$(get_env_value PROJECTION_API_PORT)"
+    port="$(echo "$port" | tr -d '"'\''[:space:]')"
+    if ! is_valid_port "$port"; then
+        port="$DEFAULT_PROJECTION_API_PORT"
+    fi
+    echo "$port"
+}
+
+resolve_pixel_house_repo_file_menu() {
+    local relative_path="$1"
+    local script_dir
+    script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    local candidates=(
+        "$script_dir/$relative_path"
+        "$HOME/.openclaw/.cache/auto-install-openclaw-repo/$relative_path"
+        "$HOME/.openclaw/workspace/auto-install-openclaw/$relative_path"
+        "$HOME/.openclaw/workspace/auto-install-Openclaw/$relative_path"
+    )
+    local item
+    for item in "${candidates[@]}"; do
+        if [ -f "$item" ]; then
+            echo "$item"
+            return 0
+        fi
+    done
+    return 1
+}
+
+resolve_lobster_world_script_menu() {
+    local script_dir
+    script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    local candidates=(
+        "$HOME/.openclaw/lobster-world.sh"
+        "$script_dir/scripts/lobster-world.sh"
+        "$HOME/.openclaw/.cache/auto-install-openclaw-repo/scripts/lobster-world.sh"
+        "$HOME/.openclaw/workspace/auto-install-openclaw/scripts/lobster-world.sh"
+        "$HOME/.openclaw/workspace/auto-install-Openclaw/scripts/lobster-world.sh"
+    )
+    local item
+    for item in "${candidates[@]}"; do
+        if [ -x "$item" ]; then
+            echo "$item"
+            return 0
+        fi
+    done
+    return 1
+}
+
+install_repo_backed_launcher_menu() {
+    local launcher_path="$1"
+    local relative_path="$2"
+    local default_host_var="${3:-}"
+    local default_host_value="${4:-}"
+    local default_port_var="${5:-}"
+    local default_port_value="${6:-}"
+    local current_repo_script=""
+    current_repo_script="$(resolve_pixel_house_repo_file_menu "$relative_path" || true)"
+
+    cat > "$launcher_path" <<EOF
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [ -f "\$HOME/.openclaw/env" ]; then
+  set -a
+  . "\$HOME/.openclaw/env"
+  set +a
+fi
+
+candidates=(
+EOF
+
+    if [ -n "$current_repo_script" ]; then
+        cat >> "$launcher_path" <<EOF
+  "$current_repo_script"
+EOF
+    fi
+
+    cat >> "$launcher_path" <<EOF
+  "\$HOME/.openclaw/.cache/auto-install-openclaw-repo/$relative_path"
+  "\$HOME/.openclaw/workspace/auto-install-openclaw/$relative_path"
+  "\$HOME/.openclaw/workspace/auto-install-Openclaw/$relative_path"
+)
+
+for script in "\${candidates[@]}"; do
+  if [ -f "\$script" ]; then
+EOF
+
+    if [ -n "$default_host_var" ]; then
+        cat >> "$launcher_path" <<EOF
+    export $default_host_var="\${$default_host_var:-$default_host_value}"
+EOF
+    fi
+    if [ -n "$default_port_var" ]; then
+        cat >> "$launcher_path" <<EOF
+    export $default_port_var="\${$default_port_var:-$default_port_value}"
+EOF
+    fi
+
+    cat >> "$launcher_path" <<'EOF'
+    bash "$script" "${@:-status}"
+    exit $?
+  fi
+done
+
+echo "[ERROR] 未找到目标脚本，请先同步安装仓库后重试。"
+exit 1
+EOF
+    chmod +x "$launcher_path" 2>/dev/null || true
+}
+
+install_pixel_house_launchers_menu() {
+    mkdir -p "$CONFIG_DIR" 2>/dev/null || true
+    install_repo_backed_launcher_menu \
+        "$HOME/.openclaw/lobster-world.sh" \
+        "scripts/lobster-world.sh" \
+        "STAR_BACKEND_HOST" "0.0.0.0" \
+        "STAR_BACKEND_PORT" "$(get_pixel_house_port_menu)"
+    install_repo_backed_launcher_menu \
+        "$HOME/.openclaw/lobster-projection-api.sh" \
+        "subprojects/lobster-sanctum-ui/projection-api.sh" \
+        "PROJECTION_API_HOST" "$DEFAULT_PROJECTION_API_HOST" \
+        "PROJECTION_API_PORT" "$(get_projection_api_port_menu)"
+    install_repo_backed_launcher_menu \
+        "$HOME/.openclaw/lobster-openclaw-bridge.sh" \
+        "subprojects/lobster-sanctum-ui/openclaw-runtime-bridge.sh"
+}
+
+install_pixel_house_stack_menu() {
+    local world_script
+    local projection_script
+    local bridge_script
+    local world_port
+    local projection_port
+    local gateway_port
+    local openclaw_status_url
+    local projection_ingest_url
+
+    world_script="$(resolve_pixel_house_repo_file_menu "scripts/lobster-world.sh" || true)"
+    projection_script="$(resolve_pixel_house_repo_file_menu "subprojects/lobster-sanctum-ui/projection-api.sh" || true)"
+    bridge_script="$(resolve_pixel_house_repo_file_menu "subprojects/lobster-sanctum-ui/openclaw-runtime-bridge.sh" || true)"
+
+    if [ -z "$world_script" ] || [ -z "$projection_script" ] || [ -z "$bridge_script" ]; then
+        log_error "未找到像素小屋所需脚本，请先同步/更新安装仓库后重试。"
+        [ -z "$world_script" ] && echo "  - 缺少: scripts/lobster-world.sh"
+        [ -z "$projection_script" ] && echo "  - 缺少: subprojects/lobster-sanctum-ui/projection-api.sh"
+        [ -z "$bridge_script" ] && echo "  - 缺少: subprojects/lobster-sanctum-ui/openclaw-runtime-bridge.sh"
+        return 1
+    fi
+
+    log_info "安装/修复像素小屋并挂钩 OpenClaw..."
+    world_port="$(get_pixel_house_port_menu)"
+    projection_port="$(get_projection_api_port_menu)"
+    gateway_port="$(get_gateway_port)"
+    openclaw_status_url="http://127.0.0.1:${gateway_port}/status"
+    projection_ingest_url="http://127.0.0.1:${projection_port}/runtime/ingest"
+
+    upsert_env_export "STAR_BACKEND_HOST" "0.0.0.0"
+    upsert_env_export "STAR_BACKEND_PORT" "$world_port"
+    upsert_env_export "PROJECTION_API_HOST" "$DEFAULT_PROJECTION_API_HOST"
+    upsert_env_export "PROJECTION_API_PORT" "$projection_port"
+    upsert_env_export "OPENCLAW_STATUS_URL" "$openclaw_status_url"
+    upsert_env_export "PROJECTION_API_INGEST_URL" "$projection_ingest_url"
+
+    install_pixel_house_launchers_menu
+
+    STAR_BACKEND_HOST="0.0.0.0" STAR_BACKEND_PORT="$world_port" \
+        "$HOME/.openclaw/lobster-world.sh" stop >/dev/null 2>&1 || true
+    PROJECTION_API_HOST="$DEFAULT_PROJECTION_API_HOST" PROJECTION_API_PORT="$projection_port" \
+        "$HOME/.openclaw/lobster-projection-api.sh" restart || return 1
+    OPENCLAW_STATUS_URL="$openclaw_status_url" PROJECTION_API_HOST="$DEFAULT_PROJECTION_API_HOST" \
+        PROJECTION_API_PORT="$projection_port" PROJECTION_API_INGEST_URL="$projection_ingest_url" \
+        "$HOME/.openclaw/lobster-openclaw-bridge.sh" restart || return 1
+    STAR_BACKEND_HOST="0.0.0.0" STAR_BACKEND_PORT="$world_port" \
+        "$HOME/.openclaw/lobster-world.sh" start || return 1
+
+    log_info "像素小屋补装完成，已自动挂钩现有 OpenClaw 服务。"
+    echo "  像素小屋: http://127.0.0.1:${world_port}"
+    echo "  Projection API: http://127.0.0.1:${projection_port}"
+    echo "  OpenClaw 状态源: ${openclaw_status_url}"
+}
+
+run_lobster_world_action_menu() {
+    local action="$1"
+    local script_path=""
+    local port
+    port="$(get_pixel_house_port_menu)"
+    script_path="$(resolve_lobster_world_script_menu || true)"
+    if [ -z "$script_path" ]; then
+        log_error "未找到像素小屋服务脚本（scripts/lobster-world.sh）"
+        return 1
+    fi
+    STAR_BACKEND_HOST="0.0.0.0" STAR_BACKEND_PORT="$port" "$script_path" "$action"
+}
+
+manage_pixel_house() {
+    while true; do
+        clear_screen
+        print_header
+
+        local port
+        port="$(get_pixel_house_port_menu)"
+
+        echo -e "${WHITE}🏠 像素小屋（Lobster World）${NC}"
+        print_divider
+        echo ""
+        echo -e "  当前端口: ${WHITE}${port}${NC}"
+        echo -e "  默认地址: ${WHITE}http://127.0.0.1:${port}${NC}"
+        echo ""
+
+        print_menu_item "1" "安装/修复像素小屋并挂钩 OpenClaw" "🧩"
+        print_menu_item "2" "启动像素小屋" "▶️"
+        print_menu_item "3" "停止像素小屋" "⏹️"
+        print_menu_item "4" "重启像素小屋" "🔄"
+        print_menu_item "5" "查看像素小屋状态" "📊"
+        print_menu_item "6" "设置端口（默认 19000）" "🌐"
+        print_menu_item "7" "应用默认红蓝背景" "🎨"
+        print_menu_item "8" "打开工作台地址" "🧭"
+        print_menu_item "0" "返回主菜单" "↩️"
+        echo ""
+
+        echo -en "${YELLOW}请选择 [0-8]: ${NC}"
+        read choice < "$TTY_INPUT"
+
+        case "$choice" in
+            1)
+                echo ""
+                install_pixel_house_stack_menu || true
+                press_enter
+                ;;
+            2)
+                echo ""
+                run_lobster_world_action_menu start || true
+                press_enter
+                ;;
+            3)
+                echo ""
+                run_lobster_world_action_menu stop || true
+                press_enter
+                ;;
+            4)
+                echo ""
+                run_lobster_world_action_menu restart || true
+                press_enter
+                ;;
+            5)
+                echo ""
+                run_lobster_world_action_menu status || true
+                press_enter
+                ;;
+            6)
+                echo ""
+                local current_port new_port
+                current_port="$(get_pixel_house_port_menu)"
+                read_input "${YELLOW}输入新端口（默认 ${current_port}）: ${NC}" new_port
+                new_port="${new_port:-$current_port}"
+                if ! is_valid_port "$new_port"; then
+                    log_error "端口无效: $new_port"
+                    press_enter
+                    continue
+                fi
+                upsert_env_export "STAR_BACKEND_PORT" "$new_port"
+                log_info "像素小屋端口已更新为: $new_port"
+                echo "  重启后生效：请执行“重启像素小屋”"
+                press_enter
+                ;;
+            7)
+                echo ""
+                if curl -fsS --max-time 8 -X POST "http://127.0.0.1:${port}/openclaw/theme/red-blue-default" >/dev/null 2>&1; then
+                    log_info "已应用默认红蓝像素背景"
+                else
+                    log_warn "应用失败，请先启动像素小屋后重试"
+                fi
+                press_enter
+                ;;
+            8)
+                echo ""
+                local url
+                url="http://127.0.0.1:${port}"
+                echo -e "${CYAN}像素小屋地址:${NC} ${WHITE}${url}${NC}"
+                if command -v xdg-open >/dev/null 2>&1; then
+                    xdg-open "$url" >/dev/null 2>&1 || true
+                elif command -v open >/dev/null 2>&1; then
+                    open "$url" >/dev/null 2>&1 || true
+                fi
+                press_enter
+                ;;
+            0)
+                return
+                ;;
+            *)
+                log_error "无效选择"
+                press_enter
+                ;;
+        esac
+    done
+}
+
 # ================================ 高级设置 ================================
 
 ensure_auto_fix_openclaw_ready() {
@@ -10791,7 +11358,7 @@ advanced_settings() {
     print_menu_item "0" "返回主菜单" "↩️"
     echo ""
     
-    echo -en "${YELLOW}请选择 [0-10]: ${NC}"
+    echo -en "${YELLOW}请选择 [0-11]: ${NC}"
     read choice < "$TTY_INPUT"
     
     case $choice in
@@ -10983,16 +11550,11 @@ quick_test_menu() {
     print_menu_item "5" "测试飞书机器人" "🔷"
     print_menu_item "6" "测试 Ollama 本地模型" "🟠"
     echo ""
-    echo -e "${CYAN}OpenClaw 诊断 (需要已安装):${NC}"
-    print_menu_item "7" "openclaw doctor (诊断)" "🔍"
-    print_menu_item "8" "openclaw status (渠道状态)" "📊"
-    print_menu_item "9" "openclaw health (Gateway 健康)" "💚"
-    echo ""
     print_menu_item "a" "运行全部 API 测试" "🔄"
     print_menu_item "0" "返回主菜单" "↩️"
     echo ""
-    
-    echo -en "${YELLOW}请选择 [0-9/a]: ${NC}"
+
+    echo -en "${YELLOW}请选择 [0-6/a]: ${NC}"
     read choice < "$TTY_INPUT"
     
     case $choice in
@@ -11002,9 +11564,6 @@ quick_test_menu() {
         4) quick_test_slack ;;
         5) quick_test_feishu ;;
         6) quick_test_ollama ;;
-        7) quick_test_doctor ;;
-        8) quick_test_status ;;
-        9) quick_test_health ;;
         a|A) run_all_tests ;;
         0) return ;;
         *) log_error "无效选择"; press_enter; quick_test_menu ;;
@@ -11360,7 +11919,7 @@ run_all_tests() {
     # 渠道测试提示
     echo ""
     echo -e "${CYAN}渠道测试:${NC}"
-    echo -e "  使用 ${WHITE}连通性测试${NC} 菜单手动测试各个渠道"
+    echo -e "  使用 ${WHITE}服务管理 -> 连通性测试${NC} 菜单手动测试各个渠道"
     echo -e "  或运行 ${WHITE}openclaw channels list${NC} 查看已配置渠道"
     echo ""
     
@@ -11381,13 +11940,13 @@ run_all_tests() {
         echo -e "${YELLOW}⚠ 没有可测试的配置，请先完成相关配置${NC}"
     fi
     
-    # 如果 OpenClaw 已安装，提示可用的诊断命令
+    # 如果 OpenClaw 已安装，提示状态查看入口
     if check_openclaw_installed; then
         echo ""
-        echo -e "${CYAN}提示: 可使用以下命令进行更详细的诊断:${NC}"
-        echo "  • openclaw doctor  - 健康检查 + 修复建议"
-        echo "  • openclaw status  - 渠道状态"
-        echo "  • openclaw health  - Gateway 健康状态"
+        echo -e "${CYAN}提示:${NC}"
+        echo "  • 系统状态菜单可查看 Gateway 运行状态与实时日志"
+        echo "  • 服务管理菜单可执行连通性测试与配置修复"
+        echo "  • 网页配置页（状态页）可直接运行 doctor/status/health 并查看返回结果"
     fi
     
     press_enter
@@ -11405,15 +11964,14 @@ show_main_menu() {
     
     print_menu_item "1" "系统状态" "📊"
     print_menu_item "2" "模型配置（AI）" "🤖"
-    print_menu_item "3" "消息渠道插件（官方）" "📡"
-    print_menu_item "4" "安全设置" "🔒"
+    print_menu_item "3" "官方渠道插件管理" "📡"
+    print_menu_item "4" "权限设置" "🔒"
     print_menu_item "5" "Skills 管理" "🧩"
-    print_menu_item "6" "连通性测试" "🧪"
-    print_menu_item "7" "高级设置" "🛠️"
-    print_menu_item "8" "当前配置" "📄"
-    print_menu_item "9" "身份配置" "👤"
-    print_menu_item "10" "服务管理" "⚙️"
-    print_menu_item "11" "配置修复与迁移" "🩺"
+    print_menu_item "6" "高级设置" "🛠️"
+    print_menu_item "7" "当前配置" "📄"
+    print_menu_item "8" "身份配置" "👤"
+    print_menu_item "9" "服务管理（含连通性）" "⚙️"
+    print_menu_item "10" "像素小屋" "🏠"
     echo ""
     print_menu_item "0" "退出" "🚪"
     echo ""
@@ -11465,12 +12023,18 @@ main() {
             echo -e "${CYAN}配置修复流程结束。${NC}"
             exit 0
             ;;
+        --install-pixel-house)
+            install_pixel_house_stack_menu || exit 1
+            echo ""
+            echo -e "${CYAN}像素小屋补装流程结束。${NC}"
+            exit 0
+            ;;
     esac
     
     # 主循环
     while true; do
         show_main_menu
-        echo -en "${YELLOW}请选择 [0-11]: ${NC}"
+        echo -en "${YELLOW}请选择 [0-10]: ${NC}"
         if ! read choice < "$TTY_INPUT"; then
             echo ""
             log_error "无法读取输入（TTY 不可用），退出配置菜单。"
@@ -11480,15 +12044,14 @@ main() {
         case $choice in
             1) show_status ;;
             2) config_ai_model ;;
-            3) config_channels_official ;;
+            3) manage_official_plugins ;;
             4) config_security ;;
             5) manage_skills ;;
-            6) quick_test_menu ;;
-            7) advanced_settings ;;
-            8) view_config ;;
-            9) config_identity ;;
-            10) manage_service ;;
-            11) repair_runtime_config_preserve_data ;;
+            6) advanced_settings ;;
+            7) view_config ;;
+            8) config_identity ;;
+            9) manage_service ;;
+            10) manage_pixel_house ;;
             0)
                 echo ""
                 echo -e "${CYAN}再见！🦞${NC}"

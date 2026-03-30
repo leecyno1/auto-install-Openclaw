@@ -1,0 +1,8 @@
+{
+  "id": "core",
+  "name": "Core Runtime",
+  "description": "轻量核心包，仅保留基础运行态。",
+  "bodyClass": "runtime-pack-core",
+  "baseAssets": [],
+  "modeAssets": {}
+}

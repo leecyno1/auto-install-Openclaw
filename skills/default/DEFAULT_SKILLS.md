@@ -14,13 +14,17 @@ Bundled skills:
 - reflection
 - find-skills
 - skill-creator
+- subagent-driven-development
+- using-superpowers
+- verification-before-completion
+- writing-skills
 - agent-browser
 - chrome-devtools-mcp
 - github
 - mcp-builder
 - model-usage
 - shell
-- minimax-understand-image
+- minimax-image-understanding
 - tavily-search
 - web-search
 - minimax-web-search
@@ -41,14 +45,15 @@ Bundled skills:
 - content-strategy
 - social-content
 - ai-image-generation
+- media-downloader
 - marketingskills
 - inference-skills
 - agentmail
 - agentmail-cli
 - agentmail-mcp
 - agentmail-toolkit
+- lark-calendar
 - gemini-image-service
-- nano-banana-service
 - grok-imagine-1.0-video
 - notebooklm-skill
 - baoyu-skills
@@ -70,3 +75,10 @@ Bundled skills:
 - baoyu-url-to-markdown
 - baoyu-xhs-images
 - baoyu-youtube-transcript
+
+- data-analyst
+- finance-data
+- task
+- todo
+- weather
+- skill-security-auditor

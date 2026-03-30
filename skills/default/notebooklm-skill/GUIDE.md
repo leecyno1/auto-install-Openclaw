@@ -1,22 +1,26 @@
 # notebooklm-skill 使用指南
 
-来源：`PleasePrompto/notebooklm-skill`
+## 1. 功能定位
+- Use this skill to query your Google NotebookLM notebooks directly from Claude Code for source-grounded, citation-backed answers from Gemini. Browser automation, library management, persistent auth. Drastically reduced hallucinations through document-only responses.
+- 默认档位: 基础档默认安装
+- 仓库目录: `skills/default/notebooklm-skill`
+- 安装后目录: `~/.openclaw/skills/notebooklm-skill`
 
-适用场景：
-- 基于 NotebookLM 的文档问答与引用检索
-- 对指定知识库做结构化提问
-- 输出带来源依据的回答
+## 2. 使用前准备
+- 无强制 API Key；按 skill 自身依赖运行。
 
-使用前准备：
-1. 确保可访问 NotebookLM 并完成账号登录。
-2. 根据 `SKILL.md` 与 `AUTHENTICATION.md` 完成认证与浏览器会话准备。
-3. 安装依赖：参考本目录 `requirements.txt`。
+## 3. 配置步骤
+1. 通常无需额外配置。若运行时报缺依赖，再按 `SKILL.md` 补装。
 
-建议问题模板：
-- 请基于 NotebookLM 笔记本 A，回答 XXX，并列出引用依据。
-- 请对笔记本 B 中关于 XXX 的内容做 3 点对比总结。
+## 4. 推荐提问方式
+- 请使用 notebooklm-skill 帮我处理当前任务。
+- 如果 notebooklm-skill 需要额外配置，请先告诉我缺少什么。
 
-参考：
-- `SKILL.md`
-- `AUTHENTICATION.md`
-- `references/` 目录
+## 5. 手动验证
+```bash
+ls -la ~/.openclaw/skills/notebooklm-skill
+```
+
+## 6. 参考资料
+- 上游来源: https://github.com/PleasePrompto/notebooklm-skill
+- 本技能说明: `SKILL.md`

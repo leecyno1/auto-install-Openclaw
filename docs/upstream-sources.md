@@ -101,7 +101,7 @@
 | inference-skills | `skills/default/inference-skills` | https://github.com/inference-sh/skills |
 | marketingskills | `skills/default/marketingskills` | https://github.com/coreyhaines31/marketingskills |
 | mcp-builder | `skills/default/mcp-builder` | /Users/lichengyin/.codex/skills/mcp-builder |
-| minimax-understand-image | `skills/default/minimax-understand-image` | /Users/lichengyin/.codex/skills/minimax-understand-image |
+| minimax-image-understanding | `skills/default/minimax-image-understanding` | /Users/lichengyin/.codex/skills/minimax-image-understanding |
 | minimax-web-search | `skills/default/minimax-web-search` | /Users/lichengyin/.codex/skills/minimax-web-search |
 | model-usage | `skills/default/model-usage` | /Users/lichengyin/.codex/skills/model-usage |
 | multi-search-engine | `skills/default/multi-search-engine` | /Users/lichengyin/.codex/skills/multi-search-engine |

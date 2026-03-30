@@ -67,7 +67,7 @@ const roleProfiles = {
       "偏全栈铁匠，负责写代码、修问题、补测试、搭脚本、排查服务异常和交付上线，适合技术场景。",
     image: "./assets/role-warrior.png",
     portraitPosition: "center 18%",
-    skills: ["shell", "github", "mcp-builder", "chrome-devtools-mcp", "agent-browser", "model-usage", "web-search", "minimax-understand-image", "reflection"],
+    skills: ["shell", "github", "mcp-builder", "chrome-devtools-mcp", "agent-browser", "model-usage", "web-search", "minimax-image-understanding", "reflection"],
     models: [
       { name: "Codex", note: "程序开发、代码修改、测试和排障最适配。" },
       { name: "Claude", note: "复杂架构分析、代码审查和文档说明可以搭配使用。" },

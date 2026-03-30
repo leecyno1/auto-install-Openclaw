@@ -1,0 +1,8 @@
+# Linux 平台过滤清单（从 skills/default 下架）
+apple-calendar
+apple-notes
+apple-reminders
+things-mac
+peekaboo
+iosdev
+iosdev-cn

@@ -1,0 +1,17 @@
+{
+  "id": "pixel-office-lite",
+  "name": "Pixel Office Lite",
+  "description": "像素办公轻量包，不依赖 vendor 重资产。",
+  "bodyClass": "runtime-pack-pixel-office",
+  "baseAssets": [
+    { "type": "css", "path": "styles/base.css", "id": "base-style" }
+  ],
+  "modeAssets": {
+    "executing": [
+      { "type": "css", "path": "styles/executing.css", "id": "mode-executing" }
+    ],
+    "error": [
+      { "type": "css", "path": "styles/error.css", "id": "mode-error" }
+    ]
+  }
+}

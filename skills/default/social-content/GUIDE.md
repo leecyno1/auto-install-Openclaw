@@ -1,19 +1,26 @@
 # social-content 使用指南
 
-来源：`coreyhaines31/marketingskills/skills/social-content`
+## 1. 功能定位
+- When the user wants help creating, scheduling, or optimizing social media content for LinkedIn, Twitter/X, Instagram, TikTok, Facebook, or other platforms. Also use when the user mentions 'LinkedIn post,' 'Twitter thread,' 'social media,' 'content calendar,' 'social scheduling,' 'engagement,' 'viral content,' 'what should I post,' 'repurpose this content,' 'tweet ideas,' 'LinkedIn carousel,' 'social media strategy,' or 'grow my following.' Use this for any social media content creation, repurposing, or scheduling task. For broader content strategy, see content-strategy.
+- 默认档位: 基础档默认安装
+- 仓库目录: `skills/default/social-content`
+- 安装后目录: `~/.openclaw/skills/social-content`
 
-适用场景：
-- 社媒文案批量生成
-- 多平台改写（微博/小红书/抖音/公众号）
-- 话题互动、评论策略、活动预热
+## 2. 使用前准备
+- 无强制 API Key；按 skill 自身依赖运行。
 
-输入建议：
-- 品牌语气（正式/专业/幽默）
-- 平台与账号定位
-- 活动目标（拉新/促活/转化）
-- 禁用词与合规要求
+## 3. 配置步骤
+1. 通常无需额外配置。若运行时报缺依赖，再按 `SKILL.md` 补装。
 
-输出建议：
-- 多版本文案（短/中/长）
-- 平台改写版 + 发布时间建议
-- CTA（行动引导）与 A/B 版本
+## 4. 推荐提问方式
+- 请使用 social-content 帮我处理当前任务。
+- 如果 social-content 需要额外配置，请先告诉我缺少什么。
+
+## 5. 手动验证
+```bash
+ls -la ~/.openclaw/skills/social-content
+```
+
+## 6. 参考资料
+- 上游来源: https://github.com/coreyhaines31/marketingskills/tree/main/skills/social-content
+- 本技能说明: `SKILL.md`

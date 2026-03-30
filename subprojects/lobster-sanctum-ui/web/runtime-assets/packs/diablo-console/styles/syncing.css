@@ -1,0 +1,3 @@
+.runtime-pack-diablo .world-stage[data-runtime-state="syncing"] {
+  box-shadow: inset 0 0 0 1px rgba(92, 136, 211, 0.32), 0 0 28px rgba(92, 136, 211, 0.2);
+}

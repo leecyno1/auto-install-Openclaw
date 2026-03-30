@@ -104,6 +104,7 @@ GATEWAY_BIND="${OPENCLAW_GATEWAY_BIND:-}"
 GATEWAY_HOST="${OPENCLAW_GATEWAY_HOST:-}"
 GATEWAY_CUSTOM_BIND_HOST="${OPENCLAW_GATEWAY_CUSTOM_BIND_HOST:-}"
 GATEWAY_PORT="${OPENCLAW_GATEWAY_PORT:-13145}"
+LOBSTER_WORLD_PORT_DEFAULT="19000"
 GATEWAY_CONVERGE_MARKER="/tmp/openclaw-installer-gateway-converged.$$"
 RESET_CHAT_AFTER_INSTALL="${OPENCLAW_RESET_CHAT_AFTER_INSTALL:-1}"
 AUTO_SWAP_ENABLE="${OPENCLAW_AUTO_SWAP:-1}"
@@ -196,6 +197,7 @@ print_exit_hint() {
     echo "  source ~/.openclaw/env && openclaw doctor"
     echo "  source ~/.openclaw/env && openclaw models status --probe --check"
     echo "  bash ~/.openclaw/config-menu.sh  # 或 bash ./config-menu.sh"
+    echo "  ~/.openclaw/lobster-world.sh start  # 启动像素小屋工作台"
     echo ""
 }
 
@@ -2871,6 +2873,86 @@ resolve_install_skills_bundle_dir() {
     done
     rm -rf "$tmp_repo" 2>/dev/null || true
     return 1
+}
+
+resolve_lobster_world_script_install() {
+    local script_dir
+    local cache_root
+    local cache_repo
+    local bundle_dir
+    local repo_root
+    local candidate
+
+    script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    cache_root="$CONFIG_DIR/.cache"
+    cache_repo="$cache_root/auto-install-openclaw-repo"
+
+    for candidate in \
+        "$script_dir/scripts/lobster-world.sh" \
+        "$cache_repo/scripts/lobster-world.sh" \
+        "$CONFIG_DIR/workspace/auto-install-openclaw/scripts/lobster-world.sh" \
+        "$CONFIG_DIR/workspace/auto-install-Openclaw/scripts/lobster-world.sh"; do
+        if [ -f "$candidate" ]; then
+            echo "$candidate"
+            return 0
+        fi
+    done
+
+    bundle_dir="$(resolve_install_skills_bundle_dir || true)"
+    if [ -n "$bundle_dir" ] && [ -d "$bundle_dir" ]; then
+        repo_root="$(cd "$bundle_dir/../.." 2>/dev/null && pwd)"
+        candidate="$repo_root/scripts/lobster-world.sh"
+        if [ -f "$candidate" ]; then
+            echo "$candidate"
+            return 0
+        fi
+    fi
+    return 1
+}
+
+install_lobster_world_launcher() {
+    local launcher="$CONFIG_DIR/lobster-world.sh"
+    cat > "$launcher" <<'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+
+candidates=(
+  "$HOME/.openclaw/.cache/auto-install-openclaw-repo/scripts/lobster-world.sh"
+  "$HOME/.openclaw/workspace/auto-install-openclaw/scripts/lobster-world.sh"
+  "$HOME/.openclaw/workspace/auto-install-Openclaw/scripts/lobster-world.sh"
+)
+
+for script in "${candidates[@]}"; do
+  if [ -f "$script" ]; then
+    STAR_BACKEND_HOST="${STAR_BACKEND_HOST:-0.0.0.0}" \
+    STAR_BACKEND_PORT="${STAR_BACKEND_PORT:-19000}" \
+    bash "$script" "${1:-status}"
+    exit $?
+  fi
+done
+
+echo "[ERROR] 未找到像素小屋服务脚本（scripts/lobster-world.sh）"
+echo "请先运行: bash ~/.openclaw/config-menu.sh -> 像素小屋"
+exit 1
+EOF
+    chmod +x "$launcher" 2>/dev/null || true
+}
+
+setup_lobster_world_defaults_install() {
+    local world_script
+    log_step "配置像素小屋默认参数..."
+    upsert_env_export_install "STAR_BACKEND_PORT" "$LOBSTER_WORLD_PORT_DEFAULT"
+    upsert_env_export_install "STAR_BACKEND_HOST" "0.0.0.0"
+
+    install_lobster_world_launcher
+
+    world_script="$(resolve_lobster_world_script_install || true)"
+    if [ -n "$world_script" ]; then
+        log_info "像素小屋已就绪: $world_script"
+        log_info "默认访问地址: http://127.0.0.1:${LOBSTER_WORLD_PORT_DEFAULT}"
+    else
+        log_warn "未检测到像素小屋服务脚本，稍后可执行配置菜单自动修复。"
+    fi
 }
 
 cleanup_stale_plugin_state() {
@@ -5594,11 +5676,18 @@ print_success() {
     echo "  openclaw models status   # 查看模型配置"
     echo "  openclaw channels list   # 查看渠道列表"
     echo "  openclaw doctor          # 诊断问题"
+    echo "  ~/.openclaw/lobster-world.sh start  # 启动像素小屋工作台"
+    echo "  ~/.openclaw/lobster-world.sh stop   # 停止像素小屋工作台"
+    echo "  ~/.openclaw/lobster-world.sh status # 查看像素小屋状态"
     echo "  ~/.openclaw/docs/channels-configuration-guide.md  # 渠道配置文档"
     echo "  ~/.openclaw/skills/channel-setup-assistant/SKILL.md  # 渠道配置 Skill"
     echo "  ~/.openclaw/skills/      # 默认技能包目录"
     echo "  ~/.openclaw/policy/vendor-control-profile.json  # token规划规则档位配置"
     echo "  ~/.openclaw/policy/vendor-control-prompts.md    # 三档提示词"
+    echo ""
+    echo -e "${CYAN}像素小屋:${NC}"
+    echo "  默认地址: http://127.0.0.1:${LOBSTER_WORLD_PORT_DEFAULT}"
+    echo "  配置菜单入口: 像素小屋（主菜单 11）"
     echo ""
     echo -e "${PURPLE}📚 官方文档: $OFFICIAL_DOCS_URL${NC}"
     echo -e "${PURPLE}💬 社区支持: https://github.com/$GITHUB_REPO/discussions${NC}"
@@ -5782,6 +5871,7 @@ main() {
     setup_identity
     apply_vendor_rule_profile
     apply_default_security_baseline
+    setup_lobster_world_defaults_install
     reset_gateway_chat_history_for_fresh_start
     apply_default_welcome_after_session_reset
     if ! run_step_with_auto_fix "设置开机守护进程" setup_daemon; then

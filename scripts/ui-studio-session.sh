@@ -28,7 +28,7 @@ tmux rename-window -t "$SESSION_NAME:1" "ui-studio"
 tmux send-keys -t "$SESSION_NAME:1" "bash '$ROOT_DIR/scripts/config-ui.sh' start" C-m
 tmux split-window -h -t "$SESSION_NAME:1" -c "$UI_PROJECT_DIR"
 tmux send-keys -t "$SESSION_NAME:1.2" "echo 'Lobster Sanctum Studio session ready.'" C-m
-tmux send-keys -t "$SESSION_NAME:1.2" "echo 'UI URL: http://127.0.0.1:${CONFIG_UI_PORT:-18188}'" C-m
+tmux send-keys -t "$SESSION_NAME:1.2" "echo 'UI URL: http://127.0.0.1:${STAR_BACKEND_PORT:-19000}'" C-m
 tmux send-keys -t "$SESSION_NAME:1.2" "echo 'Focus: UI design, art polish, interaction.'" C-m
 tmux select-pane -t "$SESSION_NAME:1.1"
 

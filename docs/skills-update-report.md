@@ -23,7 +23,7 @@
 | github | 已最新 | /Users/lichengyin/.openclaw/skills | 与上游目录一致 |
 | grok-imagine-1.0-video | 保留现状 | 未找到可用上游源 | 未找到自动同步源，保留仓库现有版本 |
 | mcp-builder | 已最新 | /Users/lichengyin/.openclaw/skills | 与上游目录一致 |
-| minimax-understand-image | 已最新 | /Users/lichengyin/.openclaw/skills | 与上游目录一致 |
+| minimax-image-understanding | 已最新 | /Users/lichengyin/.openclaw/skills | 与上游目录一致 |
 | minimax-web-search | 已更新 | /Users/lichengyin/.openclaw/skills | 已用上游目录覆盖本地默认包 |
 | model-usage | 已最新 | /Users/lichengyin/.openclaw/skills | 与上游目录一致 |
 | multi-search-engine | 保留现状 | 未找到可用上游源 | 未找到自动同步源，保留仓库现有版本 |

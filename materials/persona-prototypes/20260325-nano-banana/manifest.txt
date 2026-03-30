@@ -1,0 +1,8 @@
+01-druid.png	OK
+02-assassin.png	OK
+03-mage.png	OK
+04-summoner.png	OK
+05-warrior.png	OK
+06-paladin.png	OK
+07-archer.png	OK
+08-group-portrait.png	OK

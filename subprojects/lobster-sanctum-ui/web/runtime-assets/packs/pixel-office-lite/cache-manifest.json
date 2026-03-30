@@ -1,0 +1,37 @@
+{
+  "id": "pixel-office-lite",
+  "name": "Pixel Office Lite",
+  "description": "像素办公轻量包，不依赖 vendor 重资产。",
+  "bodyClass": "runtime-pack-pixel-office",
+  "generatedAt": "2026-03-27T11:43:19.695955+08:00",
+  "assets": [
+    {
+      "id": "base-style",
+      "type": "css",
+      "mode": "base",
+      "path": "runtime-assets/packs/pixel-office-lite/styles/base.css",
+      "size": 424,
+      "sha256": "ad003fed7958f70a02919a3112023ee9f3d7d762e896104b6fdab31d86cd8b6b"
+    },
+    {
+      "id": "mode-executing",
+      "type": "css",
+      "mode": "executing",
+      "path": "runtime-assets/packs/pixel-office-lite/styles/executing.css",
+      "size": 233,
+      "sha256": "872acb3005a1f8d837bfa284e03007e22632e2405ca074d21cc78b50c98fd2b3"
+    },
+    {
+      "id": "mode-error",
+      "type": "css",
+      "mode": "error",
+      "path": "runtime-assets/packs/pixel-office-lite/styles/error.css",
+      "size": 223,
+      "sha256": "a516992f56b2c0eb784b8a912aca6997181308b5fa37a3dcc25b9fd2e224781a"
+    }
+  ],
+  "totals": {
+    "assets": 3,
+    "bytes": 880
+  }
+}

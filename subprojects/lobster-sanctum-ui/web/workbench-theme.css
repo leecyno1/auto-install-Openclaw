@@ -1,0 +1,1119 @@
+@font-face {
+  font-family: "ArkPixelWorkbench";
+  src: url("./assets/fonts/ark-pixel-12px-proportional-zh_cn.ttf.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+}
+
+body.workbench-embedded {
+  --wb-bg: #0b1020;
+  --wb-panel: rgba(14, 22, 39, 0.92);
+  --wb-panel-soft: rgba(18, 29, 49, 0.9);
+  --wb-line: rgba(111, 168, 255, 0.42);
+  --wb-line-strong: rgba(248, 212, 119, 0.55);
+  --wb-text: #dbe7ff;
+  --wb-muted: #8ea4d2;
+  --wb-gold: #f8d477;
+  --wb-green: #91d483;
+  --wb-red: #d97070;
+  --wb-shadow: 0 20px 48px rgba(0, 0, 0, 0.36);
+  background:
+    linear-gradient(rgba(9, 14, 28, 0.96), rgba(9, 14, 28, 0.92)),
+    repeating-linear-gradient(
+      0deg,
+      rgba(255, 255, 255, 0.02) 0,
+      rgba(255, 255, 255, 0.02) 1px,
+      transparent 1px,
+      transparent 14px
+    );
+  color: var(--wb-text);
+  font-family: "ArkPixelWorkbench", "Noto Serif SC", monospace;
+  margin: 0;
+  min-height: 100vh;
+}
+
+body.workbench-embedded[data-mode="equipment"] {
+  --wb-line: rgba(154, 107, 255, 0.34);
+}
+
+body.workbench-embedded[data-mode="status"] {
+  --wb-line: rgba(113, 200, 255, 0.38);
+}
+
+body.workbench-embedded[data-mode="tasks"],
+body.workbench-embedded[data-mode="levels"] {
+  --wb-line: rgba(248, 159, 96, 0.34);
+}
+
+body.workbench-embedded::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at top left, rgba(118, 163, 255, 0.12), transparent 28%),
+    radial-gradient(circle at bottom right, rgba(248, 212, 119, 0.1), transparent 22%);
+  opacity: 0.85;
+}
+
+body.workbench-embedded .workbench-shell {
+  width: min(100%, 1380px);
+  margin: 0 auto;
+  padding: 14px 18px 0;
+  box-sizing: border-box;
+}
+
+body.workbench-embedded .workbench-shell__head,
+body.workbench-embedded .workbench-shell__nav,
+body.workbench-embedded .workbench-shell__stats {
+  position: relative;
+  border: 1px solid var(--wb-line);
+  background: linear-gradient(180deg, rgba(16, 24, 42, 0.96), rgba(10, 16, 28, 0.94));
+  box-shadow: var(--wb-shadow);
+}
+
+body.workbench-embedded .workbench-shell__head::before,
+body.workbench-embedded .workbench-shell__nav::before,
+body.workbench-embedded .workbench-shell__stats::before {
+  content: "";
+  position: absolute;
+  inset: 7px;
+  border: 1px solid rgba(248, 212, 119, 0.14);
+  pointer-events: none;
+}
+
+body.workbench-embedded .workbench-shell__head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 18px;
+  align-items: end;
+  padding: 16px 18px;
+}
+
+body.workbench-embedded .workbench-shell__copy {
+  display: grid;
+  gap: 8px;
+}
+
+body.workbench-embedded .workbench-shell__kicker {
+  margin: 0;
+  color: var(--wb-green);
+  letter-spacing: 0.12em;
+  font-size: 12px;
+}
+
+body.workbench-embedded .workbench-shell__title {
+  margin: 0;
+  font-size: clamp(22px, 2.3vw, 30px);
+}
+
+body.workbench-embedded .workbench-shell__desc {
+  margin: 0;
+  max-width: 920px;
+  color: var(--wb-muted);
+  line-height: 1.75;
+}
+
+body.workbench-embedded .workbench-shell__identity {
+  min-width: 200px;
+  padding: 12px 14px;
+  border: 1px solid rgba(248, 212, 119, 0.18);
+  background: rgba(8, 13, 24, 0.7);
+  text-align: right;
+}
+
+body.workbench-embedded .workbench-shell__identity-label {
+  display: block;
+  color: var(--wb-muted);
+  font-size: 12px;
+  margin-bottom: 6px;
+}
+
+body.workbench-embedded .workbench-shell__identity-value {
+  color: var(--wb-gold);
+  font-size: 16px;
+}
+
+body.workbench-embedded .workbench-shell__nav {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+  padding: 12px;
+}
+
+body.workbench-embedded .workbench-shell__nav button {
+  min-height: 46px;
+  font-size: 12px;
+}
+
+body.workbench-embedded .workbench-shell__nav button.active {
+  border-color: var(--wb-line-strong);
+  color: #fff7d6;
+  background: linear-gradient(180deg, rgba(49, 67, 105, 0.98), rgba(18, 27, 46, 0.98));
+  box-shadow:
+    inset 0 0 0 1px rgba(248, 212, 119, 0.18),
+    0 0 0 1px rgba(248, 212, 119, 0.12);
+}
+
+body.workbench-embedded .workbench-shell__stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+  padding: 12px;
+}
+
+body.workbench-embedded .workbench-shell__stat {
+  padding: 12px 14px;
+  border: 1px solid rgba(111, 168, 255, 0.2);
+  background: rgba(13, 21, 37, 0.82);
+  color: var(--wb-text);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+body.workbench-embedded .workbench-shell__stat strong {
+  display: block;
+  margin-top: 6px;
+  color: var(--wb-gold);
+  font-size: 14px;
+}
+
+body.workbench-embedded .app-shell,
+body.workbench-embedded .app-shell.loadout-shell,
+body.workbench-embedded .app-shell.config-shell {
+  width: min(100%, 1380px);
+  margin: 0 auto;
+  padding: 14px 18px 26px;
+  min-height: 100vh;
+  background: transparent;
+  box-sizing: border-box;
+}
+
+body.workbench-embedded .hero-stage,
+body.workbench-embedded .loadout-hero-card,
+body.workbench-embedded .config-panel,
+body.workbench-embedded .loadout-panel,
+body.workbench-embedded .portrait-panel,
+body.workbench-embedded .info-panel {
+  background: linear-gradient(180deg, rgba(18, 29, 49, 0.94), rgba(12, 19, 33, 0.94));
+  border: 1px solid var(--wb-line);
+  box-shadow: var(--wb-shadow);
+}
+
+body.workbench-embedded .top-banner,
+body.workbench-embedded .loadout-banner,
+body.workbench-embedded .config-banner {
+  position: relative;
+  margin-bottom: 14px;
+  padding: 12px 16px;
+  border: 1px solid var(--wb-line);
+  background: linear-gradient(180deg, rgba(24, 38, 66, 0.98), rgba(11, 18, 31, 0.98));
+  box-shadow: var(--wb-shadow);
+}
+
+body.workbench-embedded .top-banner::before,
+body.workbench-embedded .loadout-banner::before,
+body.workbench-embedded .config-banner::before,
+body.workbench-embedded .config-panel::before,
+body.workbench-embedded .loadout-panel::before,
+body.workbench-embedded .portrait-panel::before,
+body.workbench-embedded .info-panel::before {
+  content: "";
+  position: absolute;
+  inset: 8px;
+  border: 1px solid rgba(248, 212, 119, 0.18);
+  pointer-events: none;
+}
+
+body.workbench-embedded h1,
+body.workbench-embedded h2,
+body.workbench-embedded h3,
+body.workbench-embedded h4,
+body.workbench-embedded .badge,
+body.workbench-embedded .panel-index,
+body.workbench-embedded .info-kicker {
+  font-family: "ArkPixelWorkbench", "Cinzel", serif;
+}
+
+body.workbench-embedded h1,
+body.workbench-embedded h2,
+body.workbench-embedded h3 {
+  color: var(--wb-gold);
+  letter-spacing: 0.04em;
+}
+
+body.workbench-embedded p,
+body.workbench-embedded li,
+body.workbench-embedded dt,
+body.workbench-embedded dd,
+body.workbench-embedded span,
+body.workbench-embedded strong {
+  color: var(--wb-text);
+}
+
+body.workbench-embedded .badge,
+body.workbench-embedded .panel-index,
+body.workbench-embedded .info-kicker {
+  color: var(--wb-green);
+  letter-spacing: 0.12em;
+}
+
+body.workbench-embedded .subtitle,
+body.workbench-embedded #roleDesc,
+body.workbench-embedded #loadoutDesc,
+body.workbench-embedded #configDesc,
+body.workbench-embedded .panel-tip {
+  color: var(--wb-muted);
+}
+
+body.workbench-embedded button,
+body.workbench-embedded .secondary-link,
+body.workbench-embedded .tab-button,
+body.workbench-embedded .option-card,
+body.workbench-embedded .next-step-cue {
+  font-family: "ArkPixelWorkbench", monospace;
+}
+
+body.workbench-embedded button,
+body.workbench-embedded .secondary-link,
+body.workbench-embedded .next-step-cue {
+  border: 1px solid var(--wb-line);
+  background: linear-gradient(180deg, rgba(28, 44, 76, 0.98), rgba(15, 23, 40, 0.98));
+  color: var(--wb-text);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.22);
+}
+
+body.workbench-embedded button:hover,
+body.workbench-embedded .secondary-link:hover,
+body.workbench-embedded .next-step-cue:hover {
+  border-color: var(--wb-line-strong);
+  color: #fff7d6;
+  transform: translateY(-1px);
+}
+
+body.workbench-embedded .tag-list li,
+body.workbench-embedded .task-list li,
+body.workbench-embedded .simple-list li,
+body.workbench-embedded .workflow-list li,
+body.workbench-embedded .model-list li,
+body.workbench-embedded .config-chips span,
+body.workbench-embedded .legend-chip,
+body.workbench-embedded .skill-mini-card,
+body.workbench-embedded .inventory-filter-chip,
+body.workbench-embedded .status-card,
+body.workbench-embedded .command-stat,
+body.workbench-embedded .stat-item {
+  background: rgba(19, 31, 51, 0.92);
+  border: 1px solid rgba(111, 168, 255, 0.22);
+  color: var(--wb-text);
+}
+
+body.workbench-embedded .hero-stage {
+  padding: 16px;
+  border-radius: 0;
+}
+
+body.workbench-embedded #groupPortrait {
+  border: 1px solid rgba(111, 168, 255, 0.25);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.28);
+}
+
+body.workbench-embedded .hero-map .map-node text {
+  fill: #f8d477;
+}
+
+body.workbench-embedded .portrait-card,
+body.workbench-embedded .loadout-portrait-frame,
+body.workbench-embedded .config-hero-portrait {
+  background: linear-gradient(180deg, rgba(17, 28, 48, 0.96), rgba(10, 16, 29, 0.96));
+  border: 1px solid rgba(111, 168, 255, 0.24);
+}
+
+body.workbench-embedded .tab-bar {
+  background: rgba(10, 16, 29, 0.88);
+  border: 1px solid rgba(111, 168, 255, 0.18);
+}
+
+body.workbench-embedded .tab-button.active,
+body.workbench-embedded .option-card.active,
+body.workbench-embedded .package-switcher .option-card:has(input:checked) {
+  color: #fff7d6;
+  border-color: var(--wb-line-strong);
+  background: linear-gradient(180deg, rgba(44, 62, 100, 0.98), rgba(19, 28, 48, 0.98));
+  box-shadow: inset 0 0 0 1px rgba(248, 212, 119, 0.2);
+}
+
+body.workbench-embedded .skill-tree,
+body.workbench-embedded .gear-grid,
+body.workbench-embedded .command-main,
+body.workbench-embedded .command-brief-strip,
+body.workbench-embedded .build-focus-card,
+body.workbench-embedded .branch-navigator,
+body.workbench-embedded .skill-overview-strip,
+body.workbench-embedded .skill-synergy-strip,
+body.workbench-embedded .talent-canvas,
+body.workbench-embedded .equipment-stage,
+body.workbench-embedded .task-board,
+body.workbench-embedded .level-track {
+  background: rgba(9, 14, 25, 0.7);
+  border: 1px solid rgba(111, 168, 255, 0.15);
+}
+
+body.workbench-embedded .persona-layout,
+body.workbench-embedded .loadout-layout,
+body.workbench-embedded .command-center-layout {
+  gap: 14px;
+}
+
+body.workbench-embedded .command-sidebar {
+  display: none;
+}
+
+body.workbench-embedded .command-center-layout {
+  grid-template-columns: 1fr;
+}
+
+body.workbench-embedded .config-banner .loadout-actions {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+body.workbench-embedded .config-banner #downloadPresetBtn,
+body.workbench-embedded .config-banner #copyEnvBtn,
+body.workbench-embedded .config-banner #copySummaryBtn {
+  min-height: 38px;
+}
+
+body.workbench-embedded .hero-stage .top-banner-overlay {
+  width: min(680px, calc(100% - 32px));
+}
+
+body.workbench-embedded .tab-bar {
+  position: sticky;
+  top: 0;
+  z-index: 4;
+}
+
+body.workbench-embedded .skill-tree,
+body.workbench-embedded .gear-grid,
+body.workbench-embedded .tactic-grid,
+body.workbench-embedded .quest-board,
+body.workbench-embedded .status-grid,
+body.workbench-embedded .level-grid {
+  backdrop-filter: none;
+}
+
+body.workbench-embedded .inventory-card,
+body.workbench-embedded .stash-card,
+body.workbench-embedded .quest-card,
+body.workbench-embedded .brief-card,
+body.workbench-embedded .ledger-row,
+body.workbench-embedded .milestone-card,
+body.workbench-embedded .synergy-card,
+body.workbench-embedded .armory-bonus-card,
+body.workbench-embedded .perk-card,
+body.workbench-embedded .skill-node,
+body.workbench-embedded .gear-card {
+  border: 1px solid rgba(111, 168, 255, 0.24);
+  background: linear-gradient(180deg, rgba(16, 25, 43, 0.96), rgba(11, 17, 30, 0.96));
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.22);
+}
+
+body.workbench-embedded .inventory-card.equipped-card,
+body.workbench-embedded .quest-card span,
+body.workbench-embedded .equipment-slot button,
+body.workbench-embedded .skill-node.active {
+  border-color: var(--wb-line-strong);
+}
+
+body.workbench-embedded .status-fill,
+body.workbench-embedded .xp-fill {
+  background: linear-gradient(90deg, #4a7be5, #f8d477);
+}
+
+body.workbench-embedded .mannequin-board {
+  background:
+    linear-gradient(180deg, rgba(12, 18, 31, 0.94), rgba(9, 14, 25, 0.94)),
+    repeating-linear-gradient(
+      90deg,
+      rgba(255,255,255,0.02) 0,
+      rgba(255,255,255,0.02) 1px,
+      transparent 1px,
+      transparent 18px
+    );
+}
+
+body.workbench-embedded .command-brief-strip {
+  margin-bottom: 14px;
+}
+
+body.workbench-embedded .brief-card strong,
+body.workbench-embedded .milestone-card strong,
+body.workbench-embedded .ledger-copy strong {
+  color: var(--wb-gold);
+}
+
+body.workbench-embedded .brief-label,
+body.workbench-embedded .milestone-level,
+body.workbench-embedded .ledger-index,
+body.workbench-embedded .ledger-reward {
+  color: var(--wb-green);
+}
+
+body.workbench-embedded .next-step-cue {
+  backdrop-filter: none;
+}
+
+body.workbench-embedded .top-banner-overlay {
+  background: linear-gradient(180deg, rgba(14, 22, 39, 0.92), rgba(14, 22, 39, 0.74));
+}
+
+body.workbench-embedded .top-banner-overlay h1 {
+  text-shadow: 0 0 18px rgba(248, 212, 119, 0.15);
+}
+
+body.workbench-embedded .config-body,
+body.workbench-embedded.loadout-body {
+  background: transparent;
+}
+
+body.workbench-embedded .loadout-actions,
+body.workbench-embedded .actions,
+body.workbench-embedded .config-banner .loadout-actions,
+body.workbench-embedded .config-banner .loadout-actions,
+body.workbench-embedded .loadout-banner .loadout-actions,
+body.workbench-embedded .config-banner .loadout-actions {
+  gap: 10px;
+}
+
+body.workbench-embedded .command-main {
+  padding: 14px;
+}
+
+@media (max-width: 1080px) {
+  body.workbench-embedded .workbench-shell__head,
+  body.workbench-embedded .workbench-shell__stats,
+  body.workbench-embedded .workbench-shell__nav {
+    grid-template-columns: 1fr;
+  }
+
+  body.workbench-embedded .workbench-shell__identity {
+    min-width: 0;
+    text-align: left;
+  }
+}
+
+@media (max-width: 780px) {
+  body.workbench-embedded .workbench-shell {
+    padding: 10px 10px 0;
+  }
+
+  body.workbench-embedded .app-shell,
+  body.workbench-embedded .app-shell.loadout-shell,
+  body.workbench-embedded .app-shell.config-shell {
+    padding: 10px 10px 18px;
+  }
+
+  body.workbench-embedded .workbench-shell__stats {
+    grid-template-columns: 1fr;
+  }
+}
+
+body.workbench-embedded .config-shell .loadout-actions #launchRuntimeBtn {
+  display: none;
+}
+
+body.workbench-embedded .hero-stage .next-step-cue {
+  right: 24px;
+  bottom: 22px;
+}
+
+body.workbench-embedded .top-banner .badge,
+body.workbench-embedded .loadout-banner .badge,
+body.workbench-embedded .config-banner .badge {
+  display: inline-block;
+  padding: 4px 8px;
+  background: rgba(145, 212, 131, 0.12);
+  border: 1px solid rgba(145, 212, 131, 0.28);
+}
+
+body.workbench-embedded ::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+body.workbench-embedded ::-webkit-scrollbar-thumb {
+  background: rgba(71, 101, 156, 0.82);
+  border: 2px solid rgba(9, 14, 25, 0.9);
+}
+
+body.workbench-embedded ::-webkit-scrollbar-track {
+  background: rgba(9, 14, 25, 0.88);
+}
+
+body.workbench-embedded {
+  --wb-panel: rgba(20, 28, 35, 0.94);
+  --wb-panel-soft: rgba(18, 24, 32, 0.92);
+  --wb-line: rgba(119, 157, 171, 0.32);
+  --wb-line-strong: rgba(214, 176, 97, 0.56);
+  --wb-text: #d8decb;
+  --wb-muted: #97a59f;
+  --wb-gold: #d9b261;
+  --wb-green: #7da08b;
+  background:
+    linear-gradient(rgba(10, 14, 18, 0.96), rgba(10, 14, 18, 0.94)),
+    radial-gradient(circle at top left, rgba(92, 116, 127, 0.14), transparent 30%),
+    radial-gradient(circle at bottom right, rgba(163, 91, 67, 0.1), transparent 24%);
+}
+
+body.workbench-embedded .workbench-shell {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  width: min(100%, 1380px);
+  padding: 10px 18px 0;
+}
+
+body.workbench-embedded .workbench-shell__head,
+body.workbench-embedded .workbench-shell__stats {
+  display: none;
+}
+
+body.workbench-embedded .workbench-shell__nav {
+  grid-template-columns: 220px repeat(6, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 0;
+  padding: 10px;
+  background: linear-gradient(180deg, rgba(28, 33, 39, 0.98), rgba(17, 22, 28, 0.98));
+  border-color: rgba(121, 104, 78, 0.46);
+  box-shadow: 0 14px 26px rgba(0, 0, 0, 0.28);
+}
+
+body.workbench-embedded .workbench-shell__nav::before {
+  inset: 5px;
+  border-color: rgba(214, 176, 97, 0.18);
+}
+
+body.workbench-embedded .workbench-shell__identity {
+  min-width: 0;
+  padding: 10px 12px;
+  text-align: left;
+  border-color: rgba(214, 176, 97, 0.2);
+  background: linear-gradient(180deg, rgba(44, 28, 22, 0.94), rgba(24, 18, 15, 0.94));
+}
+
+body.workbench-embedded .workbench-shell__identity-label {
+  color: #a8a18f;
+  letter-spacing: 0.08em;
+}
+
+body.workbench-embedded .workbench-shell__identity-value {
+  color: #f0d392;
+  font-size: 15px;
+}
+
+body.workbench-embedded .workbench-shell__nav button {
+  min-height: 42px;
+  font-family: "ArkPixelWorkbench", "Noto Sans SC", monospace;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  border: 1px solid rgba(121, 104, 78, 0.4);
+  background: linear-gradient(180deg, rgba(31, 38, 46, 0.98), rgba(16, 21, 28, 0.98));
+}
+
+body.workbench-embedded .workbench-shell__nav button.active,
+body.workbench-embedded .workbench-shell__nav button:hover {
+  border-color: rgba(214, 176, 97, 0.68);
+  color: #fff1c8;
+  background: linear-gradient(180deg, rgba(78, 54, 32, 0.98), rgba(34, 24, 17, 0.98));
+  box-shadow:
+    inset 0 0 0 1px rgba(214, 176, 97, 0.18),
+    0 0 18px rgba(214, 176, 97, 0.1);
+}
+
+body.workbench-embedded .app-shell,
+body.workbench-embedded .app-shell.loadout-shell,
+body.workbench-embedded .app-shell.config-shell {
+  padding-top: 12px;
+}
+
+body.workbench-embedded .loadout-banner,
+body.workbench-embedded .config-banner {
+  padding: 12px 14px;
+  margin-bottom: 12px;
+}
+
+body.workbench-embedded .loadout-banner h1,
+body.workbench-embedded .config-banner h1,
+body.workbench-embedded .top-banner-overlay h1 {
+  font-family: "Cinzel", "Noto Sans SC", sans-serif;
+  font-size: clamp(22px, 2vw, 30px);
+  letter-spacing: 0.04em;
+}
+
+body.workbench-embedded .loadout-banner .subtitle,
+body.workbench-embedded .config-banner .subtitle,
+body.workbench-embedded .top-banner-overlay .subtitle {
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+body.workbench-embedded .config-shell .tab-bar {
+  display: none;
+}
+
+body.workbench-embedded .hero-stage {
+  min-height: 360px;
+  margin-bottom: 14px;
+  background: #11161a;
+  border-color: rgba(121, 104, 78, 0.4);
+}
+
+body.workbench-embedded .hero-stage::before {
+  background:
+    linear-gradient(180deg, rgba(7, 10, 12, 0.54) 0%, rgba(7, 10, 12, 0.12) 24%, rgba(7, 10, 12, 0) 42%),
+    linear-gradient(0deg, rgba(7, 10, 12, 0.46) 0%, rgba(7, 10, 12, 0) 18%);
+}
+
+body.workbench-embedded .top-banner-overlay {
+  width: min(620px, calc(100% - 28px));
+  left: 14px;
+  right: auto;
+  text-align: left;
+  background: linear-gradient(180deg, rgba(26, 21, 18, 0.92), rgba(16, 18, 24, 0.78));
+}
+
+body.workbench-embedded .persona-layout {
+  grid-template-columns: minmax(320px, 0.84fr) minmax(0, 1.16fr);
+  gap: 14px;
+}
+
+body.workbench-embedded .portrait-panel,
+body.workbench-embedded .info-panel,
+body.workbench-embedded .config-panel,
+body.workbench-embedded .loadout-panel,
+body.workbench-embedded .loadout-hero-card,
+body.workbench-embedded .config-hero {
+  border-color: rgba(121, 104, 78, 0.36);
+  background: linear-gradient(180deg, rgba(24, 30, 37, 0.96), rgba(14, 18, 23, 0.96));
+}
+
+body.workbench-embedded .portrait-panel,
+body.workbench-embedded .info-panel,
+body.workbench-embedded .config-panel {
+  padding: 14px;
+}
+
+body.workbench-embedded .portrait-card {
+  height: clamp(420px, 48vw, 660px);
+}
+
+body.workbench-embedded .info-panel {
+  gap: 12px;
+}
+
+body.workbench-embedded .info-head {
+  padding: 14px 16px;
+}
+
+body.workbench-embedded .info-head h2 {
+  font-size: clamp(24px, 2.4vw, 32px);
+}
+
+body.workbench-embedded .info-grid {
+  gap: 10px;
+}
+
+body.workbench-embedded .info-block {
+  gap: 8px;
+  padding: 12px;
+}
+
+body.workbench-embedded .info-block h3,
+body.workbench-embedded .panel-head h3,
+body.workbench-embedded .loadout-hero-meta h2,
+body.workbench-embedded .config-hero-meta h2 {
+  font-family: "Cinzel", "Noto Sans SC", sans-serif;
+  letter-spacing: 0.03em;
+}
+
+body.workbench-embedded .tag-list li,
+body.workbench-embedded .task-list li,
+body.workbench-embedded .model-list li {
+  padding: 8px 10px;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+body.workbench-embedded .loadout-layout,
+body.workbench-embedded .command-center-layout,
+body.workbench-embedded .panel-columns,
+body.workbench-embedded .equipment-layout,
+body.workbench-embedded .status-grid,
+body.workbench-embedded .task-grid,
+body.workbench-embedded .level-grid {
+  gap: 12px;
+}
+
+body.workbench-embedded .command-hero {
+  gap: 14px;
+  margin-bottom: 12px;
+  grid-template-columns: minmax(180px, 220px) minmax(0, 1fr);
+}
+
+body.workbench-embedded .loadout-hero-card {
+  grid-template-columns: minmax(190px, 240px) minmax(0, 1fr);
+}
+
+body.workbench-embedded .config-hero-portrait {
+  min-height: 280px;
+}
+
+body.workbench-embedded .loadout-portrait-frame {
+  min-height: 320px;
+}
+
+body.workbench-embedded .config-hero-meta,
+body.workbench-embedded .loadout-hero-meta {
+  gap: 10px;
+}
+
+body.workbench-embedded .command-meta-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+body.workbench-embedded .command-stat {
+  padding: 10px;
+}
+
+body.workbench-embedded .command-stat strong {
+  font-size: 18px;
+}
+
+body.workbench-embedded .command-brief-strip {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+body.workbench-embedded .loadout-grid {
+  gap: 12px;
+}
+
+body.workbench-embedded .skill-tree,
+body.workbench-embedded .gear-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+body.workbench-embedded .skill-node,
+body.workbench-embedded .gear-card {
+  min-height: 118px;
+  padding: 10px;
+}
+
+body.workbench-embedded .skill-node h4,
+body.workbench-embedded .gear-card h4 {
+  font-size: 16px;
+}
+
+body.workbench-embedded .skill-node p:last-child,
+body.workbench-embedded .gear-card p:last-child {
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+body.workbench-embedded .tactic-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+body.workbench-embedded .tactic-grid section {
+  padding: 10px;
+}
+
+body.workbench-embedded .brief-card {
+  padding: 12px 14px;
+}
+
+body.workbench-embedded .brief-card strong {
+  margin: 4px 0 6px;
+  font-size: 18px;
+}
+
+body.workbench-embedded .brief-card p {
+  line-height: 1.5;
+  font-size: 12px;
+}
+
+body.workbench-embedded .panel-tip,
+body.workbench-embedded .branch-mastery-meta p,
+body.workbench-embedded .build-focus-card p,
+body.workbench-embedded .quest-card p,
+body.workbench-embedded .milestone-card p,
+body.workbench-embedded .synergy-card p,
+body.workbench-embedded .armory-bonus-card p {
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+body.workbench-embedded .skill-overview-strip {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+}
+
+body.workbench-embedded .overview-card {
+  padding: 10px 12px;
+}
+
+body.workbench-embedded .overview-card strong {
+  margin: 6px 0 4px;
+  font-size: 20px;
+}
+
+body.workbench-embedded .skill-synergy-strip {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+body.workbench-embedded .talent-workbench {
+  grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.9fr);
+  gap: 12px;
+}
+
+body.workbench-embedded .mission-ledger {
+  margin-top: 10px;
+  gap: 8px;
+}
+
+body.workbench-embedded .ledger-row,
+body.workbench-embedded .quest-card,
+body.workbench-embedded .perk-card,
+body.workbench-embedded .synergy-card,
+body.workbench-embedded .milestone-card {
+  padding: 12px;
+}
+
+body.workbench-embedded .status-grid {
+  grid-template-columns: 1.1fr 1.2fr;
+}
+
+body.workbench-embedded .status-grid .full-span {
+  grid-column: 1 / -1;
+}
+
+body.workbench-embedded .task-grid,
+body.workbench-embedded .level-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+body.workbench-embedded .milestone-grid {
+  gap: 10px;
+}
+
+body.workbench-embedded .option-card,
+body.workbench-embedded .toggle-card {
+  padding: 10px 12px;
+}
+
+body.workbench-embedded .option-copy strong {
+  font-size: 13px;
+}
+
+body.workbench-embedded .option-copy small {
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+body.workbench-embedded .inventory-card,
+body.workbench-embedded .stash-card {
+  padding: 10px;
+}
+
+body.workbench-embedded .paperdoll-frame {
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,0.03),
+    0 22px 42px rgba(0,0,0,0.3),
+    0 0 24px rgba(111, 168, 255, 0.08);
+}
+
+body.workbench-embedded .inventory-bag-shell,
+body.workbench-embedded .inventory-stash-shell,
+body.workbench-embedded .item-detail-panel,
+body.workbench-embedded .armory-bonus-panel,
+body.workbench-embedded .armory-status-strip,
+body.workbench-embedded .armory-weapon-rack {
+  border-color: rgba(111, 168, 255, 0.24);
+}
+
+body.workbench-embedded .inventory-card--empty,
+body.workbench-embedded .stash-card--empty {
+  background: rgba(8, 13, 24, 0.72);
+}
+
+body.workbench-embedded .item-detail-panel,
+body.workbench-embedded .armory-bonus-panel {
+  margin-top: 10px;
+}
+
+body.workbench-embedded .armory-status-strip {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+body.workbench-embedded .armory-stat,
+body.workbench-embedded .weapon-hanger {
+  padding: 10px 12px;
+}
+
+body.workbench-embedded .weapon-hanger strong {
+  font-size: 18px;
+}
+
+body.workbench-embedded .inventory-grid {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+}
+
+body.workbench-embedded .stash-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+body.workbench-embedded .equipment-slot {
+  width: 126px;
+  min-height: 94px;
+}
+
+@media (max-width: 1180px) {
+  body.workbench-embedded .workbench-shell__nav {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  body.workbench-embedded .command-brief-strip,
+  body.workbench-embedded .loadout-grid,
+  body.workbench-embedded .skill-overview-strip,
+  body.workbench-embedded .status-grid,
+  body.workbench-embedded .task-grid,
+  body.workbench-embedded .level-grid,
+  body.workbench-embedded .talent-workbench {
+    grid-template-columns: 1fr;
+  }
+
+  body.workbench-embedded .inventory-grid,
+  body.workbench-embedded .stash-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 860px) {
+  body.workbench-embedded .workbench-shell {
+    padding: 8px 10px 0;
+  }
+
+  body.workbench-embedded .workbench-shell__head,
+  body.workbench-embedded .workbench-shell__stats {
+    grid-template-columns: 1fr;
+  }
+
+  body.workbench-embedded .workbench-shell__nav {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  body.workbench-embedded .persona-layout,
+  body.workbench-embedded .command-hero,
+  body.workbench-embedded .loadout-hero-card,
+  body.workbench-embedded .tactic-grid,
+  body.workbench-embedded .skill-tree,
+  body.workbench-embedded .gear-grid {
+    grid-template-columns: 1fr;
+  }
+
+  body.workbench-embedded .info-grid {
+    grid-template-columns: 1fr;
+  }
+
+  body.workbench-embedded .inventory-grid,
+  body.workbench-embedded .stash-grid,
+  body.workbench-embedded .armory-status-strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+body.workbench-embedded[data-source="world-console"] {
+  font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+  background: transparent;
+}
+
+body.workbench-embedded[data-source="world-console"]::before {
+  display: none;
+}
+
+body.workbench-embedded[data-source="world-console"] .app-shell,
+body.workbench-embedded[data-source="world-console"] .app-shell.loadout-shell,
+body.workbench-embedded[data-source="world-console"] .app-shell.config-shell {
+  width: 100%;
+  padding: 0;
+  min-height: auto;
+}
+
+body.workbench-embedded[data-source="world-console"] h1,
+body.workbench-embedded[data-source="world-console"] h2,
+body.workbench-embedded[data-source="world-console"] h3,
+body.workbench-embedded[data-source="world-console"] h4,
+body.workbench-embedded[data-source="world-console"] .badge,
+body.workbench-embedded[data-source="world-console"] .panel-index,
+body.workbench-embedded[data-source="world-console"] .info-kicker,
+body.workbench-embedded[data-source="world-console"] button,
+body.workbench-embedded[data-source="world-console"] .secondary-link,
+body.workbench-embedded[data-source="world-console"] .tab-button,
+body.workbench-embedded[data-source="world-console"] .option-card,
+body.workbench-embedded[data-source="world-console"] .next-step-cue {
+  font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+}
+
+body.workbench-embedded[data-source="world-console"] .badge {
+  display: none;
+}
+
+body.workbench-embedded[data-source="world-console"] .persona-layout,
+body.workbench-embedded[data-source="world-console"] .loadout-layout,
+body.workbench-embedded[data-source="world-console"] .command-center-layout {
+  gap: 12px;
+}
+
+body.workbench-embedded[data-source="world-console"] .command-main {
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+body.workbench-embedded[data-source="world-console"] .tab-bar {
+  display: none;
+}
+
+body.workbench-embedded[data-source="world-console"] .hero-stage,
+body.workbench-embedded[data-source="world-console"] .loadout-banner,
+body.workbench-embedded[data-source="world-console"] .config-banner,
+body.workbench-embedded[data-source="world-console"] .next-step-cue {
+  display: none;
+}
+
+body.workbench-embedded[data-source="world-console"] .hero-stage,
+body.workbench-embedded[data-source="world-console"] .loadout-hero-card,
+body.workbench-embedded[data-source="world-console"] .config-panel,
+body.workbench-embedded[data-source="world-console"] .loadout-panel,
+body.workbench-embedded[data-source="world-console"] .portrait-panel,
+body.workbench-embedded[data-source="world-console"] .info-panel {
+  box-shadow: none;
+}
+
+body.workbench-embedded[data-source="world-console"] .config-panel::before,
+body.workbench-embedded[data-source="world-console"] .loadout-panel::before,
+body.workbench-embedded[data-source="world-console"] .portrait-panel::before,
+body.workbench-embedded[data-source="world-console"] .info-panel::before {
+  display: none;
+}

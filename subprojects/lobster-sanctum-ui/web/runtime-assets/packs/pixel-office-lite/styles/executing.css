@@ -1,0 +1,4 @@
+.runtime-pack-pixel-office .world-stage[data-runtime-state="executing"] .zone-card.zone-execute {
+  border-color: rgba(214, 175, 93, 0.76);
+  box-shadow: 0 0 0 1px rgba(214, 175, 93, 0.14) inset, 0 0 16px rgba(214, 175, 93, 0.18);
+}

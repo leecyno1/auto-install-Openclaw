@@ -1,0 +1,666 @@
+{
+  "name": "seven-multi-action-v1",
+  "source_root": "/Volumes/PSSD/A051RPG像素游戏素材地图场景平铺图块rpgmaker人物角色UI道具美术资源/2000套-像素风格游戏素材/更新/2105141",
+  "roles": [
+    {
+      "archive": "55.zip",
+      "archive_no": "55",
+      "role": "Heavy Armored Defender Knight",
+      "theme": "tank",
+      "action_count": 17,
+      "actions": [
+        {
+          "name": "Dying",
+          "frame_count": 15,
+          "sample_file": "Dying_000.png"
+        },
+        {
+          "name": "Falling Down",
+          "frame_count": 6,
+          "sample_file": "Falling Down_000.png"
+        },
+        {
+          "name": "Hurt",
+          "frame_count": 12,
+          "sample_file": "Hurt_000.png"
+        },
+        {
+          "name": "Idle",
+          "frame_count": 18,
+          "sample_file": "Idle_000.png"
+        },
+        {
+          "name": "Idle Blinking",
+          "frame_count": 18,
+          "sample_file": "Idle Blinking_000.png"
+        },
+        {
+          "name": "Jump Loop",
+          "frame_count": 6,
+          "sample_file": "Jump Loop_000.png"
+        },
+        {
+          "name": "Jump Start",
+          "frame_count": 6,
+          "sample_file": "Jump Start_000.png"
+        },
+        {
+          "name": "Kicking",
+          "frame_count": 12,
+          "sample_file": "Kicking_000.png"
+        },
+        {
+          "name": "Run Slashing",
+          "frame_count": 12,
+          "sample_file": "Run Slashing_000.png"
+        },
+        {
+          "name": "Run Throwing",
+          "frame_count": 12,
+          "sample_file": "Run Throwing_000.png"
+        },
+        {
+          "name": "Running",
+          "frame_count": 12,
+          "sample_file": "Running_000.png"
+        },
+        {
+          "name": "Slashing",
+          "frame_count": 12,
+          "sample_file": "Slashing_000.png"
+        },
+        {
+          "name": "Slashing in The Air",
+          "frame_count": 12,
+          "sample_file": "Slashing in The Air_000.png"
+        },
+        {
+          "name": "Sliding",
+          "frame_count": 6,
+          "sample_file": "Sliding_000.png"
+        },
+        {
+          "name": "Throwing",
+          "frame_count": 12,
+          "sample_file": "Throwing_000.png"
+        },
+        {
+          "name": "Throwing in The Air",
+          "frame_count": 12,
+          "sample_file": "Throwing in The Air_000.png"
+        },
+        {
+          "name": "Walking",
+          "frame_count": 24,
+          "sample_file": "Walking_000.png"
+        }
+      ],
+      "root": "/Volumes/PSSD/Projects/OpenClawInstaller/subprojects/lobster-sanctum-ui/materials/character-sets/seven-multi-action-v1/Heavy Armored Defender Knight"
+    },
+    {
+      "archive": "56.zip",
+      "archive_no": "56",
+      "role": "Black Wizard",
+      "theme": "mage",
+      "action_count": 17,
+      "actions": [
+        {
+          "name": "Dying",
+          "frame_count": 15,
+          "sample_file": "Dying_000.png"
+        },
+        {
+          "name": "Falling Down",
+          "frame_count": 6,
+          "sample_file": "Falling Down_000.png"
+        },
+        {
+          "name": "Hurt",
+          "frame_count": 12,
+          "sample_file": "Hurt_000.png"
+        },
+        {
+          "name": "Idle",
+          "frame_count": 18,
+          "sample_file": "Idle_000.png"
+        },
+        {
+          "name": "Idle Blinking",
+          "frame_count": 18,
+          "sample_file": "Idle Blinking_000.png"
+        },
+        {
+          "name": "Jump Loop",
+          "frame_count": 6,
+          "sample_file": "Jump Loop_000.png"
+        },
+        {
+          "name": "Jump Start",
+          "frame_count": 6,
+          "sample_file": "Jump Start_000.png"
+        },
+        {
+          "name": "Kicking",
+          "frame_count": 12,
+          "sample_file": "Kicking_000.png"
+        },
+        {
+          "name": "Run Swinging Rod",
+          "frame_count": 12,
+          "sample_file": "Run Swinging Rod_000.png"
+        },
+        {
+          "name": "Run Throwing",
+          "frame_count": 12,
+          "sample_file": "Run Throwing_000.png"
+        },
+        {
+          "name": "Running",
+          "frame_count": 12,
+          "sample_file": "Running_000.png"
+        },
+        {
+          "name": "Sliding",
+          "frame_count": 6,
+          "sample_file": "Sliding_000.png"
+        },
+        {
+          "name": "Swinging Rod",
+          "frame_count": 12,
+          "sample_file": "Swinging Rod_000.png"
+        },
+        {
+          "name": "Swinging Rod in The Air",
+          "frame_count": 12,
+          "sample_file": "Swingin Rod in The Air_000.png"
+        },
+        {
+          "name": "Throwing",
+          "frame_count": 12,
+          "sample_file": "Throwing_000.png"
+        },
+        {
+          "name": "Throwing in The Air",
+          "frame_count": 12,
+          "sample_file": "Throwing in The Air_000.png"
+        },
+        {
+          "name": "Walking",
+          "frame_count": 24,
+          "sample_file": "Walking_000.png"
+        }
+      ],
+      "root": "/Volumes/PSSD/Projects/OpenClawInstaller/subprojects/lobster-sanctum-ui/materials/character-sets/seven-multi-action-v1/Black Wizard"
+    },
+    {
+      "archive": "59.zip",
+      "archive_no": "59",
+      "role": "Lich",
+      "theme": "undead-caster",
+      "action_count": 17,
+      "actions": [
+        {
+          "name": "Dying",
+          "frame_count": 15,
+          "sample_file": "0_Lich_Dying_000.png"
+        },
+        {
+          "name": "Falling Down",
+          "frame_count": 6,
+          "sample_file": "0_Lich_Falling Down_000.png"
+        },
+        {
+          "name": "Hurt",
+          "frame_count": 12,
+          "sample_file": "0_Lich_Hurt_000.png"
+        },
+        {
+          "name": "Idle",
+          "frame_count": 18,
+          "sample_file": "0_Lich_Idle_000.png"
+        },
+        {
+          "name": "Idle Blinking",
+          "frame_count": 18,
+          "sample_file": "0_Lich_Idle Blinking_000.png"
+        },
+        {
+          "name": "Jump Loop",
+          "frame_count": 6,
+          "sample_file": "0_Lich_Jump Loop_000.png"
+        },
+        {
+          "name": "Jump Start",
+          "frame_count": 6,
+          "sample_file": "0_Lich_Jump Start_000.png"
+        },
+        {
+          "name": "Kicking",
+          "frame_count": 12,
+          "sample_file": "0_Lich_Kicking_000.png"
+        },
+        {
+          "name": "Run Slashing",
+          "frame_count": 12,
+          "sample_file": "0_Lich_Run Slashing_000.png"
+        },
+        {
+          "name": "Run Throwing",
+          "frame_count": 12,
+          "sample_file": "0_Lich_Run Throwing_000.png"
+        },
+        {
+          "name": "Running",
+          "frame_count": 12,
+          "sample_file": "0_Lich_Running_000.png"
+        },
+        {
+          "name": "Slashing",
+          "frame_count": 12,
+          "sample_file": "0_Lich_Slashing_000.png"
+        },
+        {
+          "name": "Slashing in The Air",
+          "frame_count": 12,
+          "sample_file": "0_Lich_Slashing in The Air_000.png"
+        },
+        {
+          "name": "Sliding",
+          "frame_count": 6,
+          "sample_file": "0_Lich_Sliding_000.png"
+        },
+        {
+          "name": "Throwing",
+          "frame_count": 12,
+          "sample_file": "0_Lich_Throwing_000.png"
+        },
+        {
+          "name": "Throwing in The Air",
+          "frame_count": 12,
+          "sample_file": "0_Lich_Throwing in The Air_000.png"
+        },
+        {
+          "name": "Walking",
+          "frame_count": 24,
+          "sample_file": "0_Lich_Walking_000.png"
+        }
+      ],
+      "root": "/Volumes/PSSD/Projects/OpenClawInstaller/subprojects/lobster-sanctum-ui/materials/character-sets/seven-multi-action-v1/Lich"
+    },
+    {
+      "archive": "60.zip",
+      "archive_no": "60",
+      "role": "Rogue",
+      "theme": "assassin",
+      "action_count": 17,
+      "actions": [
+        {
+          "name": "Dying",
+          "frame_count": 15,
+          "sample_file": "0_Rogue_Dying_000.png"
+        },
+        {
+          "name": "Falling Down",
+          "frame_count": 6,
+          "sample_file": "0_Rogue_Falling Down_000.png"
+        },
+        {
+          "name": "Hurt",
+          "frame_count": 12,
+          "sample_file": "0_Rogue_Hurt_000.png"
+        },
+        {
+          "name": "Idle",
+          "frame_count": 18,
+          "sample_file": "0_Rogue_Idle_000.png"
+        },
+        {
+          "name": "Idle Blinking",
+          "frame_count": 18,
+          "sample_file": "0_Rogue_Idle Blinking_000.png"
+        },
+        {
+          "name": "Jump Loop",
+          "frame_count": 6,
+          "sample_file": "0_Rogue_Jump Loop_000.png"
+        },
+        {
+          "name": "Jump Start",
+          "frame_count": 6,
+          "sample_file": "0_Rogue_Jump Start_000.png"
+        },
+        {
+          "name": "Kicking",
+          "frame_count": 12,
+          "sample_file": "0_Rogue_Kicking_000.png"
+        },
+        {
+          "name": "Run Slashing",
+          "frame_count": 12,
+          "sample_file": "0_Rogue_Run Slashing_000.png"
+        },
+        {
+          "name": "Run Throwing",
+          "frame_count": 12,
+          "sample_file": "0_Rogue_Run Throwing_000.png"
+        },
+        {
+          "name": "Running",
+          "frame_count": 12,
+          "sample_file": "0_Rogue_Running_000.png"
+        },
+        {
+          "name": "Slashing",
+          "frame_count": 12,
+          "sample_file": "0_Rogue_Slashing_000.png"
+        },
+        {
+          "name": "Slashing in The Air",
+          "frame_count": 12,
+          "sample_file": "0_Rogue_Slashing in The Air_000.png"
+        },
+        {
+          "name": "Sliding",
+          "frame_count": 6,
+          "sample_file": "0_Rogue_Sliding_000.png"
+        },
+        {
+          "name": "Throwing",
+          "frame_count": 12,
+          "sample_file": "0_Rogue_Throwing_000.png"
+        },
+        {
+          "name": "Throwing in The Air",
+          "frame_count": 12,
+          "sample_file": "0_Rogue_Throwing in The Air_000.png"
+        },
+        {
+          "name": "Walking",
+          "frame_count": 24,
+          "sample_file": "0_Rogue_Walking_000.png"
+        }
+      ],
+      "root": "/Volumes/PSSD/Projects/OpenClawInstaller/subprojects/lobster-sanctum-ui/materials/character-sets/seven-multi-action-v1/Rogue"
+    },
+    {
+      "archive": "62.zip",
+      "archive_no": "62",
+      "role": "Hell_Knight",
+      "theme": "dark-knight",
+      "action_count": 17,
+      "actions": [
+        {
+          "name": "Dying",
+          "frame_count": 15,
+          "sample_file": "0_Hell_Knight_Dying_000.png"
+        },
+        {
+          "name": "Falling Down",
+          "frame_count": 6,
+          "sample_file": "0_Hell_Knight_Falling Down_000.png"
+        },
+        {
+          "name": "Hurt",
+          "frame_count": 12,
+          "sample_file": "0_Hell_Knight_Hurt_000.png"
+        },
+        {
+          "name": "Idle",
+          "frame_count": 18,
+          "sample_file": "0_Hell_Knight_Idle_000.png"
+        },
+        {
+          "name": "Idle Blinking",
+          "frame_count": 18,
+          "sample_file": "0_Hell_Knight_Idle Blinking_000.png"
+        },
+        {
+          "name": "Jump Loop",
+          "frame_count": 6,
+          "sample_file": "0_Hell_Knight_Jump Loop_000.png"
+        },
+        {
+          "name": "Jump Start",
+          "frame_count": 6,
+          "sample_file": "0_Hell_Knight_Jump Start_000.png"
+        },
+        {
+          "name": "Kicking",
+          "frame_count": 12,
+          "sample_file": "0_Hell_Knight_Kicking_000.png"
+        },
+        {
+          "name": "Run Slashing",
+          "frame_count": 12,
+          "sample_file": "0_Hell_Knight_Run Slashing_000.png"
+        },
+        {
+          "name": "Run Throwing",
+          "frame_count": 12,
+          "sample_file": "0_Hell_Knight_Run Throwing_000.png"
+        },
+        {
+          "name": "Running",
+          "frame_count": 12,
+          "sample_file": "0_Hell_Knight_Running_000.png"
+        },
+        {
+          "name": "Slashing",
+          "frame_count": 12,
+          "sample_file": "0_Hell_Knight_Slashing_000.png"
+        },
+        {
+          "name": "Slashing in The Air",
+          "frame_count": 12,
+          "sample_file": "0_Hell_Knight_Slashing in The Air_000.png"
+        },
+        {
+          "name": "Sliding",
+          "frame_count": 6,
+          "sample_file": "0_Hell_Knight_Sliding_000.png"
+        },
+        {
+          "name": "Throwing",
+          "frame_count": 12,
+          "sample_file": "0_Hell_Knight_Throwing_000.png"
+        },
+        {
+          "name": "Throwing in The Air",
+          "frame_count": 12,
+          "sample_file": "0_Hell_Knight_Throwing in The Air_000.png"
+        },
+        {
+          "name": "Walking",
+          "frame_count": 24,
+          "sample_file": "0_Hell_Knight_Walking_000.png"
+        }
+      ],
+      "root": "/Volumes/PSSD/Projects/OpenClawInstaller/subprojects/lobster-sanctum-ui/materials/character-sets/seven-multi-action-v1/Hell_Knight"
+    },
+    {
+      "archive": "63.zip",
+      "archive_no": "63",
+      "role": "Death_Knight",
+      "theme": "death-knight",
+      "action_count": 16,
+      "actions": [
+        {
+          "name": "Dying",
+          "frame_count": 15,
+          "sample_file": "0_Death_Knight_Dying_000.png"
+        },
+        {
+          "name": "Falling Down",
+          "frame_count": 6,
+          "sample_file": "0_Death_Knight_Falling Down_000.png"
+        },
+        {
+          "name": "Hurt",
+          "frame_count": 12,
+          "sample_file": "0_Death_Knight_Hurt_000.png"
+        },
+        {
+          "name": "Idle",
+          "frame_count": 18,
+          "sample_file": "0_Death_Knight_Idle_000.png"
+        },
+        {
+          "name": "Jump Loop",
+          "frame_count": 6,
+          "sample_file": "0_Death_Knight_Jump Loop_000.png"
+        },
+        {
+          "name": "Jump Start",
+          "frame_count": 6,
+          "sample_file": "0_Death_Knight_Jump Start_000.png"
+        },
+        {
+          "name": "Kicking",
+          "frame_count": 12,
+          "sample_file": "0_Death_Knight_Kicking_000.png"
+        },
+        {
+          "name": "Run Slashing",
+          "frame_count": 12,
+          "sample_file": "0_Death_Knight_Run Slashing_000.png"
+        },
+        {
+          "name": "Run Throwing",
+          "frame_count": 12,
+          "sample_file": "0_Death_Knight_Run Throwing_000.png"
+        },
+        {
+          "name": "Running",
+          "frame_count": 12,
+          "sample_file": "0_Death_Knight_Running_000.png"
+        },
+        {
+          "name": "Slashing",
+          "frame_count": 12,
+          "sample_file": "0_Death_Knight_Slashing_000.png"
+        },
+        {
+          "name": "Slashing in The Air",
+          "frame_count": 12,
+          "sample_file": "0_Death_Knight_Slashing in The Air_000.png"
+        },
+        {
+          "name": "Sliding",
+          "frame_count": 6,
+          "sample_file": "0_Death_Knight_Sliding_000.png"
+        },
+        {
+          "name": "Throwing",
+          "frame_count": 12,
+          "sample_file": "0_Death_Knight_Throwing_000.png"
+        },
+        {
+          "name": "Throwing in The Air",
+          "frame_count": 12,
+          "sample_file": "0_Death_Knight_Throwing in The Air_000.png"
+        },
+        {
+          "name": "Walking",
+          "frame_count": 24,
+          "sample_file": "0_Death_Knight_Walking_000.png"
+        }
+      ],
+      "root": "/Volumes/PSSD/Projects/OpenClawInstaller/subprojects/lobster-sanctum-ui/materials/character-sets/seven-multi-action-v1/Death_Knight"
+    },
+    {
+      "archive": "64.zip",
+      "archive_no": "64",
+      "role": "Spartan Knight with Spear",
+      "theme": "spear-warrior",
+      "action_count": 17,
+      "actions": [
+        {
+          "name": "Attacking",
+          "frame_count": 12,
+          "sample_file": "Attacking_000.png"
+        },
+        {
+          "name": "Attacking in The Air",
+          "frame_count": 12,
+          "sample_file": "Attacking in The Air_000.png"
+        },
+        {
+          "name": "Dying",
+          "frame_count": 15,
+          "sample_file": "Dying_000.png"
+        },
+        {
+          "name": "Falling Down",
+          "frame_count": 6,
+          "sample_file": "Falling Down_000.png"
+        },
+        {
+          "name": "Hurt",
+          "frame_count": 12,
+          "sample_file": "Hurt_000.png"
+        },
+        {
+          "name": "Idle",
+          "frame_count": 18,
+          "sample_file": "Idle_000.png"
+        },
+        {
+          "name": "Idle Blinking",
+          "frame_count": 18,
+          "sample_file": "Idle Blinking_000.png"
+        },
+        {
+          "name": "Jump Loop",
+          "frame_count": 6,
+          "sample_file": "Jump Loop_000.png"
+        },
+        {
+          "name": "Jump Start",
+          "frame_count": 6,
+          "sample_file": "Jump Start_000.png"
+        },
+        {
+          "name": "Kicking",
+          "frame_count": 12,
+          "sample_file": "Kicking_000.png"
+        },
+        {
+          "name": "Run Attacking",
+          "frame_count": 12,
+          "sample_file": "Run Attacking_000.png"
+        },
+        {
+          "name": "Run Throwing",
+          "frame_count": 12,
+          "sample_file": "Run Throwing_000.png"
+        },
+        {
+          "name": "Running",
+          "frame_count": 12,
+          "sample_file": "Running_000.png"
+        },
+        {
+          "name": "Sliding",
+          "frame_count": 6,
+          "sample_file": "Sliding_000.png"
+        },
+        {
+          "name": "Throwing",
+          "frame_count": 12,
+          "sample_file": "Throwing_000.png"
+        },
+        {
+          "name": "Throwing in The Air",
+          "frame_count": 12,
+          "sample_file": "Throwing in The Air_000.png"
+        },
+        {
+          "name": "Walking",
+          "frame_count": 24,
+          "sample_file": "Walking_000.png"
+        }
+      ],
+      "root": "/Volumes/PSSD/Projects/OpenClawInstaller/subprojects/lobster-sanctum-ui/materials/character-sets/seven-multi-action-v1/Spartan Knight with Spear"
+    }
+  ]
+}

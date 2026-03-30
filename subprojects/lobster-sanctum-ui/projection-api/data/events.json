@@ -1,0 +1,21 @@
+[
+  {
+    "id": 1,
+    "seq": 1,
+    "type": "runtime",
+    "message": "bridge pull failed",
+    "detail": "cannot reach http://127.0.0.1:13145/status",
+    "state": "error",
+    "phase": "error",
+    "progress": null,
+    "task_id": null,
+    "tool": null,
+    "model": null,
+    "latency_ms": null,
+    "error_code": "OPENCLAW_STATUS_UNREACHABLE",
+    "agent_id": null,
+    "source": "openclaw-bridge",
+    "created_at": "2026-03-30T09:26:10.309040+08:00",
+    "signature": "d3bae015ded49c95a219e8bebe613eb8686f9b10"
+  }
+]

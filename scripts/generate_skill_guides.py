@@ -9,8 +9,8 @@ SKILLS_DIR = REPO_ROOT / 'skills' / 'default'
 INDEX_PATH = REPO_ROOT / 'docs' / 'skills-guides.md'
 UPSTREAM_PATH = REPO_ROOT / 'docs' / 'upstream-sources.md'
 
-PROFILE_BASIC = set("""capability-evolver openclaw-cron-setup proactive-agent self-improving-agent-cn brainstorming reflection find-skills skill-creator agent-browser chrome-devtools-mcp github mcp-builder model-usage shell minimax-understand-image tavily-search web-search minimax-web-search news-radar url-to-markdown pdf docx pptx xlsx stock-monitor-skill multi-search-engine akshare-stock agentmail agentmail-cli agentmail-mcp agentmail-toolkit""".split())
-PROFILE_EXTENDED = set("""capability-evolver openclaw-cron-setup proactive-agent self-improving-agent-cn brainstorming reflection find-skills skill-creator agent-browser chrome-devtools-mcp github mcp-builder model-usage shell minimax-understand-image tavily-search web-search minimax-web-search news-radar url-to-markdown pdf docx pptx xlsx stock-monitor-skill multi-search-engine akshare-stock gemini-image-service nano-banana-service agentmail agentmail-cli agentmail-mcp agentmail-toolkit""".split())
+PROFILE_BASIC = set("""capability-evolver openclaw-cron-setup proactive-agent self-improving-agent-cn brainstorming reflection find-skills skill-creator subagent-driven-development using-superpowers verification-before-completion writing-skills agent-browser chrome-devtools-mcp github mcp-builder model-usage shell minimax-image-understanding tavily-search web-search minimax-web-search news-radar url-to-markdown pdf nano-pdf docx pptx xlsx stock-monitor-skill multi-search-engine akshare-stock content-strategy social-content ai-image-generation media-downloader marketingskills inference-skills agentmail agentmail-cli agentmail-mcp agentmail-toolkit lark-calendar notebooklm-skill skill-security-auditor weather data-analyst finance-data task todo""".split())
+PROFILE_EXTENDED = set("""capability-evolver openclaw-cron-setup proactive-agent self-improving-agent-cn brainstorming reflection find-skills skill-creator subagent-driven-development using-superpowers verification-before-completion writing-skills agent-browser chrome-devtools-mcp github mcp-builder model-usage shell minimax-image-understanding tavily-search web-search minimax-web-search news-radar url-to-markdown pdf nano-pdf docx pptx xlsx stock-monitor-skill multi-search-engine akshare-stock content-strategy social-content ai-image-generation animation media-downloader marketingskills inference-skills gemini-image-service oracle paperless-docs paperless-ngx-tools writing-plans agentmail agentmail-cli agentmail-mcp agentmail-toolkit lark-calendar notebooklm-skill skill-security-auditor weather data-analyst finance-data task todo""".split())
 
 OVERRIDES = {
     'agent-browser': {
@@ -138,13 +138,13 @@ OVERRIDES = {
         'purpose': '构建 MCP 服务与工具接入规范。',
         'examples': ['请用 mcp-builder 设计一个接入企业内部 API 的 MCP server。', '请用 mcp-builder 审查这个 MCP 服务的工具设计。'],
     },
-    'minimax-understand-image': {
+    'minimax-image-understanding': {
         'title': 'MiniMax Understand Image',
         'purpose': '优先用 MiniMax 做识图、OCR、截图理解与视觉分析。',
         'needs': ['`MINIMAX_API_KEY` 或 `~/.openclaw/config/minimax.json`'],
         'setup': ['确保 `~/.openclaw/config/minimax.json` 含有效 `api_key`。', '若无配置，可在当前 shell 导出 `MINIMAX_API_KEY`。', '本 skill 的脚本支持本地图片路径和远程 URL。'],
-        'examples': ['请用 minimax-understand-image 识别这张图里的错误信息。', '请用 minimax-understand-image 解释这个 UI 截图。'],
-        'verify': 'python3 skills/default/minimax-understand-image/scripts/understand_image.py --help',
+        'examples': ['请用 minimax-image-understanding 识别这张图里的错误信息。', '请用 minimax-image-understanding 解释这个 UI 截图。'],
+        'verify': 'python3 skills/default/minimax-image-understanding/scripts/understand_image.py --help',
     },
     'minimax-web-search': {
         'title': 'MiniMax Web Search',
@@ -169,14 +169,6 @@ OVERRIDES = {
         'needs': ['无需 API Key'],
         'setup': ['直接按 skill 文档拼接搜索 URL 即可。', '更适合用作搜索策略参考，而非单一脚本入口。'],
         'examples': ['请用 multi-search-engine 设计一条跨 Google/百度/Brave 的检索方案。', '请用 multi-search-engine 给出 site: + 时间过滤的搜索链接。'],
-    },
-    'nano-banana-service': {
-        'title': 'Nano Banana Service',
-        'purpose': '通过 NanoBanana 兼容服务生成图片/视频。',
-        'needs': ['`NANO_BANANA_API_KEY`', '`NANO_BANANA_BASE_URL`', '`NANO_BANANA_IMAGE_MODEL`', '`NANO_BANANA_VIDEO_MODEL`'],
-        'setup': ['推荐写入 `~/.openclaw/skills/nano-banana-service/service.env`。', '若服务商异步返回任务 ID，需按服务商方式轮询任务状态。'],
-        'examples': ['请用 nano-banana-service 生成一张极简产品 KV。', '请用 nano-banana-service 生成一段短视频脚本素材。'],
-        'verify': 'python3 skills/default/nano-banana-service/scripts/generate_media.py --help',
     },
     'nano-pdf': {
         'title': 'Nano PDF',

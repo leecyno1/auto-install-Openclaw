@@ -7,10 +7,11 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Noto+Serif+SC:wght@400;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Noto+Sans+SC:wght@400;500;700;900&display=swap"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="./workbench-theme.css" />
   </head>
   <body>
     <div class="app-shell">
@@ -118,25 +119,27 @@
             </p>
           </div>
 
-          <section class="info-block">
-            <h3>简介</h3>
-            <p id="roleIntro"></p>
-          </section>
+          <div class="info-grid">
+            <section class="info-block info-block-wide">
+              <h3>角色定位</h3>
+              <p id="roleIntro"></p>
+            </section>
 
-          <section class="info-block">
-            <h3>掌握技能</h3>
-            <ul class="tag-list" id="roleSkills"></ul>
-          </section>
+            <section class="info-block">
+              <h3>掌握技能</h3>
+              <ul class="tag-list" id="roleSkills"></ul>
+            </section>
 
-          <section class="info-block">
-            <h3>适配模型</h3>
-            <ul class="model-list" id="roleModels"></ul>
-          </section>
+            <section class="info-block">
+              <h3>适配模型</h3>
+              <ul class="model-list" id="roleModels"></ul>
+            </section>
 
-          <section class="info-block">
-            <h3>适合任务</h3>
-            <ul class="task-list" id="roleTasks"></ul>
-          </section>
+            <section class="info-block info-block-wide">
+              <h3>适合任务</h3>
+              <ul class="task-list" id="roleTasks"></ul>
+            </section>
+          </div>
 
           <div class="actions">
             <button id="confirmBtn" type="button">确认人格</button>
@@ -147,5 +150,6 @@
     </div>
 
     <script src="./app.js"></script>
+    <script src="./workbench-host.js"></script>
   </body>
 </html>

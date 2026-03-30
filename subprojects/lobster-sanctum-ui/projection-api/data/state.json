@@ -1,0 +1,16 @@
+{
+  "state": "error",
+  "phase": "error",
+  "detail": "cannot reach http://127.0.0.1:13145/status",
+  "progress": 0,
+  "source": "openclaw-bridge",
+  "task_id": "",
+  "tool": "",
+  "model": "",
+  "latency_ms": null,
+  "error_code": "OPENCLAW_STATUS_UNREACHABLE",
+  "agent_id": "",
+  "last_event_id": 1,
+  "event_signature": "d3bae015ded49c95a219e8bebe613eb8686f9b10",
+  "updated_at": "2026-03-30T09:26:10.309289+08:00"
+}

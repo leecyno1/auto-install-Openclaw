@@ -1,2 +1,9 @@
 tmp.txt
 README-mo.md
+tmp/
+test-results/
+**/__pycache__/
+*.pyc
+subprojects/lobster-sanctum-ui/dist/
+subprojects/lobster-sanctum-ui/tmp-sync-f0.png
+subprojects/lobster-sanctum-ui/web/runtime-feed.json

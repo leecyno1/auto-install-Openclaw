@@ -1,0 +1,2118 @@
+{
+  "name": "seven-multi-action-v1-compressed",
+  "generated_at": "2026-03-30T00:23:29.145962+00:00",
+  "source_set": "seven-multi-action-v1",
+  "frame_spec": {
+    "frame_width": 160,
+    "frame_height": 160,
+    "columns": 6,
+    "format": "webp",
+    "quality": 86
+  },
+  "roles": [
+    {
+      "role_id": "druid",
+      "source_name": "Heavy Armored Defender Knight",
+      "source_dir": "materials/character-sets/seven-multi-action-v1/Heavy Armored Defender Knight",
+      "runtime_mapping": {
+        "idle": "Idle",
+        "working": "Running",
+        "sync": "Dying",
+        "error": "Hurt"
+      },
+      "action_total": 17,
+      "actions": [
+        {
+          "action_id": "dying",
+          "source_action": "Dying",
+          "normalized_name": "dying",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Heavy Armored Defender Knight/PNG Sequences/Dying",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Heavy Armored Defender Knight/PNG Sequences/Dying/Dying_000.png",
+          "frame_count": 15,
+          "archive": {
+            "file": "actions/dying.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 3,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "falling-down",
+          "source_action": "Falling Down",
+          "normalized_name": "falling down",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Heavy Armored Defender Knight/PNG Sequences/Falling Down",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Heavy Armored Defender Knight/PNG Sequences/Falling Down/Falling Down_000.png",
+          "frame_count": 6,
+          "archive": {
+            "file": "actions/falling-down.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 1,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "hurt",
+          "source_action": "Hurt",
+          "normalized_name": "hurt",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Heavy Armored Defender Knight/PNG Sequences/Hurt",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Heavy Armored Defender Knight/PNG Sequences/Hurt/Hurt_000.png",
+          "frame_count": 12,
+          "archive": {
+            "file": "actions/hurt.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 2,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "idle",
+          "source_action": "Idle",
+          "normalized_name": "idle",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Heavy Armored Defender Knight/PNG Sequences/Idle",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Heavy Armored Defender Knight/PNG Sequences/Idle/Idle_000.png",
+          "frame_count": 18,
+          "archive": {
+            "file": "actions/idle.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 3,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "idle-blinking",
+          "source_action": "Idle Blinking",
+          "normalized_name": "idle blinking",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Heavy Armored Defender Knight/PNG Sequences/Idle Blinking",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Heavy Armored Defender Knight/PNG Sequences/Idle Blinking/Idle Blinking_000.png",
+          "frame_count": 18,
+          "archive": {
+            "file": "actions/idle-blinking.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 3,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "jump-loop",
+          "source_action": "Jump Loop",
+          "normalized_name": "jump loop",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Heavy Armored Defender Knight/PNG Sequences/Jump Loop",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Heavy Armored Defender Knight/PNG Sequences/Jump Loop/Jump Loop_000.png",
+          "frame_count": 6,
+          "archive": {
+            "file": "actions/jump-loop.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 1,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "jump-start",
+          "source_action": "Jump Start",
+          "normalized_name": "jump start",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Heavy Armored Defender Knight/PNG Sequences/Jump Start",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Heavy Armored Defender Knight/PNG Sequences/Jump Start/Jump Start_000.png",
+          "frame_count": 6,
+          "archive": {
+            "file": "actions/jump-start.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 1,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "kicking",
+          "source_action": "Kicking",
+          "normalized_name": "kicking",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Heavy Armored Defender Knight/PNG Sequences/Kicking",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Heavy Armored Defender Knight/PNG Sequences/Kicking/Kicking_000.png",
+          "frame_count": 12,
+          "archive": {
+            "file": "actions/kicking.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 2,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "run-slashing",
+          "source_action": "Run Slashing",
+          "normalized_name": "run slashing",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Heavy Armored Defender Knight/PNG Sequences/Run Slashing",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Heavy Armored Defender Knight/PNG Sequences/Run Slashing/Run Slashing_000.png",
+          "frame_count": 12,
+          "archive": {
+            "file": "actions/run-slashing.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 2,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "run-throwing",
+          "source_action": "Run Throwing",
+          "normalized_name": "run throwing",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Heavy Armored Defender Knight/PNG Sequences/Run Throwing",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Heavy Armored Defender Knight/PNG Sequences/Run Throwing/Run Throwing_000.png",
+          "frame_count": 12,
+          "archive": {
+            "file": "actions/run-throwing.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 2,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "running",
+          "source_action": "Running",
+          "normalized_name": "running",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Heavy Armored Defender Knight/PNG Sequences/Running",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Heavy Armored Defender Knight/PNG Sequences/Running/Running_000.png",
+          "frame_count": 12,
+          "archive": {
+            "file": "actions/running.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 2,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "slashing",
+          "source_action": "Slashing",
+          "normalized_name": "slashing",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Heavy Armored Defender Knight/PNG Sequences/Slashing",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Heavy Armored Defender Knight/PNG Sequences/Slashing/Slashing_000.png",
+          "frame_count": 12,
+          "archive": {
+            "file": "actions/slashing.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 2,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "slashing-in-the-air",
+          "source_action": "Slashing in The Air",
+          "normalized_name": "slashing in the air",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Heavy Armored Defender Knight/PNG Sequences/Slashing in The Air",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Heavy Armored Defender Knight/PNG Sequences/Slashing in The Air/Slashing in The Air_000.png",
+          "frame_count": 12,
+          "archive": {
+            "file": "actions/slashing-in-the-air.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 2,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "sliding",
+          "source_action": "Sliding",
+          "normalized_name": "sliding",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Heavy Armored Defender Knight/PNG Sequences/Sliding",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Heavy Armored Defender Knight/PNG Sequences/Sliding/Sliding_000.png",
+          "frame_count": 6,
+          "archive": {
+            "file": "actions/sliding.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 1,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "throwing",
+          "source_action": "Throwing",
+          "normalized_name": "throwing",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Heavy Armored Defender Knight/PNG Sequences/Throwing",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Heavy Armored Defender Knight/PNG Sequences/Throwing/Throwing_000.png",
+          "frame_count": 12,
+          "archive": {
+            "file": "actions/throwing.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 2,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "throwing-in-the-air",
+          "source_action": "Throwing in The Air",
+          "normalized_name": "throwing in the air",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Heavy Armored Defender Knight/PNG Sequences/Throwing in The Air",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Heavy Armored Defender Knight/PNG Sequences/Throwing in The Air/Throwing in The Air_000.png",
+          "frame_count": 12,
+          "archive": {
+            "file": "actions/throwing-in-the-air.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 2,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "walking",
+          "source_action": "Walking",
+          "normalized_name": "walking",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Heavy Armored Defender Knight/PNG Sequences/Walking",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Heavy Armored Defender Knight/PNG Sequences/Walking/Walking_000.png",
+          "frame_count": 24,
+          "archive": {
+            "file": "actions/walking.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 4,
+            "quality": 86
+          }
+        }
+      ]
+    },
+    {
+      "role_id": "assassin",
+      "source_name": "Rogue",
+      "source_dir": "materials/character-sets/seven-multi-action-v1/Rogue",
+      "runtime_mapping": {
+        "idle": "Idle",
+        "working": "Running",
+        "sync": "Dying",
+        "error": "Hurt"
+      },
+      "action_total": 17,
+      "actions": [
+        {
+          "action_id": "dying",
+          "source_action": "Dying",
+          "normalized_name": "dying",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Rogue/PNG Sequences/Dying",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Rogue/PNG Sequences/Dying/0_Rogue_Dying_000.png",
+          "frame_count": 15,
+          "archive": {
+            "file": "actions/dying.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 3,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "falling-down",
+          "source_action": "Falling Down",
+          "normalized_name": "falling down",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Rogue/PNG Sequences/Falling Down",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Rogue/PNG Sequences/Falling Down/0_Rogue_Falling Down_000.png",
+          "frame_count": 6,
+          "archive": {
+            "file": "actions/falling-down.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 1,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "hurt",
+          "source_action": "Hurt",
+          "normalized_name": "hurt",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Rogue/PNG Sequences/Hurt",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Rogue/PNG Sequences/Hurt/0_Rogue_Hurt_000.png",
+          "frame_count": 12,
+          "archive": {
+            "file": "actions/hurt.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 2,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "idle",
+          "source_action": "Idle",
+          "normalized_name": "idle",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Rogue/PNG Sequences/Idle",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Rogue/PNG Sequences/Idle/0_Rogue_Idle_000.png",
+          "frame_count": 18,
+          "archive": {
+            "file": "actions/idle.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 3,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "idle-blinking",
+          "source_action": "Idle Blinking",
+          "normalized_name": "idle blinking",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Rogue/PNG Sequences/Idle Blinking",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Rogue/PNG Sequences/Idle Blinking/0_Rogue_Idle Blinking_000.png",
+          "frame_count": 18,
+          "archive": {
+            "file": "actions/idle-blinking.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 3,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "jump-loop",
+          "source_action": "Jump Loop",
+          "normalized_name": "jump loop",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Rogue/PNG Sequences/Jump Loop",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Rogue/PNG Sequences/Jump Loop/0_Rogue_Jump Loop_000.png",
+          "frame_count": 6,
+          "archive": {
+            "file": "actions/jump-loop.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 1,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "jump-start",
+          "source_action": "Jump Start",
+          "normalized_name": "jump start",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Rogue/PNG Sequences/Jump Start",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Rogue/PNG Sequences/Jump Start/0_Rogue_Jump Start_000.png",
+          "frame_count": 6,
+          "archive": {
+            "file": "actions/jump-start.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 1,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "kicking",
+          "source_action": "Kicking",
+          "normalized_name": "kicking",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Rogue/PNG Sequences/Kicking",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Rogue/PNG Sequences/Kicking/0_Rogue_Kicking_000.png",
+          "frame_count": 12,
+          "archive": {
+            "file": "actions/kicking.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 2,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "run-slashing",
+          "source_action": "Run Slashing",
+          "normalized_name": "run slashing",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Rogue/PNG Sequences/Run Slashing",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Rogue/PNG Sequences/Run Slashing/0_Rogue_Run Slashing_000.png",
+          "frame_count": 12,
+          "archive": {
+            "file": "actions/run-slashing.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 2,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "run-throwing",
+          "source_action": "Run Throwing",
+          "normalized_name": "run throwing",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Rogue/PNG Sequences/Run Throwing",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Rogue/PNG Sequences/Run Throwing/0_Rogue_Run Throwing_000.png",
+          "frame_count": 12,
+          "archive": {
+            "file": "actions/run-throwing.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 2,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "running",
+          "source_action": "Running",
+          "normalized_name": "running",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Rogue/PNG Sequences/Running",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Rogue/PNG Sequences/Running/0_Rogue_Running_000.png",
+          "frame_count": 12,
+          "archive": {
+            "file": "actions/running.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 2,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "slashing",
+          "source_action": "Slashing",
+          "normalized_name": "slashing",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Rogue/PNG Sequences/Slashing",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Rogue/PNG Sequences/Slashing/0_Rogue_Slashing_000.png",
+          "frame_count": 12,
+          "archive": {
+            "file": "actions/slashing.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 2,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "slashing-in-the-air",
+          "source_action": "Slashing in The Air",
+          "normalized_name": "slashing in the air",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Rogue/PNG Sequences/Slashing in The Air",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Rogue/PNG Sequences/Slashing in The Air/0_Rogue_Slashing in The Air_000.png",
+          "frame_count": 12,
+          "archive": {
+            "file": "actions/slashing-in-the-air.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 2,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "sliding",
+          "source_action": "Sliding",
+          "normalized_name": "sliding",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Rogue/PNG Sequences/Sliding",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Rogue/PNG Sequences/Sliding/0_Rogue_Sliding_000.png",
+          "frame_count": 6,
+          "archive": {
+            "file": "actions/sliding.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 1,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "throwing",
+          "source_action": "Throwing",
+          "normalized_name": "throwing",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Rogue/PNG Sequences/Throwing",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Rogue/PNG Sequences/Throwing/0_Rogue_Throwing_000.png",
+          "frame_count": 12,
+          "archive": {
+            "file": "actions/throwing.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 2,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "throwing-in-the-air",
+          "source_action": "Throwing in The Air",
+          "normalized_name": "throwing in the air",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Rogue/PNG Sequences/Throwing in The Air",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Rogue/PNG Sequences/Throwing in The Air/0_Rogue_Throwing in The Air_000.png",
+          "frame_count": 12,
+          "archive": {
+            "file": "actions/throwing-in-the-air.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 2,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "walking",
+          "source_action": "Walking",
+          "normalized_name": "walking",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Rogue/PNG Sequences/Walking",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Rogue/PNG Sequences/Walking/0_Rogue_Walking_000.png",
+          "frame_count": 24,
+          "archive": {
+            "file": "actions/walking.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 4,
+            "quality": 86
+          }
+        }
+      ]
+    },
+    {
+      "role_id": "mage",
+      "source_name": "Black Wizard",
+      "source_dir": "materials/character-sets/seven-multi-action-v1/Black Wizard",
+      "runtime_mapping": {
+        "idle": "Idle",
+        "working": "Running",
+        "sync": "Dying",
+        "error": "Hurt"
+      },
+      "action_total": 17,
+      "actions": [
+        {
+          "action_id": "dying",
+          "source_action": "Dying",
+          "normalized_name": "dying",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Black Wizard/PNG Sequences/Dying",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Black Wizard/PNG Sequences/Dying/Dying_000.png",
+          "frame_count": 15,
+          "archive": {
+            "file": "actions/dying.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 3,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "falling-down",
+          "source_action": "Falling Down",
+          "normalized_name": "falling down",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Black Wizard/PNG Sequences/Falling Down",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Black Wizard/PNG Sequences/Falling Down/Falling Down_000.png",
+          "frame_count": 6,
+          "archive": {
+            "file": "actions/falling-down.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 1,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "hurt",
+          "source_action": "Hurt",
+          "normalized_name": "hurt",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Black Wizard/PNG Sequences/Hurt",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Black Wizard/PNG Sequences/Hurt/Hurt_000.png",
+          "frame_count": 12,
+          "archive": {
+            "file": "actions/hurt.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 2,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "idle",
+          "source_action": "Idle",
+          "normalized_name": "idle",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Black Wizard/PNG Sequences/Idle",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Black Wizard/PNG Sequences/Idle/Idle_000.png",
+          "frame_count": 18,
+          "archive": {
+            "file": "actions/idle.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 3,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "idle-blinking",
+          "source_action": "Idle Blinking",
+          "normalized_name": "idle blinking",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Black Wizard/PNG Sequences/Idle Blinking",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Black Wizard/PNG Sequences/Idle Blinking/Idle Blinking_000.png",
+          "frame_count": 18,
+          "archive": {
+            "file": "actions/idle-blinking.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 3,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "jump-loop",
+          "source_action": "Jump Loop",
+          "normalized_name": "jump loop",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Black Wizard/PNG Sequences/Jump Loop",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Black Wizard/PNG Sequences/Jump Loop/Jump Loop_000.png",
+          "frame_count": 6,
+          "archive": {
+            "file": "actions/jump-loop.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 1,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "jump-start",
+          "source_action": "Jump Start",
+          "normalized_name": "jump start",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Black Wizard/PNG Sequences/Jump Start",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Black Wizard/PNG Sequences/Jump Start/Jump Start_000.png",
+          "frame_count": 6,
+          "archive": {
+            "file": "actions/jump-start.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 1,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "kicking",
+          "source_action": "Kicking",
+          "normalized_name": "kicking",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Black Wizard/PNG Sequences/Kicking",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Black Wizard/PNG Sequences/Kicking/Kicking_000.png",
+          "frame_count": 12,
+          "archive": {
+            "file": "actions/kicking.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 2,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "run-swinging-rod",
+          "source_action": "Run Swinging Rod",
+          "normalized_name": "run swinging rod",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Black Wizard/PNG Sequences/Run Swinging Rod",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Black Wizard/PNG Sequences/Run Swinging Rod/Run Swinging Rod_000.png",
+          "frame_count": 12,
+          "archive": {
+            "file": "actions/run-swinging-rod.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 2,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "run-throwing",
+          "source_action": "Run Throwing",
+          "normalized_name": "run throwing",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Black Wizard/PNG Sequences/Run Throwing",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Black Wizard/PNG Sequences/Run Throwing/Run Throwing_000.png",
+          "frame_count": 12,
+          "archive": {
+            "file": "actions/run-throwing.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 2,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "running",
+          "source_action": "Running",
+          "normalized_name": "running",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Black Wizard/PNG Sequences/Running",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Black Wizard/PNG Sequences/Running/Running_000.png",
+          "frame_count": 12,
+          "archive": {
+            "file": "actions/running.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 2,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "sliding",
+          "source_action": "Sliding",
+          "normalized_name": "sliding",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Black Wizard/PNG Sequences/Sliding",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Black Wizard/PNG Sequences/Sliding/Sliding_000.png",
+          "frame_count": 6,
+          "archive": {
+            "file": "actions/sliding.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 1,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "swinging-rod",
+          "source_action": "Swinging Rod",
+          "normalized_name": "swinging rod",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Black Wizard/PNG Sequences/Swinging Rod",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Black Wizard/PNG Sequences/Swinging Rod/Swinging Rod_000.png",
+          "frame_count": 12,
+          "archive": {
+            "file": "actions/swinging-rod.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 2,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "swinging-rod-in-the-air",
+          "source_action": "Swinging Rod in The Air",
+          "normalized_name": "swinging rod in the air",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Black Wizard/PNG Sequences/Swinging Rod in The Air",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Black Wizard/PNG Sequences/Swinging Rod in The Air/Swingin Rod in The Air_000.png",
+          "frame_count": 12,
+          "archive": {
+            "file": "actions/swinging-rod-in-the-air.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 2,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "throwing",
+          "source_action": "Throwing",
+          "normalized_name": "throwing",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Black Wizard/PNG Sequences/Throwing",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Black Wizard/PNG Sequences/Throwing/Throwing_000.png",
+          "frame_count": 12,
+          "archive": {
+            "file": "actions/throwing.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 2,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "throwing-in-the-air",
+          "source_action": "Throwing in The Air",
+          "normalized_name": "throwing in the air",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Black Wizard/PNG Sequences/Throwing in The Air",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Black Wizard/PNG Sequences/Throwing in The Air/Throwing in The Air_000.png",
+          "frame_count": 12,
+          "archive": {
+            "file": "actions/throwing-in-the-air.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 2,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "walking",
+          "source_action": "Walking",
+          "normalized_name": "walking",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Black Wizard/PNG Sequences/Walking",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Black Wizard/PNG Sequences/Walking/Walking_000.png",
+          "frame_count": 24,
+          "archive": {
+            "file": "actions/walking.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 4,
+            "quality": 86
+          }
+        }
+      ]
+    },
+    {
+      "role_id": "summoner",
+      "source_name": "Lich",
+      "source_dir": "materials/character-sets/seven-multi-action-v1/Lich",
+      "runtime_mapping": {
+        "idle": "Idle",
+        "working": "Running",
+        "sync": "Dying",
+        "error": "Hurt"
+      },
+      "action_total": 17,
+      "actions": [
+        {
+          "action_id": "dying",
+          "source_action": "Dying",
+          "normalized_name": "dying",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Lich/PNG Sequences/Dying",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Lich/PNG Sequences/Dying/0_Lich_Dying_000.png",
+          "frame_count": 15,
+          "archive": {
+            "file": "actions/dying.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 3,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "falling-down",
+          "source_action": "Falling Down",
+          "normalized_name": "falling down",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Lich/PNG Sequences/Falling Down",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Lich/PNG Sequences/Falling Down/0_Lich_Falling Down_000.png",
+          "frame_count": 6,
+          "archive": {
+            "file": "actions/falling-down.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 1,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "hurt",
+          "source_action": "Hurt",
+          "normalized_name": "hurt",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Lich/PNG Sequences/Hurt",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Lich/PNG Sequences/Hurt/0_Lich_Hurt_000.png",
+          "frame_count": 12,
+          "archive": {
+            "file": "actions/hurt.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 2,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "idle",
+          "source_action": "Idle",
+          "normalized_name": "idle",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Lich/PNG Sequences/Idle",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Lich/PNG Sequences/Idle/0_Lich_Idle_000.png",
+          "frame_count": 18,
+          "archive": {
+            "file": "actions/idle.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 3,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "idle-blinking",
+          "source_action": "Idle Blinking",
+          "normalized_name": "idle blinking",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Lich/PNG Sequences/Idle Blinking",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Lich/PNG Sequences/Idle Blinking/0_Lich_Idle Blinking_000.png",
+          "frame_count": 18,
+          "archive": {
+            "file": "actions/idle-blinking.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 3,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "jump-loop",
+          "source_action": "Jump Loop",
+          "normalized_name": "jump loop",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Lich/PNG Sequences/Jump Loop",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Lich/PNG Sequences/Jump Loop/0_Lich_Jump Loop_000.png",
+          "frame_count": 6,
+          "archive": {
+            "file": "actions/jump-loop.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 1,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "jump-start",
+          "source_action": "Jump Start",
+          "normalized_name": "jump start",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Lich/PNG Sequences/Jump Start",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Lich/PNG Sequences/Jump Start/0_Lich_Jump Start_000.png",
+          "frame_count": 6,
+          "archive": {
+            "file": "actions/jump-start.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 1,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "kicking",
+          "source_action": "Kicking",
+          "normalized_name": "kicking",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Lich/PNG Sequences/Kicking",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Lich/PNG Sequences/Kicking/0_Lich_Kicking_000.png",
+          "frame_count": 12,
+          "archive": {
+            "file": "actions/kicking.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 2,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "run-slashing",
+          "source_action": "Run Slashing",
+          "normalized_name": "run slashing",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Lich/PNG Sequences/Run Slashing",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Lich/PNG Sequences/Run Slashing/0_Lich_Run Slashing_000.png",
+          "frame_count": 12,
+          "archive": {
+            "file": "actions/run-slashing.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 2,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "run-throwing",
+          "source_action": "Run Throwing",
+          "normalized_name": "run throwing",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Lich/PNG Sequences/Run Throwing",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Lich/PNG Sequences/Run Throwing/0_Lich_Run Throwing_000.png",
+          "frame_count": 12,
+          "archive": {
+            "file": "actions/run-throwing.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 2,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "running",
+          "source_action": "Running",
+          "normalized_name": "running",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Lich/PNG Sequences/Running",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Lich/PNG Sequences/Running/0_Lich_Running_000.png",
+          "frame_count": 12,
+          "archive": {
+            "file": "actions/running.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 2,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "slashing",
+          "source_action": "Slashing",
+          "normalized_name": "slashing",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Lich/PNG Sequences/Slashing",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Lich/PNG Sequences/Slashing/0_Lich_Slashing_000.png",
+          "frame_count": 12,
+          "archive": {
+            "file": "actions/slashing.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 2,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "slashing-in-the-air",
+          "source_action": "Slashing in The Air",
+          "normalized_name": "slashing in the air",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Lich/PNG Sequences/Slashing in The Air",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Lich/PNG Sequences/Slashing in The Air/0_Lich_Slashing in The Air_000.png",
+          "frame_count": 12,
+          "archive": {
+            "file": "actions/slashing-in-the-air.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 2,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "sliding",
+          "source_action": "Sliding",
+          "normalized_name": "sliding",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Lich/PNG Sequences/Sliding",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Lich/PNG Sequences/Sliding/0_Lich_Sliding_000.png",
+          "frame_count": 6,
+          "archive": {
+            "file": "actions/sliding.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 1,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "throwing",
+          "source_action": "Throwing",
+          "normalized_name": "throwing",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Lich/PNG Sequences/Throwing",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Lich/PNG Sequences/Throwing/0_Lich_Throwing_000.png",
+          "frame_count": 12,
+          "archive": {
+            "file": "actions/throwing.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 2,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "throwing-in-the-air",
+          "source_action": "Throwing in The Air",
+          "normalized_name": "throwing in the air",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Lich/PNG Sequences/Throwing in The Air",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Lich/PNG Sequences/Throwing in The Air/0_Lich_Throwing in The Air_000.png",
+          "frame_count": 12,
+          "archive": {
+            "file": "actions/throwing-in-the-air.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 2,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "walking",
+          "source_action": "Walking",
+          "normalized_name": "walking",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Lich/PNG Sequences/Walking",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Lich/PNG Sequences/Walking/0_Lich_Walking_000.png",
+          "frame_count": 24,
+          "archive": {
+            "file": "actions/walking.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 4,
+            "quality": 86
+          }
+        }
+      ]
+    },
+    {
+      "role_id": "warrior",
+      "source_name": "Spartan Knight with Spear",
+      "source_dir": "materials/character-sets/seven-multi-action-v1/Spartan Knight with Spear",
+      "runtime_mapping": {
+        "idle": "Idle",
+        "working": "Running",
+        "sync": "Dying",
+        "error": "Hurt"
+      },
+      "action_total": 17,
+      "actions": [
+        {
+          "action_id": "attacking",
+          "source_action": "Attacking",
+          "normalized_name": "attacking",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Spartan Knight with Spear/PNG Sequences/Attacking",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Spartan Knight with Spear/PNG Sequences/Attacking/Attacking_000.png",
+          "frame_count": 12,
+          "archive": {
+            "file": "actions/attacking.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 2,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "attacking-in-the-air",
+          "source_action": "Attacking in The Air",
+          "normalized_name": "attacking in the air",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Spartan Knight with Spear/PNG Sequences/Attacking in The Air",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Spartan Knight with Spear/PNG Sequences/Attacking in The Air/Attacking in The Air_000.png",
+          "frame_count": 12,
+          "archive": {
+            "file": "actions/attacking-in-the-air.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 2,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "dying",
+          "source_action": "Dying",
+          "normalized_name": "dying",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Spartan Knight with Spear/PNG Sequences/Dying",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Spartan Knight with Spear/PNG Sequences/Dying/Dying_000.png",
+          "frame_count": 15,
+          "archive": {
+            "file": "actions/dying.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 3,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "falling-down",
+          "source_action": "Falling Down",
+          "normalized_name": "falling down",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Spartan Knight with Spear/PNG Sequences/Falling Down",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Spartan Knight with Spear/PNG Sequences/Falling Down/Falling Down_000.png",
+          "frame_count": 6,
+          "archive": {
+            "file": "actions/falling-down.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 1,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "hurt",
+          "source_action": "Hurt",
+          "normalized_name": "hurt",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Spartan Knight with Spear/PNG Sequences/Hurt",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Spartan Knight with Spear/PNG Sequences/Hurt/Hurt_000.png",
+          "frame_count": 12,
+          "archive": {
+            "file": "actions/hurt.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 2,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "idle",
+          "source_action": "Idle",
+          "normalized_name": "idle",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Spartan Knight with Spear/PNG Sequences/Idle",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Spartan Knight with Spear/PNG Sequences/Idle/Idle_000.png",
+          "frame_count": 18,
+          "archive": {
+            "file": "actions/idle.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 3,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "idle-blinking",
+          "source_action": "Idle Blinking",
+          "normalized_name": "idle blinking",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Spartan Knight with Spear/PNG Sequences/Idle Blinking",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Spartan Knight with Spear/PNG Sequences/Idle Blinking/Idle Blinking_000.png",
+          "frame_count": 18,
+          "archive": {
+            "file": "actions/idle-blinking.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 3,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "jump-loop",
+          "source_action": "Jump Loop",
+          "normalized_name": "jump loop",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Spartan Knight with Spear/PNG Sequences/Jump Loop",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Spartan Knight with Spear/PNG Sequences/Jump Loop/Jump Loop_000.png",
+          "frame_count": 6,
+          "archive": {
+            "file": "actions/jump-loop.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 1,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "jump-start",
+          "source_action": "Jump Start",
+          "normalized_name": "jump start",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Spartan Knight with Spear/PNG Sequences/Jump Start",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Spartan Knight with Spear/PNG Sequences/Jump Start/Jump Start_000.png",
+          "frame_count": 6,
+          "archive": {
+            "file": "actions/jump-start.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 1,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "kicking",
+          "source_action": "Kicking",
+          "normalized_name": "kicking",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Spartan Knight with Spear/PNG Sequences/Kicking",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Spartan Knight with Spear/PNG Sequences/Kicking/Kicking_000.png",
+          "frame_count": 12,
+          "archive": {
+            "file": "actions/kicking.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 2,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "run-attacking",
+          "source_action": "Run Attacking",
+          "normalized_name": "run attacking",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Spartan Knight with Spear/PNG Sequences/Run Attacking",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Spartan Knight with Spear/PNG Sequences/Run Attacking/Run Attacking_000.png",
+          "frame_count": 12,
+          "archive": {
+            "file": "actions/run-attacking.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 2,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "run-throwing",
+          "source_action": "Run Throwing",
+          "normalized_name": "run throwing",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Spartan Knight with Spear/PNG Sequences/Run Throwing",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Spartan Knight with Spear/PNG Sequences/Run Throwing/Run Throwing_000.png",
+          "frame_count": 12,
+          "archive": {
+            "file": "actions/run-throwing.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 2,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "running",
+          "source_action": "Running",
+          "normalized_name": "running",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Spartan Knight with Spear/PNG Sequences/Running",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Spartan Knight with Spear/PNG Sequences/Running/Running_000.png",
+          "frame_count": 12,
+          "archive": {
+            "file": "actions/running.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 2,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "sliding",
+          "source_action": "Sliding",
+          "normalized_name": "sliding",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Spartan Knight with Spear/PNG Sequences/Sliding",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Spartan Knight with Spear/PNG Sequences/Sliding/Sliding_000.png",
+          "frame_count": 6,
+          "archive": {
+            "file": "actions/sliding.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 1,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "throwing",
+          "source_action": "Throwing",
+          "normalized_name": "throwing",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Spartan Knight with Spear/PNG Sequences/Throwing",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Spartan Knight with Spear/PNG Sequences/Throwing/Throwing_000.png",
+          "frame_count": 12,
+          "archive": {
+            "file": "actions/throwing.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 2,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "throwing-in-the-air",
+          "source_action": "Throwing in The Air",
+          "normalized_name": "throwing in the air",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Spartan Knight with Spear/PNG Sequences/Throwing in The Air",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Spartan Knight with Spear/PNG Sequences/Throwing in The Air/Throwing in The Air_000.png",
+          "frame_count": 12,
+          "archive": {
+            "file": "actions/throwing-in-the-air.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 2,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "walking",
+          "source_action": "Walking",
+          "normalized_name": "walking",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Spartan Knight with Spear/PNG Sequences/Walking",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Spartan Knight with Spear/PNG Sequences/Walking/Walking_000.png",
+          "frame_count": 24,
+          "archive": {
+            "file": "actions/walking.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 4,
+            "quality": 86
+          }
+        }
+      ]
+    },
+    {
+      "role_id": "paladin",
+      "source_name": "Hell_Knight",
+      "source_dir": "materials/character-sets/seven-multi-action-v1/Hell_Knight",
+      "runtime_mapping": {
+        "idle": "Idle",
+        "working": "Running",
+        "sync": "Dying",
+        "error": "Hurt"
+      },
+      "action_total": 17,
+      "actions": [
+        {
+          "action_id": "dying",
+          "source_action": "Dying",
+          "normalized_name": "dying",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Hell_Knight/PNG Sequences/Dying",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Hell_Knight/PNG Sequences/Dying/0_Hell_Knight_Dying_000.png",
+          "frame_count": 15,
+          "archive": {
+            "file": "actions/dying.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 3,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "falling-down",
+          "source_action": "Falling Down",
+          "normalized_name": "falling down",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Hell_Knight/PNG Sequences/Falling Down",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Hell_Knight/PNG Sequences/Falling Down/0_Hell_Knight_Falling Down_000.png",
+          "frame_count": 6,
+          "archive": {
+            "file": "actions/falling-down.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 1,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "hurt",
+          "source_action": "Hurt",
+          "normalized_name": "hurt",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Hell_Knight/PNG Sequences/Hurt",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Hell_Knight/PNG Sequences/Hurt/0_Hell_Knight_Hurt_000.png",
+          "frame_count": 12,
+          "archive": {
+            "file": "actions/hurt.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 2,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "idle",
+          "source_action": "Idle",
+          "normalized_name": "idle",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Hell_Knight/PNG Sequences/Idle",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Hell_Knight/PNG Sequences/Idle/0_Hell_Knight_Idle_000.png",
+          "frame_count": 18,
+          "archive": {
+            "file": "actions/idle.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 3,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "idle-blinking",
+          "source_action": "Idle Blinking",
+          "normalized_name": "idle blinking",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Hell_Knight/PNG Sequences/Idle Blinking",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Hell_Knight/PNG Sequences/Idle Blinking/0_Hell_Knight_Idle Blinking_000.png",
+          "frame_count": 18,
+          "archive": {
+            "file": "actions/idle-blinking.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 3,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "jump-loop",
+          "source_action": "Jump Loop",
+          "normalized_name": "jump loop",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Hell_Knight/PNG Sequences/Jump Loop",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Hell_Knight/PNG Sequences/Jump Loop/0_Hell_Knight_Jump Loop_000.png",
+          "frame_count": 6,
+          "archive": {
+            "file": "actions/jump-loop.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 1,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "jump-start",
+          "source_action": "Jump Start",
+          "normalized_name": "jump start",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Hell_Knight/PNG Sequences/Jump Start",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Hell_Knight/PNG Sequences/Jump Start/0_Hell_Knight_Jump Start_000.png",
+          "frame_count": 6,
+          "archive": {
+            "file": "actions/jump-start.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 1,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "kicking",
+          "source_action": "Kicking",
+          "normalized_name": "kicking",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Hell_Knight/PNG Sequences/Kicking",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Hell_Knight/PNG Sequences/Kicking/0_Hell_Knight_Kicking_000.png",
+          "frame_count": 12,
+          "archive": {
+            "file": "actions/kicking.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 2,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "run-slashing",
+          "source_action": "Run Slashing",
+          "normalized_name": "run slashing",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Hell_Knight/PNG Sequences/Run Slashing",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Hell_Knight/PNG Sequences/Run Slashing/0_Hell_Knight_Run Slashing_000.png",
+          "frame_count": 12,
+          "archive": {
+            "file": "actions/run-slashing.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 2,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "run-throwing",
+          "source_action": "Run Throwing",
+          "normalized_name": "run throwing",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Hell_Knight/PNG Sequences/Run Throwing",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Hell_Knight/PNG Sequences/Run Throwing/0_Hell_Knight_Run Throwing_000.png",
+          "frame_count": 12,
+          "archive": {
+            "file": "actions/run-throwing.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 2,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "running",
+          "source_action": "Running",
+          "normalized_name": "running",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Hell_Knight/PNG Sequences/Running",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Hell_Knight/PNG Sequences/Running/0_Hell_Knight_Running_000.png",
+          "frame_count": 12,
+          "archive": {
+            "file": "actions/running.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 2,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "slashing",
+          "source_action": "Slashing",
+          "normalized_name": "slashing",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Hell_Knight/PNG Sequences/Slashing",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Hell_Knight/PNG Sequences/Slashing/0_Hell_Knight_Slashing_000.png",
+          "frame_count": 12,
+          "archive": {
+            "file": "actions/slashing.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 2,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "slashing-in-the-air",
+          "source_action": "Slashing in The Air",
+          "normalized_name": "slashing in the air",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Hell_Knight/PNG Sequences/Slashing in The Air",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Hell_Knight/PNG Sequences/Slashing in The Air/0_Hell_Knight_Slashing in The Air_000.png",
+          "frame_count": 12,
+          "archive": {
+            "file": "actions/slashing-in-the-air.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 2,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "sliding",
+          "source_action": "Sliding",
+          "normalized_name": "sliding",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Hell_Knight/PNG Sequences/Sliding",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Hell_Knight/PNG Sequences/Sliding/0_Hell_Knight_Sliding_000.png",
+          "frame_count": 6,
+          "archive": {
+            "file": "actions/sliding.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 1,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "throwing",
+          "source_action": "Throwing",
+          "normalized_name": "throwing",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Hell_Knight/PNG Sequences/Throwing",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Hell_Knight/PNG Sequences/Throwing/0_Hell_Knight_Throwing_000.png",
+          "frame_count": 12,
+          "archive": {
+            "file": "actions/throwing.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 2,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "throwing-in-the-air",
+          "source_action": "Throwing in The Air",
+          "normalized_name": "throwing in the air",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Hell_Knight/PNG Sequences/Throwing in The Air",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Hell_Knight/PNG Sequences/Throwing in The Air/0_Hell_Knight_Throwing in The Air_000.png",
+          "frame_count": 12,
+          "archive": {
+            "file": "actions/throwing-in-the-air.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 2,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "walking",
+          "source_action": "Walking",
+          "normalized_name": "walking",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Hell_Knight/PNG Sequences/Walking",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Hell_Knight/PNG Sequences/Walking/0_Hell_Knight_Walking_000.png",
+          "frame_count": 24,
+          "archive": {
+            "file": "actions/walking.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 4,
+            "quality": 86
+          }
+        }
+      ]
+    },
+    {
+      "role_id": "archer",
+      "source_name": "Death_Knight",
+      "source_dir": "materials/character-sets/seven-multi-action-v1/Death_Knight",
+      "runtime_mapping": {
+        "idle": "Idle",
+        "working": "Running",
+        "sync": "Dying",
+        "error": "Hurt"
+      },
+      "action_total": 16,
+      "actions": [
+        {
+          "action_id": "dying",
+          "source_action": "Dying",
+          "normalized_name": "dying",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Death_Knight/PNG Sequences/Dying",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Death_Knight/PNG Sequences/Dying/0_Death_Knight_Dying_000.png",
+          "frame_count": 15,
+          "archive": {
+            "file": "actions/dying.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 3,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "falling-down",
+          "source_action": "Falling Down",
+          "normalized_name": "falling down",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Death_Knight/PNG Sequences/Falling Down",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Death_Knight/PNG Sequences/Falling Down/0_Death_Knight_Falling Down_000.png",
+          "frame_count": 6,
+          "archive": {
+            "file": "actions/falling-down.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 1,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "hurt",
+          "source_action": "Hurt",
+          "normalized_name": "hurt",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Death_Knight/PNG Sequences/Hurt",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Death_Knight/PNG Sequences/Hurt/0_Death_Knight_Hurt_000.png",
+          "frame_count": 12,
+          "archive": {
+            "file": "actions/hurt.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 2,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "idle",
+          "source_action": "Idle",
+          "normalized_name": "idle",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Death_Knight/PNG Sequences/Idle",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Death_Knight/PNG Sequences/Idle/0_Death_Knight_Idle_000.png",
+          "frame_count": 18,
+          "archive": {
+            "file": "actions/idle.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 3,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "jump-loop",
+          "source_action": "Jump Loop",
+          "normalized_name": "jump loop",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Death_Knight/PNG Sequences/Jump Loop",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Death_Knight/PNG Sequences/Jump Loop/0_Death_Knight_Jump Loop_000.png",
+          "frame_count": 6,
+          "archive": {
+            "file": "actions/jump-loop.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 1,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "jump-start",
+          "source_action": "Jump Start",
+          "normalized_name": "jump start",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Death_Knight/PNG Sequences/Jump Start",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Death_Knight/PNG Sequences/Jump Start/0_Death_Knight_Jump Start_000.png",
+          "frame_count": 6,
+          "archive": {
+            "file": "actions/jump-start.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 1,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "kicking",
+          "source_action": "Kicking",
+          "normalized_name": "kicking",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Death_Knight/PNG Sequences/Kicking",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Death_Knight/PNG Sequences/Kicking/0_Death_Knight_Kicking_000.png",
+          "frame_count": 12,
+          "archive": {
+            "file": "actions/kicking.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 2,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "run-slashing",
+          "source_action": "Run Slashing",
+          "normalized_name": "run slashing",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Death_Knight/PNG Sequences/Run Slashing",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Death_Knight/PNG Sequences/Run Slashing/0_Death_Knight_Run Slashing_000.png",
+          "frame_count": 12,
+          "archive": {
+            "file": "actions/run-slashing.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 2,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "run-throwing",
+          "source_action": "Run Throwing",
+          "normalized_name": "run throwing",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Death_Knight/PNG Sequences/Run Throwing",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Death_Knight/PNG Sequences/Run Throwing/0_Death_Knight_Run Throwing_000.png",
+          "frame_count": 12,
+          "archive": {
+            "file": "actions/run-throwing.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 2,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "running",
+          "source_action": "Running",
+          "normalized_name": "running",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Death_Knight/PNG Sequences/Running",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Death_Knight/PNG Sequences/Running/0_Death_Knight_Running_000.png",
+          "frame_count": 12,
+          "archive": {
+            "file": "actions/running.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 2,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "slashing",
+          "source_action": "Slashing",
+          "normalized_name": "slashing",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Death_Knight/PNG Sequences/Slashing",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Death_Knight/PNG Sequences/Slashing/0_Death_Knight_Slashing_000.png",
+          "frame_count": 12,
+          "archive": {
+            "file": "actions/slashing.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 2,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "slashing-in-the-air",
+          "source_action": "Slashing in The Air",
+          "normalized_name": "slashing in the air",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Death_Knight/PNG Sequences/Slashing in The Air",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Death_Knight/PNG Sequences/Slashing in The Air/0_Death_Knight_Slashing in The Air_000.png",
+          "frame_count": 12,
+          "archive": {
+            "file": "actions/slashing-in-the-air.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 2,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "sliding",
+          "source_action": "Sliding",
+          "normalized_name": "sliding",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Death_Knight/PNG Sequences/Sliding",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Death_Knight/PNG Sequences/Sliding/0_Death_Knight_Sliding_000.png",
+          "frame_count": 6,
+          "archive": {
+            "file": "actions/sliding.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 1,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "throwing",
+          "source_action": "Throwing",
+          "normalized_name": "throwing",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Death_Knight/PNG Sequences/Throwing",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Death_Knight/PNG Sequences/Throwing/0_Death_Knight_Throwing_000.png",
+          "frame_count": 12,
+          "archive": {
+            "file": "actions/throwing.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 2,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "throwing-in-the-air",
+          "source_action": "Throwing in The Air",
+          "normalized_name": "throwing in the air",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Death_Knight/PNG Sequences/Throwing in The Air",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Death_Knight/PNG Sequences/Throwing in The Air/0_Death_Knight_Throwing in The Air_000.png",
+          "frame_count": 12,
+          "archive": {
+            "file": "actions/throwing-in-the-air.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 2,
+            "quality": 86
+          }
+        },
+        {
+          "action_id": "walking",
+          "source_action": "Walking",
+          "normalized_name": "walking",
+          "source_dir": "materials/character-sets/seven-multi-action-v1/Death_Knight/PNG Sequences/Walking",
+          "sample_frame": "materials/character-sets/seven-multi-action-v1/Death_Knight/PNG Sequences/Walking/0_Death_Knight_Walking_000.png",
+          "frame_count": 24,
+          "archive": {
+            "file": "actions/walking.webp",
+            "format": "webp",
+            "frame_width": 160,
+            "frame_height": 160,
+            "columns": 6,
+            "rows": 4,
+            "quality": 86
+          }
+        }
+      ]
+    }
+  ]
+}

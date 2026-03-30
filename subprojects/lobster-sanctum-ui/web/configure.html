@@ -3,363 +3,382 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>OpenClaw 配置中心 - 配置中枢</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Noto+Serif+SC:wght@400;600;700&display=swap"
-      rel="stylesheet"
-    />
-    <link rel="stylesheet" href="./styles.css" />
+    <title>龙虾配置台</title>
+    <link rel="stylesheet" href="./configure.css" />
   </head>
   <body class="config-body">
-    <div class="app-shell config-shell">
+    <div class="config-shell">
       <header class="config-banner">
-        <div>
-          <p class="badge">OPENCLAW CONFIG • STAGE III</p>
-          <h1>配置中枢</h1>
-          <p class="subtitle">将人格化为真正可战斗的构筑。技能、装备、任务与等级都在这里汇总。</p>
+        <div class="banner-office">
+          <span class="banner-kicker">像素小屋中控台</span>
+          <strong id="bannerOfficeTitle">龙虾办公室</strong>
+          <small id="bannerOfficeMeta">职业、技能、装备、状态与任务统一控制</small>
         </div>
-        <div class="loadout-actions">
-          <a class="secondary-link" id="backToLoadout" href="./loadout.html">返回技能树</a>
-          <button id="downloadPresetBtn" type="button">下载配置档案</button>
-          <button id="copyEnvBtn" type="button">复制环境块</button>
-          <button id="copySummaryBtn" type="button">复制方案摘要</button>
-        </div>
+        <aside class="banner-profile">
+          <div class="banner-avatar-wrap">
+            <img id="bannerAvatar" src="./assets/role-druid.png" alt="角色头像" />
+          </div>
+          <div class="banner-profile-copy">
+            <strong id="bannerRoleTitle">万金油 · 德鲁伊</strong>
+            <span id="bannerRoleClass">通用总管</span>
+            <div class="banner-quick-stats">
+              <small id="bannerBuildStat">0 技能 / 0 装备</small>
+              <small id="bannerRouteStat">均衡协作</small>
+              <small id="bannerRuleStat">中档规则 · 中档技能包</small>
+            </div>
+          </div>
+        </aside>
       </header>
 
-      <section class="config-panel config-hero command-hero">
-        <div class="config-hero-portrait">
-          <img id="configPortrait" src="./assets/role-druid.png" alt="人格立绘" />
-        </div>
-        <div class="config-hero-meta">
-          <p class="info-kicker" id="configClass">通用总管</p>
-          <h2 id="configTitle">万金油 · 德鲁伊</h2>
-          <p id="configDesc"></p>
-          <div class="config-chips" id="configPersonaTags"></div>
-          <div class="command-meta-grid">
-            <article class="command-stat">
-              <span>已安装技能</span>
-              <strong id="heroSkillCount">0</strong>
+      <nav class="tab-bar" aria-label="控制台标签">
+        <button class="tab-button active" data-tab="role" type="button">职业</button>
+        <button class="tab-button" data-tab="skills" type="button">技能</button>
+        <button class="tab-button" data-tab="equipment" type="button">装备物品</button>
+        <button class="tab-button" data-tab="status" type="button">状态成长</button>
+        <button class="tab-button" data-tab="tasks" type="button">任务流程</button>
+      </nav>
+
+      <main class="tab-stack">
+        <section class="tab-panel active" data-panel="role">
+          <div class="tab-toolbar">
+            <button id="saveRoleTabBtn" class="tab-save-btn" data-scope="role" type="button">保存职业配置</button>
+            <small id="tabSaveStatusRole">未保存</small>
+          </div>
+          <div class="role-grid">
+            <article class="panel-card">
+              <div class="panel-head">
+                <span class="panel-kicker">职业选择</span>
+                <h2>职业切换</h2>
+              </div>
+              <div class="persona-grid" id="personaGrid"></div>
+              <div class="role-switch-footer">
+                <div class="action-row compact">
+                  <button id="confirmRoleChangeBtn" type="button" disabled>当前职业已生效</button>
+                </div>
+              </div>
             </article>
-            <article class="command-stat">
-              <span>已装备工具</span>
-              <strong id="heroToolCount">0</strong>
-            </article>
-            <article class="command-stat">
-              <span>激活联动</span>
-              <strong id="heroSynergyCount">0</strong>
-            </article>
-            <article class="command-stat">
-              <span>当前等级</span>
-              <strong id="heroLevelText">Lv.1</strong>
+
+            <article class="panel-card role-detail-card">
+              <div class="panel-head">
+                <span class="panel-kicker">职业详情</span>
+                <h2 id="roleDetailHeading">当前职业</h2>
+              </div>
+              <div class="role-detail-top">
+                <img id="rolePortrait" src="./assets/role-druid.png" alt="当前职业立绘" />
+                <div class="role-detail-copy">
+                  <p class="detail-class" id="roleDetailClass">通用总管</p>
+                  <h3 id="roleDetailTitle">万金油 · 德鲁伊</h3>
+                  <p class="detail-desc" id="roleDetailDesc"></p>
+                  <div class="detail-tags" id="roleDetailTags"></div>
+                </div>
+              </div>
+              <div class="role-focus-grid">
+                <article>
+                  <span>推荐路由</span>
+                  <strong id="roleDetailRoute">均衡协作</strong>
+                </article>
+                <article>
+                  <span>默认技能包</span>
+                  <strong id="roleDetailPack">中档增强包</strong>
+                </article>
+                <article>
+                  <span>职责焦点</span>
+                  <strong id="roleDetailFocus">日程管理 / 搜索整理</strong>
+                </article>
+              </div>
             </article>
           </div>
-        </div>
-      </section>
 
-      <main class="command-center-layout">
-        <section class="command-main">
-          <nav class="tab-bar" aria-label="配置标签页">
-            <button class="tab-button active" data-tab="skills" type="button">技能页</button>
-            <button class="tab-button" data-tab="equipment" type="button">装备页</button>
-            <button class="tab-button" data-tab="status" type="button">状态页</button>
-            <button class="tab-button" data-tab="tasks" type="button">任务页</button>
-            <button class="tab-button" data-tab="levels" type="button">等级页</button>
-          </nav>
+          <div class="role-controls-grid">
+            <article class="panel-card office-card">
+              <div class="panel-head">
+                <span class="panel-kicker">办公室牌匾</span>
+                <h2>办公室命名</h2>
+              </div>
+              <label class="field-block">
+                <span>办公室牌匾</span>
+                <input id="officeNameInput" type="text" maxlength="40" placeholder="例如：万金油 · 德鲁伊的办公室" />
+              </label>
+              <div class="action-row compact">
+                <button id="saveOfficeNameBtn" type="button">保存命名</button>
+                <button id="resetOfficeNameBtn" type="button" class="secondary">恢复职业默认</button>
+              </div>
+            </article>
 
-          <section class="tab-panel active" data-panel="skills">
-            <div class="panel-columns">
-              <article class="config-panel">
-                <div class="panel-head">
-                  <p class="panel-index">Skill Package</p>
-                  <h3>档位技能包</h3>
-                </div>
-                <fieldset class="package-switcher" id="skillPackSwitch"></fieldset>
-                <div class="package-legend">
-                  <span class="legend-chip low">低档</span>
-                  <span class="legend-chip medium">中档</span>
-                  <span class="legend-chip high">高档</span>
-                </div>
-              </article>
+            <article class="panel-card identity-card">
+              <div class="panel-head">
+                <span class="panel-kicker">身份映射</span>
+                <h2>身份配置</h2>
+              </div>
+              <div class="identity-grid">
+                <label class="field-block">
+                  <span>助手名称</span>
+                  <input id="identityAssistantNameInput" type="text" maxlength="80" placeholder="默认: Clawd" />
+                </label>
+                <label class="field-block">
+                  <span>如何称呼你</span>
+                  <input id="identityUserNameInput" type="text" maxlength="64" placeholder="默认: 主人" />
+                </label>
+                <label class="field-block">
+                  <span>你所在地区</span>
+                  <input id="identityRegionInput" type="text" maxlength="64" placeholder="默认: 中国大陆" />
+                </label>
+                <label class="field-block">
+                  <span>时区</span>
+                  <input id="identityTimezoneInput" type="text" maxlength="64" placeholder="默认: Asia/Shanghai" />
+                </label>
+                <label class="field-block wide">
+                  <span>你希望机器人主要做什么</span>
+                  <textarea id="identityGoalInput" rows="2" maxlength="300" placeholder="例如：研究、写作、开发、运营等"></textarea>
+                </label>
+                <label class="field-block wide">
+                  <span>你希望机器人的性格</span>
+                  <textarea id="identityPersonalityInput" rows="2" maxlength="200" placeholder="例如：严谨、务实、直接"></textarea>
+                </label>
+                <label class="field-block wide">
+                  <span>你希望机器人的工作方式</span>
+                  <textarea id="identityWorkStyleInput" rows="2" maxlength="200" placeholder="例如：先分析后执行，阶段性汇报"></textarea>
+                </label>
+              </div>
+            </article>
 
-              <article class="config-panel">
-                <div class="panel-head">
-                  <p class="panel-index">Workbench</p>
-                  <h3>工作栏</h3>
-                </div>
-                <p class="panel-tip">将已安装技能拖入工作栏。空槽位可随时替换，右键或点击清除。</p>
-                <div class="hotbar" id="skillHotbar"></div>
-              </article>
-            </div>
+            <article class="panel-card role-config-card">
+              <div class="panel-head">
+                <span class="panel-kicker">规则配置</span>
+                <h2>配置规则</h2>
+              </div>
+              <div class="role-config-readonly" id="roleConfigSummary"></div>
+            </article>
 
-            <div class="skill-command-deck">
-              <article class="config-panel build-focus-panel">
-                <div class="panel-head">
-                  <p class="panel-index">Build Focus</p>
-                  <h3>构筑总览</h3>
-                </div>
-                <div class="build-focus-card" id="skillBuildCard"></div>
-              </article>
-
-              <article class="config-panel branch-command-panel">
-                <div class="panel-head">
-                  <p class="panel-index">Navigator</p>
-                  <h3>分支导航</h3>
-                </div>
-                <div class="branch-navigator" id="branchNavigator"></div>
-                <div class="skill-filter-bar" id="skillFilterBar"></div>
-              </article>
-            </div>
-
-            <div class="skill-overview-strip" id="skillOverviewStrip"></div>
-            <div class="skill-synergy-strip" id="skillSynergyStrip"></div>
-            <div class="talent-workbench">
-              <article class="config-panel talent-dock-panel">
-                <div class="panel-head">
-                  <p class="panel-index">Talent Altar</p>
-                  <h3>节点祭坛</h3>
-                </div>
-                <p class="panel-tip">拖动节点可以微调天赋盘布局，拖入祭坛可锁定你的主构筑技能。</p>
-                <div class="skill-node-dock" id="skillNodeDock"></div>
-              </article>
-              <article class="config-panel talent-inspector-panel">
-                <div class="panel-head">
-                  <p class="panel-index">Node Inspector</p>
-                  <h3>节点检视器</h3>
-                </div>
-                <div id="skillNodeInspector"></div>
-              </article>
-            </div>
-            <div class="skill-forest" id="skillForest"></div>
-          </section>
-
-          <section class="tab-panel" data-panel="equipment">
-            <div class="equipment-layout">
-              <article class="config-panel mannequin-panel">
-                <div class="panel-head">
-                  <p class="panel-index">Armory</p>
-                  <h3>装备栏</h3>
-                </div>
-                <p class="panel-tip">工具包含模型、MCP、CLI、App 和 API 接口。拖到对应槽位即可装备。</p>
-                <div class="armory-status-strip" id="armoryStatusStrip"></div>
-                <div class="armory-weapon-rack" id="armoryWeaponRack"></div>
-                <div class="mannequin-board">
-                  <div class="mannequin-silhouette">
-                    <div class="silhouette-halo"></div>
-                    <div class="silhouette-shoulders"></div>
-                    <div class="silhouette-arms"></div>
-                    <div class="silhouette-core"></div>
-                    <div class="silhouette-legs"></div>
-                  </div>
-                  <div class="equipment-slot slot-head" data-slot="head">
-                    <span>头部</span>
-                    <button type="button"></button>
-                  </div>
-                  <div class="equipment-slot slot-shoulders" data-slot="shoulders">
-                    <span>肩甲</span>
-                    <button type="button"></button>
-                  </div>
-                  <div class="equipment-slot slot-core" data-slot="core">
-                    <span>核心</span>
-                    <button type="button"></button>
-                  </div>
-                  <div class="equipment-slot slot-mainhand" data-slot="mainhand">
-                    <span>主手</span>
-                    <button type="button"></button>
-                  </div>
-                  <div class="equipment-slot slot-offhand" data-slot="offhand">
-                    <span>副手</span>
-                    <button type="button"></button>
-                  </div>
-                  <div class="equipment-slot slot-relic" data-slot="relic">
-                    <span>圣物</span>
-                    <button type="button"></button>
-                  </div>
-                  <div class="equipment-slot slot-network" data-slot="network">
-                    <span>网络</span>
-                    <button type="button"></button>
-                  </div>
-                  <div class="equipment-slot slot-companion" data-slot="companion">
-                    <span>伴随</span>
-                    <button type="button"></button>
-                  </div>
-                  <div class="equipment-slot slot-automation" data-slot="automation">
-                    <span>自动化</span>
-                    <button type="button"></button>
-                  </div>
-                  <div class="equipment-slot slot-belt" data-slot="belt">
-                    <span>腰带</span>
-                    <button type="button"></button>
-                  </div>
-                  <div class="equipment-slot slot-boots" data-slot="boots">
-                    <span>靴位</span>
-                    <button type="button"></button>
-                  </div>
-                  <div class="equipment-slot slot-ring" data-slot="ring">
-                    <span>戒位</span>
-                    <button type="button"></button>
-                  </div>
-                </div>
-                <div class="armory-bonus-panel" id="armoryBonusPanel"></div>
-              </article>
-
-              <article class="config-panel inventory-panel">
-                <div class="panel-head">
-                  <p class="panel-index">Inventory</p>
-                  <h3>物品栏</h3>
-                </div>
-                <div class="inventory-toolbar">
-                  <div class="inventory-legend">
-                    <span class="rarity-chip common">普通</span>
-                    <span class="rarity-chip magic">魔法</span>
-                    <span class="rarity-chip rare">稀有</span>
-                    <span class="rarity-chip mythic">神话</span>
-                  </div>
-                </div>
-                <div class="inventory-filter-bar" id="inventoryFilterBar"></div>
-                <div class="inventory-section-head">
-                  <p class="panel-index">Loadout Bag</p>
-                  <h3>背包</h3>
-                </div>
-                <div class="inventory-grid" id="inventoryGrid"></div>
-                <div class="stash-head">
-                  <p class="panel-index">Stash</p>
-                  <h3>仓库</h3>
-                </div>
-                <div class="stash-grid" id="stashGrid"></div>
-                <article class="item-detail-panel" id="itemDetailPanel">
-                  <p class="inventory-type">选中物品</p>
-                  <h4>尚未查看</h4>
-                  <p>点击或拖拽物品后，这里会显示详细说明、槽位、稀有度与联动效果。</p>
-                </article>
-              </article>
-            </div>
-          </section>
-
-          <section class="tab-panel" data-panel="status">
-            <div class="status-grid">
-              <article class="config-panel">
-                <div class="panel-head">
-                  <p class="panel-index">Live Stats</p>
-                  <h3>构筑状态</h3>
-                </div>
-                <div class="status-bars" id="statusBars"></div>
-              </article>
-              <article class="config-panel">
-                <div class="panel-head">
-                  <p class="panel-index">Routing</p>
-                  <h3>规则与路由</h3>
-                </div>
-                <fieldset class="option-stack" id="modelRouteOptions"></fieldset>
-                <fieldset class="option-stack compact-stack" id="tokenRuleOptions"></fieldset>
-              </article>
-              <article class="config-panel full-span">
-                <div class="panel-head">
-                  <p class="panel-index">Security Matrix</p>
-                  <h3>安全矩阵</h3>
-                </div>
-                <div class="toggle-grid security-grid" id="securityOptions"></div>
-              </article>
-            </div>
-          </section>
-
-          <section class="tab-panel" data-panel="tasks">
-            <div class="task-grid">
-              <article class="config-panel">
-                <div class="panel-head">
-                  <p class="panel-index">Quest Board</p>
-                  <h3>任务页</h3>
-                </div>
-                <div class="quest-board" id="questBoard"></div>
-              </article>
-              <article class="config-panel">
-                <div class="panel-head">
-                  <p class="panel-index">Automation</p>
-                  <h3>推荐任务流</h3>
-                </div>
-                <ol class="workflow-list" id="workflowList"></ol>
-                <ul class="simple-list compact-list" id="toggleList"></ul>
-              </article>
-            </div>
-          </section>
-
-          <section class="tab-panel" data-panel="levels">
-            <div class="level-grid">
-              <article class="config-panel">
-                <div class="panel-head">
-                  <p class="panel-index">Progression</p>
-                  <h3>等级页</h3>
-                </div>
-                <div class="level-card">
-                  <p class="level-caption" id="levelCaption">Lv.1 新兵</p>
-                  <div class="xp-track">
-                    <div class="xp-fill" id="xpFill"></div>
-                  </div>
-                  <p class="xp-copy" id="xpCopy">当前经验 0 / 1000</p>
-                </div>
-                <div class="perk-list" id="perkList"></div>
-              </article>
-              <article class="config-panel">
-                <div class="panel-head">
-                  <p class="panel-index">Unfolded Power</p>
-                  <h3>联动效果</h3>
-                </div>
-                <div class="synergy-grid" id="synergyGrid"></div>
-              </article>
-            </div>
-          </section>
+            <article class="panel-card role-security-card">
+              <div class="panel-head">
+                <span class="panel-kicker">安全矩阵</span>
+                <h2>安全开关</h2>
+              </div>
+              <div class="security-grid" id="securityOptions"></div>
+            </article>
+          </div>
         </section>
 
-        <aside class="command-sidebar">
-          <article class="config-panel sticky-panel">
+        <section class="tab-panel" data-panel="skills">
+          <div class="tab-toolbar">
+            <button id="saveSkillsTabBtn" class="tab-save-btn" data-scope="skills" type="button">保存技能配置</button>
+            <small id="tabSaveStatusSkills">未保存</small>
+          </div>
+          <div class="skill-layout">
+            <article class="panel-card">
+              <div class="panel-head">
+                <span class="panel-kicker">已装技能</span>
+                <h2>当前已安装技能</h2>
+              </div>
+              <div class="skill-section-layout">
+                <div class="skill-tile-grid" id="installedSkillGrid"></div>
+                <aside class="skill-inspector" id="skillInspector"></aside>
+              </div>
+            </article>
+
+            <article class="panel-card">
+              <div class="panel-head">
+                <span class="panel-kicker">备选技能库</span>
+                <h2>备选技能库</h2>
+              </div>
+              <div class="skill-library-grid" id="skillLibraryGrid"></div>
+            </article>
+
+            <article class="panel-card">
+              <div class="panel-head">
+                <span class="panel-kicker">默认技能包</span>
+                <h2>默认技能包</h2>
+              </div>
+              <div class="role-config-readonly" id="skillPackSummary"></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="tab-panel" data-panel="equipment">
+          <div class="tab-toolbar">
+            <button id="saveEquipmentTabBtn" class="tab-save-btn" data-scope="equipment" type="button">保存装备配置</button>
+            <small id="tabSaveStatusEquipment">未保存</small>
+          </div>
+          <div class="equipment-layout">
+            <article class="panel-card set-note-card">
+              <div class="panel-head">
+                <span class="panel-kicker">套装联动</span>
+                <h2>套装说明</h2>
+              </div>
+              <div id="equipmentSynergyList" class="stack-list"></div>
+            </article>
+
+            <article class="panel-card equipment-center-card">
+              <div class="panel-head">
+                <span class="panel-kicker">人物装备栏</span>
+                <h2>人物装备栏</h2>
+              </div>
+              <div class="equipment-board">
+                <div class="mannequin-board">
+                  <div class="equipment-portrait-wrap" aria-hidden="true">
+                    <div class="equipment-portrait-glow"></div>
+                    <img id="equipmentPortrait" src="./assets/role-druid.png" alt="人物立绘" />
+                  </div>
+                  <div class="equipment-slot-layer" id="equipmentSlots"></div>
+                </div>
+              </div>
+            </article>
+
+            <article class="panel-card tool-note-card">
+              <div class="panel-head">
+                <span class="panel-kicker">物品说明</span>
+                <h2>装备注释</h2>
+              </div>
+              <div id="toolInspector" class="tool-inspector"></div>
+            </article>
+          </div>
+
+          <article class="panel-card inventory-card">
             <div class="panel-head">
-              <p class="panel-index">Ready Sheet</p>
-              <h3>方案摘要</h3>
+              <span class="panel-kicker">物品栏</span>
+              <h2>物品栏</h2>
             </div>
-            <div class="summary-sheet">
-              <div class="summary-block">
-                <p class="summary-label">当前人格</p>
-                <p class="summary-value" id="summaryRole">万金油 · 德鲁伊</p>
-              </div>
-              <div class="summary-block">
-                <p class="summary-label">推荐路由</p>
-                <p class="summary-value" id="summaryModel">Claude / GPT 协作路由</p>
-              </div>
-              <div class="summary-block">
-                <p class="summary-label">技能包</p>
-                <p class="summary-value" id="summarySkillPack">中档增强包</p>
-              </div>
-              <div class="summary-block">
-                <p class="summary-label">Token 规划</p>
-                <p class="summary-value" id="summaryTokenRule">中档规则</p>
-              </div>
-              <div class="summary-block">
-                <p class="summary-label">工作栏技能</p>
-                <ul class="simple-list compact-list" id="summaryHotbar"></ul>
-              </div>
-              <div class="summary-block">
-                <p class="summary-label">已装备工具</p>
-                <ul class="simple-list compact-list" id="summaryTools"></ul>
-              </div>
-              <div class="summary-block">
-                <p class="summary-label">安全策略</p>
-                <ul class="simple-list compact-list" id="summarySecurity"></ul>
-              </div>
-              <div class="summary-block">
-                <p class="summary-label">激活联动</p>
-                <ul class="simple-list compact-list" id="summarySynergies"></ul>
-              </div>
-              <div class="summary-block">
-                <p class="summary-label">生成命令</p>
-                <pre class="command-preview" id="summaryCommand"></pre>
-              </div>
-            </div>
+            <div class="inventory-grid" id="inventoryGrid"></div>
           </article>
-        </aside>
+        </section>
+
+        <section class="tab-panel" data-panel="status">
+          <div class="tab-toolbar">
+            <button id="saveStatusTabBtn" class="tab-save-btn" data-scope="status" type="button">同步状态配置</button>
+            <small id="tabSaveStatusStatus">未保存</small>
+          </div>
+          <div class="status-grid">
+            <article class="panel-card wide status-level-card">
+              <div class="panel-head">
+                <span class="panel-kicker">成长经验</span>
+                <h2>用户等级</h2>
+              </div>
+              <div class="status-highlight xp-block">
+                <strong id="statusLevelLabel">Lv.1 新兵</strong>
+                <span id="statusXpLabel">当前经验 0 / 320</span>
+                <div class="progress-track xp-track">
+                  <div class="progress-fill" id="statusXpFill"></div>
+                </div>
+                <small id="statusGrowthBrief">技能、装备、联动会共同决定成长等级。</small>
+              </div>
+            </article>
+
+            <article class="panel-card status-runtime-card">
+              <div class="panel-head">
+                <span class="panel-kicker">运行状态</span>
+                <h2>运行状态</h2>
+              </div>
+              <div class="status-highlight">
+                <strong id="statusRuntimeLabel">待命</strong>
+                <span id="statusRuntimeDetail">等待任务</span>
+                <div class="progress-track">
+                  <div class="progress-fill" id="statusProgressFill"></div>
+                </div>
+                <small id="statusUpdatedAt">更新时间: -</small>
+              </div>
+            </article>
+
+            <article class="panel-card status-system-card">
+              <div class="panel-head">
+                <span class="panel-kicker">系统参数</span>
+                <h2>系统参数</h2>
+              </div>
+              <div class="status-metric-grid" id="systemMetrics"></div>
+            </article>
+
+            <article class="panel-card wide status-build-card">
+              <div class="panel-head">
+                <span class="panel-kicker">只读概览</span>
+                <h2>当前构筑状态</h2>
+              </div>
+              <div class="readonly-grid" id="readonlyOverview"></div>
+            </article>
+
+            <article class="panel-card wide status-diagnose-card">
+              <div class="panel-head">
+                <span class="panel-kicker">诊断工具</span>
+                <h2>OpenClaw 检查</h2>
+              </div>
+              <div class="status-diag-actions">
+                <button id="statusRunDoctorBtn" class="status-diag-btn" type="button">openclaw doctor</button>
+                <button id="statusRunStatusBtn" class="status-diag-btn" type="button">openclaw status</button>
+                <button id="statusRunHealthBtn" class="status-diag-btn" type="button">openclaw health</button>
+              </div>
+              <pre id="statusDiagOutput" class="status-diag-output">点击上方按钮后，将在这里显示后台执行结果。</pre>
+            </article>
+          </div>
+        </section>
+
+        <section class="tab-panel" data-panel="tasks">
+          <div class="tab-toolbar">
+            <button id="saveTasksTabBtn" class="tab-save-btn" data-scope="tasks" type="button">保存任务配置</button>
+            <small id="tabSaveStatusTasks">未保存</small>
+          </div>
+          <div class="tasks-grid">
+            <article class="panel-card">
+              <div class="panel-head">
+                <span class="panel-kicker">标准工作流</span>
+                <h2>标准工作流</h2>
+              </div>
+              <div class="task-board" id="workflowBoard"></div>
+            </article>
+
+            <article class="panel-card">
+              <div class="panel-head">
+                <span class="panel-kicker">奖励框架</span>
+                <h2>奖励框架</h2>
+              </div>
+              <div class="task-board" id="rewardBoard"></div>
+            </article>
+
+            <article class="panel-card wide">
+              <div class="panel-head">
+                <span class="panel-kicker">未来占位</span>
+                <h2>任务系统占位</h2>
+              </div>
+              <div class="future-grid">
+                <article>
+                  <strong>任务奖励</strong>
+                  <p>按标准工作流完成后发放经验、构筑评分与里程碑奖励。</p>
+                </article>
+                <article>
+                  <strong>社区星级</strong>
+                  <p>未来会根据结果质量与社区同类任务对比，给出星级与排名。</p>
+                </article>
+                <article>
+                  <strong>流程模板</strong>
+                  <p>未来将接入行业模板，把研究、开发、运营、设计变成可执行委托。</p>
+                </article>
+              </div>
+            </article>
+          </div>
+        </section>
       </main>
     </div>
 
+    <div class="modal-backdrop" id="roleConfirmModal" hidden>
+      <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="roleConfirmTitle">
+        <div class="panel-head modal-head">
+          <span class="panel-kicker">谨慎转职</span>
+          <h2 id="roleConfirmTitle">确认变更职业</h2>
+        </div>
+        <div class="modal-copy">
+          <p id="roleConfirmBody">转职后，当前职业下的部分自定义配置、已安装技能和装备映射可能被替换或丢失。</p>
+          <ul>
+            <li>当前职业的办公室命名、技能构筑和装备栏可能与新职业不兼容。</li>
+            <li>如果新职业没有对应技能或工具，页面会按新职业默认配置回收旧能力。</li>
+            <li>请确认你已经理解转职影响，再继续操作。</li>
+          </ul>
+        </div>
+        <div class="action-row">
+          <button id="cancelRoleChangeBtn" type="button" class="secondary">再想想</button>
+          <button id="applyRoleChangeBtn" type="button">确认转职</button>
+        </div>
+      </div>
+    </div>
+
     <script src="./configure.js"></script>
+    <script src="./workbench-host.js"></script>
   </body>
 </html>

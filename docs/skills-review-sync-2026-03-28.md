@@ -1,0 +1,241 @@
+# Skills 复核与本地仓库同步报告（2026-03-28）
+
+## 输入来源
+- `/Users/lichengyin/Desktop/龙虾/openclaw_skills_install_paths.md`
+- `/Users/lichengyin/Desktop/龙虾/LOBSTER_REQUIRED_SKILLS_BASE.md`
+
+## 结果汇总
+- 解析技能名总数（去重后）: **238**
+- 已存在于 `skills/default` 的基础数量: **64**
+- 本次新增同步到 `skills/default` 数量: **163**
+- 平台过滤下架（Apple/macOS 相关）: **7**
+- 本次新增最终保留数量: **156**
+- `skills/default` 当前目录总数（过滤后）: **220**
+- 已解析但本机未找到来源: **16**
+- 存在多个来源候选（已按优先级选第一来源同步）: **36**
+
+> 来源优先级：`~/.openclaw/skills` → `~/clawd/skills/default` → `~/clawd/skills` → `~/clawd/skills/external/baoyu-skills/skills` → `~/clawd/skills/wechat-skills` → `~/.codex/skills` → `~/.codex/skills/.system` → `~/.agents/skills` → `~/Desktop/Projects/clawdbot/.agents/skills`
+
+
+## 平台过滤（Linux 服务器）
+- 已下架：`apple-calendar`, `apple-notes`, `apple-reminders`, `things-mac`, `peekaboo`, `iosdev`, `iosdev-cn`
+- 处理原则：仅保留跨平台或服务器可用技能，避免用户在 Linux 环境安装后出现不可用入口。
+
+## 本次新增同步列表
+- `agent-builder`  ←  `/Users/lichengyin/.openclaw/skills/agent-builder`
+- `ai-meeting-notes`  ←  `/Users/lichengyin/.openclaw/skills/ai-meeting-notes`
+- `ai-music-generation`  ←  `/Users/lichengyin/.openclaw/skills/ai-music-generation`
+- `ai-music-prompts`  ←  `/Users/lichengyin/.openclaw/skills/ai-music-prompts`
+- `ai-ppt-generate`  ←  `/Users/lichengyin/.openclaw/skills/ai-ppt-generate`
+- `algorithmic-art`  ←  `/Users/lichengyin/.codex/skills/algorithmic-art`
+- `animated-financial-display`  ←  `/Users/lichengyin/clawd/skills/animated-financial-display`
+- `animation`  ←  `/Users/lichengyin/clawd/skills/animation`
+- `apple-calendar`  ←  `/Users/lichengyin/.openclaw/skills/apple-calendar`
+- `apple-notes`  ←  `/Users/lichengyin/.openclaw/skills/apple-notes`
+- `apple-reminders`  ←  `/Users/lichengyin/.openclaw/skills/apple-reminders`
+- `async-task`  ←  `/Users/lichengyin/.openclaw/skills/async-task`
+- `atxp`  ←  `/Users/lichengyin/.openclaw/skills/atxp`
+- `auto-animate`  ←  `/Users/lichengyin/clawd/skills/auto-animate`
+- `banner-creator`  ←  `/Users/lichengyin/.openclaw/skills/banner-creator`
+- `bilibili-hot-monitor`  ←  `/Users/lichengyin/.openclaw/skills/bilibili-hot-monitor`
+- `bilibili-youtube-watcher`  ←  `/Users/lichengyin/.openclaw/skills/bilibili-youtube-watcher`
+- `bird`  ←  `/Users/lichengyin/.openclaw/skills/bird`
+- `brand-guidelines`  ←  `/Users/lichengyin/.codex/skills/brand-guidelines`
+- `brave-search`  ←  `/Users/lichengyin/.openclaw/skills/brave-search`
+- `byterover`  ←  `/Users/lichengyin/.openclaw/skills/byterover`
+- `canvas-design`  ←  `/Users/lichengyin/.codex/skills/canvas-design`
+- `content-brief-builder`  ←  `/Users/lichengyin/clawd/skills/content-brief-builder`
+- `content-intake-hub`  ←  `/Users/lichengyin/clawd/skills/content-intake-hub`
+- `dasheng-brief-builder`  ←  `/Users/lichengyin/clawd/skills/dasheng-brief-builder`
+- `dasheng-caiji`  ←  `/Users/lichengyin/clawd/skills/dasheng-caiji`
+- `dasheng-clustering`  ←  `/Users/lichengyin/clawd/skills/dasheng-clustering`
+- `dasheng-daily-brief`  ←  `/Users/lichengyin/clawd/skills/dasheng-daily-brief`
+- `dasheng-daily-clustering`  ←  `/Users/lichengyin/clawd/skills/dasheng-daily-clustering`
+- `dasheng-daily-draft`  ←  `/Users/lichengyin/clawd/skills/dasheng-daily-draft`
+- `dasheng-daily-final`  ←  `/Users/lichengyin/clawd/skills/dasheng-daily-final`
+- `dasheng-daily-intake`  ←  `/Users/lichengyin/clawd/skills/dasheng-daily-intake`
+- `dasheng-daily-material`  ←  `/Users/lichengyin/clawd/skills/dasheng-daily-material`
+- `dasheng-daily-outline`  ←  `/Users/lichengyin/clawd/skills/dasheng-daily-outline`
+- `dasheng-daily-phase2`  ←  `/Users/lichengyin/clawd/skills/dasheng-daily-phase2`
+- `dasheng-daily-postmortem`  ←  `/Users/lichengyin/clawd/skills/dasheng-daily-postmortem`
+- `dasheng-draft-rerun-feishu-sync`  ←  `/Users/lichengyin/clawd/skills/dasheng-draft-rerun-feishu-sync`
+- `dasheng-intake-brief-prod`  ←  `/Users/lichengyin/clawd/skills/dasheng-intake-brief-prod`
+- `dasheng-phase2-brief-rerun-publish`  ←  `/Users/lichengyin/clawd/skills/dasheng-phase2-brief-rerun-publish`
+- `dasheng-standard-article`  ←  `/Users/lichengyin/clawd/skills/dasheng-standard-article`
+- `dasheng-xuanti`  ←  `/Users/lichengyin/clawd/skills/dasheng-xuanti`
+- `dasheng-xuanti-skill`  ←  `/Users/lichengyin/.openclaw/skills/dasheng-xuanti-skill`
+- `data-analyst`  ←  `/Users/lichengyin/.openclaw/skills/data-analyst`
+- `data-reconciliation-exceptions`  ←  `/Users/lichengyin/.openclaw/skills/data-reconciliation-exceptions`
+- `database`  ←  `/Users/lichengyin/.openclaw/skills/database`
+- `demo-video`  ←  `/Users/lichengyin/.openclaw/skills/demo-video`
+- `dispatching-parallel-agents`  ←  `/Users/lichengyin/.codex/skills/dispatching-parallel-agents`
+- `doc`  ←  `/Users/lichengyin/.codex/skills/doc`
+- `doc-coauthoring`  ←  `/Users/lichengyin/.codex/skills/doc-coauthoring`
+- `domain-hunter`  ←  `/Users/lichengyin/.openclaw/skills/domain-hunter`
+- `douyin-hot-trend`  ←  `/Users/lichengyin/.openclaw/skills/douyin-hot-trend`
+- `douyin-upload-skill`  ←  `/Users/lichengyin/.openclaw/skills/douyin-upload-skill`
+- `editorial-reviewer`  ←  `/Users/lichengyin/clawd/skills/wechat-skills/editorial-reviewer`
+- `elevenlabs-music`  ←  `/Users/lichengyin/.openclaw/skills/elevenlabs-music`
+- `executing-plans`  ←  `/Users/lichengyin/.codex/skills/executing-plans`
+- `finance-data`  ←  `/Users/lichengyin/.openclaw/skills/finance-data`
+- `finishing-a-development-branch`  ←  `/Users/lichengyin/.codex/skills/finishing-a-development-branch`
+- `format-pro`  ←  `/Users/lichengyin/.openclaw/skills/format-pro`
+- `gh-modify-pr`  ←  `/Users/lichengyin/.openclaw/skills/gh-modify-pr`
+- `gitclassic`  ←  `/Users/lichengyin/.openclaw/skills/gitclassic`
+- `github-actions-generator`  ←  `/Users/lichengyin/.openclaw/skills/github-actions-generator`
+- `google-trends`  ←  `/Users/lichengyin/.openclaw/skills/google-trends`
+- `high-agency`  ←  `/Users/lichengyin/clawd/skills/high-agency`
+- `himalaya`  ←  `/Users/lichengyin/.openclaw/skills/himalaya`
+- `imagegen`  ←  `/Users/lichengyin/.codex/skills/imagegen`
+- `infographic-pro`  ←  `/Users/lichengyin/.openclaw/skills/infographic-pro`
+- `internal-comms`  ←  `/Users/lichengyin/.codex/skills/internal-comms`
+- `iosdev`  ←  `/Users/lichengyin/.codex/skills/iosdev`
+- `iosdev-cn`  ←  `/Users/lichengyin/.codex/skills/iosdev-cn`
+- `jupyter-notebook`  ←  `/Users/lichengyin/.codex/skills/jupyter-notebook`
+- `lark-calendar`  ←  `/Users/lichengyin/.openclaw/skills/lark-calendar`
+- `larry`  ←  `/Users/lichengyin/.openclaw/skills/larry`
+- `lb-motion-skill`  ←  `/Users/lichengyin/clawd/skills/lb-motion-skill`
+- `loading-state-patterns`  ←  `/Users/lichengyin/clawd/skills/loading-state-patterns`
+- `logo-creator`  ←  `/Users/lichengyin/.openclaw/skills/logo-creator`
+- `marketing-psychology`  ←  `/Users/lichengyin/.openclaw/skills/marketing-psychology`
+- `material-pack-builder`  ←  `/Users/lichengyin/clawd/skills/material-pack-builder`
+- `media-downloader`  ←  `/Users/lichengyin/.codex/skills/media-downloader`
+- `media-planner`  ←  `/Users/lichengyin/clawd/skills/media-planner`
+- `merge-pr`  ←  `/Users/lichengyin/Desktop/Projects/clawdbot/.agents/skills/merge-pr`
+- `minimax-image-understanding`  ←  `/Users/lichengyin/.openclaw/skills/minimax-image-understanding`
+- `mintlify`  ←  `/Users/lichengyin/Desktop/Projects/clawdbot/.agents/skills/mintlify`
+- `nanobanana`  ←  `/Users/lichengyin/.openclaw/skills/nanobanana`
+- `openai-docs`  ←  `/Users/lichengyin/.codex/skills/.system/openai-docs`
+- `openclaw-feeds`  ←  `/Users/lichengyin/.openclaw/skills/openclaw-feeds`
+- `oracle`  ←  `/Users/lichengyin/.openclaw/skills/oracle`
+- `paperless-docs`  ←  `/Users/lichengyin/.openclaw/skills/paperless-docs`
+- `paperless-ngx-tools`  ←  `/Users/lichengyin/.openclaw/skills/paperless-ngx-tools`
+- `peekaboo`  ←  `/Users/lichengyin/.openclaw/skills/peekaboo`
+- `planner-image-post`  ←  `/Users/lichengyin/clawd/skills/planner-image-post`
+- `planner-video-script`  ←  `/Users/lichengyin/clawd/skills/planner-video-script`
+- `planning-with-files`  ←  `/Users/lichengyin/.codex/skills/planning-with-files`
+- `plugin-creator`  ←  `/Users/lichengyin/.codex/skills/.system/plugin-creator`
+- `preflight-checks`  ←  `/Users/lichengyin/.openclaw/skills/preflight-checks`
+- `prepare-pr`  ←  `/Users/lichengyin/Desktop/Projects/clawdbot/.agents/skills/prepare-pr`
+- `prisma-database-setup`  ←  `/Users/lichengyin/.openclaw/skills/prisma-database-setup`
+- `producthunt`  ←  `/Users/lichengyin/.openclaw/skills/producthunt`
+- `programmatic-seo`  ←  `/Users/lichengyin/.openclaw/skills/programmatic-seo`
+- `pua`  ←  `/Users/lichengyin/clawd/skills/pua`
+- `pua-ja`  ←  `/Users/lichengyin/clawd/skills/pua-ja`
+- `publish-guard`  ←  `/Users/lichengyin/.openclaw/skills/publish-guard`
+- `receiving-code-review`  ←  `/Users/lichengyin/.codex/skills/receiving-code-review`
+- `reddit`  ←  `/Users/lichengyin/.openclaw/skills/reddit`
+- `remotion`  ←  `/Users/lichengyin/clawd/skills/remotion`
+- `remotion-best-practices`  ←  `/Users/lichengyin/.openclaw/skills/remotion-best-practices`
+- `remotion-video`  ←  `/Users/lichengyin/.openclaw/skills/remotion-video`
+- `remotion-video-toolkit`  ←  `/Users/lichengyin/clawd/skills/remotion-video-toolkit`
+- `requesthunt`  ←  `/Users/lichengyin/.openclaw/skills/requesthunt`
+- `requesting-code-review`  ←  `/Users/lichengyin/.codex/skills/requesting-code-review`
+- `reusable-footage-material`  ←  `/Users/lichengyin/clawd/skills/reusable-footage-material`
+- `review-pr`  ←  `/Users/lichengyin/Desktop/Projects/clawdbot/.agents/skills/review-pr`
+- `search`  ←  `/Users/lichengyin/.openclaw/skills/search`
+- `seo-geo`  ←  `/Users/lichengyin/.openclaw/skills/seo-geo`
+- `session-logs`  ←  `/Users/lichengyin/.openclaw/skills/session-logs`
+- `skill-installer`  ←  `/Users/lichengyin/.codex/skills/.system/skill-installer`
+- `skill-security-auditor`  ←  `/Users/lichengyin/.openclaw/skills/skill-security-auditor`
+- `slack-gif-creator`  ←  `/Users/lichengyin/.codex/skills/slack-gif-creator`
+- `subagent-driven-development`  ←  `/Users/lichengyin/.openclaw/skills/subagent-driven-development`
+- `systematic-debugging`  ←  `/Users/lichengyin/.codex/skills/systematic-debugging`
+- `tailwind`  ←  `/Users/lichengyin/.openclaw/skills/tailwind`
+- `tailwind-design-system`  ←  `/Users/lichengyin/.openclaw/skills/tailwind-design-system`
+- `task`  ←  `/Users/lichengyin/.openclaw/skills/task`
+- `tdd`  ←  `/Users/lichengyin/.openclaw/skills/tdd`
+- `test-driven-development`  ←  `/Users/lichengyin/.openclaw/skills/test-driven-development`
+- `theme-factory`  ←  `/Users/lichengyin/.codex/skills/theme-factory`
+- `things-mac`  ←  `/Users/lichengyin/.openclaw/skills/things-mac`
+- `tmux`  ←  `/Users/lichengyin/.openclaw/skills/tmux`
+- `todo`  ←  `/Users/lichengyin/.openclaw/skills/todo`
+- `todoist-api`  ←  `/Users/lichengyin/.openclaw/skills/todoist-api`
+- `tts`  ←  `/Users/lichengyin/.openclaw/skills/tts`
+- `twitter`  ←  `/Users/lichengyin/.openclaw/skills/twitter`
+- `ui-ux-pro-max`  ←  `/Users/lichengyin/.codex/skills/ui-ux-pro-max`
+- `using-git-worktrees`  ←  `/Users/lichengyin/.codex/skills/using-git-worktrees`
+- `using-superpowers`  ←  `/Users/lichengyin/.codex/skills/using-superpowers`
+- `verification-before-completion`  ←  `/Users/lichengyin/.codex/skills/verification-before-completion`
+- `video-agent`  ←  `/Users/lichengyin/.openclaw/skills/video-agent`
+- `video-download`  ←  `/Users/lichengyin/.openclaw/skills/video-download`
+- `video-frames`  ←  `/Users/lichengyin/.openclaw/skills/video-frames`
+- `video-subtitles`  ←  `/Users/lichengyin/.openclaw/skills/video-subtitles`
+- `weather`  ←  `/Users/lichengyin/.openclaw/skills/weather`
+- `web-animation-design`  ←  `/Users/lichengyin/clawd/skills/web-animation-design`
+- `web-artifacts-builder`  ←  `/Users/lichengyin/.codex/skills/web-artifacts-builder`
+- `web-design-guidelines`  ←  `/Users/lichengyin/.openclaw/skills/web-design-guidelines`
+- `webapp-testing`  ←  `/Users/lichengyin/.codex/skills/webapp-testing`
+- `wechat-article-extractor-skill`  ←  `/Users/lichengyin/.openclaw/skills/wechat-article-extractor-skill`
+- `wechat-draft-writer`  ←  `/Users/lichengyin/clawd/skills/wechat-skills/wechat-draft-writer`
+- `wechat-multi-publisher`  ←  `/Users/lichengyin/.openclaw/skills/wechat-multi-publisher`
+- `wechat-public-cli`  ←  `/Users/lichengyin/.openclaw/skills/wechat-public-cli`
+- `wechat-search`  ←  `/Users/lichengyin/.openclaw/skills/wechat-search`
+- `wechat-style-profiler`  ←  `/Users/lichengyin/clawd/skills/wechat-skills/wechat-style-profiler`
+- `wechat-title-generator`  ←  `/Users/lichengyin/clawd/skills/wechat-skills/wechat-title-generator`
+- `wechat-topic-outline-planner`  ←  `/Users/lichengyin/clawd/skills/wechat-skills/wechat-topic-outline-planner`
+- `weibo-fresh-posts`  ←  `/Users/lichengyin/.openclaw/skills/weibo-fresh-posts`
+- `weibo-manager`  ←  `/Users/lichengyin/.openclaw/skills/weibo-manager`
+- `writing-plans`  ←  `/Users/lichengyin/.codex/skills/writing-plans`
+- `writing-skills`  ←  `/Users/lichengyin/.codex/skills/writing-skills`
+- `xiaohongshu-auto`  ←  `/Users/lichengyin/.openclaw/skills/xiaohongshu-auto`
+- `xiaohongshu-extract`  ←  `/Users/lichengyin/.openclaw/skills/xiaohongshu-extract`
+- `xiaohongshu-ops`  ←  `/Users/lichengyin/.openclaw/skills/xiaohongshu-ops`
+- `xiaohongshutools`  ←  `/Users/lichengyin/.openclaw/skills/xiaohongshutools`
+- `yoinkit`  ←  `/Users/lichengyin/.openclaw/skills/yoinkit`
+- `zhihu-post`  ←  `/Users/lichengyin/.openclaw/skills/zhihu-post`
+
+## 未找到本地来源（需后续补仓或远端拉取）
+- `clawhub`
+- `coding-agent`
+- `cron-wake`
+- `feishu-doc`
+- `feishu-drive`
+- `feishu-perm`
+- `feishu-wiki`
+- `gh-issues`
+- `mcporter`
+- `memo`
+- `release-skills`
+- `remindctl`
+- `sherpa-onnx-tts`
+- `things`
+- `voice-call`
+- `xurl`
+
+## 多来源候选（已自动选首个来源）
+- `apple-notes`: `/Users/lichengyin/.openclaw/skills/apple-notes` | `/Users/lichengyin/clawd/skills/apple-notes`
+- `apple-reminders`: `/Users/lichengyin/.openclaw/skills/apple-reminders` | `/Users/lichengyin/clawd/skills/apple-reminders`
+- `banner-creator`: `/Users/lichengyin/.openclaw/skills/banner-creator` | `/Users/lichengyin/clawd/skills/banner-creator`
+- `bird`: `/Users/lichengyin/.openclaw/skills/bird` | `/Users/lichengyin/clawd/skills/bird`
+- `domain-hunter`: `/Users/lichengyin/.openclaw/skills/domain-hunter` | `/Users/lichengyin/clawd/skills/domain-hunter`
+- `finance-data`: `/Users/lichengyin/.openclaw/skills/finance-data` | `/Users/lichengyin/clawd/skills/finance-data`
+- `himalaya`: `/Users/lichengyin/.openclaw/skills/himalaya` | `/Users/lichengyin/clawd/skills/himalaya`
+- `imagegen`: `/Users/lichengyin/.codex/skills/imagegen` | `/Users/lichengyin/.codex/skills/.system/imagegen`
+- `logo-creator`: `/Users/lichengyin/.openclaw/skills/logo-creator` | `/Users/lichengyin/clawd/skills/logo-creator`
+- `nanobanana`: `/Users/lichengyin/.openclaw/skills/nanobanana` | `/Users/lichengyin/clawd/skills/nanobanana`
+- `oracle`: `/Users/lichengyin/.openclaw/skills/oracle` | `/Users/lichengyin/clawd/skills/oracle`
+- `peekaboo`: `/Users/lichengyin/.openclaw/skills/peekaboo` | `/Users/lichengyin/clawd/skills/peekaboo`
+- `producthunt`: `/Users/lichengyin/.openclaw/skills/producthunt` | `/Users/lichengyin/clawd/skills/producthunt`
+- `reddit`: `/Users/lichengyin/.openclaw/skills/reddit` | `/Users/lichengyin/clawd/skills/reddit`
+- `remotion-best-practices`: `/Users/lichengyin/.openclaw/skills/remotion-best-practices` | `/Users/lichengyin/clawd/skills/remotion-best-practices` | `/Users/lichengyin/.codex/skills/remotion-best-practices` | `/Users/lichengyin/.agents/skills/remotion-best-practices`
+- `requesthunt`: `/Users/lichengyin/.openclaw/skills/requesthunt` | `/Users/lichengyin/clawd/skills/requesthunt`
+- `seo-geo`: `/Users/lichengyin/.openclaw/skills/seo-geo` | `/Users/lichengyin/clawd/skills/seo-geo`
+- `session-logs`: `/Users/lichengyin/.openclaw/skills/session-logs` | `/Users/lichengyin/clawd/skills/session-logs`
+- `skill-security-auditor`: `/Users/lichengyin/.openclaw/skills/skill-security-auditor` | `/Users/lichengyin/clawd/skills/skill-security-auditor`
+- `subagent-driven-development`: `/Users/lichengyin/.openclaw/skills/subagent-driven-development` | `/Users/lichengyin/.codex/skills/subagent-driven-development`
+- `test-driven-development`: `/Users/lichengyin/.openclaw/skills/test-driven-development` | `/Users/lichengyin/.codex/skills/test-driven-development`
+- `things-mac`: `/Users/lichengyin/.openclaw/skills/things-mac` | `/Users/lichengyin/clawd/skills/things-mac`
+- `tmux`: `/Users/lichengyin/.openclaw/skills/tmux` | `/Users/lichengyin/clawd/skills/tmux`
+- `tts`: `/Users/lichengyin/.openclaw/skills/tts` | `/Users/lichengyin/clawd/skills/tts`
+- `twitter`: `/Users/lichengyin/.openclaw/skills/twitter` | `/Users/lichengyin/clawd/skills/twitter`
+- `video-frames`: `/Users/lichengyin/.openclaw/skills/video-frames` | `/Users/lichengyin/clawd/skills/video-frames`
+- `weather`: `/Users/lichengyin/.openclaw/skills/weather` | `/Users/lichengyin/clawd/skills/weather`
+- `wechat-article-extractor-skill`: `/Users/lichengyin/.openclaw/skills/wechat-article-extractor-skill` | `/Users/lichengyin/.codex/skills/wechat-article-extractor-skill`
+- `wechat-draft-writer`: `/Users/lichengyin/clawd/skills/wechat-skills/wechat-draft-writer` | `/Users/lichengyin/.codex/skills/wechat-draft-writer`
+- `wechat-multi-publisher`: `/Users/lichengyin/.openclaw/skills/wechat-multi-publisher` | `/Users/lichengyin/.codex/skills/wechat-multi-publisher`
+- `wechat-public-cli`: `/Users/lichengyin/.openclaw/skills/wechat-public-cli` | `/Users/lichengyin/.codex/skills/wechat-public-cli`
+- `wechat-search`: `/Users/lichengyin/.openclaw/skills/wechat-search` | `/Users/lichengyin/.codex/skills/wechat-search`
+- `wechat-style-profiler`: `/Users/lichengyin/clawd/skills/wechat-skills/wechat-style-profiler` | `/Users/lichengyin/.codex/skills/wechat-style-profiler`
+- `wechat-title-generator`: `/Users/lichengyin/clawd/skills/wechat-skills/wechat-title-generator` | `/Users/lichengyin/.codex/skills/wechat-title-generator`
+- `wechat-topic-outline-planner`: `/Users/lichengyin/clawd/skills/wechat-skills/wechat-topic-outline-planner` | `/Users/lichengyin/.codex/skills/wechat-topic-outline-planner`

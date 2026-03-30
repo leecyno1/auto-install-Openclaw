@@ -1,0 +1,61 @@
+{
+  "id": "diablo-console",
+  "name": "Diablo Console",
+  "description": "红蓝黑控制台扩展包，按运行态懒加载样式。",
+  "bodyClass": "runtime-pack-diablo",
+  "generatedAt": "2026-03-27T11:43:19.695175+08:00",
+  "assets": [
+    {
+      "id": "base-style",
+      "type": "css",
+      "mode": "base",
+      "path": "runtime-assets/packs/diablo-console/styles/base.css",
+      "size": 271,
+      "sha256": "c84eaff8957ec04fbecf0d3b6598feec69b69426c178ed326bff4d84a9239cb1"
+    },
+    {
+      "id": "mode-researching",
+      "type": "css",
+      "mode": "researching",
+      "path": "runtime-assets/packs/diablo-console/styles/researching.css",
+      "size": 336,
+      "sha256": "dbb9dd16b87f3562a2fba242911fb6cc90b4e57b376c46365a1e600b57207bdf"
+    },
+    {
+      "id": "mode-writing",
+      "type": "css",
+      "mode": "writing",
+      "path": "runtime-assets/packs/diablo-console/styles/writing.css",
+      "size": 333,
+      "sha256": "4e214103f6d8740cec4cda2fd5b69f0b3fa61003c99df3f5e53bd39b8e9113be"
+    },
+    {
+      "id": "mode-executing",
+      "type": "css",
+      "mode": "executing",
+      "path": "runtime-assets/packs/diablo-console/styles/executing.css",
+      "size": 158,
+      "sha256": "838f211f3971d920e547f8cb8bed46a48bdf8b74356bb116e66b40b9125b0e8f"
+    },
+    {
+      "id": "mode-syncing",
+      "type": "css",
+      "mode": "syncing",
+      "path": "runtime-assets/packs/diablo-console/styles/syncing.css",
+      "size": 158,
+      "sha256": "a8fe826417d1a1e48b87a6a30110dd5e7d872903e670907de4eac79a6b16805b"
+    },
+    {
+      "id": "mode-error",
+      "type": "css",
+      "mode": "error",
+      "path": "runtime-assets/packs/diablo-console/styles/error.css",
+      "size": 155,
+      "sha256": "80b29513b06fea3f6e402ecb4fde7886ecb08493c9d2ac7ceb09729b7b9ba446"
+    }
+  ],
+  "totals": {
+    "assets": 6,
+    "bytes": 1411
+  }
+}

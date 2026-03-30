@@ -1,0 +1,6 @@
+.runtime-pack-diablo .world-stage[data-runtime-state="researching"] {
+  background-image:
+    linear-gradient(90deg, rgba(66, 102, 168, 0.1) 0 1px, transparent 1px 100%),
+    linear-gradient(0deg, rgba(66, 102, 168, 0.1) 0 1px, transparent 1px 100%),
+    linear-gradient(180deg, rgba(8, 15, 30, 0.98) 0%, rgba(6, 10, 18, 0.98) 100%);
+}

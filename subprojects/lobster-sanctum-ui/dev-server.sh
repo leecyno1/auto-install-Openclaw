@@ -1,9 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
+PATH="/usr/sbin:/usr/bin:/bin:/usr/local/bin:${PATH:-}"
 
 PORT="${CONFIG_UI_PORT:-18188}"
 HOST="${CONFIG_UI_HOST:-0.0.0.0}"
-UI_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/web" && pwd)"
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+UI_DIR="$ROOT_DIR/web"
+ASSET_BUILD_SCRIPT="$ROOT_DIR/scripts/build-runtime-assets.py"
 PID_FILE="/tmp/lobster-sanctum-ui-${PORT}.pid"
 LOG_FILE="/tmp/lobster-sanctum-ui-${PORT}.log"
 
@@ -18,8 +21,76 @@ listen_pid() {
   lsof -tiTCP:"$PORT" -sTCP:LISTEN 2>/dev/null | head -n 1 || true
 }
 
+listen_pids() {
+  lsof -tiTCP:"$PORT" -sTCP:LISTEN 2>/dev/null | sort -u || true
+}
+
 is_running() {
   [[ -n "$(listen_pid)" ]]
+}
+
+listener_command() {
+  local pid
+  pid="$(listen_pid)"
+  [[ -n "$pid" ]] || return 0
+  ps -p "$pid" -o command= 2>/dev/null || true
+}
+
+listener_uses_ui_dir() {
+  local cmd
+  cmd="$(listener_command)"
+  [[ "$cmd" == *"--directory $UI_DIR"* ]]
+}
+
+spawn_detached_http_server() {
+  python3 - "$PORT" "$HOST" "$UI_DIR" "$LOG_FILE" <<'PY'
+import subprocess
+import sys
+
+port, host, ui_dir, log_file = sys.argv[1:5]
+cmd = ["python3", "-m", "http.server", port, "--bind", host, "--directory", ui_dir]
+with open(log_file, "ab", buffering=0) as log:
+    proc = subprocess.Popen(
+        cmd,
+        stdin=subprocess.DEVNULL,
+        stdout=log,
+        stderr=subprocess.STDOUT,
+        start_new_session=True,
+        close_fds=True,
+    )
+print(proc.pid)
+PY
+}
+
+verify_ui_response() {
+  curl -fsS --max-time 2 "http://127.0.0.1:$PORT/index.html" 2>/dev/null | grep -q "人格圣殿"
+}
+
+force_release_port() {
+  local attempt
+  for attempt in {1..6}; do
+    local pids
+    pids="$(listen_pids)"
+    if [[ -z "$pids" ]]; then
+      return 0
+    fi
+    while IFS= read -r pid; do
+      [[ -z "$pid" ]] && continue
+      kill "$pid" 2>/dev/null || true
+    done <<< "$pids"
+    sleep 0.4
+    pids="$(listen_pids)"
+    if [[ -z "$pids" ]]; then
+      return 0
+    fi
+    while IFS= read -r pid; do
+      [[ -z "$pid" ]] && continue
+      kill -9 "$pid" 2>/dev/null || true
+    done <<< "$pids"
+    sleep 0.4
+  done
+
+  [[ -z "$(listen_pids)" ]]
 }
 
 start_server() {
@@ -27,20 +98,35 @@ start_server() {
     echo "[ERROR] UI directory not found: $UI_DIR"
     exit 1
   fi
+  if [[ -f "$ASSET_BUILD_SCRIPT" ]]; then
+    if python3 "$ASSET_BUILD_SCRIPT" >/dev/null 2>&1; then
+      echo "[INFO] Runtime asset manifests refreshed."
+    else
+      echo "[WARN] Runtime asset manifest refresh failed, continue with existing manifests."
+    fi
+  fi
   if is_running; then
     local pid
     pid="$(listen_pid)"
-    [[ -n "$pid" ]] && echo "$pid" > "$PID_FILE"
-    echo "[INFO] Lobster Sanctum Studio already running (PID: ${pid:-unknown}, port: $PORT)"
-    exit 0
+    if listener_uses_ui_dir && verify_ui_response; then
+      [[ -n "$pid" ]] && echo "$pid" > "$PID_FILE"
+      echo "[INFO] Lobster Sanctum Studio already running (PID: ${pid:-unknown}, port: $PORT)"
+      exit 0
+    fi
+    echo "[WARN] Port $PORT is occupied by another service, replacing it for Lobster Sanctum Studio."
+    if ! force_release_port; then
+      echo "[ERROR] Port $PORT is still occupied after cleanup."
+      exit 1
+    fi
   fi
 
-  nohup python3 -m http.server "$PORT" --bind "$HOST" --directory "$UI_DIR" >"$LOG_FILE" 2>&1 < /dev/null &
-  local pid="$!"
+  local pid
+  pid="$(spawn_detached_http_server)"
+  echo "$pid" > "$PID_FILE"
 
   local ok=0
   for _ in {1..20}; do
-    if curl -fsS --max-time 1 "http://127.0.0.1:$PORT/" >/dev/null 2>&1; then
+    if listener_uses_ui_dir && verify_ui_response; then
       ok=1
       break
     fi
@@ -83,7 +169,13 @@ status_server() {
   if is_running; then
     local pid
     pid="$(listen_pid)"
-    echo "[OK] Running: http://$HOST:$PORT (PID: $pid)"
+    if listener_uses_ui_dir && verify_ui_response; then
+      echo "[OK] Running: http://$HOST:$PORT (PID: $pid)"
+    else
+      echo "[WARN] Port $PORT is occupied, but the current listener is not the Lobster Sanctum Studio UI."
+      echo "[WARN] Active command: $(listener_command)"
+      return 1
+    fi
   else
     echo "[INFO] Not running on port $PORT"
   fi

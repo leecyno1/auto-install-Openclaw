@@ -1,0 +1,10 @@
+.runtime-pack-pixel-office .world-stage {
+  background-image:
+    linear-gradient(90deg, rgba(92, 136, 211, 0.12) 0 2px, transparent 2px 100%),
+    linear-gradient(0deg, rgba(92, 136, 211, 0.12) 0 2px, transparent 2px 100%),
+    linear-gradient(180deg, rgba(15, 18, 26, 0.98) 0%, rgba(9, 11, 16, 0.98) 100%);
+  background-size: 24px 24px, 24px 24px, auto;
+}
+.runtime-pack-pixel-office .zone-card {
+  border-style: dashed;
+}

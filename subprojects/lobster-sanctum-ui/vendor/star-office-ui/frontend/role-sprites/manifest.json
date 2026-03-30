@@ -1,0 +1,187 @@
+{
+  "generated_at": "2026-03-30T00:23:29.145823+00:00",
+  "roles": [
+    {
+      "role_id": "druid",
+      "source": "Heavy Armored Defender Knight",
+      "mapping": {
+        "idle": "Idle",
+        "working": "Running",
+        "sync": "Dying",
+        "error": "Hurt"
+      },
+      "counts": {
+        "idle_src_frames": 18,
+        "working_src_frames": 12,
+        "sync_src_frames": 15,
+        "error_src_frames": 12
+      },
+      "library": {
+        "manifest": "materials/character-library/seven-multi-action-v1-compressed/druid/manifest.json",
+        "action_total": 17
+      },
+      "outputs": {
+        "idle": "star-idle-v5.png",
+        "working": "star-working-spritesheet-grid.webp",
+        "sync": "sync-animation-v3-grid.webp",
+        "error": "error-bug-spritesheet-grid.webp"
+      }
+    },
+    {
+      "role_id": "assassin",
+      "source": "Rogue",
+      "mapping": {
+        "idle": "Idle",
+        "working": "Running",
+        "sync": "Dying",
+        "error": "Hurt"
+      },
+      "counts": {
+        "idle_src_frames": 18,
+        "working_src_frames": 12,
+        "sync_src_frames": 15,
+        "error_src_frames": 12
+      },
+      "library": {
+        "manifest": "materials/character-library/seven-multi-action-v1-compressed/assassin/manifest.json",
+        "action_total": 17
+      },
+      "outputs": {
+        "idle": "star-idle-v5.png",
+        "working": "star-working-spritesheet-grid.webp",
+        "sync": "sync-animation-v3-grid.webp",
+        "error": "error-bug-spritesheet-grid.webp"
+      }
+    },
+    {
+      "role_id": "mage",
+      "source": "Black Wizard",
+      "mapping": {
+        "idle": "Idle",
+        "working": "Running",
+        "sync": "Dying",
+        "error": "Hurt"
+      },
+      "counts": {
+        "idle_src_frames": 18,
+        "working_src_frames": 12,
+        "sync_src_frames": 15,
+        "error_src_frames": 12
+      },
+      "library": {
+        "manifest": "materials/character-library/seven-multi-action-v1-compressed/mage/manifest.json",
+        "action_total": 17
+      },
+      "outputs": {
+        "idle": "star-idle-v5.png",
+        "working": "star-working-spritesheet-grid.webp",
+        "sync": "sync-animation-v3-grid.webp",
+        "error": "error-bug-spritesheet-grid.webp"
+      }
+    },
+    {
+      "role_id": "summoner",
+      "source": "Lich",
+      "mapping": {
+        "idle": "Idle",
+        "working": "Running",
+        "sync": "Dying",
+        "error": "Hurt"
+      },
+      "counts": {
+        "idle_src_frames": 18,
+        "working_src_frames": 12,
+        "sync_src_frames": 15,
+        "error_src_frames": 12
+      },
+      "library": {
+        "manifest": "materials/character-library/seven-multi-action-v1-compressed/summoner/manifest.json",
+        "action_total": 17
+      },
+      "outputs": {
+        "idle": "star-idle-v5.png",
+        "working": "star-working-spritesheet-grid.webp",
+        "sync": "sync-animation-v3-grid.webp",
+        "error": "error-bug-spritesheet-grid.webp"
+      }
+    },
+    {
+      "role_id": "warrior",
+      "source": "Spartan Knight with Spear",
+      "mapping": {
+        "idle": "Idle",
+        "working": "Running",
+        "sync": "Dying",
+        "error": "Hurt"
+      },
+      "counts": {
+        "idle_src_frames": 18,
+        "working_src_frames": 12,
+        "sync_src_frames": 15,
+        "error_src_frames": 12
+      },
+      "library": {
+        "manifest": "materials/character-library/seven-multi-action-v1-compressed/warrior/manifest.json",
+        "action_total": 17
+      },
+      "outputs": {
+        "idle": "star-idle-v5.png",
+        "working": "star-working-spritesheet-grid.webp",
+        "sync": "sync-animation-v3-grid.webp",
+        "error": "error-bug-spritesheet-grid.webp"
+      }
+    },
+    {
+      "role_id": "paladin",
+      "source": "Hell_Knight",
+      "mapping": {
+        "idle": "Idle",
+        "working": "Running",
+        "sync": "Dying",
+        "error": "Hurt"
+      },
+      "counts": {
+        "idle_src_frames": 18,
+        "working_src_frames": 12,
+        "sync_src_frames": 15,
+        "error_src_frames": 12
+      },
+      "library": {
+        "manifest": "materials/character-library/seven-multi-action-v1-compressed/paladin/manifest.json",
+        "action_total": 17
+      },
+      "outputs": {
+        "idle": "star-idle-v5.png",
+        "working": "star-working-spritesheet-grid.webp",
+        "sync": "sync-animation-v3-grid.webp",
+        "error": "error-bug-spritesheet-grid.webp"
+      }
+    },
+    {
+      "role_id": "archer",
+      "source": "Death_Knight",
+      "mapping": {
+        "idle": "Idle",
+        "working": "Running",
+        "sync": "Dying",
+        "error": "Hurt"
+      },
+      "counts": {
+        "idle_src_frames": 18,
+        "working_src_frames": 12,
+        "sync_src_frames": 15,
+        "error_src_frames": 12
+      },
+      "library": {
+        "manifest": "materials/character-library/seven-multi-action-v1-compressed/archer/manifest.json",
+        "action_total": 16
+      },
+      "outputs": {
+        "idle": "star-idle-v5.png",
+        "working": "star-working-spritesheet-grid.webp",
+        "sync": "sync-animation-v3-grid.webp",
+        "error": "error-bug-spritesheet-grid.webp"
+      }
+    }
+  ]
+}

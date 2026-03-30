@@ -1,0 +1,26 @@
+{
+  "id": "diablo-console",
+  "name": "Diablo Console",
+  "description": "红蓝黑控制台扩展包，按运行态懒加载样式。",
+  "bodyClass": "runtime-pack-diablo",
+  "baseAssets": [
+    { "type": "css", "path": "styles/base.css", "id": "base-style" }
+  ],
+  "modeAssets": {
+    "researching": [
+      { "type": "css", "path": "styles/researching.css", "id": "mode-researching" }
+    ],
+    "writing": [
+      { "type": "css", "path": "styles/writing.css", "id": "mode-writing" }
+    ],
+    "executing": [
+      { "type": "css", "path": "styles/executing.css", "id": "mode-executing" }
+    ],
+    "syncing": [
+      { "type": "css", "path": "styles/syncing.css", "id": "mode-syncing" }
+    ],
+    "error": [
+      { "type": "css", "path": "styles/error.css", "id": "mode-error" }
+    ]
+  }
+}

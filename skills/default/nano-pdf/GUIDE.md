@@ -2,7 +2,7 @@
 
 ## 1. 功能定位
 - 自然语言 PDF 编辑与处理。
-- 默认档位: 仅全量默认包/手动同步
+- 默认档位: 基础档默认安装
 - 仓库目录: `skills/default/nano-pdf`
 - 安装后目录: `~/.openclaw/skills/nano-pdf`
 

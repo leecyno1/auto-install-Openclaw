@@ -1,0 +1,4 @@
+.runtime-pack-pixel-office .world-stage[data-runtime-state="error"] .zone-card.zone-error {
+  border-color: rgba(209, 70, 87, 0.86);
+  box-shadow: 0 0 0 1px rgba(209, 70, 87, 0.2) inset, 0 0 16px rgba(209, 70, 87, 0.24);
+}

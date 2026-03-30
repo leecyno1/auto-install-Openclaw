@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OpenClaw 控制台</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./world-console.css" />
+  </head>
+  <body class="world-console-body">
+    <div class="world-console-shell">
+      <header class="world-console-topbar">
+        <div class="world-console-brand">
+          <span class="world-console-brand__eyebrow">龙虾控制中枢</span>
+          <strong id="worldConsoleOfficeLabel">龙虾工作台</strong>
+        </div>
+
+        <nav class="world-console-tabs" aria-label="统一控制台标签">
+          <button type="button" data-station="role">职业</button>
+          <button type="button" data-station="skills">技能</button>
+          <button type="button" data-station="equipment">装备物品</button>
+          <button type="button" data-station="status">状态成长</button>
+          <button type="button" data-station="tasks">任务流程</button>
+        </nav>
+
+        <aside class="world-console-profile" aria-live="polite">
+          <div class="world-console-profile__summary">
+            <small id="worldConsoleSummaryLine1">万金油 · 德鲁伊 · 0 技能 / 0 装备</small>
+            <small id="worldConsoleSummaryLine2">均衡协作 · 中档规则 · 中档技能包</small>
+            <small id="worldConsoleSummaryLine3">职业 · 待命</small>
+          </div>
+          <div class="world-console-profile__hero">
+            <div class="world-console-profile__avatar" id="worldConsoleAvatar" data-state="idle">
+              <span class="world-console-profile__glow"></span>
+              <span class="world-console-profile__core"></span>
+            </div>
+            <div class="world-console-profile__meta">
+              <strong id="worldConsoleRoleTitle">万金油 · 德鲁伊</strong>
+              <span id="worldConsoleRoleClass">通用总管</span>
+              <small id="worldConsoleStatusLabel">待命</small>
+            </div>
+          </div>
+        </aside>
+      </header>
+
+      <section class="world-console-frame-card">
+        <iframe id="worldConsoleFrame" title="统一控制台模块内容" loading="lazy" src="about:blank"></iframe>
+      </section>
+    </div>
+
+    <script src="./world-console.js"></script>
+  </body>
+</html>

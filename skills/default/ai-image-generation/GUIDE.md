@@ -1,19 +1,26 @@
 # ai-image-generation 使用指南
 
-来源：`inference-sh/skills/tools/image/ai-image-generation`
+## 1. 功能定位
+- Generate AI images with FLUX, Gemini, Grok, Seedream, Reve and 50+ models via inference.sh CLI. Models: FLUX Dev LoRA, FLUX.2 Klein LoRA, Gemini 3 Pro Image, Grok Imagine, Seedream 4.5, Reve, ImagineArt. Capabilities: text-to-image, image-to-image, inpainting, LoRA, image editing, upscaling, text rendering. Use for: AI art, product mockups, concept art, social media graphics, marketing visuals, illustrations. Triggers: flux, image generation, ai image, text to image, stable diffusion, generate image, ai art, midjourney alternative, dall-e alternative, text2img, t2i, image generator, ai picture, create image with ai, generative ai, ai illustration, grok image, gemini image
+- 默认档位: 基础档默认安装
+- 仓库目录: `skills/default/ai-image-generation`
+- 安装后目录: `~/.openclaw/skills/ai-image-generation`
 
-适用场景：
-- 生成营销图片、封面图、海报、产品图
-- 多风格图像创意探索
-- 批量图像迭代与版本比较
+## 2. 使用前准备
+- 无强制 API Key；按 skill 自身依赖运行。
 
-输入建议：
-- 主题/主体
-- 风格（写实/插画/3D/极简）
-- 比例与尺寸
-- 负向约束（不要出现的元素）
+## 3. 配置步骤
+1. 通常无需额外配置。若运行时报缺依赖，再按 `SKILL.md` 补装。
 
-输出建议：
-- 主提示词与备选提示词
-- 风格参数清单
-- 结果筛选与复用建议
+## 4. 推荐提问方式
+- 请使用 ai-image-generation 帮我处理当前任务。
+- 如果 ai-image-generation 需要额外配置，请先告诉我缺少什么。
+
+## 5. 手动验证
+```bash
+ls -la ~/.openclaw/skills/ai-image-generation
+```
+
+## 6. 参考资料
+- 上游来源: https://github.com/inference-sh/skills/tree/main/tools/image/ai-image-generation
+- 本技能说明: `SKILL.md`

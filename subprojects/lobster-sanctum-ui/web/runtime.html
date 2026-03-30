@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OpenClaw 运行世界 - 协作投影</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Noto+Sans+SC:wght@400;500;700;900&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body class="runtime-body">
+    <div class="app-shell runtime-shell">
+      <header class="runtime-banner">
+        <div>
+          <p class="badge">OPENCLAW RUNTIME • V1.5</p>
+          <h1>多龙虾协作运行世界</h1>
+          <p class="subtitle">构筑层已接入协作投影：主控状态 + 协作代理 + 任务看板。</p>
+        </div>
+        <div class="loadout-actions">
+          <a class="secondary-link" href="./index.html">人格页</a>
+          <a class="secondary-link" href="./loadout.html">技能页</a>
+          <a class="secondary-link" id="runtimeToConfigure" href="./configure.html">返回配置中枢</a>
+        </div>
+      </header>
+
+      <main class="runtime-layout">
+        <section class="runtime-panel world-panel">
+          <div class="world-header">
+            <div>
+              <p class="panel-index">Projection</p>
+              <h3>活动场所投影</h3>
+            </div>
+            <p class="runtime-state-text" id="runtimeStateText">待命</p>
+          </div>
+          <div class="world-stage" id="worldStage">
+            <div class="zone-card zone-breakroom" data-zone="breakroom">
+              <strong>休整区</strong>
+              <small>idle</small>
+            </div>
+            <div class="zone-card zone-writing" data-zone="writing">
+              <strong>文档台</strong>
+              <small>writing</small>
+            </div>
+            <div class="zone-card zone-research" data-zone="research">
+              <strong>情报架</strong>
+              <small>researching</small>
+            </div>
+            <div class="zone-card zone-execute" data-zone="execute">
+              <strong>执行终端</strong>
+              <small>executing</small>
+            </div>
+            <div class="zone-card zone-sync" data-zone="sync">
+              <strong>同步塔</strong>
+              <small>syncing</small>
+            </div>
+            <div class="zone-card zone-error" data-zone="error">
+              <strong>修复坑</strong>
+              <small>error</small>
+            </div>
+            <div class="world-avatar" id="worldAvatar">
+              <span class="avatar-name" id="avatarName">LOBSTER</span>
+              <span class="avatar-core"></span>
+            </div>
+            <div class="world-bubble" id="worldBubble">运行世界已加载，等待任务。</div>
+          </div>
+          <div class="world-footer">
+            <p id="runtimeDetailText">运行世界已加载，等待任务。</p>
+            <p id="runtimeUpdateText">更新时间: -</p>
+          </div>
+          <div class="world-progress">
+            <div class="world-progress-head">
+              <span>任务进度</span>
+              <strong id="runtimeProgressText">0%</strong>
+            </div>
+            <div class="world-progress-track">
+              <div class="world-progress-fill" id="runtimeProgressFill"></div>
+            </div>
+          </div>
+          <div class="phase-strip" id="phaseStrip"></div>
+        </section>
+
+        <aside class="runtime-side">
+          <article class="runtime-panel">
+            <div class="panel-head">
+              <p class="panel-index">Hero</p>
+              <h3>角色快照</h3>
+            </div>
+            <div class="runtime-meta-grid">
+              <div class="runtime-meta-item">
+                <span>人格</span>
+                <strong id="metaRoleTitle">-</strong>
+              </div>
+              <div class="runtime-meta-item">
+                <span>主路线</span>
+                <strong id="metaModelRoute">-</strong>
+              </div>
+              <div class="runtime-meta-item">
+                <span>技能数</span>
+                <strong id="metaSkillCount">0</strong>
+              </div>
+              <div class="runtime-meta-item">
+                <span>装备数</span>
+                <strong id="metaToolCount">0</strong>
+              </div>
+              <div class="runtime-meta-item">
+                <span>联动数</span>
+                <strong id="metaSynergyCount">0</strong>
+              </div>
+              <div class="runtime-meta-item">
+                <span>估算等级</span>
+                <strong id="metaLevel">Lv.1</strong>
+              </div>
+            </div>
+            <div class="runtime-actions">
+              <button type="button" id="refreshBuildBtn">从构筑刷新</button>
+              <button type="button" id="exportRuntimeBtn">导出运行快照</button>
+            </div>
+          </article>
+
+          <article class="runtime-panel">
+            <div class="panel-head">
+              <p class="panel-index">State Control</p>
+              <h3>状态控制</h3>
+            </div>
+            <div class="runtime-state-buttons" id="runtimeStateButtons"></div>
+            <label class="runtime-input-group">
+              <span>状态描述</span>
+              <input id="detailInput" type="text" placeholder="例如：正在整理文档与任务清单" />
+            </label>
+            <button type="button" id="applyStateBtn">应用状态</button>
+          </article>
+
+          <article class="runtime-panel">
+            <div class="panel-head">
+              <p class="panel-index">Adapter</p>
+              <h3>接口轮询</h3>
+            </div>
+            <label class="runtime-input-group">
+              <span>适配器模式</span>
+              <select id="adapterProfileSelect"></select>
+              <small id="adapterHint" class="runtime-hint"></small>
+            </label>
+            <label class="runtime-input-group">
+              <span>状态接口地址</span>
+              <input id="endpointInput" type="text" placeholder="例如：http://127.0.0.1:19100/runtime/state" />
+            </label>
+            <label class="runtime-input-group">
+              <span>State 路径（Generic）</span>
+              <input id="statePathInput" type="text" placeholder="例如：data.runtime.state" />
+            </label>
+            <label class="runtime-input-group">
+              <span>Detail 路径（Generic）</span>
+              <input id="detailPathInput" type="text" placeholder="例如：data.runtime.detail" />
+            </label>
+            <label class="runtime-input-group">
+              <span>Progress 路径（Generic）</span>
+              <input id="progressPathInput" type="text" placeholder="例如：data.runtime.progress" />
+            </label>
+            <label class="runtime-input-group">
+              <span>轮询间隔 ms</span>
+              <input id="pollIntervalInput" type="number" min="1000" step="500" />
+            </label>
+            <label class="runtime-toggle">
+              <input id="autoPollToggle" type="checkbox" />
+              <span>自动轮询</span>
+            </label>
+            <button type="button" id="pollNowBtn">立即拉取一次</button>
+          </article>
+
+          <article class="runtime-panel">
+            <div class="panel-head">
+              <p class="panel-index">Asset Pack</p>
+              <h3>场景资源包</h3>
+            </div>
+            <label class="runtime-input-group">
+              <span>资源包</span>
+              <select id="worldPackSelect"></select>
+            </label>
+            <small class="runtime-hint" id="worldPackHint">未加载资源包清单</small>
+            <small class="runtime-hint" id="worldPackStats">资源统计: -</small>
+            <button type="button" id="applyWorldPackBtn">应用资源包</button>
+          </article>
+
+          <article class="runtime-panel">
+            <div class="panel-head">
+              <p class="panel-index">Squad</p>
+              <h3>协作代理</h3>
+            </div>
+            <div class="runtime-collab-summary">
+              <div class="runtime-collab-item">
+                <span>在线</span>
+                <strong id="agentOnlineCount">0</strong>
+              </div>
+              <div class="runtime-collab-item">
+                <span>离线</span>
+                <strong id="agentOfflineCount">0</strong>
+              </div>
+              <div class="runtime-collab-item">
+                <span>总数</span>
+                <strong id="agentTotalCount">0</strong>
+              </div>
+            </div>
+            <small class="runtime-hint" id="agentStreamStatus">传输: polling</small>
+            <ul class="runtime-agent-list" id="runtimeAgentList"></ul>
+          </article>
+
+          <article class="runtime-panel">
+            <div class="panel-head">
+              <p class="panel-index">Mission Board</p>
+              <h3>协作任务</h3>
+            </div>
+            <div class="runtime-mission-summary">
+              <div class="runtime-collab-item">
+                <span>进行中</span>
+                <strong id="missionRunningCount">0</strong>
+              </div>
+              <div class="runtime-collab-item">
+                <span>阻塞</span>
+                <strong id="missionBlockedCount">0</strong>
+              </div>
+              <div class="runtime-collab-item">
+                <span>完成</span>
+                <strong id="missionDoneCount">0</strong>
+              </div>
+            </div>
+            <ul class="runtime-mission-list" id="runtimeMissionList"></ul>
+          </article>
+
+          <article class="runtime-panel">
+            <div class="panel-head">
+              <p class="panel-index">Event Log</p>
+              <h3>运行日志</h3>
+            </div>
+            <ul class="runtime-log-list" id="runtimeLogList"></ul>
+          </article>
+        </aside>
+      </main>
+    </div>
+
+    <script src="./runtime.js"></script>
+  </body>
+</html>

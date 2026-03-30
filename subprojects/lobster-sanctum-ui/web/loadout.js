@@ -202,8 +202,11 @@ function renderLoadout(role) {
     document.getElementById("skillTree"),
     profile.tree,
     (item) => `
-      <article class="skill-node">
-        <p class="skill-tier">${item.tier}</p>
+      <article class="skill-node skill-node-${item.tier}">
+        <div class="skill-node-top">
+          <p class="skill-tier">${item.tier}</p>
+          <span class="skill-node-mark">${profile.specialty}</span>
+        </div>
         <h4>${item.name}</h4>
         <p>${item.desc}</p>
       </article>
@@ -214,8 +217,11 @@ function renderLoadout(role) {
     document.getElementById("gearGrid"),
     profile.gear,
     (item) => `
-      <article class="gear-card">
-        <p class="gear-slot">${item.slot}</p>
+      <article class="gear-card gear-card-${item.slot}">
+        <div class="gear-card-top">
+          <p class="gear-slot">${item.slot}</p>
+          <span class="gear-class">装备位</span>
+        </div>
         <h4>${item.name}</h4>
         <p>${item.note}</p>
       </article>
