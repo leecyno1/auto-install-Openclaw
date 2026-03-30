@@ -108,32 +108,86 @@ force_release_port() {
   [[ -z "$(listen_pids)" ]]
 }
 
-ensure_python() {
-  if [[ -x "$VENV_DIR/bin/python" ]]; then
-    echo "$VENV_DIR/bin/python"
-    return 0
-  fi
-
-  if [[ -x "$TMP_VENV/bin/python" ]]; then
-    echo "$TMP_VENV/bin/python"
-    return 0
-  fi
-
-  if python3 - <<'PY' >/dev/null 2>&1
+python_has_modules() {
+  local py_bin="$1"
+  "$py_bin" - <<'PY' >/dev/null 2>&1
 import importlib.util
 mods = ["flask", "PIL"]
 raise SystemExit(0 if all(importlib.util.find_spec(m) for m in mods) else 1)
 PY
-  then
+}
+
+python_has_pip() {
+  local py_bin="$1"
+  "$py_bin" -m pip --version >/dev/null 2>&1
+}
+
+repair_broken_venv() {
+  local venv_path="$1"
+  [[ -d "$venv_path" ]] || return 0
+  rm -rf "$venv_path" >/dev/null 2>&1 || true
+}
+
+install_requirements_with_system_pip() {
+  if ! python_has_pip python3; then
+    return 1
+  fi
+
+  if python3 -m pip install --help 2>/dev/null | grep -q -- '--break-system-packages'; then
+    python3 -m pip install --user --break-system-packages -r "$REQUIREMENTS_FILE" >/dev/null
+  else
+    python3 -m pip install --user -r "$REQUIREMENTS_FILE" >/dev/null
+  fi
+}
+
+create_local_venv() {
+  repair_broken_venv "$VENV_DIR"
+  echo "[INFO] Creating local venv for Lobster World..." >&2
+  if ! python3 -m venv "$VENV_DIR" >/dev/null 2>&1; then
+    return 1
+  fi
+  "$VENV_DIR/bin/python" -m pip install --upgrade pip >/dev/null 2>&1 || true
+  "$VENV_DIR/bin/python" -m pip install -r "$REQUIREMENTS_FILE" >/dev/null
+}
+
+ensure_python() {
+  if [[ -x "$VENV_DIR/bin/python" ]] && python_has_modules "$VENV_DIR/bin/python"; then
+    echo "$VENV_DIR/bin/python"
+    return 0
+  fi
+  if [[ -d "$VENV_DIR" ]]; then
+    echo "[WARN] Broken Lobster World venv detected at $VENV_DIR, recreating..." >&2
+    repair_broken_venv "$VENV_DIR"
+  fi
+
+  if [[ -x "$TMP_VENV/bin/python" ]] && python_has_modules "$TMP_VENV/bin/python"; then
+    echo "$TMP_VENV/bin/python"
+    return 0
+  fi
+  if [[ -d "$TMP_VENV" && ! -x "$TMP_VENV/bin/python" ]]; then
+    repair_broken_venv "$TMP_VENV"
+  fi
+
+  if python_has_modules python3; then
     echo "python3"
     return 0
   fi
 
-  echo "[INFO] Creating local venv for Lobster World..."
-  python3 -m venv "$VENV_DIR"
-  "$VENV_DIR/bin/python" -m pip install --upgrade pip >/dev/null
-  "$VENV_DIR/bin/pip" install -r "$REQUIREMENTS_FILE" >/dev/null
-  echo "$VENV_DIR/bin/python"
+  echo "[INFO] Installing Lobster World Python dependencies with system pip..." >&2
+  if install_requirements_with_system_pip && python_has_modules python3; then
+    echo "python3"
+    return 0
+  fi
+
+  if create_local_venv && python_has_modules "$VENV_DIR/bin/python"; then
+    echo "$VENV_DIR/bin/python"
+    return 0
+  fi
+
+  echo "[ERROR] Lobster World Python runtime is not ready." >&2
+  echo "[ERROR] Missing dependency path: python3-venv or usable python3 pip environment." >&2
+  echo "[ERROR] On Debian/Ubuntu run: apt install -y python3-venv python3-pip" >&2
+  return 1
 }
 
 start_server() {

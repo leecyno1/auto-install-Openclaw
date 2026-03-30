@@ -2033,7 +2033,7 @@ install_dependencies() {
     case "$OS" in
         ubuntu|debian)
             sudo apt-get update
-            sudo apt-get install -y curl wget jq python3 python3-pip poppler-utils
+            sudo apt-get install -y curl wget jq python3 python3-pip python3-venv poppler-utils
             ;;
         centos|rhel|fedora)
             sudo yum install -y curl wget jq python3 python3-pip poppler-utils || \
