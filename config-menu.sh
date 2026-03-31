@@ -43,7 +43,7 @@ resolve_onboard_term_menu() {
 
 allow_noninteractive_shortcut_menu() {
     case "${1:-}" in
-        --repair-config|--install-pixel-house) return 0 ;;
+        --repair-config|--repair-pairing|--install-pixel-house) return 0 ;;
         *) return 1 ;;
     esac
 }
@@ -9809,14 +9809,15 @@ manage_service() {
     print_menu_item "5" "连通性测试（API/渠道）" "🧪"
     print_menu_item "6" "安装为系统服务" "⚙️"
     print_menu_item "7" "修改 Gateway 地址/端口" "🌐"
+    print_menu_item "8" "修复 Dashboard 配对/登录" "🔐"
     echo ""
-    echo -e "  ${RED}[8]${NC} 🗑️  卸载 OpenClaw"
+    echo -e "  ${RED}[9]${NC} 🗑️  卸载 OpenClaw"
     echo -e "  ${GRAY}说明: 安装为系统服务会注册 openclaw-gateway.service（开机自启、单实例守护、统一管理）。${NC}"
     echo ""
     print_menu_item "0" "返回主菜单" "↩️"
     echo ""
 
-    echo -en "${YELLOW}请选择 [0-8]: ${NC}"
+    echo -en "${YELLOW}请选择 [0-9]: ${NC}"
     read choice < "$TTY_INPUT"
 
     case $choice in
@@ -9976,6 +9977,10 @@ manage_service() {
             return
             ;;
         8)
+            echo ""
+            repair_dashboard_pairing_only_menu
+            ;;
+        9)
             openclaw_uninstall_menu
             manage_service
             return
@@ -11497,6 +11502,52 @@ repair_runtime_config_preserve_data() {
     return 0
 }
 
+repair_dashboard_pairing_only_menu() {
+    local auto_mode="${1:-0}"
+
+    if ! check_openclaw_installed; then
+        log_error "OpenClaw 未安装"
+        return 1
+    fi
+
+    if [ "$auto_mode" != "1" ]; then
+        clear_screen
+        print_header
+        echo -e "${WHITE}🔐 修复 Dashboard 配对/登录${NC}"
+        print_divider
+        echo ""
+        echo "  • 自动补齐 gateway.controlUi.allowedOrigins"
+        echo "  • 自动关闭 Dashboard 配对门槛（pairing required）"
+        echo "  • 自动重启 Gateway 使配置立即生效"
+        echo ""
+        if ! confirm "确认开始修复？" "y"; then
+            log_info "已取消"
+            return 0
+        fi
+    fi
+
+    local backup_path
+    backup_path="$(backup_runtime_config_for_upgrade)" || return 1
+    log_info "已创建修复前快照: $backup_path"
+
+    apply_dashboard_pairing_bypass_menu || true
+    cleanup_stale_plugin_state_menu || true
+
+    if openclaw doctor --help 2>/dev/null | grep -q -- "--non-interactive"; then
+        openclaw doctor --non-interactive >/dev/null 2>&1 || true
+    else
+        yes | openclaw doctor --fix >/dev/null 2>&1 || true
+    fi
+
+    restart_gateway_for_channel || true
+    log_info "Dashboard 配对/登录修复完成"
+
+    if [ "$auto_mode" != "1" ]; then
+        press_enter
+    fi
+    return 0
+}
+
 run_openclaw_upgrade_pipeline() {
     if ! check_openclaw_installed; then
         log_error "OpenClaw 未安装"
@@ -12418,6 +12469,12 @@ main() {
             repair_runtime_config_preserve_data
             echo ""
             echo -e "${CYAN}配置修复流程结束。${NC}"
+            exit 0
+            ;;
+        --repair-pairing)
+            repair_dashboard_pairing_only_menu
+            echo ""
+            echo -e "${CYAN}Dashboard 配对修复流程结束。${NC}"
             exit 0
             ;;
         --install-pixel-house)

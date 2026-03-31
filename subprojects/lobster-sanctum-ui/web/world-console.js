@@ -5,6 +5,7 @@ const OFFICE_PLAQUE_STORAGE_KEY = "officePlaqueCustomTitle";
 const STATUS_ENDPOINT = "/status";
 const PAGE_PARAMS = new URLSearchParams(window.location.search);
 const CATALOG_ENDPOINT = "/openclaw/catalog";
+const API_CACHE = window.OpenClawApiClient || null;
 const routeLabelMap = {
   balanced: "均衡协作",
   analysis: "深度分析",
@@ -55,6 +56,21 @@ function safeParse(value, fallback) {
     return JSON.parse(value);
   } catch {
     return fallback;
+  }
+}
+
+async function fetchJsonCached(url, ttl = 5000) {
+  if (API_CACHE && API_CACHE.cachedFetch) {
+    return API_CACHE.cachedFetch(url, { cache: "no-store" }, ttl);
+  }
+  const response = await fetch(url, { cache: "no-store" });
+  if (!response.ok) throw new Error("HTTP " + response.status);
+  return response.json();
+}
+
+function invalidateApiCache(...prefixes) {
+  if (API_CACHE && API_CACHE.invalidate) {
+    API_CACHE.invalidate(...prefixes);
   }
 }
 
@@ -210,9 +226,7 @@ function activeSummary() {
 
 async function hydrateCatalog() {
   try {
-    const response = await fetch(CATALOG_ENDPOINT, { cache: "no-store" });
-    if (!response.ok) return;
-    const payload = await response.json();
+    const payload = await fetchJsonCached(CATALOG_ENDPOINT, 15000);
     if (!payload?.ok) return;
     currentCatalogPayload = payload;
     serverRole = roleProfiles[payload.role] ? payload.role : "";
@@ -300,9 +314,8 @@ function renderStation(station) {
 
 async function fetchStatus() {
   try {
-    const resp = await fetch(STATUS_ENDPOINT, { cache: "no-store" });
-    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-    currentRuntime = normalizeRuntime(await resp.json());
+    const payload = await fetchJsonCached(STATUS_ENDPOINT, 4000);
+    currentRuntime = normalizeRuntime(payload);
     renderShell();
     notifyParent("lobster-world-console-status", currentRuntime);
   } catch (error) {

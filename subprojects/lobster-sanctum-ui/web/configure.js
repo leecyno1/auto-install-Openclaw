@@ -816,9 +816,7 @@ function mergeRemoteCatalogData(payload) {
 
 async function hydrateDynamicCatalog() {
   try {
-    const response = await fetch(CATALOG_ENDPOINT, { cache: "no-store" });
-    if (!response.ok) return;
-    const payload = await response.json();
+    const payload = await fetchJsonCached(CATALOG_ENDPOINT, 15000);
     if (!payload?.ok) return;
     mergeRemoteCatalogData(payload);
   } catch {
@@ -1210,6 +1208,7 @@ const STATUS_SUMMARY_ENDPOINT = "/openclaw/status/summary";
 const APPLY_CONFIG_ENDPOINT = "/openclaw/config/apply";
 const DIAGNOSE_ENDPOINT = "/openclaw/diagnose";
 const CATALOG_ENDPOINT = "/openclaw/catalog";
+const API_CACHE = window.OpenClawApiClient || null;
 const VALID_TABS = ["role", "skills", "equipment", "status", "tasks"];
 const TAB_SAVE_STATUS_IDS = {
   role: "tabSaveStatusRole",
@@ -1237,6 +1236,30 @@ let currentIdentity = readIdentityProfile();
 let selectedSkillId = null;
 let selectedToolId = null;
 let statusDiagBusy = false;
+
+async function fetchJsonCached(url, ttl = 15000) {
+  if (API_CACHE && API_CACHE.cachedFetch) {
+    return API_CACHE.cachedFetch(url, { cache: "no-store" }, ttl);
+  }
+  const response = await fetch(url, { cache: "no-store" });
+  if (!response.ok) throw new Error("HTTP " + response.status);
+  return response.json();
+}
+
+async function fetchJsonRaw(url, opts = {}) {
+  const response = await fetch(url, opts);
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(payload && payload.msg ? payload.msg : "HTTP " + response.status);
+  }
+  return payload;
+}
+
+function invalidateApiCache(...prefixes) {
+  if (API_CACHE && API_CACHE.invalidate) {
+    API_CACHE.invalidate(...prefixes);
+  }
+}
 
 function readRequestedTab() {
   const params = new URLSearchParams(window.location.search);
@@ -1472,15 +1495,15 @@ async function applyRoleStateToBackend(scope, sourceButton) {
   }
   setSaveStatus(scope, "保存中...");
   try {
-    const response = await fetch(APPLY_CONFIG_ENDPOINT, {
+    const result = await fetchJsonRaw(APPLY_CONFIG_ENDPOINT, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(collectApplyPayload(scope)),
     });
-    const result = await response.json().catch(() => ({}));
-    if (!response.ok || !result?.ok) {
-      throw new Error(result?.msg || `HTTP ${response.status}`);
+    if (!result?.ok) {
+      throw new Error(result?.msg || "apply config failed");
     }
+    invalidateApiCache(STATUS_SUMMARY_ENDPOINT, STATUS_ENDPOINT, CATALOG_ENDPOINT);
     if (result.summary && typeof result.summary === "object") {
       currentStatusSummary = result.summary;
       if (result.summary.identity && typeof result.summary.identity === "object") {
@@ -2116,15 +2139,15 @@ async function runStatusDiagnostic(cmd) {
   setStatusDiagButtons(true);
   setStatusDiagOutput(`执行中: openclaw ${cmd} ...`);
   try {
-    const response = await fetch(DIAGNOSE_ENDPOINT, {
+    const payload = await fetchJsonRaw(DIAGNOSE_ENDPOINT, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ cmd }),
     });
-    const payload = await response.json().catch(() => ({}));
-    if (!response.ok || !payload?.ok) {
-      throw new Error(payload?.msg || `HTTP ${response.status}`);
+    if (!payload?.ok) {
+      throw new Error(payload?.msg || "diagnose failed");
     }
+    invalidateApiCache(STATUS_SUMMARY_ENDPOINT, STATUS_ENDPOINT);
     const exitCode = Number(payload.code ?? 0);
     const output = String(payload.output || "(无输出)");
     const ranAt = payload.ranAt ? new Date(payload.ranAt).toLocaleString() : new Date().toLocaleString();
@@ -2226,9 +2249,7 @@ async function refreshRuntime() {
     currentRuntime = normalizeRuntime(projection.runtime);
   }
   try {
-    const response = await fetch(STATUS_SUMMARY_ENDPOINT, { cache: "no-store" });
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    const payload = await response.json();
+    const payload = await fetchJsonCached(STATUS_SUMMARY_ENDPOINT, 5000);
     if (payload?.runtime) {
       currentRuntime = normalizeRuntime(payload.runtime);
     }
@@ -2240,8 +2261,8 @@ async function refreshRuntime() {
     }
   } catch {
     try {
-      const fallback = await fetch(STATUS_ENDPOINT, { cache: "no-store" });
-      if (fallback.ok) currentRuntime = normalizeRuntime(await fallback.json());
+      const fallbackPayload = await fetchJsonCached(STATUS_ENDPOINT, 5000);
+      if (fallbackPayload) currentRuntime = normalizeRuntime(fallbackPayload);
     } catch {
       // keep projection/runtime snapshot
     }

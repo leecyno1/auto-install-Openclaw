@@ -868,6 +868,139 @@ def _collect_skill_catalog() -> dict:
     }
 
 
+def _extract_json_payload(text: str):
+    raw = (text or "").strip()
+    if not raw:
+        return None
+    decoder = json.JSONDecoder()
+    for idx, ch in enumerate(raw):
+        if ch not in "{[":
+            continue
+        try:
+            obj, _ = decoder.raw_decode(raw[idx:])
+            return obj
+        except Exception:
+            continue
+    return None
+
+
+def _collect_skill_ids_from_obj(value) -> list[str]:
+    rows: list[str] = []
+
+    def _walk(node):
+        if isinstance(node, str):
+            text = node.strip()
+            if re.fullmatch(r"[a-zA-Z0-9._-]+", text):
+                rows.append(text)
+            return
+        if isinstance(node, list):
+            for item in node:
+                _walk(item)
+            return
+        if isinstance(node, dict):
+            for key in ("id", "name", "skill", "skillId", "slug"):
+                v = node.get(key)
+                if isinstance(v, str):
+                    text = v.strip()
+                    if re.fullmatch(r"[a-zA-Z0-9._-]+", text):
+                        rows.append(text)
+            for v in node.values():
+                _walk(v)
+
+    _walk(value)
+    return _safe_skill_id_list(rows)
+
+
+def _collect_skill_catalog_with_fallback() -> dict:
+    base = _collect_skill_catalog()
+    installed = list(base.get("installed", []))
+    bundle = list(base.get("bundle", []))
+    local_all = list(base.get("all", []))
+
+    diagnostic = {
+        "status": "local-only",
+        "message": "仅使用本地技能目录扫描结果",
+        "cliAvailable": bool(shutil.which("openclaw")),
+        "source": "local-scan",
+    }
+
+    if not shutil.which("openclaw"):
+        return {
+            "installed": installed,
+            "bundle": bundle,
+            "all": local_all,
+            "counts": {"installed": len(installed), "bundle": len(bundle), "all": len(local_all)},
+            "diagnostic": diagnostic,
+        }
+
+    try:
+        proc = subprocess.run(
+            ["openclaw", "skills", "list", "--json"],
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=15,
+        )
+        parsed = _extract_json_payload(proc.stdout or "")
+        if parsed is None:
+            diagnostic = {
+                "status": "parse-failed",
+                "message": "OpenClaw CLI 返回结果无法解析为 JSON，已回退本地扫描",
+                "cliAvailable": True,
+                "source": "local-scan",
+                "exitCode": int(proc.returncode),
+                "stderr": (proc.stderr or "").strip()[:240],
+            }
+            return {
+                "installed": installed,
+                "bundle": bundle,
+                "all": local_all,
+                "counts": {"installed": len(installed), "bundle": len(bundle), "all": len(local_all)},
+                "diagnostic": diagnostic,
+            }
+
+        cli_ids = _collect_skill_ids_from_obj(parsed)
+        # installed 仍以本地已安装目录为准，避免 CLI 语义差异导致误判
+        merged_all = sorted(set(local_all) | set(cli_ids))
+        diagnostic = {
+            "status": "ok",
+            "message": "已使用 OpenClaw CLI + 本地目录合并结果",
+            "cliAvailable": True,
+            "source": "cli-merged",
+            "exitCode": int(proc.returncode),
+        }
+        return {
+            "installed": installed,
+            "bundle": bundle,
+            "all": merged_all,
+            "counts": {"installed": len(installed), "bundle": len(bundle), "all": len(merged_all)},
+            "diagnostic": diagnostic,
+        }
+    except subprocess.TimeoutExpired:
+        diagnostic = {
+            "status": "timeout",
+            "message": "OpenClaw CLI 调用超时，已回退本地扫描",
+            "cliAvailable": True,
+            "source": "local-scan",
+            "timeoutSeconds": 15,
+        }
+    except Exception as e:
+        diagnostic = {
+            "status": "exec-failed",
+            "message": f"OpenClaw CLI 调用失败，已回退本地扫描: {e}",
+            "cliAvailable": True,
+            "source": "local-scan",
+        }
+
+    return {
+        "installed": installed,
+        "bundle": bundle,
+        "all": local_all,
+        "counts": {"installed": len(installed), "bundle": len(bundle), "all": len(local_all)},
+        "diagnostic": diagnostic,
+    }
+
+
 def _tail_text(path: str, max_bytes: int = RUNTIME_SCAN_MAX_BYTES) -> str:
     try:
         size = os.path.getsize(path)
@@ -2065,7 +2198,7 @@ def openclaw_diagnose():
 @app.route("/openclaw/catalog", methods=["GET"])
 def openclaw_catalog():
     try:
-        skills = _collect_skill_catalog()
+        skills = _collect_skill_catalog_with_fallback()
         env_data = _read_env_exports()
         role_id = _normalize_persona_role(env_data.get("OPENCLAW_PERSONA_ROLE") or "druid")
         ui_role = "archer" if role_id == "designer" else role_id
@@ -2076,7 +2209,7 @@ def openclaw_catalog():
                 "name": _friendly_name_from_id(skill_id),
                 "tier": "low",
                 "branch": _guess_skill_branch(skill_id),
-                "desc": f"来自本地技能仓：{skill_id}",
+                "desc": f"{_guess_skill_branch(skill_id)} · {skill_id}",
                 "deps": [],
                 "roles": ["druid", "assassin", "mage", "summoner", "warrior", "paladin", "archer"],
                 "pack": ["low", "medium", "high"],
@@ -2100,6 +2233,7 @@ def openclaw_catalog():
                     "counts": skills.get("counts", {}),
                 },
                 "equipment": equipment,
+                "diagnostic": skills.get("diagnostic", {}),
             }
         )
     except Exception as e:
