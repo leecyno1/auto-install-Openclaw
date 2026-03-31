@@ -195,6 +195,9 @@ UNOFFICIAL_ADVANCED_DEFAULT_URL_ANTHROPIC="${OPENCLAW_UNOFFICIAL_ADVANCED_ANTHRO
 UNOFFICIAL_ADVANCED_DEFAULT_MODEL_CLAUDE="${OPENCLAW_UNOFFICIAL_ADVANCED_CLAUDE_MODEL:-claude-sonnet-4-6}"
 UNOFFICIAL_ADVANCED_DEFAULT_MODEL_GPT="${OPENCLAW_UNOFFICIAL_ADVANCED_GPT_MODEL:-Gpt-5.4}"
 UNOFFICIAL_ADVANCED_DEFAULT_API_KEY="${OPENCLAW_UNOFFICIAL_ADVANCED_API_KEY:-}"
+RULE_ADVANCED_DEFAULT_URL="${OPENCLAW_RULE_ADVANCED_MODEL_API_URL:-${OPENCLAW_UNOFFICIAL_ADVANCED_OPENAI_API_URL:-https://www.leishen-ai.cn/openai}}"
+RULE_ADVANCED_DEFAULT_MODEL="${OPENCLAW_RULE_ADVANCED_MODEL_NAME:-${OPENCLAW_UNOFFICIAL_ADVANCED_MODEL:-${UNOFFICIAL_ADVANCED_DEFAULT_MODEL_GPT:-Gpt-5.4}}}"
+RULE_ADVANCED_DEFAULT_KEY="${OPENCLAW_RULE_ADVANCED_MODEL_API_KEY:-${OPENCLAW_UNOFFICIAL_ADVANCED_API_KEY:-}}"
 UNOFFICIAL_ROUTING_DEFAULT_STRATEGY="${OPENCLAW_UNOFFICIAL_ROUTING_STRATEGY:-auto}"
 UNOFFICIAL_ROUTING_DEFAULT_FAILOVER="${OPENCLAW_UNOFFICIAL_ROUTING_FAILOVER:-1}"
 SKILL_PIP_PACKAGES_DEFAULT="duckduckgo-search akshare requests pyyaml pypdf pillow openpyxl python-pptx python-docx lxml defusedxml pdf2image"
@@ -2067,17 +2070,20 @@ apply_profile_advanced_model_routing_menu() {
 
     local adv_type="${UNOFFICIAL_ADVANCED_DEFAULT_TYPE:-openai}"
     local adv_api_type="openai"
-    local adv_url="${UNOFFICIAL_ADVANCED_DEFAULT_URL_OPENAI:-https://www.leishen-ai.cn/openai}"
-    local adv_model="${UNOFFICIAL_ADVANCED_DEFAULT_MODEL_GPT:-Gpt-5.4}"
-    local adv_key="${UNOFFICIAL_ADVANCED_DEFAULT_API_KEY:-}"
+    local adv_url="${OPENCLAW_RULE_ADVANCED_MODEL_API_URL:-${OPENCLAW_UNOFFICIAL_ADVANCED_OPENAI_API_URL:-${UNOFFICIAL_ADVANCED_DEFAULT_URL_OPENAI:-https://www.leishen-ai.cn/openai}}}"
+    local adv_model="${OPENCLAW_RULE_ADVANCED_MODEL_NAME:-${OPENCLAW_UNOFFICIAL_ADVANCED_MODEL:-${UNOFFICIAL_ADVANCED_DEFAULT_MODEL_GPT:-Gpt-5.4}}}"
+    local adv_key="${OPENCLAW_RULE_ADVANCED_MODEL_API_KEY:-${OPENCLAW_UNOFFICIAL_ADVANCED_API_KEY:-${UNOFFICIAL_ADVANCED_DEFAULT_API_KEY:-}}}"
     local routing_strategy="${UNOFFICIAL_ROUTING_DEFAULT_STRATEGY:-auto}"
     local routing_failover="${UNOFFICIAL_ROUTING_DEFAULT_FAILOVER:-1}"
 
     if [ -z "$adv_key" ]; then
-        log_warn "高级模型默认 Key 为空，已跳过中/高档自动路由注入。"
+        log_warn "高级模型 Key 为空，已跳过中/高档自动路由注入（可在“高级设置 -> 高级模型配置（中/高档）”中配置）。"
         return 0
     fi
 
+    upsert_env_export "OPENCLAW_RULE_ADVANCED_MODEL_API_URL" "$adv_url"
+    upsert_env_export "OPENCLAW_RULE_ADVANCED_MODEL_NAME" "$adv_model"
+    upsert_env_export "OPENCLAW_RULE_ADVANCED_MODEL_API_KEY" "$adv_key"
     upsert_env_export "OPENCLAW_UNOFFICIAL_ADVANCED_MODEL_TYPE" "$adv_type"
     upsert_env_export "OPENCLAW_UNOFFICIAL_ADVANCED_API_TYPE" "$adv_api_type"
     upsert_env_export "OPENCLAW_UNOFFICIAL_ADVANCED_OPENAI_API_URL" "$adv_url"
@@ -2114,9 +2120,84 @@ apply_profile_advanced_model_routing_menu() {
         openclaw config set plugins.community.routing.primary advanced >/dev/null 2>&1 || true
         openclaw config set plugins.community.routing.secondary fallback >/dev/null 2>&1 || true
         openclaw config set plugins.community.routing.failover "$routing_failover" >/dev/null 2>&1 || true
+
+        openclaw config set "vendor.control.advanced.enabled" true >/dev/null 2>&1 || true
+        openclaw config set "vendor.control.advanced.apiType" "$adv_api_type" >/dev/null 2>&1 || true
+        openclaw config set "vendor.control.advanced.apiUrl" "$adv_url" >/dev/null 2>&1 || true
+        openclaw config set "vendor.control.advanced.model" "$adv_model" >/dev/null 2>&1 || true
+        openclaw config set "vendor.control.advanced.apiKey" "$adv_key" >/dev/null 2>&1 || true
+        openclaw config set "vendor.control.advanced.bmCommand" "/bm" >/dev/null 2>&1 || true
+        openclaw config set "vendor.control.advanced.routingRule" "complex_or_code_to_subagent" >/dev/null 2>&1 || true
     fi
 
     log_info "中/高档默认已启用高级模型路由（${adv_model}，命令: /bm）"
+}
+
+configure_rule_advanced_model_menu() {
+    clear_screen
+    print_header
+    echo -e "${WHITE}🚀 高级模型配置（中/高档规则）${NC}"
+    print_divider
+    echo ""
+    echo -e "${GRAY}用于中级/高级规则的复杂任务路由：编码或超复杂问题将触发子Agent使用高级模型。${NC}"
+    echo ""
+
+    local current_url current_model current_key
+    local adv_url adv_model adv_key
+    current_url="${OPENCLAW_RULE_ADVANCED_MODEL_API_URL:-$RULE_ADVANCED_DEFAULT_URL}"
+    current_model="${OPENCLAW_RULE_ADVANCED_MODEL_NAME:-$RULE_ADVANCED_DEFAULT_MODEL}"
+    current_key="${OPENCLAW_RULE_ADVANCED_MODEL_API_KEY:-$RULE_ADVANCED_DEFAULT_KEY}"
+
+    echo -e "  当前 URL: ${WHITE}${current_url}${NC}"
+    echo -e "  当前模型: ${WHITE}${current_model}${NC}"
+    if [ -n "$current_key" ]; then
+        echo -e "  当前 Key: ${GREEN}已配置${NC}"
+    else
+        echo -e "  当前 Key: ${YELLOW}未配置${NC}"
+    fi
+    echo ""
+
+    read_input "${YELLOW}高级模型 API URL（留空保持当前）: ${NC}" adv_url
+    adv_url="${adv_url:-$current_url}"
+    read_input "${YELLOW}高级模型名称（留空保持当前）: ${NC}" adv_model
+    adv_model="${adv_model:-$current_model}"
+    read_secret_input "${YELLOW}高级模型 API Key（留空保持当前）: ${NC}" adv_key
+    adv_key="${adv_key:-$current_key}"
+
+    if [ -z "$adv_url" ] || [ -z "$adv_model" ]; then
+        log_error "URL 和模型不能为空"
+        press_enter
+        return
+    fi
+
+    upsert_env_export "OPENCLAW_RULE_ADVANCED_MODEL_API_URL" "$adv_url"
+    upsert_env_export "OPENCLAW_RULE_ADVANCED_MODEL_NAME" "$adv_model"
+    upsert_env_export "OPENCLAW_RULE_ADVANCED_MODEL_API_KEY" "$adv_key"
+    upsert_env_export "OPENCLAW_BM_COMMAND" "/bm"
+
+    # 与现有非官方高级路由配置保持一致，避免中/高档规则读取不到参数
+    upsert_env_export "OPENCLAW_UNOFFICIAL_ADVANCED_MODEL_TYPE" "gpt"
+    upsert_env_export "OPENCLAW_UNOFFICIAL_ADVANCED_API_TYPE" "openai"
+    upsert_env_export "OPENCLAW_UNOFFICIAL_ADVANCED_OPENAI_API_URL" "$adv_url"
+    upsert_env_export "OPENCLAW_UNOFFICIAL_ADVANCED_MODEL" "$adv_model"
+    upsert_env_export "OPENCLAW_UNOFFICIAL_ADVANCED_API_KEY" "$adv_key"
+
+    if check_openclaw_installed; then
+        openclaw config set "vendor.control.advanced.enabled" true >/dev/null 2>&1 || true
+        openclaw config set "vendor.control.advanced.apiType" "openai" >/dev/null 2>&1 || true
+        openclaw config set "vendor.control.advanced.apiUrl" "$adv_url" >/dev/null 2>&1 || true
+        openclaw config set "vendor.control.advanced.model" "$adv_model" >/dev/null 2>&1 || true
+        openclaw config set "vendor.control.advanced.apiKey" "$adv_key" >/dev/null 2>&1 || true
+        openclaw config set "vendor.control.advanced.bmCommand" "/bm" >/dev/null 2>&1 || true
+        openclaw config set "vendor.control.advanced.routingRule" "complex_or_code_to_subagent" >/dev/null 2>&1 || true
+    fi
+
+    if [ -z "$adv_key" ]; then
+        log_warn "高级模型 Key 仍未配置：中/高档规则将保留路由规则，但不会实际切换高级模型。"
+    else
+        log_info "高级模型配置已保存：${adv_model}"
+    fi
+    press_enter
 }
 
 apply_profile_token_policy_menu() {
@@ -2238,6 +2319,8 @@ write_profile_policy_files_menu() {
     local persona_role_agency persona_role_core_skills persona_role_extra_skills
     local policy_dir soul_dir agent_dir memory_dir session_dir
     local persona_dir
+    local rule_adv_url rule_adv_model rule_adv_key rule_adv_key_status rule_adv_bm_command
+    local memory_advanced_route_block
     local system_rule_file memory_rule_file session_rule_file soul_rule_file policy_json prompt_file
     local persona_soul_file persona_agents_file persona_user_file persona_identity_file
 
@@ -2305,6 +2388,37 @@ write_profile_policy_files_menu() {
     persona_work_mode="${OPENCLAW_ASSISTANT_WORK_MODE:-${OPENCLAW_ASSISTANT_WORK_STYLE:-$PERSONA_ROLE_DEFAULT_WORK_MENU}}"
     persona_agent_name="${OPENCLAW_ASSISTANT_NAME:-龙虾小助理}"
     persona_agent_emoji="${OPENCLAW_ASSISTANT_EMOJI:-$PERSONA_ROLE_EMOJI_MENU}"
+    rule_adv_url="${OPENCLAW_RULE_ADVANCED_MODEL_API_URL:-${OPENCLAW_UNOFFICIAL_ADVANCED_OPENAI_API_URL:-$UNOFFICIAL_ADVANCED_DEFAULT_URL_OPENAI}}"
+    rule_adv_model="${OPENCLAW_RULE_ADVANCED_MODEL_NAME:-${OPENCLAW_UNOFFICIAL_ADVANCED_MODEL:-${UNOFFICIAL_ADVANCED_DEFAULT_MODEL_GPT:-Gpt-5.4}}}"
+    rule_adv_key="${OPENCLAW_RULE_ADVANCED_MODEL_API_KEY:-${OPENCLAW_UNOFFICIAL_ADVANCED_API_KEY:-}}"
+    rule_adv_bm_command="${OPENCLAW_BM_COMMAND:-/bm}"
+    rule_adv_key_status="未配置"
+    if [ -n "$rule_adv_key" ]; then
+        rule_adv_key_status="已配置"
+    fi
+
+    memory_advanced_route_block=""
+    if [ "$level" = "medium" ] || [ "$level" = "high" ]; then
+        memory_advanced_route_block="$(cat <<EOF
+## 高级模型子Agent路由（中/高档）
+
+- 高级模型 URL: ${rule_adv_url}
+- 高级模型名称: ${rule_adv_model}
+- 高级模型 Key: ${rule_adv_key_status}
+- 手动强制命令: ${rule_adv_bm_command}
+
+### 触发条件（满足任一项）
+1. 编程任务且复杂度高：多文件改造、架构重构、复杂排障、性能优化、安全修复。
+2. 非编程但非常复杂：需要长链路推理、跨域信息整合、复杂方案权衡。
+3. 连续两轮尝试仍未收敛。
+
+### 执行动作
+1. 主agent先拆解任务并定义子任务边界。
+2. 对复杂子任务建立子agent执行，并固定使用高级模型 ${rule_adv_model}。
+3. 子agent返回结果后，主agent统一整合并对外输出。
+EOF
+)"
+    fi
 
     mkdir -p "$policy_dir" "$soul_dir" "$agent_dir" "$memory_dir" "$session_dir" "$persona_dir" 2>/dev/null || true
 
@@ -2338,6 +2452,7 @@ EOF
 
     cat > "$memory_rule_file" <<EOF
 # 厂商控制规则（Memory 注入）
+${memory_advanced_route_block}
 
 ## 运行基线（初始化）
 
@@ -2650,7 +2765,7 @@ apply_vendor_rule_profile_menu() {
     echo -e "  启航AI: ${WHITE}${QIHANG_IMAGE_BASE_URL:-$QIHANG_IMAGE_BASE_URL_DEFAULT} | ${QIHANG_IMAGE_MODEL:-$QIHANG_IMAGE_MODEL_DEFAULT} / ${QIHANG_IMAGE_MODEL_SEEDREAM46:-$QIHANG_IMAGE_MODEL_SEEDREAM46_DEFAULT}${NC}"
     echo -e "  模力方舟: ${WHITE}${MOLIFANG_IMAGE_BASE_URL:-$MOLIFANG_IMAGE_BASE_URL_DEFAULT} | ${MOLIFANG_IMAGE_MODEL:-$MOLIFANG_IMAGE_MODEL_DEFAULT}${NC}"
     if [ "$level" = "medium" ] || [ "$level" = "high" ]; then
-        echo -e "  高级模型路由: ${WHITE}on | ${UNOFFICIAL_ADVANCED_DEFAULT_MODEL_GPT:-Gpt-5.4} | ${UNOFFICIAL_ADVANCED_DEFAULT_URL_OPENAI:-https://www.leishen-ai.cn/openai} | /bm${NC}"
+        echo -e "  高级模型路由: ${WHITE}on | ${OPENCLAW_RULE_ADVANCED_MODEL_NAME:-${OPENCLAW_UNOFFICIAL_ADVANCED_MODEL:-Gpt-5.4}} | ${OPENCLAW_RULE_ADVANCED_MODEL_API_URL:-${OPENCLAW_UNOFFICIAL_ADVANCED_OPENAI_API_URL:-https://www.leishen-ai.cn/openai}} | ${OPENCLAW_BM_COMMAND:-/bm}${NC}"
     fi
     echo -e "  提示词摘要: ${WHITE}${prompt_head}${NC}"
     echo -e "  策略文件: ${WHITE}${CONFIG_DIR}/policy/vendor-control-profile.json${NC}"
@@ -11817,6 +11932,7 @@ advanced_settings() {
     print_menu_item "8" "AI 自动修复 OpenClaw" "🛠️"
     print_menu_item "9" "token规划规则注入（低/中/高/跳过）" "🏭"
     print_menu_item "10" "配置修复 / 迁移（保留记忆）" "🩺"
+    print_menu_item "11" "高级模型配置（中/高档）" "🚀"
     print_menu_item "0" "返回主菜单" "↩️"
     echo ""
     
@@ -11883,6 +11999,9 @@ advanced_settings() {
             ;;
         10)
             repair_runtime_config_preserve_data
+            ;;
+        11)
+            configure_rule_advanced_model_menu
             ;;
         0)
             return

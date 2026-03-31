@@ -12,9 +12,21 @@ BRIDGE_SOURCE="${BRIDGE_SOURCE:-openclaw-bridge}"
 BRIDGE_INTERVAL_SEC="${BRIDGE_INTERVAL_SEC:-3}"
 BRIDGE_CONNECT_TIMEOUT_SEC="${BRIDGE_CONNECT_TIMEOUT_SEC:-2}"
 BRIDGE_MAX_TIME_SEC="${BRIDGE_MAX_TIME_SEC:-6}"
+BRIDGE_VERBOSE="${BRIDGE_VERBOSE:-0}"
+BRIDGE_GUARDIAN_ENABLED="${BRIDGE_GUARDIAN_ENABLED:-1}"
+BRIDGE_GUARDIAN_MAX_RESTARTS="${BRIDGE_GUARDIAN_MAX_RESTARTS:-3}"
+BRIDGE_GUARDIAN_COOLDOWN_SEC="${BRIDGE_GUARDIAN_COOLDOWN_SEC:-60}"
+BRIDGE_GUARDIAN_STABLE_WINDOW_SEC="${BRIDGE_GUARDIAN_STABLE_WINDOW_SEC:-120}"
+BRIDGE_GUARDIAN_MIN_FAIL_STREAK="${BRIDGE_GUARDIAN_MIN_FAIL_STREAK:-2}"
 
 PID_FILE="/tmp/lobster-openclaw-bridge.pid"
 LOG_FILE="/tmp/lobster-openclaw-bridge.log"
+GUARDIAN_LOG_FILE="/tmp/lobster-openclaw-guardian.log"
+
+guardian_restart_count=0
+guardian_last_restart_at=0
+guardian_fail_streak=0
+guardian_blocked=0
 
 usage() {
   cat <<USAGE
@@ -25,6 +37,30 @@ Env:
   PROJECTION_API_INGEST_URL Projection ingest endpoint (default: $PROJECTION_API_INGEST_URL)
   BRIDGE_INTERVAL_SEC       Poll interval seconds (default: $BRIDGE_INTERVAL_SEC)
 USAGE
+}
+
+is_truthy() {
+  case "${1:-}" in
+    1|true|TRUE|yes|YES|on|ON) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
+now_epoch() {
+  date +%s
+}
+
+bridge_log_info() {
+  if is_truthy "$BRIDGE_VERBOSE"; then
+    echo "$@"
+  fi
+}
+
+guardian_log() {
+  local ts
+  ts="$(date '+%Y-%m-%d %H:%M:%S%z')"
+  local msg="[GUARDIAN] $ts $*"
+  echo "$msg" | tee -a "$GUARDIAN_LOG_FILE" >/dev/null
 }
 
 is_pid_running() {
@@ -54,9 +90,78 @@ post_ingest_payload() {
     -d "$payload" >/dev/null
 }
 
+guardian_on_success() {
+  guardian_fail_streak=0
+  if ! is_truthy "$BRIDGE_GUARDIAN_ENABLED"; then
+    return 0
+  fi
+  if (( guardian_restart_count <= 0 || guardian_last_restart_at <= 0 )); then
+    return 0
+  fi
+  local now
+  now="$(now_epoch)"
+  if (( now - guardian_last_restart_at >= BRIDGE_GUARDIAN_STABLE_WINDOW_SEC )); then
+    guardian_log "runtime stable for >=${BRIDGE_GUARDIAN_STABLE_WINDOW_SEC}s; reset restart counter"
+    guardian_restart_count=0
+    guardian_last_restart_at=0
+    guardian_blocked=0
+  fi
+}
+
+guardian_maybe_restart_gateway() {
+  if ! is_truthy "$BRIDGE_GUARDIAN_ENABLED"; then
+    return 0
+  fi
+  if (( guardian_fail_streak < BRIDGE_GUARDIAN_MIN_FAIL_STREAK )); then
+    return 0
+  fi
+  if ! command -v openclaw >/dev/null 2>&1; then
+    guardian_log "skip restart: openclaw command not found"
+    return 0
+  fi
+  if (( guardian_blocked == 1 )); then
+    return 0
+  fi
+
+  local now
+  now="$(now_epoch)"
+
+  if (( guardian_restart_count >= BRIDGE_GUARDIAN_MAX_RESTARTS )); then
+    guardian_blocked=1
+    guardian_log "disable auto-restart: reached max attempts (${BRIDGE_GUARDIAN_MAX_RESTARTS})"
+    return 0
+  fi
+  if (( guardian_last_restart_at > 0 && now - guardian_last_restart_at < BRIDGE_GUARDIAN_COOLDOWN_SEC )); then
+    return 0
+  fi
+
+  guardian_restart_count=$((guardian_restart_count + 1))
+  guardian_last_restart_at="$now"
+  guardian_log "attempt ${guardian_restart_count}/${BRIDGE_GUARDIAN_MAX_RESTARTS}: restarting gateway"
+
+  if openclaw gateway restart >/dev/null 2>&1 || openclaw gateway start >/dev/null 2>&1; then
+    sleep 1
+    if curl -fsS --connect-timeout "$BRIDGE_CONNECT_TIMEOUT_SEC" --max-time "$BRIDGE_MAX_TIME_SEC" "$OPENCLAW_STATUS_URL" >/dev/null 2>&1; then
+      guardian_fail_streak=0
+      guardian_log "gateway restart succeeded and status endpoint recovered"
+    else
+      guardian_log "gateway restart command ran, but status endpoint still unreachable"
+    fi
+  else
+    guardian_log "gateway restart command failed"
+  fi
+
+  if (( guardian_restart_count >= BRIDGE_GUARDIAN_MAX_RESTARTS )); then
+    guardian_blocked=1
+    guardian_log "auto-restart budget exhausted; manual intervention required"
+  fi
+}
+
 run_once() {
   local status_json
   if ! status_json="$(curl -fsS --connect-timeout "$BRIDGE_CONNECT_TIMEOUT_SEC" --max-time "$BRIDGE_MAX_TIME_SEC" "$OPENCLAW_STATUS_URL")"; then
+    guardian_fail_streak=$((guardian_fail_streak + 1))
+    guardian_maybe_restart_gateway || true
     local fail_payload
     fail_payload="{\"source\":\"$BRIDGE_SOURCE\",\"raw\":{\"state\":\"error\",\"phase\":\"error\",\"message\":\"bridge pull failed\",\"detail\":\"cannot reach $OPENCLAW_STATUS_URL\",\"error_code\":\"OPENCLAW_STATUS_UNREACHABLE\"}}"
     post_ingest_payload "$fail_payload" || true
@@ -72,7 +177,8 @@ run_once() {
   fi
 
   post_ingest_payload "$payload"
-  echo "[OK] bridged status -> $PROJECTION_API_INGEST_URL"
+  guardian_on_success
+  bridge_log_info "[OK] bridged status -> $PROJECTION_API_INGEST_URL"
 }
 
 run_loop() {
