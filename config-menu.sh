@@ -8897,16 +8897,45 @@ list_enhanced_skills_status() {
         echo -e "  ${YELLOW}当前包源目录不可用，将仅显示本机已安装状态${NC}"
     fi
     for name in $ENHANCED_SKILLS_LIST; do
-        local tag_bundle="${RED}缺失${NC}"
-        local tag_installed="${RED}未安装${NC}"
-        if [ -n "$bundle_dir" ] && [ -d "$bundle_dir/$name" ]; then
-            tag_bundle="${GREEN}可安装${NC}"
-        elif [ -d "$CONFIG_DIR/skills/$name" ]; then
-            tag_bundle="${YELLOW}包源缺失（本机可用）${NC}"
-        fi
-        [ -d "$CONFIG_DIR/skills/$name" ] && tag_installed="${GREEN}已安装${NC}"
-        echo -e "  - ${WHITE}${name}${NC} | 包源: ${tag_bundle} | 本机: ${tag_installed}"
+        print_skill_status_line_menu "$name" "$bundle_dir"
     done
+}
+
+list_super_skills_status() {
+    local bundle_dir=""
+    local name
+    bundle_dir="$(resolve_default_skills_bundle_dir 2>/dev/null || true)"
+    if [ -n "$bundle_dir" ]; then
+        echo -e "  ${CYAN}当前包源目录:${NC} ${WHITE}${bundle_dir}${NC}"
+    else
+        echo -e "  ${YELLOW}当前包源目录不可用，将仅显示本机已安装状态${NC}"
+    fi
+    for name in $SUPER_CURATED_SKILLS_LIST; do
+        print_skill_status_line_menu "$name" "$bundle_dir"
+    done
+}
+
+print_skill_status_line_menu() {
+    local name="$1"
+    local bundle_dir="$2"
+    local tag_bundle="${RED}缺失${NC}"
+    local tag_installed="${RED}未安装${NC}"
+    local skill_desc=""
+
+    if [ -n "$bundle_dir" ] && [ -d "$bundle_dir/$name" ]; then
+        tag_bundle="${GREEN}可安装${NC}"
+    elif [ -d "$CONFIG_DIR/skills/$name" ]; then
+        tag_bundle="${YELLOW}包源缺失（本机可用）${NC}"
+    fi
+    [ -d "$CONFIG_DIR/skills/$name" ] && tag_installed="${GREEN}已安装${NC}"
+    skill_desc="$(extract_skill_short_desc_menu "$name" 2>/dev/null || true)"
+
+    if [ -n "$skill_desc" ]; then
+        echo -e "  - ${WHITE}${name}${NC} | 包源: ${tag_bundle} | 本机: ${tag_installed}"
+        echo -e "    ${GRAY}${skill_desc}${NC}"
+    else
+        echo -e "  - ${WHITE}${name}${NC} | 包源: ${tag_bundle} | 本机: ${tag_installed}"
+    fi
 }
 
 list_installed_skills() {
@@ -8922,7 +8951,140 @@ list_installed_skills() {
         echo "  (暂无已安装技能)"
         return 0
     fi
-    echo "$skills" | sed 's/^/  - /'
+    local skill_name skill_desc
+    while IFS= read -r skill_name; do
+        [ -n "$skill_name" ] || continue
+        skill_desc="$(extract_skill_short_desc_menu "$skill_name")"
+        if [ -n "$skill_desc" ]; then
+            echo -e "  - ${WHITE}${skill_name}${NC}: ${GRAY}${skill_desc}${NC}"
+        else
+            echo -e "  - ${WHITE}${skill_name}${NC}"
+        fi
+    done <<EOF
+$skills
+EOF
+}
+
+resolve_skill_metadata_path() {
+    local skill_name="$1"
+    local bundle_dir=""
+    local candidate=""
+
+    for candidate in \
+        "$CONFIG_DIR/skills/$skill_name/SKILL.md" \
+        "$CONFIG_DIR/skills/$skill_name/GUIDE.md"
+    do
+        if [ -f "$candidate" ]; then
+            echo "$candidate"
+            return 0
+        fi
+    done
+
+    bundle_dir="$(resolve_default_skills_bundle_dir 2>/dev/null || true)"
+    if [ -n "$bundle_dir" ]; then
+        for candidate in \
+            "$bundle_dir/$skill_name/SKILL.md" \
+            "$bundle_dir/$skill_name/GUIDE.md"
+        do
+            if [ -f "$candidate" ]; then
+                echo "$candidate"
+                return 0
+            fi
+        done
+    fi
+
+    return 1
+}
+
+extract_skill_short_desc_menu() {
+    local skill_name="$1"
+    local meta_path=""
+
+    if ! meta_path="$(resolve_skill_metadata_path "$skill_name")"; then
+        return 1
+    fi
+
+    python3 - "$meta_path" <<'PYEOF'
+from __future__ import annotations
+
+import re
+import sys
+from pathlib import Path
+
+path = Path(sys.argv[1])
+text = path.read_text(encoding="utf-8", errors="ignore")
+frontmatter_key = re.compile(r"^[A-Za-z0-9_-]+:\s*.*$")
+
+def clean(value: str) -> str:
+    value = " ".join(value.strip().split())
+    value = value.replace("|", " ")
+    if len(value) > 92:
+        value = value[:89].rstrip() + "..."
+    return value
+
+def from_frontmatter(body: str) -> str:
+    if not body.startswith("---\n"):
+        return ""
+    parts = body.split("\n---\n", 1)
+    if len(parts) != 2:
+        return ""
+    lines = parts[0].splitlines()[1:]
+    i = 0
+    while i < len(lines):
+        line = lines[i]
+        if line.startswith("description:"):
+            raw = line.split(":", 1)[1].strip()
+            if raw and raw not in {"|", ">"}:
+                return clean(raw.strip("\"'"))
+            block = []
+            j = i + 1
+            while j < len(lines):
+                cur = lines[j]
+                if cur.startswith(("  ", "\t")):
+                    block.append(cur.strip())
+                    j += 1
+                    continue
+                if frontmatter_key.match(cur):
+                    break
+                if not cur.strip():
+                    block.append("")
+                    j += 1
+                    continue
+                break
+            merged = " ".join(x for x in block if x.strip())
+            return clean(merged) if merged.strip() else ""
+        i += 1
+    return ""
+
+def from_guide(body: str) -> str:
+    marker = "## 1. 功能定位"
+    idx = body.find(marker)
+    if idx == -1:
+        return ""
+    section = body[idx + len(marker):]
+    for line in section.splitlines():
+        s = line.strip()
+        if not s:
+            continue
+        if s.startswith("## "):
+            break
+        if s.startswith("- "):
+            return clean(s[2:])
+    return ""
+
+desc = from_frontmatter(text)
+if not desc and path.name == "GUIDE.md":
+    desc = from_guide(text)
+if not desc:
+    for line in text.splitlines():
+        s = line.strip()
+        if not s or s.startswith(("#", "---", "```", "<!--")):
+            continue
+        desc = clean(s)
+        break
+if desc:
+    print(desc)
+PYEOF
 }
 
 resolve_skill_guide_path() {
@@ -9000,6 +9162,12 @@ show_skill_usage_guide() {
 
     echo ""
     echo -e "${CYAN}${skill_name} 使用指南${NC}"
+    local skill_desc=""
+    skill_desc="$(extract_skill_short_desc_menu "$skill_name" 2>/dev/null || true)"
+    if [ -n "$skill_desc" ]; then
+        echo -e "${GRAY}${skill_desc}${NC}"
+        echo ""
+    fi
     print_divider
     sed -n '1,260p' "$guide_path"
     echo ""
@@ -9222,21 +9390,23 @@ manage_super_skills() {
     echo -e "${WHITE}🚀 超级插件管理${NC}"
     print_divider
     echo ""
-    print_menu_item "1" "同步高级技能包（本地：NotebookLM + Baoyu 全套）" "📦"
-    print_menu_item "2" "安装 Baoyu 系列技能（GitHub）" "📚"
-    print_menu_item "3" "安装 wechat-skills（GitHub）" "📝"
-    print_menu_item "4" "导入 ai-meeting-notes（本机）" "🗒️"
-    print_menu_item "5" "导入 tmux（本机）" "🧰"
+    print_menu_item "1" "查看高级技能包状态" "📊"
+    print_menu_item "2" "同步高级技能包（本地：NotebookLM + Baoyu 全套）" "📦"
+    print_menu_item "3" "安装 Baoyu 系列技能（GitHub）" "📚"
+    print_menu_item "4" "安装 wechat-skills（GitHub）" "📝"
+    print_menu_item "5" "导入 ai-meeting-notes（本机）" "🗒️"
+    print_menu_item "6" "导入 tmux（本机）" "🧰"
     print_menu_item "0" "返回上级菜单" "↩️"
     echo ""
-    read_input "${YELLOW}请选择 [0-5]: ${NC}" super_choice
+    read_input "${YELLOW}请选择 [0-6]: ${NC}" super_choice
 
     case "$super_choice" in
-        1) sync_named_skills_from_bundle "$SUPER_CURATED_SKILLS_LIST" 0 ;;
-        2) install_super_skill_from_repo "https://github.com/JimLiu/baoyu-skills.git" "baoyu-skills" ;;
-        3) install_super_skill_from_repo "https://github.com/gainubi/wechat-skills.git" "wechat-skills" ;;
-        4) install_super_skill_from_local "/Users/lichengyin/.codex/skills/ai-meeting-notes" "ai-meeting-notes" ;;
-        5) install_super_skill_from_local "/Users/lichengyin/.codex/skills/tmux" "tmux" ;;
+        1) list_super_skills_status ;;
+        2) sync_named_skills_from_bundle "$SUPER_CURATED_SKILLS_LIST" 0 ;;
+        3) install_super_skill_from_repo "https://github.com/JimLiu/baoyu-skills.git" "baoyu-skills" ;;
+        4) install_super_skill_from_repo "https://github.com/gainubi/wechat-skills.git" "wechat-skills" ;;
+        5) install_super_skill_from_local "/Users/lichengyin/.codex/skills/ai-meeting-notes" "ai-meeting-notes" ;;
+        6) install_super_skill_from_local "/Users/lichengyin/.codex/skills/tmux" "tmux" ;;
         0) return ;;
         *) log_error "无效选择" ;;
     esac

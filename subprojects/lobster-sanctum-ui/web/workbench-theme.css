@@ -1117,3 +1117,65 @@ body.workbench-embedded[data-source="world-console"] .portrait-panel::before,
 body.workbench-embedded[data-source="world-console"] .info-panel::before {
   display: none;
 }
+
+/* Low-cost pixel-house pass: remove overlay masks and heavy shadows */
+body.workbench-embedded {
+  --wb-shadow: none;
+  background: linear-gradient(180deg, rgba(14, 18, 22, 0.98), rgba(10, 13, 17, 0.98));
+}
+
+body.workbench-embedded::before,
+body.workbench-embedded .workbench-shell__head::before,
+body.workbench-embedded .workbench-shell__nav::before,
+body.workbench-embedded .workbench-shell__stats::before,
+body.workbench-embedded .top-banner::before,
+body.workbench-embedded .loadout-banner::before,
+body.workbench-embedded .config-banner::before,
+body.workbench-embedded .config-panel::before,
+body.workbench-embedded .loadout-panel::before,
+body.workbench-embedded .portrait-panel::before,
+body.workbench-embedded .info-panel::before,
+body.workbench-embedded .hero-stage::before {
+  display: none;
+}
+
+body.workbench-embedded .workbench-shell__head,
+body.workbench-embedded .workbench-shell__nav,
+body.workbench-embedded .workbench-shell__stats,
+body.workbench-embedded .hero-stage,
+body.workbench-embedded .loadout-hero-card,
+body.workbench-embedded .config-panel,
+body.workbench-embedded .loadout-panel,
+body.workbench-embedded .portrait-panel,
+body.workbench-embedded .info-panel,
+body.workbench-embedded .top-banner,
+body.workbench-embedded .loadout-banner,
+body.workbench-embedded .config-banner,
+body.workbench-embedded .inventory-card,
+body.workbench-embedded .stash-card,
+body.workbench-embedded .quest-card,
+body.workbench-embedded .brief-card,
+body.workbench-embedded .ledger-row,
+body.workbench-embedded .milestone-card,
+body.workbench-embedded .synergy-card,
+body.workbench-embedded .armory-bonus-card,
+body.workbench-embedded .perk-card,
+body.workbench-embedded .skill-node,
+body.workbench-embedded .gear-card {
+  box-shadow: none;
+}
+
+body.workbench-embedded .top-banner-overlay {
+  background: rgba(18, 22, 27, 0.92);
+}
+
+body.workbench-embedded .top-banner-overlay h1,
+body.workbench-embedded .config-banner h1,
+body.workbench-embedded .loadout-banner h1 {
+  text-shadow: none;
+}
+
+body.workbench-embedded .workbench-shell__nav button.active,
+body.workbench-embedded .workbench-shell__nav button:hover {
+  box-shadow: none;
+}

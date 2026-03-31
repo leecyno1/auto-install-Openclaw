@@ -47,7 +47,7 @@ body.world-console-body {
 
 .world-console-topbar {
   display: grid;
-  grid-template-columns: minmax(190px, 240px) minmax(0, 1fr) minmax(340px, 430px);
+  grid-template-columns: minmax(190px, 240px) minmax(0, 1fr) minmax(290px, 360px);
   align-items: center;
   gap: 12px;
   padding: 8px 10px;
@@ -102,28 +102,35 @@ body.world-console-body {
 
 .world-console-profile {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 8px;
+  grid-template-columns: 1fr;
+  gap: 6px;
   align-items: center;
   justify-self: end;
-  padding: 6px 8px;
+  padding: 6px;
   border: 1px solid rgba(221, 183, 96, 0.18);
   background: rgba(9, 14, 22, 0.72);
-  min-width: 0;
-}
-
-.world-console-profile__summary {
-  display: grid;
-  gap: 3px;
   min-width: 0;
   max-width: 100%;
 }
 
-.world-console-profile__summary small {
+.world-console-profile__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.world-console-profile__chips span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 20px;
+  max-width: 100%;
+  padding: 0 6px;
+  border: 1px solid rgba(126, 162, 234, 0.2);
+  background: rgba(10, 15, 23, 0.86);
   color: var(--wc-muted);
-  font-size: 11px;
-  line-height: 1.2;
-  text-align: right;
+  font-size: 10px;
+  line-height: 1;
+  font-family: "ArkPixelWorkbench", monospace;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -131,17 +138,17 @@ body.world-console-body {
 
 .world-console-profile__hero {
   display: grid;
-  grid-template-columns: 50px minmax(0, 1fr);
-  gap: 8px;
+  grid-template-columns: 38px minmax(0, 1fr);
+  gap: 6px;
   align-items: center;
-  min-width: 170px;
+  min-width: 0;
 }
 
 .world-console-profile__avatar {
   position: relative;
-  width: 50px;
-  height: 50px;
-  border-radius: 14px;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
   overflow: hidden;
   border: 1px solid rgba(126, 162, 234, 0.26);
   background: radial-gradient(circle at 50% 32%, rgba(126, 162, 234, 0.18), rgba(8, 12, 20, 0.96) 72%);
@@ -162,10 +169,10 @@ body.world-console-body {
 .world-console-profile__core {
   left: 50%;
   top: 50%;
-  width: 22px;
-  height: 30px;
+  width: 16px;
+  height: 22px;
   transform: translate(-50%, -50%);
-  border-radius: 14px 14px 10px 10px;
+  border-radius: 10px 10px 7px 7px;
   background: linear-gradient(180deg, rgba(242,246,255,0.94), rgba(88,118,192,0.56));
   box-shadow: 0 0 12px rgba(84,118,194,0.36);
 }
@@ -185,14 +192,18 @@ body.world-console-body {
 
 .world-console-profile__meta {
   display: grid;
-  gap: 2px;
+  gap: 1px;
 }
 
-.world-console-profile__meta span,
+.world-console-profile__meta strong {
+  font-size: 12px;
+  line-height: 1.2;
+}
+
 .world-console-profile__meta small {
   color: var(--wc-muted);
-  font-size: 11px;
-  line-height: 1.35;
+  font-size: 10px;
+  line-height: 1.2;
 }
 
 .world-console-frame-card {
@@ -236,12 +247,7 @@ body.world-console-body {
   }
 
   .world-console-profile {
-    grid-template-columns: 1fr;
     justify-self: stretch;
-  }
-
-  .world-console-profile__summary small {
-    text-align: left;
   }
 
   .world-console-profile__hero {
@@ -250,17 +256,32 @@ body.world-console-body {
 }
 
 @media (max-width: 720px) {
-  .world-console-profile__summary {
-    text-align: left;
-    min-width: 0;
-  }
-
-  .world-console-profile__summary small {
-    text-align: left;
+  .world-console-profile__chips span {
+    max-width: 100%;
   }
 
   #worldConsoleFrame {
     min-height: 600px;
     height: calc(100vh - 130px);
   }
+}
+
+/* Low-cost console pass: strip glows and heavy shadows */
+body.world-console-body {
+  background: linear-gradient(180deg, #0d1217 0%, #090c11 100%);
+}
+
+.world-console-topbar,
+.world-console-frame-card {
+  box-shadow: none;
+  background: linear-gradient(180deg, rgba(20, 28, 36, 0.98), rgba(12, 17, 23, 0.98));
+}
+
+.world-console-profile__glow {
+  display: none;
+}
+
+.world-console-profile__core,
+.world-console-profile__avatar[data-state="error"] .world-console-profile__core {
+  box-shadow: none;
 }

@@ -30,13 +30,15 @@ const SLOT_POSITION_CLASS = {
   chest: "slot-chest",
 };
 
+const pixelRoleImage = (role) => `./assets/pixel-roles/${role}.png`;
+
 const roleProfiles = {
   druid: {
     className: "通用总管",
     title: "万金油 · 德鲁伊",
     desc: "适合绝大多数日常工作，能帮你排任务、查资料、写邮件、盯进度。",
-    image: "./assets/role-druid.png",
-    portraitPosition: "center 18%",
+    image: pixelRoleImage("druid"),
+    portraitPosition: "center center",
     tags: ["综合协同", "主动巡航", "长期陪跑"],
     specialty: "综合协同",
     taskFocus: ["日程管理", "邮件草拟", "综合搜索", "资料整理"],
@@ -45,8 +47,8 @@ const roleProfiles = {
     className: "投资分析",
     title: "分析员 · 刺客",
     desc: "适合做投资分析、公司调研、行业比较、寻找机会和风险。",
-    image: "./assets/role-assassin.png",
-    portraitPosition: "center 20%",
+    image: pixelRoleImage("assassin"),
+    portraitPosition: "center center",
     tags: ["机会扫描", "估值解剖", "风险捕捉"],
     specialty: "情报分析",
     taskFocus: ["公司调研", "行业研究", "估值比较", "风险跟踪"],
@@ -55,8 +57,8 @@ const roleProfiles = {
     className: "研究学习",
     title: "研究者 · 大法师",
     desc: "适合写论文、做读书笔记、做学术研究、写长篇文章的学者型人格。",
-    image: "./assets/role-mage.png",
-    portraitPosition: "center 16%",
+    image: pixelRoleImage("mage"),
+    portraitPosition: "center center",
     tags: ["知识归纳", "文献整理", "长上下文"],
     specialty: "研究整理",
     taskFocus: ["论文阅读", "综述写作", "笔记沉淀", "研究设计"],
@@ -65,8 +67,8 @@ const roleProfiles = {
     className: "组织管理",
     title: "管理者 · 召唤师",
     desc: "适合招人、开会、管项目、做流程、写制度、推进团队协作。",
-    image: "./assets/role-summoner.png",
-    portraitPosition: "center 18%",
+    image: pixelRoleImage("summoner"),
+    portraitPosition: "center center",
     tags: ["组织编排", "例会纪要", "多人协同"],
     specialty: "流程治理",
     taskFocus: ["招聘管理", "项目推进", "制度输出", "团队复盘"],
@@ -75,8 +77,8 @@ const roleProfiles = {
     className: "工程开发",
     title: "技术员 · 战士",
     desc: "适合写代码、改代码、跑测试、查问题、做自动化交付。",
-    image: "./assets/role-warrior.png",
-    portraitPosition: "center 18%",
+    image: pixelRoleImage("warrior"),
+    portraitPosition: "center center",
     tags: ["工程交付", "自动验证", "问题歼灭"],
     specialty: "代码执行",
     taskFocus: ["代码修改", "测试排障", "浏览器调试", "自动化脚本"],
@@ -85,8 +87,8 @@ const roleProfiles = {
     className: "增长运营",
     title: "营销者 · 圣骑士",
     desc: "适合内容运营、渠道增长、SEO、投放复盘、客服沟通和客户转化。",
-    image: "./assets/role-paladin.png",
-    portraitPosition: "center 18%",
+    image: pixelRoleImage("paladin"),
+    portraitPosition: "center center",
     tags: ["内容引擎", "增长推进", "客户沟通"],
     specialty: "增长转化",
     taskFocus: ["内容运营", "渠道分析", "营销策划", "客户沟通"],
@@ -95,8 +97,8 @@ const roleProfiles = {
     className: "设计创意",
     title: "设计师 · 弓箭手",
     desc: "适合做 UI、海报、配图、KV、图像生成、分镜和创意方案。",
-    image: "./assets/role-archer.png",
-    portraitPosition: "center 18%",
+    image: pixelRoleImage("archer"),
+    portraitPosition: "center center",
     tags: ["视觉创作", "界面塑形", "图像召唤"],
     specialty: "视觉构图",
     taskFocus: ["UI 设计", "海报 KV", "图像生成", "视频分镜"],
@@ -242,56 +244,56 @@ const inventoryFilters = [
 ];
 
 const skillCatalog = [
-  { id: "capability-evolver", name: "Capability Evolver", tier: "low", branch: "控制中枢", desc: "基于历史运行数据做能力进化与策略优化。", deps: [], roles: ["druid", "summoner"], pack: ["low", "medium", "high"] },
-  { id: "openclaw-cron-setup", name: "Cron Setup", tier: "low", branch: "控制中枢", desc: "定时唤醒与主动任务执行框架。", deps: [], roles: ["druid", "summoner", "warrior"], pack: ["low", "medium", "high"] },
-  { id: "proactive-agent", name: "Proactive Agent", tier: "low", branch: "控制中枢", desc: "让 Agent 主动跟进而非被动等待。", deps: [], roles: ["druid", "summoner"], pack: ["low", "medium", "high"] },
-  { id: "self-improving-agent-cn", name: "Self Improving CN", tier: "low", branch: "控制中枢", desc: "自我反思、自我纠错并沉淀改进。", deps: ["reflection"], roles: ["druid", "mage"], pack: ["low", "medium", "high"] },
-  { id: "brainstorming", name: "Brainstorming", tier: "low", branch: "控制中枢", desc: "创意任务前的澄清与发散。", deps: [], roles: ["mage", "paladin", "archer"], pack: ["low", "medium", "high"] },
-  { id: "reflection", name: "Reflection", tier: "low", branch: "控制中枢", desc: "对对话、任务和工具使用做复盘。", deps: [], roles: ["druid", "mage", "summoner"], pack: ["low", "medium", "high"] },
-  { id: "find-skills", name: "Find Skills", tier: "low", branch: "控制中枢", desc: "按需求搜索并推荐可安装技能。", deps: ["web-search"], roles: ["druid"], pack: ["low", "medium", "high"] },
-  { id: "skill-creator", name: "Skill Creator", tier: "low", branch: "控制中枢", desc: "创建新的 Skill 模板和说明。", deps: ["find-skills"], roles: ["warrior", "mage"], pack: ["low", "medium", "high"] },
+  { id: "capability-evolver", name: "Capability Evolver", tier: "low", branch: "控制中枢", desc: "分析运行历史、识别失败模式，并推动代理自我修复和能力进化。", deps: [], roles: ["druid", "summoner"], pack: ["low", "medium", "high"] },
+  { id: "openclaw-cron-setup", name: "Cron Setup", tier: "low", branch: "控制中枢", desc: "配置 OpenClaw 内置 Cron 调度器，创建一次性提醒、周期任务和后台自动化。", deps: [], roles: ["druid", "summoner", "warrior"], pack: ["low", "medium", "high"] },
+  { id: "proactive-agent", name: "Proactive Agent", tier: "low", branch: "控制中枢", desc: "把 Agent 从被动应答改造成会预判需求、主动跟进和持续改进的协作伙伴。", deps: [], roles: ["druid", "summoner"], pack: ["low", "medium", "high"] },
+  { id: "self-improving-agent-cn", name: "Self Improving CN", tier: "low", branch: "控制中枢", desc: "记录错误、用户纠正和最佳实践，沉淀为可跨会话复用的长期记忆。", deps: ["reflection"], roles: ["druid", "mage"], pack: ["low", "medium", "high"] },
+  { id: "brainstorming", name: "Brainstorming", tier: "low", branch: "控制中枢", desc: "在创意和改动前先澄清目标、约束和方案，再进入实现。", deps: [], roles: ["mage", "paladin", "archer"], pack: ["low", "medium", "high"] },
+  { id: "reflection", name: "Reflection", tier: "low", branch: "控制中枢", desc: "在交付前后做自检、复盘和模式识别，减少重复犯错。", deps: [], roles: ["druid", "mage", "summoner"], pack: ["low", "medium", "high"] },
+  { id: "find-skills", name: "Find Skills", tier: "low", branch: "控制中枢", desc: "帮用户从 skills 生态里查找、安装和更新合适的技能。", deps: ["web-search"], roles: ["druid"], pack: ["low", "medium", "high"] },
+  { id: "skill-creator", name: "Skill Creator", tier: "low", branch: "控制中枢", desc: "用于设计、编写和迭代新的 Skill，包括结构、说明和工作流。", deps: ["find-skills"], roles: ["warrior", "mage"], pack: ["low", "medium", "high"] },
 
-  { id: "agent-browser", name: "Agent Browser", tier: "low", branch: "执行系统", desc: "自动化浏览器交互与页面操作。", deps: [], roles: ["warrior", "archer"], pack: ["low", "medium", "high"] },
-  { id: "chrome-devtools-mcp", name: "Chrome DevTools MCP", tier: "low", branch: "执行系统", desc: "浏览器调试、网络与性能分析。", deps: ["agent-browser"], roles: ["warrior", "archer"], pack: ["low", "medium", "high"] },
-  { id: "github", name: "GitHub", tier: "low", branch: "执行系统", desc: "仓库读写与协作。", deps: [], roles: ["warrior", "summoner"], pack: ["low", "medium", "high"] },
-  { id: "mcp-builder", name: "MCP Builder", tier: "low", branch: "执行系统", desc: "构建 MCP 服务与协议工具。", deps: ["github"], roles: ["warrior"], pack: ["low", "medium", "high"] },
-  { id: "model-usage", name: "Model Usage", tier: "low", branch: "执行系统", desc: "模型调用统计与用量观察。", deps: [], roles: ["warrior", "druid"], pack: ["low", "medium", "high"] },
-  { id: "shell", name: "Shell", tier: "low", branch: "执行系统", desc: "脚本执行、进程与文件操作。", deps: [], roles: ["warrior", "druid"], pack: ["low", "medium", "high"] },
+  { id: "agent-browser", name: "Agent Browser", tier: "low", branch: "执行系统", desc: "使用结构化命令驱动无头浏览器，完成打开、点击、输入和抓取页面。", deps: [], roles: ["warrior", "archer"], pack: ["low", "medium", "high"] },
+  { id: "chrome-devtools-mcp", name: "Chrome DevTools MCP", tier: "low", branch: "执行系统", desc: "通过官方 Chrome DevTools MCP 控制浏览器，做调试、抓包、性能和自动化测试。", deps: ["agent-browser"], roles: ["warrior", "archer"], pack: ["low", "medium", "high"] },
+  { id: "github", name: "GitHub", tier: "low", branch: "执行系统", desc: "用 gh CLI 读写 GitHub 仓库、PR、Issue 和工作流运行记录。", deps: [], roles: ["warrior", "summoner"], pack: ["low", "medium", "high"] },
+  { id: "mcp-builder", name: "MCP Builder", tier: "low", branch: "执行系统", desc: "设计和实现高质量 MCP 服务，把外部 API 封装成可供模型调用的工具。", deps: ["github"], roles: ["warrior"], pack: ["low", "medium", "high"] },
+  { id: "model-usage", name: "Model Usage", tier: "low", branch: "执行系统", desc: "汇总本地模型用量和成本，查看当前模型或完整模型分布。", deps: [], roles: ["warrior", "druid"], pack: ["low", "medium", "high"] },
+  { id: "shell", name: "Shell", tier: "low", branch: "执行系统", desc: "执行终端命令、脚本、进程管理和文件系统操作。", deps: [], roles: ["warrior", "druid"], pack: ["low", "medium", "high"] },
 
-  { id: "web-search", name: "Web Search", tier: "low", branch: "情报网络", desc: "通用网页搜索。", deps: [], roles: ["assassin", "paladin", "druid"], pack: ["low", "medium", "high"] },
-  { id: "tavily-search", name: "Tavily Search", tier: "low", branch: "情报网络", desc: "LLM 优化搜索。", deps: ["web-search"], roles: ["assassin", "mage"], pack: ["low", "medium", "high"] },
-  { id: "minimax-web-search", name: "MiniMax Web Search", tier: "low", branch: "情报网络", desc: "MiniMax 搜索链路。", deps: ["web-search"], roles: ["druid", "assassin"], pack: ["low", "medium", "high"] },
-  { id: "news-radar", name: "News Radar", tier: "low", branch: "情报网络", desc: "新闻聚合与热点跟踪。", deps: ["web-search"], roles: ["assassin", "paladin"], pack: ["low", "medium", "high"] },
-  { id: "url-to-markdown", name: "URL To Markdown", tier: "low", branch: "情报网络", desc: "网页转 Markdown 供后续处理。", deps: ["web-search"], roles: ["mage", "druid"], pack: ["low", "medium", "high"] },
-  { id: "blogwatcher", name: "Blogwatcher", tier: "medium", branch: "情报网络", desc: "订阅追踪博客与内容源。", deps: ["news-radar"], roles: ["paladin", "druid"], pack: ["medium", "high"] },
+  { id: "web-search", name: "Web Search", tier: "low", branch: "情报网络", desc: "用 DuckDuckGo 搜索网页、新闻、图片和视频，适合实时信息查询。", deps: [], roles: ["assassin", "paladin", "druid"], pack: ["low", "medium", "high"] },
+  { id: "tavily-search", name: "Tavily Search", tier: "low", branch: "情报网络", desc: "使用 Tavily 的 LLM 优化搜索 API 返回结构化结果、摘要片段和元数据。", deps: ["web-search"], roles: ["assassin", "mage"], pack: ["low", "medium", "high"] },
+  { id: "minimax-web-search", name: "MiniMax Web Search", tier: "low", branch: "情报网络", desc: "优先走 MiniMax MCP 的联网搜索链路，适合最新资讯和实时资料查询。", deps: ["web-search"], roles: ["druid", "assassin"], pack: ["low", "medium", "high"] },
+  { id: "news-radar", name: "News Radar", tier: "low", branch: "情报网络", desc: "聚合国际新闻源，追踪热点、情绪和来源分布。", deps: ["web-search"], roles: ["assassin", "paladin"], pack: ["low", "medium", "high"] },
+  { id: "url-to-markdown", name: "URL To Markdown", tier: "low", branch: "情报网络", desc: "通过 Chrome CDP 抓取网页并转换为干净 Markdown，支持登录后页面。", deps: ["web-search"], roles: ["mage", "druid"], pack: ["low", "medium", "high"] },
+  { id: "blogwatcher", name: "Blogwatcher", tier: "medium", branch: "情报网络", desc: "用 blogwatcher CLI 监控博客和 RSS/Atom 订阅源更新。", deps: ["news-radar"], roles: ["paladin", "druid"], pack: ["medium", "high"] },
 
-  { id: "pdf", name: "PDF", tier: "low", branch: "知识文档", desc: "PDF 解析、合并、表单处理。", deps: [], roles: ["mage", "summoner"], pack: ["low", "medium", "high"] },
-  { id: "nano-pdf", name: "Nano PDF", tier: "medium", branch: "知识文档", desc: "快速抽取 PDF 摘要与要点。", deps: ["pdf"], roles: ["mage"], pack: ["medium", "high"] },
-  { id: "docx", name: "Docx", tier: "low", branch: "知识文档", desc: "Word 创建、编辑与批注。", deps: [], roles: ["summoner", "paladin"], pack: ["low", "medium", "high"] },
-  { id: "pptx", name: "PPTX", tier: "low", branch: "知识文档", desc: "PPT 生成与展示材料。", deps: ["docx"], roles: ["summoner", "paladin", "archer"], pack: ["low", "medium", "high"] },
-  { id: "xlsx", name: "XLSX", tier: "low", branch: "知识文档", desc: "表格读写、分析与公式处理。", deps: [], roles: ["assassin", "summoner"], pack: ["low", "medium", "high"] },
-  { id: "summarize", name: "Summarize", tier: "medium", branch: "知识文档", desc: "长文压缩与结构化摘要。", deps: ["url-to-markdown"], roles: ["mage", "druid"], pack: ["medium", "high"] },
-  { id: "notebooklm-skill", name: "NotebookLM", tier: "medium", branch: "知识文档", desc: "与 NotebookLM 笔记库交互。", deps: ["pdf", "summarize"], roles: ["mage"], pack: ["medium", "high"] },
-  { id: "agentmail", name: "AgentMail", tier: "medium", branch: "知识文档", desc: "邮件草拟与收发工作流。", deps: ["docx"], roles: ["druid", "paladin", "summoner"], pack: ["medium", "high"] },
+  { id: "pdf", name: "PDF", tier: "low", branch: "知识文档", desc: "提供 PDF 文本/表格提取、合并拆分、创建和表单处理。", deps: [], roles: ["mage", "summoner"], pack: ["low", "medium", "high"] },
+  { id: "nano-pdf", name: "Nano PDF", tier: "medium", branch: "知识文档", desc: "用自然语言指令直接修改 PDF 页面内容。", deps: ["pdf"], roles: ["mage"], pack: ["medium", "high"] },
+  { id: "docx", name: "Docx", tier: "low", branch: "知识文档", desc: "创建、编辑和分析 Word 文档，支持批注、修订和格式保留。", deps: [], roles: ["summoner", "paladin"], pack: ["low", "medium", "high"] },
+  { id: "pptx", name: "PPTX", tier: "low", branch: "知识文档", desc: "创建、编辑和分析 PPT，支持版式、批注和讲稿内容处理。", deps: ["docx"], roles: ["summoner", "paladin", "archer"], pack: ["low", "medium", "high"] },
+  { id: "xlsx", name: "XLSX", tier: "low", branch: "知识文档", desc: "创建、编辑和分析电子表格，支持公式、格式和数据建模。", deps: [], roles: ["assassin", "summoner"], pack: ["low", "medium", "high"] },
+  { id: "summarize", name: "Summarize", tier: "medium", branch: "知识文档", desc: "用 summarize CLI 压缩 URL、PDF、图片、音频和 YouTube 内容。", deps: ["url-to-markdown"], roles: ["mage", "druid"], pack: ["medium", "high"] },
+  { id: "notebooklm-skill", name: "NotebookLM", tier: "medium", branch: "知识文档", desc: "直接查询 Google NotebookLM 笔记库，获得带来源依据的回答。", deps: ["pdf", "summarize"], roles: ["mage"], pack: ["medium", "high"] },
+  { id: "agentmail", name: "AgentMail", tier: "medium", branch: "知识文档", desc: "给 Agent 配置独立邮箱，支持收发邮件、附件、标签、草稿和 webhook。", deps: ["docx"], roles: ["druid", "paladin", "summoner"], pack: ["medium", "high"] },
 
-  { id: "stock-monitor-skill", name: "Stock Monitor", tier: "low", branch: "金融引擎", desc: "个股盯盘与异动提醒。", deps: [], roles: ["assassin"], pack: ["low", "medium", "high"] },
-  { id: "multi-search-engine", name: "Multi Search Engine", tier: "low", branch: "金融引擎", desc: "多引擎联合搜索。", deps: ["web-search", "tavily-search"], roles: ["assassin"], pack: ["low", "medium", "high"] },
-  { id: "akshare-stock", name: "AkShare Stock", tier: "low", branch: "金融引擎", desc: "证券数据抓取与财务读取。", deps: ["xlsx"], roles: ["assassin"], pack: ["low", "medium", "high"] },
+  { id: "stock-monitor-skill", name: "Stock Monitor", tier: "low", branch: "金融引擎", desc: "监控股票价格、均线、RSI、成交量等信号并触发预警。", deps: [], roles: ["assassin"], pack: ["low", "medium", "high"] },
+  { id: "multi-search-engine", name: "Multi Search Engine", tier: "low", branch: "金融引擎", desc: "联动 17 个搜索引擎做多源搜索，不依赖 API Key。", deps: ["web-search", "tavily-search"], roles: ["assassin"], pack: ["low", "medium", "high"] },
+  { id: "akshare-stock", name: "AkShare Stock", tier: "low", branch: "金融引擎", desc: "基于 AkShare 获取 A 股行情、财务和板块数据，用于量化分析。", deps: ["xlsx"], roles: ["assassin"], pack: ["low", "medium", "high"] },
 
-  { id: "content-strategy", name: "Content Strategy", tier: "medium", branch: "增长工坊", desc: "内容策略、选题与规划。", deps: ["summarize", "web-search"], roles: ["paladin"], pack: ["medium", "high"] },
-  { id: "social-content", name: "Social Content", tier: "medium", branch: "增长工坊", desc: "社媒内容拆分与发布策略。", deps: ["content-strategy"], roles: ["paladin"], pack: ["medium", "high"] },
-  { id: "marketingskills", name: "Marketing Skills", tier: "high", branch: "增长工坊", desc: "市场内容与分发工具集。", deps: ["content-strategy", "social-content"], roles: ["paladin"], pack: ["high"] },
-  { id: "baoyu-skills", name: "Baoyu Skills", tier: "high", branch: "增长工坊", desc: "内容产出与跨平台分发。", deps: ["social-content"], roles: ["paladin", "archer"], pack: ["high"] },
+  { id: "content-strategy", name: "Content Strategy", tier: "medium", branch: "增长工坊", desc: "规划内容策略、主题集群、栏目和选题路线。", deps: ["summarize", "web-search"], roles: ["paladin"], pack: ["medium", "high"] },
+  { id: "social-content", name: "Social Content", tier: "medium", branch: "增长工坊", desc: "生成和优化多平台社媒内容、发布节奏和互动策略。", deps: ["content-strategy"], roles: ["paladin"], pack: ["medium", "high"] },
+  { id: "marketingskills", name: "Marketing Skills", tier: "high", branch: "增长工坊", desc: "营销技能总入口，用于路由到内容策略和社媒子技能。", deps: ["content-strategy", "social-content"], roles: ["paladin"], pack: ["high"] },
+  { id: "baoyu-skills", name: "Baoyu Skills", tier: "high", branch: "增长工坊", desc: "baoyu 内容生产与分发技能总入口，可路由到配图、发文、翻译等子技能。", deps: ["social-content"], roles: ["paladin", "archer"], pack: ["high"] },
 
-  { id: "frontend-design", name: "Frontend Design", tier: "high", branch: "创意工坊", desc: "高质量前端界面设计实现。", deps: [], roles: ["archer", "warrior"], pack: ["high"] },
-  { id: "web-design", name: "Web Design", tier: "high", branch: "创意工坊", desc: "UI / 可用性审查。", deps: ["frontend-design"], roles: ["archer"], pack: ["high"] },
-  { id: "ai-image-generation", name: "AI Image Generation", tier: "medium", branch: "创意工坊", desc: "多模型图像生成入口。", deps: [], roles: ["archer"], pack: ["medium", "high"] },
-  { id: "gemini-image-service", name: "Gemini Image Service", tier: "medium", branch: "创意工坊", desc: "Gemini 图像理解与生成。", deps: ["ai-image-generation"], roles: ["archer"], pack: ["medium", "high"] },
-  { id: "nano-banana-service", name: "Nano Banana Service", tier: "medium", branch: "创意工坊", desc: "Nano Banana 图像创作服务。", deps: ["ai-image-generation"], roles: ["archer"], pack: ["medium", "high"] },
-  { id: "grok-imagine-1.0-video", name: "Grok Imagine Video", tier: "high", branch: "创意工坊", desc: "视频生成与镜头表达。", deps: ["gemini-image-service", "nano-banana-service"], roles: ["archer"], pack: ["high"] },
-  { id: "inference-skills", name: "Inference Skills", tier: "high", branch: "创意工坊", desc: "Inference 通用图像与创意能力集。", deps: ["ai-image-generation"], roles: ["archer"], pack: ["high"] },
+  { id: "frontend-design", name: "Frontend Design", tier: "high", branch: "创意工坊", desc: "生成高质量、非模板化的前端界面和页面实现。", deps: [], roles: ["archer", "warrior"], pack: ["high"] },
+  { id: "web-design", name: "Web Design", tier: "high", branch: "创意工坊", desc: "按 Web Interface Guidelines 审查 UI/UX、可用性和可访问性问题。", deps: ["frontend-design"], roles: ["archer"], pack: ["high"] },
+  { id: "ai-image-generation", name: "AI Image Generation", tier: "medium", branch: "创意工坊", desc: "通过 inference.sh 调用 50+ 模型生成和编辑图片。", deps: [], roles: ["archer"], pack: ["medium", "high"] },
+  { id: "gemini-image-service", name: "Gemini Image Service", tier: "medium", branch: "创意工坊", desc: "使用 Gemini 图像接口生成图片，支持自定义代理地址和模型名。", deps: ["ai-image-generation"], roles: ["archer"], pack: ["medium", "high"] },
+  { id: "nano-banana-service", name: "Nano Banana Service", tier: "medium", branch: "创意工坊", desc: "使用 Gemini 3 Pro Image（Nano Banana）生成或编辑高分辨率图片。", deps: ["ai-image-generation"], roles: ["archer"], pack: ["medium", "high"] },
+  { id: "grok-imagine-1.0-video", name: "Grok Imagine Video", tier: "high", branch: "创意工坊", desc: "调用 grok-imagine-1.0-video 生成短视频和镜头内容。", deps: ["gemini-image-service", "nano-banana-service"], roles: ["archer"], pack: ["high"] },
+  { id: "inference-skills", name: "Inference Skills", tier: "high", branch: "创意工坊", desc: "inference.sh 工具技能总入口，当前主要路由到图像生成能力。", deps: ["ai-image-generation"], roles: ["archer"], pack: ["high"] },
 
-  { id: "minimax-image-understanding", name: "MiniMax Image Understanding", tier: "low", branch: "视觉理解", desc: "图像理解分析。", deps: [], roles: ["archer", "warrior"], pack: ["low", "medium", "high"] },
+  { id: "minimax-image-understanding", name: "MiniMax Image Understanding", tier: "low", branch: "视觉理解", desc: "优先使用 MiniMax 识图工具分析、描述和提取图片信息。", deps: [], roles: ["archer", "warrior"], pack: ["low", "medium", "high"] },
 ];
 
 const toolCatalog = [
@@ -1512,13 +1514,11 @@ function renderBanner() {
   const enabledCount = enabledSkillIds(currentRoleState).length;
   const equippedCount = Object.values(currentRoleState.equipped).filter(Boolean).length;
   setText("bannerOfficeTitle", readOfficeName(currentRole));
-  setText("bannerOfficeMeta", `${profile.title} · 当前生效职业配置`);
+  setText("bannerOfficeMeta", `${profile.className} · 当前生效职业配置`);
   setText("bannerRoleTitle", profile.title);
-  setText("bannerRoleClass", profile.className);
   setText("bannerBuildStat", `${enabledCount} 技能 / ${equippedCount} 装备`);
   setText("bannerRouteStat", optionLabel(modelRoutes, currentRoleState.modelRoute).replace(/路由$/, ""));
   setText("bannerRuleStat", `${tierChinese(currentRoleState.tokenRule)}规则 · ${tierChinese(currentRoleState.skillPack)}技能包`);
-  setImage("bannerAvatar", profile.image, profile.title);
 }
 
 function renderIdentityForm() {

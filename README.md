@@ -105,6 +105,37 @@ bash ~/.openclaw/config-menu.sh --install-pixel-house
 > [!TIP]
 > 超级档的“请求次数不限”在策略文件里会写成 `maxRequests=0`，约定 `0` 表示不限，不表示禁用。
 
+## 默认技能包摘录
+
+### 基础档常用技能
+
+| Skill | 作用 |
+| --- | --- |
+| `agent-browser` | 用结构化命令驱动浏览器，适合网页登录、抓取、点选与自动化操作。 |
+| `agentmail` | 给代理分配独立邮箱收发信，适合邮件自动化、附件处理和草稿审批。 |
+| `minimax-web-search` | 走 MiniMax MCP 的联网搜索链路，处理最新资讯、资料检索和网页信息获取。 |
+| `nano-pdf` | 用自然语言编辑 PDF，适合改字、补内容、调整 PDF 文件。 |
+| `content-strategy` | 做内容规划、选题设计、栏目结构和内容路线图。 |
+| `social-content` | 生成和优化社媒内容，适合微博、X、LinkedIn、短内容分发。 |
+| `media-downloader` | 按描述搜索并下载图片、视频素材，可用于找图和拉取视频片段。 |
+| `lark-calendar` | 管理飞书日历和待办，支持事件创建、更新和人员解析。 |
+| `notebooklm-skill` | 直接查询 NotebookLM 笔记库，拿到基于来源引用的问答结果。 |
+| `ai-image-generation` | 统一走多模型生图能力，适合封面、配图、营销图和视觉草稿。 |
+
+### 扩展 / 超级档重点技能
+
+| Skill | 作用 |
+| --- | --- |
+| `paperless-docs` | 对接 Paperless-ngx 文档库，检索、上传、打标签、回收文档资料。 |
+| `oracle` | 把代码和提示词打包给第二模型复核，适合调试、重构和设计检查。 |
+| `planning-with-files` | 复杂任务走文件化规划，自动拆出计划、发现和进度文件。 |
+| `baoyu-slide-deck` | 根据内容自动生成演示稿页面和配套视觉。 |
+| `baoyu-markdown-to-html` | 把 Markdown 转成更适合微信公众号等渠道分发的 HTML。 |
+| `baoyu-post-to-wechat` | 直接把内容整理后推送到公众号工作流。 |
+
+> [!TIP]
+> 更完整的技能列表、是否默认安装、是否需要 API Key，请看 [docs/skills-guides.md](docs/skills-guides.md) 和 [skills/default/DEFAULT_SKILLS.md](skills/default/DEFAULT_SKILLS.md)。
+
 ## 推荐工作流
 
 ```text

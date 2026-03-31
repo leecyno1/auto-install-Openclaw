@@ -7,22 +7,22 @@
 /* per-tab save toolbar */
 .tab-toolbar { display: flex; align-items: center; justify-content: flex-end; gap: 10px; padding: 4px 2px 2px; }
 .tab-toolbar small { color: var(--muted); font-size: 10px; font-family: "ArkPixelWorkbench", monospace; }
-.tab-save-btn { min-height: 30px; padding: 0 12px; border: 1px solid rgba(126, 164, 231, 0.24); background: linear-gradient(180deg, rgba(40, 58, 92, 0.98), rgba(16, 25, 38, 0.98)); color: #eaf2ff; font-family: "ArkPixelWorkbench", monospace; cursor: pointer; }
+.tab-save-btn { min-height: 30px; padding: 0 12px; border: 1px solid rgba(214, 176, 97, 0.3); background: linear-gradient(180deg, rgba(67, 46, 29, 0.98), rgba(28, 22, 16, 0.98)); color: #fff2d0; font-family: "ArkPixelWorkbench", monospace; cursor: pointer; }
 .tab-save-btn[disabled] { opacity: 0.55; cursor: progress; }
 
 :root {
-  --bg: #090d14;
-  --panel: #121a26;
-  --panel-2: #162334;
-  --panel-3: #0d141f;
-  --line: rgba(96, 137, 194, 0.22);
-  --line-strong: rgba(229, 188, 96, 0.45);
-  --text: #ebf1fb;
-  --muted: #8fa4c5;
-  --gold: #dfb762;
-  --blue: #7ea4e7;
-  --green: #8ed0a2;
-  --red: #d57e7e;
+  --bg: #0a0f14;
+  --panel: #121920;
+  --panel-2: #17232d;
+  --panel-3: #0d1319;
+  --line: rgba(119, 157, 171, 0.24);
+  --line-strong: rgba(214, 176, 97, 0.44);
+  --text: #dde3d4;
+  --muted: #94a39c;
+  --gold: #d8b261;
+  --blue: #7f97b3;
+  --green: #82a08b;
+  --red: #be7c68;
   --shadow: none;
 }
 
@@ -34,8 +34,14 @@ body.config-body {
   margin: 0;
   min-height: 100vh;
   background:
-    radial-gradient(circle at top center, rgba(66, 111, 176, 0.18), transparent 24%),
-    linear-gradient(180deg, #0a0f17 0%, #070b12 100%);
+    linear-gradient(180deg, rgba(18, 27, 34, 0.98), rgba(10, 15, 20, 0.98)),
+    repeating-linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.015) 0,
+      rgba(255, 255, 255, 0.015) 1px,
+      transparent 1px,
+      transparent 18px
+    );
   color: var(--text);
   font-family: "ArkPixelWorkbench", monospace;
 }
@@ -54,20 +60,15 @@ body.config-body.world-console-embedded {
 .panel-card,
 .tab-bar {
   border: 1px solid var(--line);
-  background: linear-gradient(180deg, rgba(18, 26, 38, 0.98), rgba(11, 17, 26, 0.98));
+  background: linear-gradient(180deg, rgba(22, 30, 37, 0.98), rgba(13, 18, 24, 0.98));
   box-shadow: var(--shadow);
 }
 
 .config-banner {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 12px;
-  align-items: center;
-  padding: 12px 14px;
+  padding: 12px 14px 10px;
 }
 
 .banner-office,
-.banner-profile-copy,
 .panel-head,
 .role-detail-copy,
 .status-highlight,
@@ -102,7 +103,6 @@ body.config-body.world-console-embedded {
 }
 
 .banner-office strong,
-.banner-profile-copy strong,
 .panel-head h2,
 .role-detail-copy h3,
 .metric-card strong,
@@ -114,8 +114,6 @@ body.config-body.world-console-embedded {
 }
 
 .banner-office small,
-.banner-profile-copy span,
-.banner-profile-copy small,
 .panel-tip,
 .detail-desc,
 .option-card small,
@@ -131,46 +129,29 @@ body.config-body.world-console-embedded {
   line-height: 1.5;
 }
 
-.banner-profile {
-  display: grid;
-  grid-template-columns: 58px minmax(0, 1fr);
-  gap: 10px;
-  align-items: center;
-  padding: 8px 10px;
-  border: 1px solid rgba(223, 183, 98, 0.18);
-  background: rgba(8, 12, 19, 0.66);
-}
-
-.banner-avatar-wrap {
-  width: 58px;
-  height: 58px;
-  border: 1px solid rgba(126, 164, 231, 0.26);
-  background: radial-gradient(circle at 50% 25%, rgba(126, 164, 231, 0.24), rgba(9, 14, 22, 0.92) 70%);
-  overflow: hidden;
-}
-
-.banner-avatar-wrap img,
 .role-detail-top img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
+  object-position: center center;
+  image-rendering: pixelated;
 }
 
-.banner-quick-stats {
+.banner-stat-row {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  margin-top: 2px;
+  margin-top: 4px;
 }
 
-.banner-quick-stats small {
+.banner-stat-row small {
   display: inline-flex;
   align-items: center;
   min-height: 24px;
   padding: 0 8px;
-  border: 1px solid rgba(126, 164, 231, 0.18);
-  background: rgba(10, 15, 23, 0.86);
-  color: #d6e4ff;
+  border: 1px solid rgba(123, 144, 152, 0.22);
+  background: rgba(12, 18, 23, 0.92);
+  color: #e2ddca;
   font-size: 10px;
   line-height: 1;
   font-family: "ArkPixelWorkbench", monospace;
@@ -192,7 +173,7 @@ body.config-body.world-console-embedded {
 .equipment-slot button,
 .close-button {
   border: 1px solid rgba(126, 164, 231, 0.24);
-  background: linear-gradient(180deg, rgba(29, 41, 63, 0.96), rgba(15, 22, 34, 0.96));
+  background: linear-gradient(180deg, rgba(33, 42, 48, 0.98), rgba(18, 24, 29, 0.98));
   color: var(--text);
   cursor: pointer;
   font-family: "ArkPixelWorkbench", monospace;
@@ -218,7 +199,7 @@ body.config-body.world-console-embedded {
 }
 
 .tab-button.active {
-  background: linear-gradient(180deg, rgba(56, 74, 110, 0.98), rgba(21, 30, 44, 0.98));
+  background: linear-gradient(180deg, rgba(78, 54, 33, 0.98), rgba(32, 25, 18, 0.98));
 }
 
 .tab-stack {
@@ -349,6 +330,7 @@ body.config-body.world-console-embedded {
 .role-detail-top img {
   border: 1px solid rgba(126, 164, 231, 0.2);
   background: #0a111a;
+  padding: 8px;
 }
 
 .detail-class {
@@ -826,7 +808,8 @@ body.config-body.world-console-embedded {
   width: 100%;
   height: 100%;
   object-fit: contain;
-  object-position: center 28%;
+  object-position: center center;
+  image-rendering: pixelated;
   filter: none;
   opacity: 0.94;
 }
@@ -1126,7 +1109,7 @@ body.modal-open {
     grid-template-columns: 1fr;
   }
 
-  .banner-quick-stats {
+  .banner-stat-row {
     gap: 4px;
   }
 }
@@ -1148,8 +1131,8 @@ body.modal-open {
     grid-template-columns: 1fr;
   }
 
-  .banner-profile {
-    grid-template-columns: 1fr;
+  .banner-stat-row {
+    gap: 4px;
   }
 }
 
@@ -1185,8 +1168,8 @@ body.modal-open {
 .status-diag-btn {
   min-height: 32px;
   padding: 0 10px;
-  border: 1px solid rgba(126, 164, 231, 0.24);
-  background: linear-gradient(180deg, rgba(29, 41, 63, 0.96), rgba(15, 22, 34, 0.96));
+  border: 1px solid rgba(214, 176, 97, 0.28);
+  background: linear-gradient(180deg, rgba(44, 34, 25, 0.98), rgba(18, 22, 28, 0.98));
   color: var(--text);
   cursor: pointer;
   font-family: "ArkPixelWorkbench", monospace;

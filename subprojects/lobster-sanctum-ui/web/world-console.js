@@ -258,7 +258,6 @@ function renderShell() {
   const packLabel = skillPackLabelMap[summary.pack] || summary.pack || "中档技能包";
   setText("worldConsoleOfficeLabel", readOfficeName());
   setText("worldConsoleRoleTitle", summary.title);
-  setText("worldConsoleRoleClass", `${summary.className} · ${routeLabel}`);
   setText("worldConsoleStatusLabel", currentRuntime.detail || stateLabel);
   setText("worldConsoleSummaryLine1", `${summary.buildText}`);
   setText("worldConsoleSummaryLine2", `${routeLabel} · ${ruleLabel} · ${packLabel}`);

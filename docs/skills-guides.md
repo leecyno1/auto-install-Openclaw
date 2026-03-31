@@ -1,6 +1,7 @@
 # Skills 使用指南总览
 
 所有默认 skill 都带有 `GUIDE.md`，安装到 `~/.openclaw/skills/<name>/GUIDE.md` 后，配置菜单可直接查看。
+想先看精简版用途说明，可先读 `skills/default/DEFAULT_SKILLS.md`。
 
 | Skill | 默认档位 | 需要额外配置 | 指南路径 |
 |---|---|---|---|
@@ -124,10 +125,10 @@
 | openai-docs | 仅全量默认包/手动同步 | 否 | `skills/default/openai-docs/GUIDE.md` |
 | openclaw-cron-setup | 基础档默认安装 | 否 | `skills/default/openclaw-cron-setup/GUIDE.md` |
 | openclaw-feeds | 仅全量默认包/手动同步 | 否 | `skills/default/openclaw-feeds/GUIDE.md` |
-| openclaw-stock | 增强包手动安装 | 否 | `skills/default/openclaw-stock/GUIDE.md` |
-| openclaw-stock-analyzer | 增强包手动安装 | 否 | `skills/default/openclaw-stock-analyzer/GUIDE.md` |
-| openclaw-stock-data-skill | 增强包手动安装 | 是 | `skills/default/openclaw-stock-data-skill/GUIDE.md` |
-| openclaw-stock-kb | 增强包手动安装 | 否 | `skills/default/openclaw-stock-kb/GUIDE.md` |
+| openclaw-stock | 仅全量默认包/手动同步 | 否 | `skills/default/openclaw-stock/GUIDE.md` |
+| openclaw-stock-analyzer | 仅全量默认包/手动同步 | 否 | `skills/default/openclaw-stock-analyzer/GUIDE.md` |
+| openclaw-stock-data-skill | 仅全量默认包/手动同步 | 否 | `skills/default/openclaw-stock-data-skill/GUIDE.md` |
+| openclaw-stock-kb | 仅全量默认包/手动同步 | 否 | `skills/default/openclaw-stock-kb/GUIDE.md` |
 | oracle | 扩展档默认安装 | 否 | `skills/default/oracle/GUIDE.md` |
 | paperless-docs | 扩展档默认安装 | 否 | `skills/default/paperless-docs/GUIDE.md` |
 | paperless-ngx-tools | 扩展档默认安装 | 否 | `skills/default/paperless-ngx-tools/GUIDE.md` |
@@ -165,10 +166,10 @@
 | skill-security-auditor | 基础档默认安装 | 否 | `skills/default/skill-security-auditor/GUIDE.md` |
 | slack-gif-creator | 仅全量默认包/手动同步 | 否 | `skills/default/slack-gif-creator/GUIDE.md` |
 | social-content | 基础档默认安装 | 否 | `skills/default/social-content/GUIDE.md` |
-| stock-analysis | 增强包手动安装 | 否 | `skills/default/stock-analysis/GUIDE.md` |
-| stock-daily-analysis-skill | 增强包手动安装 | 是 | `skills/default/stock-daily-analysis-skill/GUIDE.md` |
+| stock-analysis | 仅全量默认包/手动同步 | 否 | `skills/default/stock-analysis/GUIDE.md` |
+| stock-daily-analysis-skill | 仅全量默认包/手动同步 | 否 | `skills/default/stock-daily-analysis-skill/GUIDE.md` |
 | stock-monitor-skill | 基础档默认安装 | 是 | `skills/default/stock-monitor-skill/GUIDE.md` |
-| stock_datasource | 增强包手动安装 | 否 | `skills/default/stock_datasource/GUIDE.md` |
+| stock_datasource | 仅全量默认包/手动同步 | 否 | `skills/default/stock_datasource/GUIDE.md` |
 | subagent-driven-development | 基础档默认安装 | 否 | `skills/default/subagent-driven-development/GUIDE.md` |
 | summarize | 仅全量默认包/手动同步 | 是 | `skills/default/summarize/GUIDE.md` |
 | systematic-debugging | 仅全量默认包/手动同步 | 否 | `skills/default/systematic-debugging/GUIDE.md` |
@@ -182,7 +183,7 @@
 | tmux | 仅全量默认包/手动同步 | 否 | `skills/default/tmux/GUIDE.md` |
 | todo | 基础档默认安装 | 否 | `skills/default/todo/GUIDE.md` |
 | todoist-api | 仅全量默认包/手动同步 | 否 | `skills/default/todoist-api/GUIDE.md` |
-| tushare-openclaw-skill | 增强包手动安装 | 是 | `skills/default/tushare-openclaw-skill/GUIDE.md` |
+| tushare-openclaw-skill | 仅全量默认包/手动同步 | 否 | `skills/default/tushare-openclaw-skill/GUIDE.md` |
 | twitter | 仅全量默认包/手动同步 | 否 | `skills/default/twitter/GUIDE.md` |
 | ui-ux-pro-max | 仅全量默认包/手动同步 | 否 | `skills/default/ui-ux-pro-max/GUIDE.md` |
 | url-to-markdown | 基础档默认安装 | 是 | `skills/default/url-to-markdown/GUIDE.md` |
