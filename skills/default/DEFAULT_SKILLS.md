@@ -42,6 +42,7 @@ For the full install matrix, API-key requirements, and guide paths, use `docs/sk
 - `tavily-search`: 使用 Tavily 搜索，适合检索网页资料和结构化结果。
 - `web-search`: 通用联网搜索能力，适合资料检索和信息查找。
 - `minimax-web-search`: 优先走 MiniMax MCP 搜索链路，处理最新资讯和网页检索。
+- `vision-analysis`: MiniMax 官方视觉分析能力，可做图像/截图内容理解与结构化提取。
 - `blogwatcher`: 跟踪博客更新，做订阅式情报获取。
 - `news-radar`: 汇总新闻和热点，适合监控市场与外部变化。
 - `multi-search-engine`: 聚合多搜索源，减少单一搜索结果偏差。
@@ -83,6 +84,10 @@ For the full install matrix, API-key requirements, and guide paths, use `docs/sk
 - `gemini-image-service`: 调用 Gemini 图像能力做图片生成或改写。
 - `grok-imagine-1.0-video`: 处理 Grok 视频/视觉生成链路。
 - `inference-skills`: inference.sh 相关工具集合，扩展图像与多模态能力。
+- `minimax-multimodal-toolkit`: MiniMax 官方多模态工具包，覆盖图片/语音/视频/音乐生成与媒体处理。
+- `minimax-pdf`: MiniMax 官方 PDF 处理能力。
+- `minimax-docx`: MiniMax 官方 DOCX 处理能力。
+- `minimax-xlsx`: MiniMax 官方 XLSX 处理能力。
 
 ## 高级内容与渠道扩展
 

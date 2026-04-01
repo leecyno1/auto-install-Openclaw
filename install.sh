@@ -128,11 +128,24 @@ DEFAULT_OFFICIAL_PLUGINS="@openclaw/feishu @openclaw/discord @openclaw/whatsapp"
 DEFAULT_BUILTIN_CHANNEL_PLUGINS="telegram imessage"
 RULE_PROFILE_DEFAULT="${OPENCLAW_RULE_PROFILE:-medium}"
 RULE_PROFILE_SELECTED="$(echo "${RULE_PROFILE_DEFAULT}" | tr '[:upper:]' '[:lower:]')"
-PROFILE_BASIC_SKILLS="capability-evolver openclaw-cron-setup proactive-agent self-improving-agent-cn brainstorming reflection find-skills skill-creator subagent-driven-development using-superpowers verification-before-completion writing-skills agent-browser chrome-devtools-mcp github mcp-builder model-usage shell minimax-image-understanding tavily-search web-search minimax-web-search news-radar url-to-markdown pdf nano-pdf docx pptx xlsx stock-monitor-skill multi-search-engine akshare-stock content-strategy social-content ai-image-generation media-downloader marketingskills inference-skills agentmail agentmail-cli agentmail-mcp agentmail-toolkit lark-calendar notebooklm-skill skill-security-auditor weather data-analyst finance-data task todo"
-PROFILE_EXTENDED_SKILLS="capability-evolver openclaw-cron-setup proactive-agent self-improving-agent-cn brainstorming reflection find-skills skill-creator subagent-driven-development using-superpowers verification-before-completion writing-skills agent-browser chrome-devtools-mcp github mcp-builder model-usage shell minimax-image-understanding tavily-search web-search minimax-web-search news-radar url-to-markdown pdf nano-pdf docx pptx xlsx stock-monitor-skill multi-search-engine akshare-stock content-strategy social-content ai-image-generation animation media-downloader marketingskills inference-skills gemini-image-service oracle paperless-docs paperless-ngx-tools writing-plans agentmail agentmail-cli agentmail-mcp agentmail-toolkit lark-calendar notebooklm-skill skill-security-auditor weather data-analyst finance-data task todo"
+PROFILE_BASIC_SKILLS="capability-evolver openclaw-cron-setup proactive-agent self-improving-agent-cn brainstorming reflection find-skills skill-creator subagent-driven-development using-superpowers verification-before-completion writing-skills agent-browser chrome-devtools-mcp github mcp-builder model-usage shell minimax-image-understanding minimax-web-search minimax-multimodal-toolkit minimax-pdf minimax-docx minimax-xlsx vision-analysis tavily-search web-search news-radar url-to-markdown pdf nano-pdf docx pptx xlsx stock-monitor-skill multi-search-engine akshare-stock content-strategy social-content ai-image-generation media-downloader marketingskills inference-skills agentmail agentmail-cli agentmail-mcp agentmail-toolkit lark-calendar notebooklm-skill skill-security-auditor weather data-analyst finance-data task todo"
+PROFILE_EXTENDED_SKILLS="capability-evolver openclaw-cron-setup proactive-agent self-improving-agent-cn brainstorming reflection find-skills skill-creator subagent-driven-development using-superpowers verification-before-completion writing-skills agent-browser chrome-devtools-mcp github mcp-builder model-usage shell minimax-image-understanding minimax-web-search minimax-multimodal-toolkit minimax-pdf minimax-docx minimax-xlsx vision-analysis tavily-search web-search news-radar url-to-markdown pdf nano-pdf docx pptx xlsx stock-monitor-skill multi-search-engine akshare-stock content-strategy social-content ai-image-generation animation media-downloader marketingskills inference-skills gemini-image-service oracle paperless-docs paperless-ngx-tools writing-plans agentmail agentmail-cli agentmail-mcp agentmail-toolkit lark-calendar notebooklm-skill skill-security-auditor weather data-analyst finance-data task todo"
 SUPER_CURATED_SKILLS_LIST="baoyu-skills baoyu-article-illustrator baoyu-comic baoyu-compress-image baoyu-cover-image baoyu-danger-gemini-web baoyu-danger-x-to-markdown baoyu-format-markdown baoyu-image-gen baoyu-infographic baoyu-markdown-to-html baoyu-post-to-wechat baoyu-post-to-weibo baoyu-post-to-x baoyu-slide-deck baoyu-translate baoyu-url-to-markdown baoyu-xhs-images baoyu-youtube-transcript"
 PROFILE_SUPER_SKILLS="${PROFILE_EXTENDED_SKILLS} planning-with-files ${SUPER_CURATED_SKILLS_LIST}"
-DEFAULT_SKILLS_BUNDLE_SENTINELS="agentmail agentmail-cli agentmail-mcp agentmail-toolkit content-strategy social-content ai-image-generation media-downloader marketingskills inference-skills minimax-image-understanding minimax-web-search using-superpowers verification-before-completion writing-skills lark-calendar notebooklm-skill skill-security-auditor weather data-analyst finance-data task todo"
+DEFAULT_SKILLS_BUNDLE_SENTINELS="agentmail agentmail-cli agentmail-mcp agentmail-toolkit content-strategy social-content ai-image-generation media-downloader marketingskills inference-skills minimax-image-understanding minimax-web-search minimax-multimodal-toolkit minimax-pdf minimax-docx minimax-xlsx vision-analysis using-superpowers verification-before-completion writing-skills lark-calendar notebooklm-skill skill-security-auditor weather data-analyst finance-data task todo"
+MINIMAX_API_HOST_CN_DEFAULT="${MINIMAX_API_HOST_CN:-https://api.minimaxi.com}"
+MINIMAX_API_HOST_GLOBAL_DEFAULT="${MINIMAX_API_HOST_GLOBAL:-https://api.minimax.io}"
+MINIMAX_MULTIMODAL_OUTPUT_PATH_DEFAULT="${MINIMAX_MULTIMODAL_OUTPUT_PATH:-~/.openclaw/workspace/minimax-output}"
+MINIMAX_IMAGE_MODEL_DEFAULT="${MINIMAX_IMAGE_MODEL:-image-01}"
+MINIMAX_IMAGE_ENDPOINT_DEFAULT="${MINIMAX_IMAGE_ENDPOINT:-/v1/image_generation}"
+MINIMAX_TTS_MODEL_DEFAULT="${MINIMAX_TTS_MODEL:-speech-2.8-hd}"
+MINIMAX_TTS_ENDPOINT_DEFAULT="${MINIMAX_TTS_ENDPOINT:-/v1/t2a_v2}"
+MINIMAX_VIDEO_MODEL_DEFAULT="${MINIMAX_VIDEO_MODEL:-MiniMax-Hailuo-2.3}"
+MINIMAX_VIDEO_ENDPOINT_DEFAULT="${MINIMAX_VIDEO_ENDPOINT:-/v1/video_generation}"
+MINIMAX_VIDEO_QUERY_ENDPOINT_DEFAULT="${MINIMAX_VIDEO_QUERY_ENDPOINT:-/v1/query/video_generation}"
+MINIMAX_FILES_RETRIEVE_ENDPOINT_DEFAULT="${MINIMAX_FILES_RETRIEVE_ENDPOINT:-/v1/files/retrieve}"
+MINIMAX_MUSIC_MODEL_DEFAULT="${MINIMAX_MUSIC_MODEL:-music-2.5}"
+MINIMAX_MUSIC_ENDPOINT_DEFAULT="${MINIMAX_MUSIC_ENDPOINT:-/v1/music_generation}"
 GEMINI_BASE_URL_DEFAULT="${GEMINI_BASE_URL:-${GOOGLE_BASE_URL:-}}"
 GEMINI_IMAGE_MODEL_DEFAULT="${GEMINI_IMAGE_MODEL:-gemini-2.5-flash-image-preview}"
 QIHANG_IMAGE_API_KEY_DEFAULT="${QIHANG_IMAGE_API_KEY:-}"
@@ -533,6 +546,18 @@ ${INSTALLER_NAME} (OpenClaw 安装增强版)
   OPENCLAW_SKILL_PIP_PACKAGES="<覆盖默认依赖包列表>"
   OPENCLAW_SKILLS_FORCE_UPDATE=0|1
   OPENCLAW_RULE_PROFILE=low|medium|high|none
+  MINIMAX_API_HOST=<默认由区域自动选择 minimaxi.com/minimax.io>
+  MINIMAX_IMAGE_MODEL=<默认image-01>
+  MINIMAX_IMAGE_ENDPOINT=<默认/v1/image_generation>
+  MINIMAX_TTS_MODEL=<默认speech-2.8-hd>
+  MINIMAX_TTS_ENDPOINT=<默认/v1/t2a_v2>
+  MINIMAX_VIDEO_MODEL=<默认MiniMax-Hailuo-2.3>
+  MINIMAX_VIDEO_ENDPOINT=<默认/v1/video_generation>
+  MINIMAX_VIDEO_QUERY_ENDPOINT=<默认/v1/query/video_generation>
+  MINIMAX_FILES_RETRIEVE_ENDPOINT=<默认/v1/files/retrieve>
+  MINIMAX_MUSIC_MODEL=<默认music-2.5>
+  MINIMAX_MUSIC_ENDPOINT=<默认/v1/music_generation>
+  MINIMAX_MULTIMODAL_OUTPUT_PATH=<默认~/.openclaw/workspace/minimax-output>
   QIHANG_IMAGE_API_KEY=<启航AI生图Key>
   QIHANG_IMAGE_BASE_URL=<默认https://api.qhaigc.net>
   QIHANG_IMAGE_ENDPOINT=<默认/v1/images/generations>
@@ -1163,6 +1188,12 @@ configure_profile_api_keys() {
     level="$(normalize_rule_profile_level "$1")"
     if [ "$level" = "none" ]; then
         log_info "已选择 NONE，跳过档位 API 参数配置。"
+        return 0
+    fi
+
+    if [ "$AI_PROVIDER" = "minimax" ] || [ "$AI_PROVIDER" = "minimax-cn" ] || [ -n "${MINIMAX_API_KEY:-}" ]; then
+        log_info "检测到 MiniMax 已配置：单一 MINIMAX_API_KEY 即可覆盖文本/图片/语音/视频/音乐。"
+        log_info "已跳过额外生图服务 Key 提问（可在菜单中按需单独配置第三方服务）。"
         return 0
     fi
 
@@ -2033,15 +2064,16 @@ install_dependencies() {
     case "$OS" in
         ubuntu|debian)
             sudo apt-get update
-            sudo apt-get install -y curl wget jq python3 python3-pip python3-venv poppler-utils
+            sudo apt-get install -y curl wget jq python3 python3-pip python3-venv poppler-utils ffmpeg vim-common bc
             ;;
         centos|rhel|fedora)
-            sudo yum install -y curl wget jq python3 python3-pip poppler-utils || \
-            sudo yum install -y curl wget jq python3 python3-pip
+            sudo yum install -y curl wget jq python3 python3-pip poppler-utils ffmpeg vim-common bc || \
+            sudo yum install -y curl wget jq python3 python3-pip poppler-utils vim-common bc || \
+            sudo yum install -y curl wget jq python3 python3-pip vim-common bc
             ;;
         macos)
             install_homebrew
-            brew install curl wget jq python poppler
+            brew install curl wget jq python poppler ffmpeg
             ;;
     esac
     
@@ -4302,7 +4334,7 @@ PYEOF
 # 为 MiniMax 写入官方兼容 provider 配置，避免旧版本出现 Unknown model
 ensure_minimax_provider_config() {
     local provider="$1"   # minimax|minimax-cn
-    local model="$2"      # MiniMax-M2.5 / MiniMax-M2.5-highspeed
+    local model="$2"      # MiniMax-M2.7 / MiniMax-M2.7-highspeed
     local config_file="$3"
     local base_url="https://api.minimax.io/anthropic"
     if [ "$provider" = "minimax-cn" ]; then
@@ -4327,11 +4359,13 @@ cfg.models.providers ||= {};
 const p = cfg.models.providers[provider] || {};
 const models = Array.isArray(p.models) ? p.models : [];
 const catalog = {
+  'MiniMax-M2.7': { name: 'MiniMax M2.7' },
+  'MiniMax-M2.7-highspeed': { name: 'MiniMax M2.7 Highspeed' },
   'MiniMax-M2.5': { name: 'MiniMax M2.5' },
   'MiniMax-M2.5-highspeed': { name: 'MiniMax M2.5 Highspeed' },
 };
 const modelIds = new Set(models.map(m => m.id));
-for (const id of ['MiniMax-M2.5', 'MiniMax-M2.5-highspeed']) {
+for (const id of ['MiniMax-M2.7', 'MiniMax-M2.7-highspeed', 'MiniMax-M2.5', 'MiniMax-M2.5-highspeed']) {
   if (!modelIds.has(id)) {
     models.push({
       id,
@@ -4376,11 +4410,13 @@ cfg["models"].setdefault("providers", {})
 p = cfg["models"]["providers"].get(provider, {})
 models = p.get("models", []) if isinstance(p.get("models"), list) else []
 catalog = {
+    "MiniMax-M2.7": "MiniMax M2.7",
+    "MiniMax-M2.7-highspeed": "MiniMax M2.7 Highspeed",
     "MiniMax-M2.5": "MiniMax M2.5",
     "MiniMax-M2.5-highspeed": "MiniMax M2.5 Highspeed",
 }
 existing = {m.get("id") for m in models if isinstance(m, dict)}
-for mid in ("MiniMax-M2.5", "MiniMax-M2.5-highspeed"):
+for mid in ("MiniMax-M2.7", "MiniMax-M2.7-highspeed", "MiniMax-M2.5", "MiniMax-M2.5-highspeed"):
     if mid not in existing:
         models.append({
             "id": mid, "name": catalog.get(mid, mid), "reasoning": True, "input": ["text"],
@@ -4402,8 +4438,26 @@ PYEOF
     fi
 }
 
+configure_minimax_multimodal_vendor_install() {
+    local api_host="$1"
+    check_command openclaw || return 0
+
+    openclaw config set "vendor.media.minimax.apiHost" "$api_host" >/dev/null 2>&1 || true
+    openclaw config set "vendor.media.minimax.image.model" "${MINIMAX_IMAGE_MODEL:-$MINIMAX_IMAGE_MODEL_DEFAULT}" >/dev/null 2>&1 || true
+    openclaw config set "vendor.media.minimax.image.endpoint" "${MINIMAX_IMAGE_ENDPOINT:-$MINIMAX_IMAGE_ENDPOINT_DEFAULT}" >/dev/null 2>&1 || true
+    openclaw config set "vendor.media.minimax.tts.model" "${MINIMAX_TTS_MODEL:-$MINIMAX_TTS_MODEL_DEFAULT}" >/dev/null 2>&1 || true
+    openclaw config set "vendor.media.minimax.tts.endpoint" "${MINIMAX_TTS_ENDPOINT:-$MINIMAX_TTS_ENDPOINT_DEFAULT}" >/dev/null 2>&1 || true
+    openclaw config set "vendor.media.minimax.video.model" "${MINIMAX_VIDEO_MODEL:-$MINIMAX_VIDEO_MODEL_DEFAULT}" >/dev/null 2>&1 || true
+    openclaw config set "vendor.media.minimax.video.endpoint" "${MINIMAX_VIDEO_ENDPOINT:-$MINIMAX_VIDEO_ENDPOINT_DEFAULT}" >/dev/null 2>&1 || true
+    openclaw config set "vendor.media.minimax.video.queryEndpoint" "${MINIMAX_VIDEO_QUERY_ENDPOINT:-$MINIMAX_VIDEO_QUERY_ENDPOINT_DEFAULT}" >/dev/null 2>&1 || true
+    openclaw config set "vendor.media.minimax.video.retrieveEndpoint" "${MINIMAX_FILES_RETRIEVE_ENDPOINT:-$MINIMAX_FILES_RETRIEVE_ENDPOINT_DEFAULT}" >/dev/null 2>&1 || true
+    openclaw config set "vendor.media.minimax.music.model" "${MINIMAX_MUSIC_MODEL:-$MINIMAX_MUSIC_MODEL_DEFAULT}" >/dev/null 2>&1 || true
+    openclaw config set "vendor.media.minimax.music.endpoint" "${MINIMAX_MUSIC_ENDPOINT:-$MINIMAX_MUSIC_ENDPOINT_DEFAULT}" >/dev/null 2>&1 || true
+}
+
 write_minimax_skill_config_install() {
     local api_key="$1"
+    local api_host="$2"
     [ -n "$api_key" ] || return 0
 
     local cfg_dir="$CONFIG_DIR/config"
@@ -4418,7 +4472,26 @@ import json, os
 cfg_file = os.path.expanduser("$cfg_file")
 payload = {
     "api_key": "$api_key",
-    "output_path": "~/.openclaw/workspace/minimax-output"
+    "api_host": "$api_host",
+    "output_path": "${MINIMAX_MULTIMODAL_OUTPUT_PATH:-$MINIMAX_MULTIMODAL_OUTPUT_PATH_DEFAULT}",
+    "image": {
+        "model": "${MINIMAX_IMAGE_MODEL:-$MINIMAX_IMAGE_MODEL_DEFAULT}",
+        "endpoint": "${MINIMAX_IMAGE_ENDPOINT:-$MINIMAX_IMAGE_ENDPOINT_DEFAULT}"
+    },
+    "tts": {
+        "model": "${MINIMAX_TTS_MODEL:-$MINIMAX_TTS_MODEL_DEFAULT}",
+        "endpoint": "${MINIMAX_TTS_ENDPOINT:-$MINIMAX_TTS_ENDPOINT_DEFAULT}"
+    },
+    "video": {
+        "model": "${MINIMAX_VIDEO_MODEL:-$MINIMAX_VIDEO_MODEL_DEFAULT}",
+        "endpoint": "${MINIMAX_VIDEO_ENDPOINT:-$MINIMAX_VIDEO_ENDPOINT_DEFAULT}",
+        "query_endpoint": "${MINIMAX_VIDEO_QUERY_ENDPOINT:-$MINIMAX_VIDEO_QUERY_ENDPOINT_DEFAULT}",
+        "retrieve_endpoint": "${MINIMAX_FILES_RETRIEVE_ENDPOINT:-$MINIMAX_FILES_RETRIEVE_ENDPOINT_DEFAULT}"
+    },
+    "music": {
+        "model": "${MINIMAX_MUSIC_MODEL:-$MINIMAX_MUSIC_MODEL_DEFAULT}",
+        "endpoint": "${MINIMAX_MUSIC_ENDPOINT:-$MINIMAX_MUSIC_ENDPOINT_DEFAULT}"
+    }
 }
 os.makedirs(os.path.dirname(cfg_file), exist_ok=True)
 with open(cfg_file, "w", encoding="utf-8") as f:
@@ -4428,7 +4501,26 @@ PYEOF
         cat > "$cfg_file" <<EOF
 {
   "api_key": "$api_key",
-  "output_path": "~/.openclaw/workspace/minimax-output"
+  "api_host": "$api_host",
+  "output_path": "${MINIMAX_MULTIMODAL_OUTPUT_PATH:-$MINIMAX_MULTIMODAL_OUTPUT_PATH_DEFAULT}",
+  "image": {
+    "model": "${MINIMAX_IMAGE_MODEL:-$MINIMAX_IMAGE_MODEL_DEFAULT}",
+    "endpoint": "${MINIMAX_IMAGE_ENDPOINT:-$MINIMAX_IMAGE_ENDPOINT_DEFAULT}"
+  },
+  "tts": {
+    "model": "${MINIMAX_TTS_MODEL:-$MINIMAX_TTS_MODEL_DEFAULT}",
+    "endpoint": "${MINIMAX_TTS_ENDPOINT:-$MINIMAX_TTS_ENDPOINT_DEFAULT}"
+  },
+  "video": {
+    "model": "${MINIMAX_VIDEO_MODEL:-$MINIMAX_VIDEO_MODEL_DEFAULT}",
+    "endpoint": "${MINIMAX_VIDEO_ENDPOINT:-$MINIMAX_VIDEO_ENDPOINT_DEFAULT}",
+    "query_endpoint": "${MINIMAX_VIDEO_QUERY_ENDPOINT:-$MINIMAX_VIDEO_QUERY_ENDPOINT_DEFAULT}",
+    "retrieve_endpoint": "${MINIMAX_FILES_RETRIEVE_ENDPOINT:-$MINIMAX_FILES_RETRIEVE_ENDPOINT_DEFAULT}"
+  },
+  "music": {
+    "model": "${MINIMAX_MUSIC_MODEL:-$MINIMAX_MUSIC_MODEL_DEFAULT}",
+    "endpoint": "${MINIMAX_MUSIC_ENDPOINT:-$MINIMAX_MUSIC_ENDPOINT_DEFAULT}"
+  }
 }
 EOF
     fi
@@ -4494,13 +4586,26 @@ EOF
             upsert_env_export_install "ZAI_API_KEY" "$AI_KEY"
             ;;
         minimax|minimax-cn)
+            local minimax_api_host=""
             upsert_env_export_install "MINIMAX_API_KEY" "$AI_KEY"
             if [ "$AI_PROVIDER" = "minimax-cn" ]; then
-                upsert_env_export_install "MINIMAX_API_HOST" "https://api.minimaxi.com"
+                minimax_api_host="${MINIMAX_API_HOST:-$MINIMAX_API_HOST_CN_DEFAULT}"
             else
-                upsert_env_export_install "MINIMAX_API_HOST" "https://api.minimax.io"
+                minimax_api_host="${MINIMAX_API_HOST:-$MINIMAX_API_HOST_GLOBAL_DEFAULT}"
             fi
-            write_minimax_skill_config_install "$AI_KEY"
+            upsert_env_export_install "MINIMAX_API_HOST" "$minimax_api_host"
+            upsert_env_export_install "MINIMAX_MULTIMODAL_OUTPUT_PATH" "${MINIMAX_MULTIMODAL_OUTPUT_PATH:-$MINIMAX_MULTIMODAL_OUTPUT_PATH_DEFAULT}"
+            upsert_env_export_install "MINIMAX_IMAGE_MODEL" "${MINIMAX_IMAGE_MODEL:-$MINIMAX_IMAGE_MODEL_DEFAULT}"
+            upsert_env_export_install "MINIMAX_IMAGE_ENDPOINT" "${MINIMAX_IMAGE_ENDPOINT:-$MINIMAX_IMAGE_ENDPOINT_DEFAULT}"
+            upsert_env_export_install "MINIMAX_TTS_MODEL" "${MINIMAX_TTS_MODEL:-$MINIMAX_TTS_MODEL_DEFAULT}"
+            upsert_env_export_install "MINIMAX_TTS_ENDPOINT" "${MINIMAX_TTS_ENDPOINT:-$MINIMAX_TTS_ENDPOINT_DEFAULT}"
+            upsert_env_export_install "MINIMAX_VIDEO_MODEL" "${MINIMAX_VIDEO_MODEL:-$MINIMAX_VIDEO_MODEL_DEFAULT}"
+            upsert_env_export_install "MINIMAX_VIDEO_ENDPOINT" "${MINIMAX_VIDEO_ENDPOINT:-$MINIMAX_VIDEO_ENDPOINT_DEFAULT}"
+            upsert_env_export_install "MINIMAX_VIDEO_QUERY_ENDPOINT" "${MINIMAX_VIDEO_QUERY_ENDPOINT:-$MINIMAX_VIDEO_QUERY_ENDPOINT_DEFAULT}"
+            upsert_env_export_install "MINIMAX_FILES_RETRIEVE_ENDPOINT" "${MINIMAX_FILES_RETRIEVE_ENDPOINT:-$MINIMAX_FILES_RETRIEVE_ENDPOINT_DEFAULT}"
+            upsert_env_export_install "MINIMAX_MUSIC_MODEL" "${MINIMAX_MUSIC_MODEL:-$MINIMAX_MUSIC_MODEL_DEFAULT}"
+            upsert_env_export_install "MINIMAX_MUSIC_ENDPOINT" "${MINIMAX_MUSIC_ENDPOINT:-$MINIMAX_MUSIC_ENDPOINT_DEFAULT}"
+            write_minimax_skill_config_install "$AI_KEY" "$minimax_api_host"
             ;;
         opencode|opencode-go)
             upsert_env_export_install "OPENCODE_API_KEY" "$AI_KEY"
@@ -4519,6 +4624,7 @@ EOF
 
     if [ "$AI_PROVIDER" = "minimax" ] || [ "$AI_PROVIDER" = "minimax-cn" ]; then
         ensure_minimax_provider_config "$AI_PROVIDER" "$AI_MODEL" "$openclaw_json"
+        configure_minimax_multimodal_vendor_install "${MINIMAX_API_HOST:-$MINIMAX_API_HOST_CN_DEFAULT}"
     fi
     
     # 设置默认模型
@@ -5361,6 +5467,7 @@ setup_ai_provider() {
             BASE_URL=""
             echo ""
             echo -e "${CYAN}配置 MiniMax${NC}"
+            echo -e "${GREEN}提示：MiniMax 一把 Key 即可覆盖文本/图片/语音/视频/音乐能力。${NC}"
             echo ""
             echo "选择区域:"
             echo "  1) 国际版 (minimax)"
@@ -5373,17 +5480,29 @@ setup_ai_provider() {
                 echo -e "${GRAY}获取 API Key: https://platform.minimax.io/${NC}"
             fi
             echo ""
-            read_secret_input "${YELLOW}输入 API Key: ${NC}" AI_KEY
+            current_minimax_key="${MINIMAX_API_KEY:-}"
+            if [ -n "$current_minimax_key" ]; then
+                masked_minimax_key="${current_minimax_key:0:8}...${current_minimax_key: -4}"
+                echo -e "${CYAN}当前 MiniMax Key:${NC} ${WHITE}${masked_minimax_key}${NC}"
+                read_secret_input "${YELLOW}输入 API Key (留空保持当前): ${NC}" input_minimax_key
+                AI_KEY="${input_minimax_key:-$current_minimax_key}"
+            else
+                read_secret_input "${YELLOW}输入 API Key: ${NC}" AI_KEY
+            fi
             echo ""
             echo "选择模型:"
-            echo "  1) MiniMax-M2.5 (推荐，官方)"
-            echo "  2) MiniMax-M2.5-highspeed (高速)"
-            echo "  3) 自定义模型名称"
-            echo -en "${YELLOW}选择模型 [1-3] (默认: 1): ${NC}"; read model_choice < "$TTY_INPUT"
+            echo "  1) MiniMax-M2.7 (推荐，官方)"
+            echo "  2) MiniMax-M2.7-highspeed (高速)"
+            echo "  3) MiniMax-M2.5"
+            echo "  4) MiniMax-M2.5-highspeed"
+            echo "  5) 自定义模型名称"
+            echo -en "${YELLOW}选择模型 [1-5] (默认: 1): ${NC}"; read model_choice < "$TTY_INPUT"
             case $model_choice in
-                2) AI_MODEL="MiniMax-M2.5-highspeed" ;;
-                3) echo -en "${YELLOW}输入模型名称: ${NC}"; read AI_MODEL < "$TTY_INPUT" ;;
-                *) AI_MODEL="MiniMax-M2.5" ;;
+                2) AI_MODEL="MiniMax-M2.7-highspeed" ;;
+                3) AI_MODEL="MiniMax-M2.5" ;;
+                4) AI_MODEL="MiniMax-M2.5-highspeed" ;;
+                5) echo -en "${YELLOW}输入模型名称: ${NC}"; read AI_MODEL < "$TTY_INPUT" ;;
+                *) AI_MODEL="MiniMax-M2.7" ;;
             esac
             ;;
         13)
