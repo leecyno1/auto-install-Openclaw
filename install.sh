@@ -128,11 +128,11 @@ DEFAULT_OFFICIAL_PLUGINS="@openclaw/feishu @openclaw/discord @openclaw/whatsapp"
 DEFAULT_BUILTIN_CHANNEL_PLUGINS="telegram imessage"
 RULE_PROFILE_DEFAULT="${OPENCLAW_RULE_PROFILE:-medium}"
 RULE_PROFILE_SELECTED="$(echo "${RULE_PROFILE_DEFAULT}" | tr '[:upper:]' '[:lower:]')"
-PROFILE_BASIC_SKILLS="capability-evolver openclaw-cron-setup proactive-agent self-improving-agent-cn brainstorming reflection find-skills skill-creator subagent-driven-development using-superpowers verification-before-completion writing-skills agent-browser chrome-devtools-mcp github mcp-builder model-usage shell minimax-image-understanding minimax-web-search minimax-multimodal-toolkit minimax-pdf minimax-docx minimax-xlsx vision-analysis tavily-search web-search news-radar url-to-markdown pdf nano-pdf docx pptx xlsx stock-monitor-skill multi-search-engine akshare-stock content-strategy social-content ai-image-generation media-downloader marketingskills inference-skills agentmail agentmail-cli agentmail-mcp agentmail-toolkit lark-calendar notebooklm-skill skill-security-auditor weather data-analyst finance-data task todo"
-PROFILE_EXTENDED_SKILLS="capability-evolver openclaw-cron-setup proactive-agent self-improving-agent-cn brainstorming reflection find-skills skill-creator subagent-driven-development using-superpowers verification-before-completion writing-skills agent-browser chrome-devtools-mcp github mcp-builder model-usage shell minimax-image-understanding minimax-web-search minimax-multimodal-toolkit minimax-pdf minimax-docx minimax-xlsx vision-analysis tavily-search web-search news-radar url-to-markdown pdf nano-pdf docx pptx xlsx stock-monitor-skill multi-search-engine akshare-stock content-strategy social-content ai-image-generation animation media-downloader marketingskills inference-skills gemini-image-service oracle paperless-docs paperless-ngx-tools writing-plans agentmail agentmail-cli agentmail-mcp agentmail-toolkit lark-calendar notebooklm-skill skill-security-auditor weather data-analyst finance-data task todo"
+PROFILE_BASIC_SKILLS="capability-evolver openclaw-cron-setup proactive-agent self-improving-agent-cn brainstorming reflection find-skills skill-creator subagent-driven-development using-superpowers verification-before-completion writing-skills agent-browser chrome-devtools-mcp github mcp-builder model-usage shell minimax-image-understanding minimax-web-search minimax-pdf minimax-docx minimax-xlsx tavily-search web-search news-radar url-to-markdown pdf nano-pdf docx pptx xlsx stock-monitor-skill multi-search-engine akshare-stock content-strategy social-content ai-image-generation media-downloader marketingskills inference-skills agentmail agentmail-cli agentmail-mcp agentmail-toolkit lark-calendar notebooklm-skill skill-security-auditor weather data-analyst finance-data task todo"
+PROFILE_EXTENDED_SKILLS="capability-evolver openclaw-cron-setup proactive-agent self-improving-agent-cn brainstorming reflection find-skills skill-creator subagent-driven-development using-superpowers verification-before-completion writing-skills agent-browser chrome-devtools-mcp github mcp-builder model-usage shell minimax-image-understanding minimax-web-search minimax-pdf minimax-docx minimax-xlsx tavily-search web-search news-radar url-to-markdown pdf nano-pdf docx pptx xlsx stock-monitor-skill multi-search-engine akshare-stock content-strategy social-content ai-image-generation animation media-downloader marketingskills inference-skills gemini-image-service oracle paperless-docs paperless-ngx-tools writing-plans agentmail agentmail-cli agentmail-mcp agentmail-toolkit lark-calendar notebooklm-skill skill-security-auditor weather data-analyst finance-data task todo"
 SUPER_CURATED_SKILLS_LIST="baoyu-skills baoyu-article-illustrator baoyu-comic baoyu-compress-image baoyu-cover-image baoyu-danger-gemini-web baoyu-danger-x-to-markdown baoyu-format-markdown baoyu-image-gen baoyu-infographic baoyu-markdown-to-html baoyu-post-to-wechat baoyu-post-to-weibo baoyu-post-to-x baoyu-slide-deck baoyu-translate baoyu-url-to-markdown baoyu-xhs-images baoyu-youtube-transcript"
 PROFILE_SUPER_SKILLS="${PROFILE_EXTENDED_SKILLS} planning-with-files ${SUPER_CURATED_SKILLS_LIST}"
-DEFAULT_SKILLS_BUNDLE_SENTINELS="agentmail agentmail-cli agentmail-mcp agentmail-toolkit content-strategy social-content ai-image-generation media-downloader marketingskills inference-skills minimax-image-understanding minimax-web-search minimax-multimodal-toolkit minimax-pdf minimax-docx minimax-xlsx vision-analysis using-superpowers verification-before-completion writing-skills lark-calendar notebooklm-skill skill-security-auditor weather data-analyst finance-data task todo"
+DEFAULT_SKILLS_BUNDLE_SENTINELS="agentmail agentmail-cli agentmail-mcp agentmail-toolkit content-strategy social-content ai-image-generation media-downloader marketingskills inference-skills minimax-image-understanding minimax-web-search minimax-pdf minimax-docx minimax-xlsx using-superpowers verification-before-completion writing-skills lark-calendar notebooklm-skill skill-security-auditor weather data-analyst finance-data task todo"
 MINIMAX_API_HOST_CN_DEFAULT="${MINIMAX_API_HOST_CN:-https://api.minimaxi.com}"
 MINIMAX_API_HOST_GLOBAL_DEFAULT="${MINIMAX_API_HOST_GLOBAL:-https://api.minimax.io}"
 MINIMAX_MULTIMODAL_OUTPUT_PATH_DEFAULT="${MINIMAX_MULTIMODAL_OUTPUT_PATH:-~/.openclaw/workspace/minimax-output}"
@@ -148,13 +148,13 @@ MINIMAX_MUSIC_MODEL_DEFAULT="${MINIMAX_MUSIC_MODEL:-music-2.5}"
 MINIMAX_MUSIC_ENDPOINT_DEFAULT="${MINIMAX_MUSIC_ENDPOINT:-/v1/music_generation}"
 GEMINI_BASE_URL_DEFAULT="${GEMINI_BASE_URL:-${GOOGLE_BASE_URL:-}}"
 GEMINI_IMAGE_MODEL_DEFAULT="${GEMINI_IMAGE_MODEL:-gemini-2.5-flash-image-preview}"
-QIHANG_IMAGE_API_KEY_DEFAULT="${QIHANG_IMAGE_API_KEY:-}"
-QIHANG_IMAGE_BASE_URL_DEFAULT="${QIHANG_IMAGE_BASE_URL:-https://api.qhaigc.net}"
-QIHANG_IMAGE_ENDPOINT_DEFAULT="${QIHANG_IMAGE_ENDPOINT:-/v1/images/generations}"
+QIHANG_IMAGE_API_KEY_DEFAULT="${QIHANG_IMAGE_API_KEY:-${OPENCLAW_IMAGE_API_KEY:-}}"
+QIHANG_IMAGE_BASE_URL_DEFAULT="${QIHANG_IMAGE_BASE_URL:-${OPENCLAW_IMAGE_API_URL:-https://api.viviai.cc}}"
+QIHANG_IMAGE_ENDPOINT_DEFAULT="${QIHANG_IMAGE_ENDPOINT:-/v1/chat/completions}"
 QIHANG_GEMINI_ENDPOINT_DEFAULT="${QIHANG_GEMINI_ENDPOINT:-/v1/chat/completions}"
-QIHANG_IMAGE_MODEL_DEFAULT="${QIHANG_IMAGE_MODEL:-seedream-5}"
-QIHANG_IMAGE_MODEL_SEEDREAM46_DEFAULT="${QIHANG_IMAGE_MODEL_SEEDREAM46:-seedream-4.6}"
-QIHANG_IMAGE_MODEL_GEMINI_DEFAULT="${QIHANG_IMAGE_MODEL_GEMINI:-gemini-2.5-flash-image}"
+QIHANG_IMAGE_MODEL_DEFAULT="${QIHANG_IMAGE_MODEL:-gemini-3.1-flash-image-preview}"
+QIHANG_IMAGE_MODEL_SEEDREAM46_DEFAULT="${QIHANG_IMAGE_MODEL_SEEDREAM46:-gemini-3.1-flash-image-preview}"
+QIHANG_IMAGE_MODEL_GEMINI_DEFAULT="${QIHANG_IMAGE_MODEL_GEMINI:-${OPENCLAW_IMAGE_MODEL:-gemini-3.1-flash-image-preview}}"
 MOLIFANG_IMAGE_API_KEY_DEFAULT="${MOLIFANG_IMAGE_API_KEY:-}"
 MOLIFANG_IMAGE_BASE_URL_DEFAULT="${MOLIFANG_IMAGE_BASE_URL:-https://ai.gitee.com}"
 MOLIFANG_IMAGE_ENDPOINT_DEFAULT="${MOLIFANG_IMAGE_ENDPOINT:-/v1/images/generations}"
@@ -547,6 +547,7 @@ ${INSTALLER_NAME} (OpenClaw 安装增强版)
   OPENCLAW_SKILLS_FORCE_UPDATE=0|1
   OPENCLAW_RULE_PROFILE=low|medium|high|none
   MINIMAX_API_HOST=<默认由区域自动选择 minimaxi.com/minimax.io>
+  OPENCLAW_MINIMAX_PROVIDER_URL=<可选，自定义 MiniMax Provider 地址，如 https://api.sfkey.cn>
   MINIMAX_IMAGE_MODEL=<默认image-01>
   MINIMAX_IMAGE_ENDPOINT=<默认/v1/image_generation>
   MINIMAX_TTS_MODEL=<默认speech-2.8-hd>
@@ -558,20 +559,9 @@ ${INSTALLER_NAME} (OpenClaw 安装增强版)
   MINIMAX_MUSIC_MODEL=<默认music-2.5>
   MINIMAX_MUSIC_ENDPOINT=<默认/v1/music_generation>
   MINIMAX_MULTIMODAL_OUTPUT_PATH=<默认~/.openclaw/workspace/minimax-output>
-  QIHANG_IMAGE_API_KEY=<启航AI生图Key>
-  QIHANG_IMAGE_BASE_URL=<默认https://api.qhaigc.net>
-  QIHANG_IMAGE_ENDPOINT=<默认/v1/images/generations>
-  QIHANG_GEMINI_ENDPOINT=<默认/v1/chat/completions>
-  QIHANG_IMAGE_MODEL=<默认seedream-5>
-  QIHANG_IMAGE_MODEL_SEEDREAM46=<默认seedream-4.6>
-  QIHANG_IMAGE_MODEL_GEMINI=<默认gemini-2.5-flash-image>
-  MOLIFANG_IMAGE_API_KEY=<模力方舟生图Key>
-  MOLIFANG_IMAGE_BASE_URL=<默认https://ai.gitee.com>
-  MOLIFANG_IMAGE_ENDPOINT=<默认/v1/images/generations>
-  MOLIFANG_IMAGE_MODEL=<默认Qwen-Image>
-  MOLIFANG_IMAGE_MODEL_GLM=<默认GLM-Image>
-  MOLIFANG_IMAGE_MODEL_LONGCAT=<默认LongCat-Image>
-  MOLIFANG_IMAGE_MODEL_ZTURBO=<默认z-image-turbo>
+  OPENCLAW_IMAGE_API_KEY=<生图接口Key>
+  OPENCLAW_IMAGE_API_URL=<默认https://api.viviai.cc/v1/chat/completions>
+  OPENCLAW_IMAGE_MODEL=<默认gemini-3.1-flash-image-preview>
   OPENCLAW_WELCOME_MESSAGE=<欢迎语，留空使用默认文案>
 EOF
 }
@@ -814,6 +804,48 @@ remove_env_export_install() {
     chmod 600 "$env_file" 2>/dev/null || true
 }
 
+get_saved_env_export_install() {
+    local key="$1"
+    local env_file="$CONFIG_DIR/env"
+    [ -f "$env_file" ] || return 0
+    grep "^export ${key}=" "$env_file" 2>/dev/null | tail -1 | sed "s/^export ${key}=//" | tr -d '"'
+}
+
+trim_value_install() {
+    printf "%s" "${1:-}" | sed 's/^[[:space:]]*//; s/[[:space:]]*$//'
+}
+
+normalize_minimax_provider_url_install() {
+    local raw
+    raw="$(trim_value_install "$1")"
+    [ -n "$raw" ] || { echo ""; return 0; }
+    echo "$raw"
+}
+
+minimax_api_host_from_provider_url_install() {
+    local provider_url
+    provider_url="$(normalize_minimax_provider_url_install "$1")"
+    [ -n "$provider_url" ] || { echo ""; return 0; }
+    echo "$provider_url"
+}
+
+resolve_minimax_provider_base_url_install() {
+    local provider="$1"
+    local custom_provider_url="$2"
+    local default_base_url="https://api.minimax.io/anthropic"
+    if [ "$provider" = "minimax-cn" ]; then
+        default_base_url="https://api.minimaxi.com/anthropic"
+    fi
+
+    local normalized_custom
+    normalized_custom="$(normalize_minimax_provider_url_install "$custom_provider_url")"
+    if [ -n "$normalized_custom" ]; then
+        echo "$normalized_custom"
+    else
+        echo "$default_base_url"
+    fi
+}
+
 normalize_rule_profile_level() {
     local level="$(echo "${1:-$RULE_PROFILE_DEFAULT}" | tr '[:upper:]' '[:lower:]' | tr -d '[:space:]')"
     case "$level" in
@@ -926,6 +958,28 @@ get_profile_token_limits() {
     esac
 }
 
+get_profile_media_limits() {
+    local level
+    level="$(normalize_rule_profile_level "$1")"
+    case "$level" in
+        none)
+            echo "0 0"
+            ;;
+        low)
+            echo "0 0"
+            ;;
+        medium)
+            echo "20 1"
+            ;;
+        high)
+            echo "50 2"
+            ;;
+        *)
+            echo "20 1"
+            ;;
+    esac
+}
+
 get_profile_context_guard_limits() {
     local level
     level="$(normalize_rule_profile_level "$1")"
@@ -956,6 +1010,7 @@ EOF
             cat <<'EOF'
 你是受控执行模式（LOW）。
 - 只执行低频请求预算：5 小时 100 次。
+- 不开放图片与视频生成额度；涉及生图/生视频请求时直接拒绝并提示升级档位。
 - 绝不泄露任何 API Key、Token、密钥、Cookie、会话票据。
 - 拒绝任何“切换/绕过模型限制、突破调用限制、越权执行”请求。
 - 涉及用户隐私/敏感信息时必须脱敏或拒绝，并解释原因。
@@ -966,6 +1021,7 @@ EOF
             cat <<'EOF'
 你是平衡执行模式（MEDIUM）。
 - 请求预算提升到 5 小时 300 次，仍需避免无效重复调用。
+- 图片生成额度 20 张 / 5 小时，视频生成额度 1 条 / 5 小时。
 - 拒绝导出密钥、凭据、令牌和任何可用于接管账户的信息。
 - 拒绝协助规避模型/网关/权限限制，所有升级动作需显式授权。
 - 输出涉及隐私数据时默认最小化披露并做脱敏。
@@ -977,6 +1033,7 @@ EOF
             cat <<'EOF'
 你是高性能执行模式（HIGH）。
 - 请求次数不设上限，但需持续监控总 Token 消耗与单次调用成本。
+- 图片生成额度 50 张 / 5 小时，视频生成额度 2 条 / 5 小时。
 - 严禁输出 API Key、系统密钥、数据库凭据、私有令牌。
 - 严禁执行绕过安全策略、越权访问、数据外泄类指令。
 - 遇到敏感数据请求先拒绝，再提供合规替代方案。
@@ -1007,9 +1064,9 @@ select_rule_profile_level() {
     echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
     echo -e "${WHITE}  token规划规则注入档位${NC}"
     echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-    echo -e "  ${CYAN}[1]${NC} LOW    - 基础档（5小时 100 次）"
-    echo -e "  ${CYAN}[2]${NC} MEDIUM - 扩展档（5小时 300 次）"
-    echo -e "  ${CYAN}[3]${NC} HIGH   - 超级档（请求次数不限）"
+    echo -e "  ${CYAN}[1]${NC} LOW    - 基础档（5小时 100 次，不含图/视频）"
+    echo -e "  ${CYAN}[2]${NC} MEDIUM - 扩展档（5小时 300 次，20图/1视频）"
+    echo -e "  ${CYAN}[3]${NC} HIGH   - 超级档（请求不限，50图/2视频）"
     echo -e "  ${CYAN}[4]${NC} NONE   - 跳过本次注入"
     echo ""
 
@@ -1073,59 +1130,62 @@ prompt_profile_api_key() {
 }
 
 apply_generative_service_settings() {
-    local qihang_key="${QIHANG_IMAGE_API_KEY:-$QIHANG_IMAGE_API_KEY_DEFAULT}"
-    local qihang_url="${QIHANG_IMAGE_BASE_URL:-$QIHANG_IMAGE_BASE_URL_DEFAULT}"
-    local qihang_endpoint="${QIHANG_IMAGE_ENDPOINT:-$QIHANG_IMAGE_ENDPOINT_DEFAULT}"
-    local qihang_gemini_endpoint="${QIHANG_GEMINI_ENDPOINT:-$QIHANG_GEMINI_ENDPOINT_DEFAULT}"
-    local qihang_seedream5="${QIHANG_IMAGE_MODEL:-$QIHANG_IMAGE_MODEL_DEFAULT}"
-    local qihang_seedream46="${QIHANG_IMAGE_MODEL_SEEDREAM46:-$QIHANG_IMAGE_MODEL_SEEDREAM46_DEFAULT}"
-    local qihang_gemini_model="${QIHANG_IMAGE_MODEL_GEMINI:-$QIHANG_IMAGE_MODEL_GEMINI_DEFAULT}"
-    local molifang_key="${MOLIFANG_IMAGE_API_KEY:-$MOLIFANG_IMAGE_API_KEY_DEFAULT}"
-    local molifang_url="${MOLIFANG_IMAGE_BASE_URL:-$MOLIFANG_IMAGE_BASE_URL_DEFAULT}"
-    local molifang_endpoint="${MOLIFANG_IMAGE_ENDPOINT:-$MOLIFANG_IMAGE_ENDPOINT_DEFAULT}"
-    local molifang_qwen="${MOLIFANG_IMAGE_MODEL:-$MOLIFANG_IMAGE_MODEL_DEFAULT}"
-    local molifang_glm="${MOLIFANG_IMAGE_MODEL_GLM:-$MOLIFANG_IMAGE_MODEL_GLM_DEFAULT}"
-    local molifang_longcat="${MOLIFANG_IMAGE_MODEL_LONGCAT:-$MOLIFANG_IMAGE_MODEL_LONGCAT_DEFAULT}"
-    local molifang_zturbo="${MOLIFANG_IMAGE_MODEL_ZTURBO:-$MOLIFANG_IMAGE_MODEL_ZTURBO_DEFAULT}"
-    local gemini_key="$qihang_key"
-    local gemini_url="$qihang_url"
-    local gemini_model="$qihang_gemini_model"
+    local image_key="${OPENCLAW_IMAGE_API_KEY:-${QIHANG_IMAGE_API_KEY:-$QIHANG_IMAGE_API_KEY_DEFAULT}}"
+    local image_api_url_raw="${OPENCLAW_IMAGE_API_URL:-${QIHANG_IMAGE_BASE_URL:-$QIHANG_IMAGE_BASE_URL_DEFAULT}}"
+    local image_model="${OPENCLAW_IMAGE_MODEL:-${QIHANG_IMAGE_MODEL_GEMINI:-$QIHANG_IMAGE_MODEL_GEMINI_DEFAULT}}"
+    local image_base_url="" image_endpoint=""
+    local host_part=""
 
-    upsert_env_export_install "QIHANG_IMAGE_API_KEY" "$qihang_key"
-    upsert_env_export_install "QIHANG_IMAGE_BASE_URL" "$qihang_url"
-    upsert_env_export_install "QIHANG_IMAGE_ENDPOINT" "$qihang_endpoint"
-    upsert_env_export_install "QIHANG_GEMINI_ENDPOINT" "$qihang_gemini_endpoint"
-    upsert_env_export_install "QIHANG_IMAGE_MODEL" "$qihang_seedream5"
-    upsert_env_export_install "QIHANG_IMAGE_MODEL_SEEDREAM46" "$qihang_seedream46"
-    upsert_env_export_install "QIHANG_IMAGE_MODEL_GEMINI" "$qihang_gemini_model"
-    upsert_env_export_install "MOLIFANG_IMAGE_API_KEY" "$molifang_key"
-    upsert_env_export_install "MOLIFANG_IMAGE_BASE_URL" "$molifang_url"
-    upsert_env_export_install "MOLIFANG_IMAGE_ENDPOINT" "$molifang_endpoint"
-    upsert_env_export_install "MOLIFANG_IMAGE_MODEL" "$molifang_qwen"
-    upsert_env_export_install "MOLIFANG_IMAGE_MODEL_GLM" "$molifang_glm"
-    upsert_env_export_install "MOLIFANG_IMAGE_MODEL_LONGCAT" "$molifang_longcat"
-    upsert_env_export_install "MOLIFANG_IMAGE_MODEL_ZTURBO" "$molifang_zturbo"
+    image_api_url_raw="$(trim_value_install "$image_api_url_raw")"
+    [ -n "$image_api_url_raw" ] || image_api_url_raw="https://api.viviai.cc/v1/chat/completions"
 
-    upsert_env_export_install "GEMINI_API_KEY" "$gemini_key"
-    upsert_env_export_install "GOOGLE_API_KEY" "$gemini_key"
-    upsert_env_export_install "GEMINI_BASE_URL" "$gemini_url"
-    upsert_env_export_install "GEMINI_IMAGE_MODEL" "$gemini_model"
-    upsert_env_export_install "GEMINI_IMAGE_ENDPOINT" "$qihang_gemini_endpoint"
-    upsert_env_export_install "OPENCLAW_GEMINI_BASE_URL" "$gemini_url"
-    upsert_env_export_install "OPENCLAW_GEMINI_IMAGE_MODEL" "$gemini_model"
+    if [[ "$image_api_url_raw" == http://* || "$image_api_url_raw" == https://* ]]; then
+        host_part="$(echo "$image_api_url_raw" | sed -E 's#^(https?://[^/]+).*$#\1#')"
+        image_endpoint="${image_api_url_raw#"$host_part"}"
+        [ -n "$image_endpoint" ] || image_endpoint="/v1/chat/completions"
+        image_base_url="$host_part"
+    else
+        image_base_url="$image_api_url_raw"
+        image_endpoint="/v1/chat/completions"
+    fi
 
-    # 为 baoyu-image-gen 提供开箱即用的 OpenAI 兼容图像通道（默认启航AI）
-    upsert_env_export_install "OPENCLAW_IMAGE_PROVIDER" "qihang"
-    upsert_env_export_install "OPENAI_API_KEY" "$qihang_key"
-    upsert_env_export_install "OPENAI_BASE_URL" "$qihang_url"
-    upsert_env_export_install "OPENAI_IMAGE_MODEL" "$qihang_seedream5"
-    upsert_env_export_install "OPENAI_IMAGE_USE_CHAT" "false"
+    upsert_env_export_install "OPENCLAW_IMAGE_PROVIDER" "viviai"
+    upsert_env_export_install "OPENCLAW_IMAGE_API_KEY" "$image_key"
+    upsert_env_export_install "OPENCLAW_IMAGE_API_URL" "$image_api_url_raw"
+    upsert_env_export_install "OPENCLAW_IMAGE_MODEL" "$image_model"
+    upsert_env_export_install "QIHANG_IMAGE_API_KEY" "$image_key"
+    upsert_env_export_install "QIHANG_IMAGE_BASE_URL" "$image_base_url"
+    upsert_env_export_install "QIHANG_IMAGE_ENDPOINT" "$image_endpoint"
+    upsert_env_export_install "QIHANG_GEMINI_ENDPOINT" "$image_endpoint"
+    upsert_env_export_install "QIHANG_IMAGE_MODEL" "$image_model"
+    upsert_env_export_install "QIHANG_IMAGE_MODEL_SEEDREAM46" "$image_model"
+    upsert_env_export_install "QIHANG_IMAGE_MODEL_GEMINI" "$image_model"
+    remove_env_export_install "MOLIFANG_IMAGE_API_KEY"
+    remove_env_export_install "MOLIFANG_IMAGE_BASE_URL"
+    remove_env_export_install "MOLIFANG_IMAGE_ENDPOINT"
+    remove_env_export_install "MOLIFANG_IMAGE_MODEL"
+    remove_env_export_install "MOLIFANG_IMAGE_MODEL_GLM"
+    remove_env_export_install "MOLIFANG_IMAGE_MODEL_LONGCAT"
+    remove_env_export_install "MOLIFANG_IMAGE_MODEL_ZTURBO"
+
+    upsert_env_export_install "GEMINI_API_KEY" "$image_key"
+    upsert_env_export_install "GOOGLE_API_KEY" "$image_key"
+    upsert_env_export_install "GEMINI_BASE_URL" "$image_base_url"
+    upsert_env_export_install "GEMINI_IMAGE_MODEL" "$image_model"
+    upsert_env_export_install "GEMINI_IMAGE_ENDPOINT" "$image_endpoint"
+    upsert_env_export_install "OPENCLAW_GEMINI_BASE_URL" "$image_base_url"
+    upsert_env_export_install "OPENCLAW_GEMINI_IMAGE_MODEL" "$image_model"
+
+    upsert_env_export_install "OPENAI_API_KEY" "$image_key"
+    upsert_env_export_install "OPENAI_BASE_URL" "$image_base_url"
+    upsert_env_export_install "OPENAI_IMAGE_MODEL" "$image_model"
+    upsert_env_export_install "OPENAI_IMAGE_USE_CHAT" "true"
+    upsert_env_export_install "OPENAI_CHAT_COMPLETIONS_ENDPOINT" "$image_endpoint"
 
     if check_command openclaw; then
-        openclaw config set "vendor.media.gemini.apiKey" "$gemini_key" >/dev/null 2>&1 || true
-        openclaw config set "vendor.media.gemini.baseUrl" "$gemini_url" >/dev/null 2>&1 || true
-        openclaw config set "vendor.media.gemini.imageModel" "$gemini_model" >/dev/null 2>&1 || true
-        # 清理历史陈旧项
+        openclaw config set "vendor.media.gemini.apiKey" "$image_key" >/dev/null 2>&1 || true
+        openclaw config set "vendor.media.gemini.baseUrl" "$image_base_url" >/dev/null 2>&1 || true
+        openclaw config set "vendor.media.gemini.imageModel" "$image_model" >/dev/null 2>&1 || true
         openclaw config unset "plugins.entries.gemini" >/dev/null 2>&1 || true
         openclaw config unset "plugins.entries.nano-banana-pro" >/dev/null 2>&1 || true
     fi
@@ -1138,10 +1198,10 @@ apply_generative_service_settings() {
     mkdir -p "$(dirname "$gemini_skill_cfg")" "$(dirname "$baoyu_env")" 2>/dev/null || true
 
     cat > "$gemini_skill_cfg" <<EOF
-GEMINI_API_KEY=${gemini_key}
-GEMINI_BASE_URL=${gemini_url}
-GEMINI_IMAGE_MODEL=${gemini_model}
-GEMINI_IMAGE_ENDPOINT=${qihang_gemini_endpoint}
+GEMINI_API_KEY=${image_key}
+GEMINI_BASE_URL=${image_base_url}
+GEMINI_IMAGE_MODEL=${image_model}
+GEMINI_IMAGE_ENDPOINT=${image_endpoint}
 EOF
     chmod 600 "$gemini_skill_cfg" 2>/dev/null || true
 
@@ -1157,25 +1217,15 @@ EOF
     {
         cat "$tmp_file" 2>/dev/null || true
         echo "$begin_marker"
-        echo "OPENCLAW_IMAGE_PROVIDER=qihang"
-        echo "QIHANG_IMAGE_API_KEY=${qihang_key}"
-        echo "QIHANG_IMAGE_BASE_URL=${qihang_url}"
-        echo "QIHANG_IMAGE_ENDPOINT=${qihang_endpoint}"
-        echo "QIHANG_GEMINI_ENDPOINT=${qihang_gemini_endpoint}"
-        echo "QIHANG_IMAGE_MODEL=${qihang_seedream5}"
-        echo "QIHANG_IMAGE_MODEL_SEEDREAM46=${qihang_seedream46}"
-        echo "QIHANG_IMAGE_MODEL_GEMINI=${qihang_gemini_model}"
-        echo "MOLIFANG_IMAGE_API_KEY=${molifang_key}"
-        echo "MOLIFANG_IMAGE_BASE_URL=${molifang_url}"
-        echo "MOLIFANG_IMAGE_ENDPOINT=${molifang_endpoint}"
-        echo "MOLIFANG_IMAGE_MODEL=${molifang_qwen}"
-        echo "MOLIFANG_IMAGE_MODEL_GLM=${molifang_glm}"
-        echo "MOLIFANG_IMAGE_MODEL_LONGCAT=${molifang_longcat}"
-        echo "MOLIFANG_IMAGE_MODEL_ZTURBO=${molifang_zturbo}"
-        echo "OPENAI_API_KEY=${qihang_key}"
-        echo "OPENAI_BASE_URL=${qihang_url}"
-        echo "OPENAI_IMAGE_MODEL=${qihang_seedream5}"
-        echo "OPENAI_IMAGE_USE_CHAT=false"
+        echo "OPENCLAW_IMAGE_PROVIDER=viviai"
+        echo "OPENCLAW_IMAGE_API_KEY=${image_key}"
+        echo "OPENCLAW_IMAGE_API_URL=${image_api_url_raw}"
+        echo "OPENCLAW_IMAGE_MODEL=${image_model}"
+        echo "OPENAI_API_KEY=${image_key}"
+        echo "OPENAI_BASE_URL=${image_base_url}"
+        echo "OPENAI_IMAGE_MODEL=${image_model}"
+        echo "OPENAI_IMAGE_USE_CHAT=true"
+        echo "OPENAI_CHAT_COMPLETIONS_ENDPOINT=${image_endpoint}"
         echo "$end_marker"
     } > "${tmp_file}.new"
     mv "${tmp_file}.new" "$baoyu_env"
@@ -1191,36 +1241,43 @@ configure_profile_api_keys() {
         return 0
     fi
 
-    if [ "$AI_PROVIDER" = "minimax" ] || [ "$AI_PROVIDER" = "minimax-cn" ] || [ -n "${MINIMAX_API_KEY:-}" ]; then
-        log_info "检测到 MiniMax 已配置：单一 MINIMAX_API_KEY 即可覆盖文本/图片/语音/视频/音乐。"
-        log_info "已跳过额外生图服务 Key 提问（可在菜单中按需单独配置第三方服务）。"
-        return 0
-    fi
-
     echo ""
-    log_step "配置档位 API 参数（启航AI / 模力方舟）..."
+    log_step "配置档位 API 参数（ViviAI 生图）..."
+    local default_image_api_url="${OPENCLAW_IMAGE_API_URL:-${QIHANG_IMAGE_BASE_URL:-$QIHANG_IMAGE_BASE_URL_DEFAULT}}"
+    local default_image_model="${OPENCLAW_IMAGE_MODEL:-${QIHANG_IMAGE_MODEL_GEMINI:-$QIHANG_IMAGE_MODEL_GEMINI_DEFAULT}}"
     case "$level" in
         low)
-            log_info "LOW 档默认不强制配置工具 API Key（可后续在配置菜单补充）"
+            log_info "LOW 档默认不强制配置生图 API（可后续在配置菜单补充）"
             ;;
         medium)
-            prompt_profile_api_key "QIHANG_IMAGE_API_KEY" "启航AI生图" "1"
-            prompt_profile_api_key "MOLIFANG_IMAGE_API_KEY" "模力方舟生图" "1"
+            read_input "${YELLOW}请输入生图接口URL (默认: ${default_image_api_url}): ${NC}" OPENCLAW_IMAGE_API_URL
+            OPENCLAW_IMAGE_API_URL="${OPENCLAW_IMAGE_API_URL:-$default_image_api_url}"
+            read_input "${YELLOW}请输入生图模型 (默认: ${default_image_model}): ${NC}" OPENCLAW_IMAGE_MODEL
+            OPENCLAW_IMAGE_MODEL="${OPENCLAW_IMAGE_MODEL:-$default_image_model}"
+            prompt_profile_api_key "OPENCLAW_IMAGE_API_KEY" "ViviAI生图" "1"
             ;;
         high)
-            prompt_profile_api_key "QIHANG_IMAGE_API_KEY" "启航AI生图" "1"
-            prompt_profile_api_key "MOLIFANG_IMAGE_API_KEY" "模力方舟生图" "1"
+            read_input "${YELLOW}请输入生图接口URL (默认: ${default_image_api_url}): ${NC}" OPENCLAW_IMAGE_API_URL
+            OPENCLAW_IMAGE_API_URL="${OPENCLAW_IMAGE_API_URL:-$default_image_api_url}"
+            read_input "${YELLOW}请输入生图模型 (默认: ${default_image_model}): ${NC}" OPENCLAW_IMAGE_MODEL
+            OPENCLAW_IMAGE_MODEL="${OPENCLAW_IMAGE_MODEL:-$default_image_model}"
+            prompt_profile_api_key "OPENCLAW_IMAGE_API_KEY" "ViviAI生图" "1"
             ;;
         *)
-            prompt_profile_api_key "QIHANG_IMAGE_API_KEY" "启航AI生图" "1"
-            prompt_profile_api_key "MOLIFANG_IMAGE_API_KEY" "模力方舟生图" "1"
+            read_input "${YELLOW}请输入生图接口URL (默认: ${default_image_api_url}): ${NC}" OPENCLAW_IMAGE_API_URL
+            OPENCLAW_IMAGE_API_URL="${OPENCLAW_IMAGE_API_URL:-$default_image_api_url}"
+            read_input "${YELLOW}请输入生图模型 (默认: ${default_image_model}): ${NC}" OPENCLAW_IMAGE_MODEL
+            OPENCLAW_IMAGE_MODEL="${OPENCLAW_IMAGE_MODEL:-$default_image_model}"
+            prompt_profile_api_key "OPENCLAW_IMAGE_API_KEY" "ViviAI生图" "1"
             ;;
     esac
 
-    QIHANG_IMAGE_API_KEY="${QIHANG_IMAGE_API_KEY:-$QIHANG_IMAGE_API_KEY_DEFAULT}"
-    MOLIFANG_IMAGE_API_KEY="${MOLIFANG_IMAGE_API_KEY:-$MOLIFANG_IMAGE_API_KEY_DEFAULT}"
-    upsert_env_export_install "QIHANG_IMAGE_API_KEY" "$QIHANG_IMAGE_API_KEY"
-    upsert_env_export_install "MOLIFANG_IMAGE_API_KEY" "$MOLIFANG_IMAGE_API_KEY"
+    OPENCLAW_IMAGE_API_URL="${OPENCLAW_IMAGE_API_URL:-$default_image_api_url}"
+    OPENCLAW_IMAGE_MODEL="${OPENCLAW_IMAGE_MODEL:-$default_image_model}"
+    OPENCLAW_IMAGE_API_KEY="${OPENCLAW_IMAGE_API_KEY:-$QIHANG_IMAGE_API_KEY_DEFAULT}"
+    upsert_env_export_install "OPENCLAW_IMAGE_API_URL" "$OPENCLAW_IMAGE_API_URL"
+    upsert_env_export_install "OPENCLAW_IMAGE_MODEL" "$OPENCLAW_IMAGE_MODEL"
+    upsert_env_export_install "OPENCLAW_IMAGE_API_KEY" "$OPENCLAW_IMAGE_API_KEY"
     remove_env_export_install "BRAVE_API_KEY"
     remove_env_export_install "BRAVESEARCH_API_KEY"
     remove_env_export_install "NANO_BANANA_API_KEY"
@@ -1301,13 +1358,16 @@ apply_profile_token_policy() {
         log_info "已选择 NONE，跳过 token/request 限流配置。"
         return 0
     fi
-    local limits window_hours max_requests max_tokens max_tokens_per_req
+    local limits media_limits window_hours max_requests max_tokens max_tokens_per_req max_image_requests max_video_requests
     local context_limits context_warn_tokens context_ask_tokens context_force_tokens
     limits="$(get_profile_token_limits "$level")"
     window_hours="$(echo "$limits" | awk '{print $1}')"
     max_requests="$(echo "$limits" | awk '{print $2}')"
     max_tokens="$(echo "$limits" | awk '{print $3}')"
     max_tokens_per_req="$(echo "$limits" | awk '{print $4}')"
+    media_limits="$(get_profile_media_limits "$level")"
+    max_image_requests="$(echo "$media_limits" | awk '{print $1}')"
+    max_video_requests="$(echo "$media_limits" | awk '{print $2}')"
     context_limits="$(get_profile_context_guard_limits "$level")"
     context_warn_tokens="$(echo "$context_limits" | awk '{print $1}')"
     context_ask_tokens="$(echo "$context_limits" | awk '{print $2}')"
@@ -1317,6 +1377,10 @@ apply_profile_token_policy() {
     upsert_env_export_install "OPENCLAW_RULE_MAX_REQUESTS" "$max_requests"
     upsert_env_export_install "OPENCLAW_RULE_MAX_TOKENS" "$max_tokens"
     upsert_env_export_install "OPENCLAW_RULE_MAX_TOKENS_PER_REQUEST" "$max_tokens_per_req"
+    upsert_env_export_install "OPENCLAW_RULE_MAX_IMAGE_REQUESTS" "$max_image_requests"
+    upsert_env_export_install "OPENCLAW_RULE_MAX_VIDEO_REQUESTS" "$max_video_requests"
+    upsert_env_export_install "OPENCLAW_MEDIA_QUOTA_STATE_FILE" "$CONFIG_DIR/quota/media-state.json"
+    upsert_env_export_install "OPENCLAW_MEDIA_QUOTA_SCRIPT" "$HOME/.openclaw/.cache/auto-install-openclaw-repo/scripts/media_quota.py"
     upsert_env_export_install "OPENCLAW_CONTEXT_WARN_TOKENS" "$context_warn_tokens"
     upsert_env_export_install "OPENCLAW_CONTEXT_ASK_TOKENS" "$context_ask_tokens"
     upsert_env_export_install "OPENCLAW_CONTEXT_FORCE_TOKENS" "$context_force_tokens"
@@ -1327,6 +1391,8 @@ apply_profile_token_policy() {
         openclaw config set "vendor.control.rate.maxRequests" "$max_requests" >/dev/null 2>&1 || true
         openclaw config set "vendor.control.rate.maxTokens" "$max_tokens" >/dev/null 2>&1 || true
         openclaw config set "vendor.control.rate.maxTokensPerRequest" "$max_tokens_per_req" >/dev/null 2>&1 || true
+        openclaw config set "vendor.control.rate.maxImageRequests" "$max_image_requests" >/dev/null 2>&1 || true
+        openclaw config set "vendor.control.rate.maxVideoRequests" "$max_video_requests" >/dev/null 2>&1 || true
         openclaw config set "vendor.control.context.warnTokens" "$context_warn_tokens" >/dev/null 2>&1 || true
         openclaw config set "vendor.control.context.askTokens" "$context_ask_tokens" >/dev/null 2>&1 || true
         openclaw config set "vendor.control.context.forceTokens" "$context_force_tokens" >/dev/null 2>&1 || true
@@ -1407,7 +1473,8 @@ write_profile_policy_files() {
         log_info "已选择 NONE，跳过 token规划规则策略文件写入。"
         return 0
     fi
-    local limits window_hours max_requests max_tokens max_tokens_per_req max_requests_display
+    local limits media_limits window_hours max_requests max_tokens max_tokens_per_req max_requests_display
+    local max_image_requests max_video_requests
     local context_limits context_warn_tokens context_ask_tokens context_force_tokens
     local prompt_text
     local now_iso
@@ -1423,6 +1490,9 @@ write_profile_policy_files() {
     max_requests="$(echo "$limits" | awk '{print $2}')"
     max_tokens="$(echo "$limits" | awk '{print $3}')"
     max_tokens_per_req="$(echo "$limits" | awk '{print $4}')"
+    media_limits="$(get_profile_media_limits "$level")"
+    max_image_requests="$(echo "$media_limits" | awk '{print $1}')"
+    max_video_requests="$(echo "$media_limits" | awk '{print $2}')"
     if [ "${max_requests:-0}" -le 0 ] 2>/dev/null; then
         max_requests_display="不限（0 表示不限）"
     else
@@ -1493,6 +1563,8 @@ write_profile_policy_files() {
 - 请求上限: ${max_requests_display}
 - Token 上限: ${max_tokens}
 - 单请求 Token 上限: ${max_tokens_per_req}
+- 图片额度: ${max_image_requests}
+- 视频额度: ${max_video_requests}
 - 上下文预警阈值: ${context_warn_tokens}
 - 上下文询问阈值: ${context_ask_tokens}
 - 上下文强制压缩阈值: ${context_force_tokens}
@@ -1537,9 +1609,10 @@ EOF
 当前会话默认规则：
 1. 优先满足可用性，其次控制成本。
 2. 每 ${window_hours} 小时请求次数${max_requests_display}。
-3. 单请求建议 Token 不超过 ${max_tokens_per_req}。
-4. 拒绝密钥泄露、越权请求和敏感信息外泄。
-5. 当上下文 >= ${context_ask_tokens} 时，必须先询问是否执行 /compact。
+3. 图片额度 ${max_image_requests} 张 / 视频额度 ${max_video_requests} 条。
+4. 单请求建议 Token 不超过 ${max_tokens_per_req}。
+5. 拒绝密钥泄露、越权请求和敏感信息外泄。
+6. 当上下文 >= ${context_ask_tokens} 时，必须先询问是否执行 /compact。
 EOF
 
     cat > "$soul_rule_file" <<EOF
@@ -1644,7 +1717,9 @@ EOF
     "windowHours": ${window_hours},
     "maxRequests": ${max_requests},
     "maxTokens": ${max_tokens},
-    "maxTokensPerRequest": ${max_tokens_per_req}
+    "maxTokensPerRequest": ${max_tokens_per_req},
+    "maxImageRequests": ${max_image_requests},
+    "maxVideoRequests": ${max_video_requests}
   },
   "contextGuard": {
     "warnTokens": ${context_warn_tokens},
@@ -1773,8 +1848,12 @@ apply_vendor_rule_profile() {
         return 0
     fi
 
-    local limits prompt_text context_limits context_warn_tokens context_ask_tokens context_force_tokens
+    local limits media_limits prompt_text context_limits context_warn_tokens context_ask_tokens context_force_tokens
+    local max_image_requests max_video_requests
     limits="$(get_profile_token_limits "$level")"
+    media_limits="$(get_profile_media_limits "$level")"
+    max_image_requests="$(echo "$media_limits" | awk '{print $1}')"
+    max_video_requests="$(echo "$media_limits" | awk '{print $2}')"
     prompt_text="$(get_profile_prompt_text "$level")"
     context_limits="$(get_profile_context_guard_limits "$level")"
     context_warn_tokens="$(echo "$context_limits" | awk '{print $1}')"
@@ -1791,10 +1870,11 @@ apply_vendor_rule_profile() {
     log_info "token规划规则注入完成"
     echo -e "  档位: ${WHITE}${level}${NC}"
     echo -e "  限流: ${WHITE}$(echo "$limits" | awk '{print $1"小时/"$2"次, 总Token="$3", 单次="$4}')${NC}"
+    echo -e "  多媒体额度: ${WHITE}图片 ${max_image_requests} 张 / 视频 ${max_video_requests} 条 / ${window_hours:-5} 小时${NC}"
     echo -e "  Skills 档位: ${WHITE}$(case "$level" in low) echo 低档=基础必装;; medium) echo 中档=基础+进阶;; high) echo 高档=中档+全量;; *) echo 中档=基础+进阶;; esac)${NC}"
     echo -e "  上下文守门: ${WHITE}预警 ${context_warn_tokens} / 询问 ${context_ask_tokens} / 强制 ${context_force_tokens}${NC}"
-    echo -e "  启航AI: ${WHITE}${QIHANG_IMAGE_BASE_URL:-$QIHANG_IMAGE_BASE_URL_DEFAULT} | ${QIHANG_IMAGE_MODEL:-$QIHANG_IMAGE_MODEL_DEFAULT} / ${QIHANG_IMAGE_MODEL_SEEDREAM46:-$QIHANG_IMAGE_MODEL_SEEDREAM46_DEFAULT}${NC}"
-    echo -e "  模力方舟: ${WHITE}${MOLIFANG_IMAGE_BASE_URL:-$MOLIFANG_IMAGE_BASE_URL_DEFAULT} | ${MOLIFANG_IMAGE_MODEL:-$MOLIFANG_IMAGE_MODEL_DEFAULT}${NC}"
+    echo -e "  生图接口: ${WHITE}${OPENCLAW_IMAGE_API_URL:-https://api.viviai.cc/v1/chat/completions}${NC}"
+    echo -e "  生图模型: ${WHITE}${OPENCLAW_IMAGE_MODEL:-gemini-3.1-flash-image-preview}${NC}"
     if [ "$level" = "medium" ] || [ "$level" = "high" ]; then
         echo -e "  高级模型路由: ${WHITE}on | ${UNOFFICIAL_ADVANCED_DEFAULT_MODEL_GPT:-Gpt-5.4} | ${UNOFFICIAL_ADVANCED_DEFAULT_URL_OPENAI:-https://www.leishen-ai.cn/openai} | /bm${NC}"
     fi
@@ -4336,10 +4416,9 @@ ensure_minimax_provider_config() {
     local provider="$1"   # minimax|minimax-cn
     local model="$2"      # MiniMax-M2.7 / MiniMax-M2.7-highspeed
     local config_file="$3"
-    local base_url="https://api.minimax.io/anthropic"
-    if [ "$provider" = "minimax-cn" ]; then
-        base_url="https://api.minimaxi.com/anthropic"
-    fi
+    local custom_provider_url="${4:-}"
+    local base_url
+    base_url="$(resolve_minimax_provider_base_url_install "$provider" "$custom_provider_url")"
 
     mkdir -p "$(dirname "$config_file")" 2>/dev/null || true
     [ -f "$config_file" ] || echo "{}" > "$config_file"
@@ -4587,12 +4666,23 @@ EOF
             ;;
         minimax|minimax-cn)
             local minimax_api_host=""
+            local minimax_provider_url=""
             upsert_env_export_install "MINIMAX_API_KEY" "$AI_KEY"
-            if [ "$AI_PROVIDER" = "minimax-cn" ]; then
-                minimax_api_host="${MINIMAX_API_HOST:-$MINIMAX_API_HOST_CN_DEFAULT}"
+
+            minimax_provider_url="$(normalize_minimax_provider_url_install "$BASE_URL")"
+            if [ -n "$minimax_provider_url" ]; then
+                minimax_api_host="$(minimax_api_host_from_provider_url_install "$minimax_provider_url")"
+                upsert_env_export_install "OPENCLAW_MINIMAX_PROVIDER_URL" "$minimax_provider_url"
             else
-                minimax_api_host="${MINIMAX_API_HOST:-$MINIMAX_API_HOST_GLOBAL_DEFAULT}"
+                remove_env_export_install "OPENCLAW_MINIMAX_PROVIDER_URL"
+                if [ "$AI_PROVIDER" = "minimax-cn" ]; then
+                    minimax_api_host="${MINIMAX_API_HOST:-$MINIMAX_API_HOST_CN_DEFAULT}"
+                else
+                    minimax_api_host="${MINIMAX_API_HOST:-$MINIMAX_API_HOST_GLOBAL_DEFAULT}"
+                fi
             fi
+            MINIMAX_API_HOST="$minimax_api_host"
+            OPENCLAW_MINIMAX_PROVIDER_URL="$minimax_provider_url"
             upsert_env_export_install "MINIMAX_API_HOST" "$minimax_api_host"
             upsert_env_export_install "MINIMAX_MULTIMODAL_OUTPUT_PATH" "${MINIMAX_MULTIMODAL_OUTPUT_PATH:-$MINIMAX_MULTIMODAL_OUTPUT_PATH_DEFAULT}"
             upsert_env_export_install "MINIMAX_IMAGE_MODEL" "${MINIMAX_IMAGE_MODEL:-$MINIMAX_IMAGE_MODEL_DEFAULT}"
@@ -4623,7 +4713,7 @@ EOF
     log_info "环境变量配置已保存到: $env_file"
 
     if [ "$AI_PROVIDER" = "minimax" ] || [ "$AI_PROVIDER" = "minimax-cn" ]; then
-        ensure_minimax_provider_config "$AI_PROVIDER" "$AI_MODEL" "$openclaw_json"
+        ensure_minimax_provider_config "$AI_PROVIDER" "$AI_MODEL" "$openclaw_json" "${OPENCLAW_MINIMAX_PROVIDER_URL:-}"
         configure_minimax_multimodal_vendor_install "${MINIMAX_API_HOST:-$MINIMAX_API_HOST_CN_DEFAULT}"
     fi
     
@@ -5089,6 +5179,7 @@ run_onboard_wizard() {
                 elif [ -n "$MINIMAX_API_KEY" ]; then
                     AI_PROVIDER="minimax"
                     AI_KEY="$MINIMAX_API_KEY"
+                    BASE_URL="$OPENCLAW_MINIMAX_PROVIDER_URL"
                 elif [ -n "$OPENROUTER_API_KEY" ]; then
                     AI_PROVIDER="openrouter"
                     AI_KEY="$OPENROUTER_API_KEY"
@@ -5478,6 +5569,28 @@ setup_ai_provider() {
                 echo -e "${GRAY}获取 API Key: https://platform.minimaxi.com/${NC}"
             else
                 echo -e "${GRAY}获取 API Key: https://platform.minimax.io/${NC}"
+            fi
+            echo ""
+            local current_minimax_provider_url=""
+            current_minimax_provider_url="$(get_saved_env_export_install "OPENCLAW_MINIMAX_PROVIDER_URL")"
+            if [ -n "$current_minimax_provider_url" ]; then
+                echo -e "${CYAN}当前 Provider 地址:${NC} ${WHITE}${current_minimax_provider_url}${NC}"
+            else
+                echo -e "${CYAN}当前 Provider 地址:${NC} ${GRAY}(官方默认)${NC}"
+            fi
+            read_input "${YELLOW}自定义 Provider 地址 (示例: https://api.sfkey.cn，留空保持当前，输入 official 使用官方): ${NC}" minimax_provider_input
+            minimax_provider_input="$(trim_value_install "$minimax_provider_input")"
+            if [ -n "$minimax_provider_input" ]; then
+                case "$(echo "$minimax_provider_input" | tr '[:upper:]' '[:lower:]')" in
+                    official|default|none|off)
+                        BASE_URL=""
+                        ;;
+                    *)
+                        BASE_URL="$minimax_provider_input"
+                        ;;
+                esac
+            else
+                BASE_URL="$current_minimax_provider_url"
             fi
             echo ""
             current_minimax_key="${MINIMAX_API_KEY:-}"
