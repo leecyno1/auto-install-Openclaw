@@ -18,6 +18,62 @@
 
 set -e
 
+# ================================ Windows 环境检测 ================================
+# 检测是否在 Windows 上运行（cmd.exe、PowerShell 或 WSL2）
+detect_and_guide_windows() {
+    # 检查 Windows 标志
+    if [[ "${OSTYPE}" == "msys" ]] || [[ "${OSTYPE}" == "cygwin" ]] || [[ "${OSTYPE}" == "win32" ]]; then
+        # 在 Git Bash 或 Cygwin 中
+        return 0
+    fi
+    if grep -qi "microsoft" /proc/version 2>/dev/null || grep -qi "wsl" /proc/version 2>/dev/null; then
+        # 在 WSL 中
+        return 0
+    fi
+    # 检查 Windows 环境变量（在 PowerShell/cmd 中会有）
+    if [[ -n "${WINDIR:-}" ]] || [[ -n "${ProgramFiles:-}" ]]; then
+        cat << 'WINDOWS_HELP'
+╔═══════════════════════════════════════════════════════════════════════════╗
+║                     🪟 Windows 用户安装指南                                  ║
+╚═══════════════════════════════════════════════════════════════════════════╝
+
+检测到您在 Windows 上运行此脚本。bash 脚本需要 Unix 环境支持。
+
+✅ 推荐方案：
+
+  方案 A - 使用 WSL2（Windows Subsystem for Linux 2，推荐）
+  ┌──────────────────────────────────────────────────────────────────────┐
+  │ 1. 以管理员身份运行 PowerShell                                         │
+  │ 2. 执行: wsl --install -d Ubuntu                                      │
+  │ 3. 重启计算机                                                         │
+  │ 4. 在 WSL2 Ubuntu 中执行：                                             │
+  │    curl -fsSL https://gitee.com/leecyno1/auto-install-openclaw/raw/main/install.sh | bash  │
+  └──────────────────────────────────────────────────────────────────────┘
+
+  方案 B - 使用 PowerShell 自动安装脚本
+  ┌──────────────────────────────────────────────────────────────────────┐
+  │ 1. 以管理员身份运行 PowerShell                                         │
+  │ 2. 执行: powershell -ExecutionPolicy Bypass -Command ".\install.ps1" │
+  │ 3. 按提示选择安装 WSL2 或 Git Bash                                     │
+  └──────────────────────────────────────────────────────────────────────┘
+
+  方案 C - 手动安装 Git Bash
+  ┌──────────────────────────────────────────────────────────────────────┐
+  │ 1. 访问 https://git-scm.com/download/win 下载 Git                     │
+  │ 2. 安装并选择使用 Git Bash                                            │
+  │ 3. 在 Git Bash 中执行：                                               │
+  │    curl -fsSL https://gitee.com/leecyno1/auto-install-openclaw/raw/main/install.sh | bash  │
+  └──────────────────────────────────────────────────────────────────────┘
+
+📚 更多信息: https://docs.openclaw.ai/installation
+
+WINDOWS_HELP
+        exit 1
+    fi
+}
+
+detect_and_guide_windows
+
 # ================================ TTY 检测 ================================
 # 当通过 curl | bash 运行时，stdin 是管道，需要优先选择可读输入源
 resolve_tty_input() {

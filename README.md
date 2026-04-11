@@ -27,9 +27,29 @@
 
 ### 1. 一键安装（含龙虾小屋）
 
+#### macOS / Linux 用户
+
 ```bash
 curl -fsSL --proto '=https' --tlsv1.2 --connect-timeout 8 --max-time 25 https://gitee.com/leecyno1/auto-install-openclaw/raw/main/install.sh | bash
 ```
+
+#### Windows 用户 - 自动检测与安装
+
+以**管理员身份**运行 PowerShell，然后执行：
+
+```powershell
+powershell -ExecutionPolicy Bypass -Command "Invoke-WebRequest -Uri 'https://gitee.com/leecyno1/auto-install-openclaw/raw/main/install.ps1' -OutFile 'install.ps1'; .\install.ps1"
+```
+
+或本地下载后运行：
+
+```powershell
+powershell -ExecutionPolicy Bypass -Command ".\install.ps1"
+```
+
+该脚本会自动检测并安装以下任一环境：
+- **WSL2 + Ubuntu**（推荐，完整 Linux 环境）
+- **Git Bash**（轻量级，快速配置）
 
 ### 1.1 GitHub 直连与镜像源
 
