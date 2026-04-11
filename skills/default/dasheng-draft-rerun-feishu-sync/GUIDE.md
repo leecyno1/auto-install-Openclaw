@@ -1,7 +1,7 @@
 # dasheng-draft-rerun-feishu-sync 使用指南
 
 ## 1. 功能定位
-- Re-run Dasheng daily draft for a specified topic and sync the latest compliant article to an existing Feishu doc. Use when user asks to rerun a single topic draft (e.g. 选题2), enforce no intake-internal stats/no style-DNA wording, and update Feishu with write+readback verification.
+- Re-run Dasheng daily draft for a specified topic and sync the latest compliant article to an existing Feishu doc. Use when user asks to rerun a single topic draft (e.g. 选题2), en...
 - 默认档位: 仅全量默认包/手动同步
 - 仓库目录: `skills/default/dasheng-draft-rerun-feishu-sync`
 - 安装后目录: `~/.openclaw/skills/dasheng-draft-rerun-feishu-sync`

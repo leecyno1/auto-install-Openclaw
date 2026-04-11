@@ -1,7 +1,7 @@
 # internal-comms 使用指南
 
 ## 1. 功能定位
-- A set of resources to help me write all kinds of internal communications, using the formats that my company likes to use. Claude should use this skill whenever asked to write some sort of internal communications (status reports, leadership updates, 3P updates, company newsletters, FAQs, incident reports, project updates, etc.).
+- A set of resources to help me write all kinds of internal communications, using the formats that my company likes to use. Claude should use this skill whenever asked to write so...
 - 默认档位: 仅全量默认包/手动同步
 - 仓库目录: `skills/default/internal-comms`
 - 安装后目录: `~/.openclaw/skills/internal-comms`

@@ -1,7 +1,7 @@
 # baoyu-article-illustrator 使用指南
 
 ## 1. 功能定位
-- Analyzes article structure, identifies positions requiring visual aids, generates illustrations with Type × Style two-dimension approach. Use when user asks to "illustrate article", "add images", "generate images for article", or "为文章配图".
+- Analyzes article structure, identifies positions requiring visual aids, generates illustrations with Type × Style two-dimension approach. Use when user asks to "illustrate artic...
 - 默认档位: 仅全量默认包/手动同步
 - 仓库目录: `skills/default/baoyu-article-illustrator`
 - 安装后目录: `~/.openclaw/skills/baoyu-article-illustrator`

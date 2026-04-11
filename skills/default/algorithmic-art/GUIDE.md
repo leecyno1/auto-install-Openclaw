@@ -1,7 +1,7 @@
 # algorithmic-art 使用指南
 
 ## 1. 功能定位
-- Creating algorithmic art using p5.js with seeded randomness and interactive parameter exploration. Use this when users request creating art using code, generative art, algorithmic art, flow fields, or particle systems. Create original algorithmic art rather than copying existing artists' work to avoid copyright violations.
+- Creating algorithmic art using p5.js with seeded randomness and interactive parameter exploration. Use this when users request creating art using code, generative art, algorithm...
 - 默认档位: 仅全量默认包/手动同步
 - 仓库目录: `skills/default/algorithmic-art`
 - 安装后目录: `~/.openclaw/skills/algorithmic-art`

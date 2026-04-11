@@ -24,12 +24,40 @@ Usage: $0 {start|stop|restart|status}
 USAGE
 }
 
+has_cmd() {
+  command -v "$1" >/dev/null 2>&1
+}
+
+detect_listener_pids() {
+  if has_cmd lsof; then
+    lsof -tiTCP:"$PORT" -sTCP:LISTEN 2>/dev/null || true
+    return 0
+  fi
+
+  if has_cmd ss; then
+    ss -ltnp "( sport = :$PORT )" 2>/dev/null \
+      | awk -F'pid=' 'NR>1 && NF>1 { split($2, a, ","); if (a[1] ~ /^[0-9]+$/) print a[1] }' \
+      || true
+    return 0
+  fi
+
+  if has_cmd netstat; then
+    netstat -ltnp 2>/dev/null \
+      | awk -v p=":$PORT" '$4 ~ p"$" { split($7, a, "/"); if (a[1] ~ /^[0-9]+$/) print a[1] }' \
+      || true
+    return 0
+  fi
+
+  echo "[WARN] Cannot inspect listeners: lsof/ss/netstat not found." >&2
+  return 0
+}
+
 listen_pid() {
-  lsof -tiTCP:"$PORT" -sTCP:LISTEN 2>/dev/null | head -n 1 || true
+  detect_listener_pids | head -n 1 || true
 }
 
 listen_pids() {
-  lsof -tiTCP:"$PORT" -sTCP:LISTEN 2>/dev/null | sort -u || true
+  detect_listener_pids | sort -u || true
 }
 
 is_running() {

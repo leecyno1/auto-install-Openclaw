@@ -335,5 +335,7 @@ test("path normalization, worker count, and retry classification follow expected
   assert.equal(getWorkerCount(5, 0, 4), 1);
 
   assert.equal(isRetryableGenerationError(new Error("API error (401): denied")), false);
+  assert.equal(isRetryableGenerationError(new Error("Media quota check failed: image quota disabled for current profile")), false);
+  assert.equal(isRetryableGenerationError(new Error("Media quota check failed: image quota exceeded for current window")), false);
   assert.equal(isRetryableGenerationError(new Error("socket hang up")), true);
 });

@@ -1,7 +1,7 @@
 # himalaya 使用指南
 
 ## 1. 功能定位
-- CLI to manage emails via IMAP/SMTP. Use `himalaya` to list, read, write, reply, forward, search, and organize emails from the terminal. Supports multiple accounts and message composition with MML (MIME Meta Language).
+- CLI to manage emails via IMAP/SMTP. Use `himalaya` to list, read, write, reply, forward, search, and organize emails from the terminal. Supports multiple accounts and message co...
 - 默认档位: 仅全量默认包/手动同步
 - 仓库目录: `skills/default/himalaya`
 - 安装后目录: `~/.openclaw/skills/himalaya`

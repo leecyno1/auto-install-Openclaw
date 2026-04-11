@@ -1,7 +1,7 @@
 # publish-guard 使用指南
 
 ## 1. 功能定位
-- <!-- 🌌 Aoineco-Verified | S-DNA: AOI-2026-0213-SDNA-PG01 -->
+- <!-- 🌌 Aoineco-Verified   S-DNA: AOI-2026-0213-SDNA-PG01 -->
 - 默认档位: 仅全量默认包/手动同步
 - 仓库目录: `skills/default/publish-guard`
 - 安装后目录: `~/.openclaw/skills/publish-guard`

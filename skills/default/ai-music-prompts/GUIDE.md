@@ -1,7 +1,7 @@
 # ai-music-prompts 使用指南
 
 ## 1. 功能定位
-- Generate AI music and songs with Diffrythm, Tencent Song Generation via inference.sh CLI. Models: Diffrythm (fast song generation), Tencent Song Generation (full songs with vocals). Capabilities: text-to-music, song generation, instrumental, lyrics to song, soundtrack creation. Use for: background music, social media content, game soundtracks, podcasts, royalty-free music. Triggers: music generation, ai music, generate song, ai composer, text to music, song generator, create music with ai, suno alternative, udio alternative, ai song, ai soundtrack, generate soundtrack, ai jingle, music ai, beat generator
+- Generate AI music and songs with Diffrythm, Tencent Song Generation via inference.sh CLI. Models: Diffrythm (fast song generation), Tencent Song Generation (full songs with voca...
 - 默认档位: 仅全量默认包/手动同步
 - 仓库目录: `skills/default/ai-music-prompts`
 - 安装后目录: `~/.openclaw/skills/ai-music-prompts`

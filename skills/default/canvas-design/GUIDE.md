@@ -1,7 +1,7 @@
 # canvas-design 使用指南
 
 ## 1. 功能定位
-- Create beautiful visual art in .png and .pdf documents using design philosophy. You should use this skill when the user asks to create a poster, piece of art, design, or other static piece. Create original visual designs, never copying existing artists' work to avoid copyright violations.
+- Create beautiful visual art in .png and .pdf documents using design philosophy. You should use this skill when the user asks to create a poster, piece of art, design, or other s...
 - 默认档位: 仅全量默认包/手动同步
 - 仓库目录: `skills/default/canvas-design`
 - 安装后目录: `~/.openclaw/skills/canvas-design`

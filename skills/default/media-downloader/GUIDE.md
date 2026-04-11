@@ -1,7 +1,7 @@
 # media-downloader 使用指南
 
 ## 1. 功能定位
-- |
+- 智能媒体下载器。根据用户描述自动搜索和下载图片、视频片段，支持视频自动剪辑。 Smart media downloader. Automatically search and download images/video clips based on user description, with auto-trimming support. 触发方式 T...
 - 默认档位: 基础档默认安装
 - 仓库目录: `skills/default/media-downloader`
 - 安装后目录: `~/.openclaw/skills/media-downloader`

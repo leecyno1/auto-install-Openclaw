@@ -1,7 +1,7 @@
 # gh-modify-pr 使用指南
 
 ## 1. 功能定位
-- Modify code based on GitHub PR review comments and create a local commit using gh + git. Use when the user asks to "follow PR comments", "fix review comments", "update this PR", or provides a PR URL and asks for edits/commit.
+- Modify code based on GitHub PR review comments and create a local commit using gh + git. Use when the user asks to "follow PR comments", "fix review comments", "update this PR",...
 - 默认档位: 仅全量默认包/手动同步
 - 仓库目录: `skills/default/gh-modify-pr`
 - 安装后目录: `~/.openclaw/skills/gh-modify-pr`

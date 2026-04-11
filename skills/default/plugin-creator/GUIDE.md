@@ -1,7 +1,7 @@
 # plugin-creator 使用指南
 
 ## 1. 功能定位
-- Create and scaffold plugin directories for Codex with a required `.codex-plugin/plugin.json`, optional plugin folders/files, and baseline placeholders you can edit before publishing or testing. Use when Codex needs to create a new local plugin, add optional plugin structure, or generate or update repo-root `.agents/plugins/marketplace.json` entries for plugin ordering and availability metadata.
+- Create and scaffold plugin directories for Codex with a required `.codex-plugin/plugin.json`, optional plugin folders/files, and baseline placeholders you can edit before publis...
 - 默认档位: 仅全量默认包/手动同步
 - 仓库目录: `skills/default/plugin-creator`
 - 安装后目录: `~/.openclaw/skills/plugin-creator`

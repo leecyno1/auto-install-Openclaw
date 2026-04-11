@@ -1,7 +1,7 @@
 # atxp 使用指南
 
 ## 1. 功能定位
-- Agent wallet, identity, and paid tools in one package. Register an agent, fund it via Stripe or USDC, then use the balance for web search, AI image generation, AI video generation, AI music creation, X/Twitter search, email send/receive, and 100+ LLM models. The funding and identity layer for autonomous agents that need to spend money, send messages, or call paid APIs.
+- Agent wallet, identity, and paid tools in one package. Register an agent, fund it via Stripe or USDC, then use the balance for web search, AI image generation, AI video generati...
 - 默认档位: 仅全量默认包/手动同步
 - 仓库目录: `skills/default/atxp`
 - 安装后目录: `~/.openclaw/skills/atxp`

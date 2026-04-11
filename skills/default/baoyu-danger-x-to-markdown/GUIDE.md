@@ -1,7 +1,7 @@
 # baoyu-danger-x-to-markdown 使用指南
 
 ## 1. 功能定位
-- Converts X (Twitter) tweets and articles to markdown with YAML front matter. Uses reverse-engineered API requiring user consent. Use when user mentions "X to markdown", "tweet to markdown", "save tweet", or provides x.com/twitter.com URLs for conversion.
+- Converts X (Twitter) tweets and articles to markdown with YAML front matter. Uses reverse-engineered API requiring user consent. Use when user mentions "X to markdown", "tweet t...
 - 默认档位: 仅全量默认包/手动同步
 - 仓库目录: `skills/default/baoyu-danger-x-to-markdown`
 - 安装后目录: `~/.openclaw/skills/baoyu-danger-x-to-markdown`

@@ -1,7 +1,7 @@
 # preflight-checks 使用指南
 
 ## 1. 功能定位
-- Test-driven behavioral verification for AI agents. Catches silent degradation when agent loads memory but doesn't apply learned behaviors. Use when building agent with persistent memory, testing after updates, or ensuring behavioral consistency across sessions.
+- Test-driven behavioral verification for AI agents. Catches silent degradation when agent loads memory but doesn't apply learned behaviors. Use when building agent with persisten...
 - 默认档位: 仅全量默认包/手动同步
 - 仓库目录: `skills/default/preflight-checks`
 - 安装后目录: `~/.openclaw/skills/preflight-checks`

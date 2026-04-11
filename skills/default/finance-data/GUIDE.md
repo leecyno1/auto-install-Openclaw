@@ -1,7 +1,7 @@
 # finance-data 使用指南
 
 ## 1. 功能定位
-- Comprehensive financial data retrieval from OpenBB MCP and AKShare API. Query stock prices, financial statements, indices, ETFs, and perform data validation across multiple sources. Use when you need Chinese or US stock market data, fundamental analysis, technical indicators, or cross-validation between data providers. Supports real-time quotes, historical data, company financials, and market indices.
+- Comprehensive financial data retrieval from OpenBB MCP and AKShare API. Query stock prices, financial statements, indices, ETFs, and perform data validation across multiple sour...
 - 默认档位: 基础档默认安装
 - 仓库目录: `skills/default/finance-data`
 - 安装后目录: `~/.openclaw/skills/finance-data`

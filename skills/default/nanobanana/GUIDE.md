@@ -1,7 +1,7 @@
 # nanobanana 使用指南
 
 ## 1. 功能定位
-- Generate and edit images using Google Gemini 3 Pro Image (Nano Banana Pro). Supports text-to-image, image editing, various aspect ratios, and high-resolution output (2K/4K). Use when user wants to generate images, create images, use Gemini image generation, or do AI image generation.
+- Generate and edit images using Google Gemini 3 Pro Image (Nano Banana Pro). Supports text-to-image, image editing, various aspect ratios, and high-resolution output (2K/4K). Use...
 - 默认档位: 仅全量默认包/手动同步
 - 仓库目录: `skills/default/nanobanana`
 - 安装后目录: `~/.openclaw/skills/nanobanana`

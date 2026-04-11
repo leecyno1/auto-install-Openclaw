@@ -1,7 +1,7 @@
 # prisma-database-setup 使用指南
 
 ## 1. 功能定位
-- Guides for configuring Prisma with different database providers (PostgreSQL, MySQL, SQLite, MongoDB, etc.). Use when setting up a new project, changing databases, or troubleshooting connection issues. Triggers on "configure postgres", "connect to mysql", "setup mongodb", "sqlite setup".
+- Guides for configuring Prisma with different database providers (PostgreSQL, MySQL, SQLite, MongoDB, etc.). Use when setting up a new project, changing databases, or troubleshoo...
 - 默认档位: 仅全量默认包/手动同步
 - 仓库目录: `skills/default/prisma-database-setup`
 - 安装后目录: `~/.openclaw/skills/prisma-database-setup`

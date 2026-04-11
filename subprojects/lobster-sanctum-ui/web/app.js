@@ -1,3 +1,5 @@
+const pixelRoleImage = (role) => `./assets/pixel-roles/${role}.png`;
+
 const roleProfiles = {
   druid: {
     className: "通用总管",
@@ -5,8 +7,8 @@ const roleProfiles = {
     desc: "全能型人格，适合绝大多数用户，擅长把碎片需求整合为可执行计划，并持续跟进任务闭环。",
     intro:
       "负责综合协同、日程编排、写作整理、搜索归纳和任务跟进。适合把龙虾作为长期小助理使用的用户。",
-    image: "./assets/role-druid.png",
-    portraitPosition: "center 18%",
+    image: pixelRoleImage("druid"),
+    portraitPosition: "center center",
     skills: ["proactive-agent", "openclaw-cron-setup", "reflection", "find-skills", "shell", "web-search", "summarize", "docx", "xlsx", "agentmail"],
     models: [
       { name: "Claude", note: "通用协作、长文本整理、复杂任务跟进更稳。" },
@@ -20,8 +22,8 @@ const roleProfiles = {
     desc: "高敏分析人格，聚焦数据、信息差与机会识别，强调事实、估值框架和风险比较。",
     intro:
       "偏向券商分析师工作流，擅长追踪市场、拆解财务、寻找线索和比较风险收益，适合投资与行业判断。",
-    image: "./assets/role-assassin.png",
-    portraitPosition: "center 20%",
+    image: pixelRoleImage("assassin"),
+    portraitPosition: "center center",
     skills: ["akshare-stock", "stock-monitor-skill", "multi-search-engine", "web-search", "tavily-search", "news-radar", "summarize", "url-to-markdown", "xlsx"],
     models: [
       { name: "Claude", note: "投资分析、估值拆解、长链条推理更适配。" },
@@ -35,8 +37,8 @@ const roleProfiles = {
     desc: "知识驱动人格，善于搭研究框架、整理证据链、做论文阅读和结构化学习输出。",
     intro:
       "偏向学术研究和知识管理，适合论文、读书、笔记、研究计划、学习路线和证据归档类任务。",
-    image: "./assets/role-mage.png",
-    portraitPosition: "center 16%",
+    image: pixelRoleImage("mage"),
+    portraitPosition: "center center",
     skills: ["brainstorming", "summarize", "web-search", "tavily-search", "url-to-markdown", "docx", "pdf", "nano-pdf", "pptx", "xlsx"],
     models: [
       { name: "Claude", note: "长文阅读、论文总结、结构化研究输出很强。" },
@@ -50,8 +52,8 @@ const roleProfiles = {
     desc: "组织协同人格，用于团队流程、任务拆解、招聘协作、项目推进和管理复盘。",
     intro:
       "偏企业管理场景，适合招聘、人力、组织架构、流程规范、例会纪要、团队目标拆解等任务。",
-    image: "./assets/role-summoner.png",
-    portraitPosition: "center 18%",
+    image: pixelRoleImage("summoner"),
+    portraitPosition: "center center",
     skills: ["proactive-agent", "openclaw-cron-setup", "docx", "xlsx", "pptx", "agentmail", "github", "reflection"],
     models: [
       { name: "Claude", note: "管理文档、组织方案、流程设计和长文本沟通更适合。" },
@@ -65,8 +67,8 @@ const roleProfiles = {
     desc: "工程执行人格，专注代码实现、测试排障、自动化、DevOps 和稳定性建设。",
     intro:
       "偏全栈铁匠，负责写代码、修问题、补测试、搭脚本、排查服务异常和交付上线，适合技术场景。",
-    image: "./assets/role-warrior.png",
-    portraitPosition: "center 18%",
+    image: pixelRoleImage("warrior"),
+    portraitPosition: "center center",
     skills: ["shell", "github", "mcp-builder", "chrome-devtools-mcp", "agent-browser", "model-usage", "web-search", "minimax-image-understanding", "reflection"],
     models: [
       { name: "Codex", note: "程序开发、代码修改、测试和排障最适配。" },
@@ -80,8 +82,8 @@ const roleProfiles = {
     desc: "增长运营人格，围绕内容分发、渠道运营、SEO、投放转化和客户关系维护。",
     intro:
       "偏市场与运营团队，适合内容策略、广告投放、SEO、客户沟通、私域增长和分发复盘等任务。",
-    image: "./assets/role-paladin.png",
-    portraitPosition: "center 18%",
+    image: pixelRoleImage("paladin"),
+    portraitPosition: "center center",
     skills: ["web-search", "tavily-search", "news-radar", "summarize", "url-to-markdown", "docx", "xlsx", "agentmail", "frontend-design", "web-design"],
     models: [
       { name: "Claude", note: "营销策略、内容规划、增长分析与客户沟通更适配。" },
@@ -95,8 +97,8 @@ const roleProfiles = {
     desc: "创意视觉人格，覆盖前端、UI、平面、美术、工业设计和自媒体视觉表达。",
     intro:
       "负责视觉呈现与创意落地，适合做界面设计、人物设定、海报、图像生成、短视频分镜和设计方案表达。",
-    image: "./assets/role-archer.png",
-    portraitPosition: "center 18%",
+    image: pixelRoleImage("archer"),
+    portraitPosition: "center center",
     skills: ["frontend-design", "web-design", "gemini-image-service", "nano-banana-service", "grok-imagine-1.0-video", "pptx", "docx", "summarize"],
     models: [
       { name: "Gemini", note: "界面草图、多模态设计理解和图像相关任务很适合。" },

@@ -1,7 +1,7 @@
 # jupyter-notebook 使用指南
 
 ## 1. 功能定位
-- Use when the user asks to create, scaffold, or edit Jupyter notebooks (`.ipynb`) for experiments, explorations, or tutorials; prefer the bundled templates and run the helper script `new_notebook.py` to generate a clean starting notebook.
+- Use when the user asks to create, scaffold, or edit Jupyter notebooks (`.ipynb`) for experiments, explorations, or tutorials; prefer the bundled templates and run the helper scr...
 - 默认档位: 仅全量默认包/手动同步
 - 仓库目录: `skills/default/jupyter-notebook`
 - 安装后目录: `~/.openclaw/skills/jupyter-notebook`

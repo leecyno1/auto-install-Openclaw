@@ -1,7 +1,7 @@
 # dasheng-intake-brief-prod 使用指南
 
 ## 1. 功能定位
-- Execute the reusable Dasheng production workflow for "rerun intake -> process ~1000-item draft in enhanced phase2 -> generate 8~10 detailed topic briefs (with derived topics + outlines)". Use when users ask to rerun采集+第二环节、生成详细Brief选题包、或复用同类选题生产流程。
+- Execute the reusable Dasheng production workflow for "rerun intake -> process ~1000-item draft in enhanced phase2 -> generate 8~10 detailed topic briefs (with derived topics + o...
 - 默认档位: 仅全量默认包/手动同步
 - 仓库目录: `skills/default/dasheng-intake-brief-prod`
 - 安装后目录: `~/.openclaw/skills/dasheng-intake-brief-prod`

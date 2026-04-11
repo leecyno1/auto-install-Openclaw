@@ -1,38 +1,26 @@
-# OpenClaw Stock Analyzer 使用指南
+# openclaw-stock-analyzer 使用指南
 
 ## 1. 功能定位
-- 面向价值投资的个股深度分析技能，内置巴菲特 + 段永平框架、五维评分、DCF、PEG、建仓计划、财报解读。
-- 更适合做美股/港股公司的深度研究与长线仓位规划。
-- 安装形态: 增强技能，按需手动安装
+- 价值投资股票分析工具，融合巴菲特+段永平框架并自动生成五维分析、估值、建仓与期权建议。适用于美股/港股个股研究、财报后复盘、按年观察月度季节性、以及需要纳入中期选举周期/节假日效应并筛选下跌期防御股的场景。
+- 默认档位: 仅全量默认包/手动同步
 - 仓库目录: `skills/default/openclaw-stock-analyzer`
 - 安装后目录: `~/.openclaw/skills/openclaw-stock-analyzer`
 
 ## 2. 使用前准备
-- Python 3
-- 建议联网环境正常，便于获取行情、财务与公告数据
-- 无强制 API Key 要求，但若你后续接入自有行情源，可按上游脚本扩展
+- 无强制 API Key；按 skill 自身依赖运行。
 
-## 3. 使用方式
-- `analyze-stock` 适合快速看公司
-- `analyze-value` 适合做价值投资深度分析
-- `analyze-earnings` 适合财报后复盘
+## 3. 配置步骤
+1. 通常无需额外配置。若运行时报缺依赖，再按 `SKILL.md` 补装。
 
 ## 4. 推荐提问方式
-- 请用 openclaw-stock-analyzer 深度分析 AAPL，给出估值、护城河和建仓区间。
-- 请用 openclaw-stock-analyzer 对比 `AMZN` 和 `META` 哪个更适合长期持有。
-- 请用 openclaw-stock-analyzer 生成 COIN 最新财报解读。
+- 请使用 openclaw-stock-analyzer 帮我处理当前任务。
+- 如果 openclaw-stock-analyzer 需要额外配置，请先告诉我缺少什么。
 
 ## 5. 手动验证
 ```bash
-cd skills/default/openclaw-stock-analyzer
-python3 analyze-value AAPL
+ls -la ~/.openclaw/skills/openclaw-stock-analyzer
 ```
 
 ## 6. 参考资料
-- 上游来源: https://github.com/feiyuggg/openclaw-stock-analyzer
-- 方法论文档: `METHODOLOGY.md`
+- 上游来源: 见 docs/upstream-sources.md
 - 本技能说明: `SKILL.md`
-
-## 7. 注意事项
-- 该技能偏研究和估值，不适合高频盯盘。
-- 输出含主观判断，使用前应结合基本面和风险承受能力二次确认。

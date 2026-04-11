@@ -1,7 +1,7 @@
 # webapp-testing 使用指南
 
 ## 1. 功能定位
-- Toolkit for interacting with and testing local web applications using Playwright. Supports verifying frontend functionality, debugging UI behavior, capturing browser screenshots, and viewing browser logs.
+- Toolkit for interacting with and testing local web applications using Playwright. Supports verifying frontend functionality, debugging UI behavior, capturing browser screenshots...
 - 默认档位: 仅全量默认包/手动同步
 - 仓库目录: `skills/default/webapp-testing`
 - 安装后目录: `~/.openclaw/skills/webapp-testing`

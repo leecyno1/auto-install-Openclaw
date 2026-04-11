@@ -10,6 +10,10 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+QUOTA_RESERVATION_ID=""
+
+# shellcheck source=/dev/null
+source "$PROJECT_ROOT/scripts/quota.sh"
 
 API_BASE="${MINIMAX_API_HOST:-https://api.minimaxi.com}/v1"
 POLL_INTERVAL=10
@@ -191,6 +195,7 @@ download_video() {
 main() {
   load_env
   check_api_key
+  quota_setup_trap
 
   local mode="" prompt="" model="" duration=10 resolution="768P"
   local first_frame="" last_frame="" subject_image=""
@@ -319,10 +324,13 @@ USAGE
   echo "Mode: $mode"
   echo "Model: $model"
 
+  quota_reserve_or_exit "video" "1" "minimax-video"
+
   local task_id file_id
   task_id="$(create_task "$payload")"
   file_id="$(poll_task "$task_id")"
   download_video "$file_id" "$output"
+  quota_commit_or_warn
   echo "Done!"
 }
 

@@ -1,7 +1,7 @@
 # twitter 使用指南
 
 ## 1. 功能定位
-- Search and retrieve content from Twitter/X. Get user info, tweets, replies, followers, communities, spaces, and trends via twitterapi.io. Use when user mentions Twitter, X, or tweets.
+- Search and retrieve content from Twitter/X. Get user info, tweets, replies, followers, communities, spaces, and trends via twitterapi.io. Use when user mentions Twitter, X, or t...
 - 默认档位: 仅全量默认包/手动同步
 - 仓库目录: `skills/default/twitter`
 - 安装后目录: `~/.openclaw/skills/twitter`

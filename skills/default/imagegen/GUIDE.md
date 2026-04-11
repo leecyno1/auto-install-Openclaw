@@ -1,7 +1,7 @@
 # imagegen 使用指南
 
 ## 1. 功能定位
-- Use when the user asks to generate or edit images via the OpenAI Image API (for example: generate image, edit/inpaint/mask, background removal or replacement, transparent background, product shots, concept art, covers, or batch variants); run the bundled CLI (`scripts/image_gen.py`) and require `OPENAI_API_KEY` for live calls.
+- Use when the user asks to generate or edit images via the OpenAI Image API (for example: generate image, edit/inpaint/mask, background removal or replacement, transparent backgr...
 - 默认档位: 仅全量默认包/手动同步
 - 仓库目录: `skills/default/imagegen`
 - 安装后目录: `~/.openclaw/skills/imagegen`

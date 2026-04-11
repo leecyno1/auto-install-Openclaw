@@ -1,7 +1,7 @@
 # skill-security-auditor 使用指南
 
 ## 1. 功能定位
-- Command-line security analyzer for ClawHub skills. Run analyze-skill.sh to scan SKILL.md files for malicious patterns, credential leaks, and C2 infrastructure before installation. Includes threat intelligence database with 20+ detection patterns.
+- Command-line security analyzer for ClawHub skills. Run analyze-skill.sh to scan SKILL.md files for malicious patterns, credential leaks, and C2 infrastructure before installatio...
 - 默认档位: 基础档默认安装
 - 仓库目录: `skills/default/skill-security-auditor`
 - 安装后目录: `~/.openclaw/skills/skill-security-auditor`

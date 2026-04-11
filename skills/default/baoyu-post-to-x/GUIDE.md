@@ -1,7 +1,7 @@
 # baoyu-post-to-x 使用指南
 
 ## 1. 功能定位
-- Posts content and articles to X (Twitter). Supports regular posts with images/videos and X Articles (long-form Markdown). Uses real Chrome with CDP to bypass anti-automation. Use when user asks to "post to X", "tweet", "publish to Twitter", or "share on X".
+- Posts content and articles to X (Twitter). Supports regular posts with images/videos and X Articles (long-form Markdown). Uses real Chrome with CDP to bypass anti-automation. Us...
 - 默认档位: 仅全量默认包/手动同步
 - 仓库目录: `skills/default/baoyu-post-to-x`
 - 安装后目录: `~/.openclaw/skills/baoyu-post-to-x`

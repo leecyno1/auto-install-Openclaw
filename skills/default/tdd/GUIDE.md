@@ -1,7 +1,7 @@
 # tdd 使用指南
 
 ## 1. 功能定位
-- Test-driven development with red-green-refactor loop. Use when user wants to build features or fix bugs using TDD, mentions "red-green-refactor", wants integration tests, or asks for test-first development.
+- Test-driven development with red-green-refactor loop. Use when user wants to build features or fix bugs using TDD, mentions "red-green-refactor", wants integration tests, or ask...
 - 默认档位: 仅全量默认包/手动同步
 - 仓库目录: `skills/default/tdd`
 - 安装后目录: `~/.openclaw/skills/tdd`

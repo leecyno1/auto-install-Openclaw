@@ -1,7 +1,7 @@
 # xiaohongshu-ops 使用指南
 
 ## 1. 功能定位
-- End-to-end Xiaohongshu operations including positioning, topic research, content production, publish execution, and post-incident recovery. Reusable across verticals with templates and a concrete 陪你看剧 case preset.
+- End-to-end Xiaohongshu operations including positioning, topic research, content production, publish execution, and post-incident recovery. Reusable across verticals with templa...
 - 默认档位: 仅全量默认包/手动同步
 - 仓库目录: `skills/default/xiaohongshu-ops`
 - 安装后目录: `~/.openclaw/skills/xiaohongshu-ops`

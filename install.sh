@@ -128,26 +128,22 @@ DEFAULT_OFFICIAL_PLUGINS="@openclaw/feishu @openclaw/discord @openclaw/whatsapp"
 DEFAULT_BUILTIN_CHANNEL_PLUGINS="telegram imessage"
 RULE_PROFILE_DEFAULT="${OPENCLAW_RULE_PROFILE:-medium}"
 RULE_PROFILE_SELECTED="$(echo "${RULE_PROFILE_DEFAULT}" | tr '[:upper:]' '[:lower:]')"
-PROFILE_BASIC_SKILLS="capability-evolver openclaw-cron-setup proactive-agent self-improving-agent-cn brainstorming reflection find-skills skill-creator subagent-driven-development using-superpowers verification-before-completion writing-skills agent-browser chrome-devtools-mcp github mcp-builder model-usage shell minimax-image-understanding minimax-web-search minimax-pdf minimax-docx minimax-xlsx tavily-search web-search news-radar url-to-markdown pdf nano-pdf docx pptx xlsx stock-monitor-skill multi-search-engine akshare-stock content-strategy social-content ai-image-generation media-downloader marketingskills inference-skills agentmail agentmail-cli agentmail-mcp agentmail-toolkit lark-calendar notebooklm-skill skill-security-auditor weather data-analyst finance-data task todo"
-PROFILE_EXTENDED_SKILLS="capability-evolver openclaw-cron-setup proactive-agent self-improving-agent-cn brainstorming reflection find-skills skill-creator subagent-driven-development using-superpowers verification-before-completion writing-skills agent-browser chrome-devtools-mcp github mcp-builder model-usage shell minimax-image-understanding minimax-web-search minimax-pdf minimax-docx minimax-xlsx tavily-search web-search news-radar url-to-markdown pdf nano-pdf docx pptx xlsx stock-monitor-skill multi-search-engine akshare-stock content-strategy social-content ai-image-generation animation media-downloader marketingskills inference-skills gemini-image-service oracle paperless-docs paperless-ngx-tools writing-plans agentmail agentmail-cli agentmail-mcp agentmail-toolkit lark-calendar notebooklm-skill skill-security-auditor weather data-analyst finance-data task todo"
-SUPER_CURATED_SKILLS_LIST="baoyu-skills baoyu-article-illustrator baoyu-comic baoyu-compress-image baoyu-cover-image baoyu-danger-gemini-web baoyu-danger-x-to-markdown baoyu-format-markdown baoyu-image-gen baoyu-infographic baoyu-markdown-to-html baoyu-post-to-wechat baoyu-post-to-weibo baoyu-post-to-x baoyu-slide-deck baoyu-translate baoyu-url-to-markdown baoyu-xhs-images baoyu-youtube-transcript"
-PROFILE_SUPER_SKILLS="${PROFILE_EXTENDED_SKILLS} planning-with-files ${SUPER_CURATED_SKILLS_LIST}"
-DEFAULT_SKILLS_BUNDLE_SENTINELS="agentmail agentmail-cli agentmail-mcp agentmail-toolkit content-strategy social-content ai-image-generation media-downloader marketingskills inference-skills minimax-image-understanding minimax-web-search minimax-pdf minimax-docx minimax-xlsx using-superpowers verification-before-completion writing-skills lark-calendar notebooklm-skill skill-security-auditor weather data-analyst finance-data task todo"
-MINIMAX_API_HOST_CN_DEFAULT="${MINIMAX_API_HOST_CN:-https://api.minimaxi.com}"
-MINIMAX_API_HOST_GLOBAL_DEFAULT="${MINIMAX_API_HOST_GLOBAL:-https://api.minimax.io}"
-MINIMAX_MULTIMODAL_OUTPUT_PATH_DEFAULT="${MINIMAX_MULTIMODAL_OUTPUT_PATH:-~/.openclaw/workspace/minimax-output}"
-MINIMAX_IMAGE_MODEL_DEFAULT="${MINIMAX_IMAGE_MODEL:-image-01}"
-MINIMAX_IMAGE_ENDPOINT_DEFAULT="${MINIMAX_IMAGE_ENDPOINT:-/v1/image_generation}"
-MINIMAX_TTS_MODEL_DEFAULT="${MINIMAX_TTS_MODEL:-speech-2.8-hd}"
-MINIMAX_TTS_ENDPOINT_DEFAULT="${MINIMAX_TTS_ENDPOINT:-/v1/t2a_v2}"
-MINIMAX_VIDEO_MODEL_DEFAULT="${MINIMAX_VIDEO_MODEL:-MiniMax-Hailuo-2.3}"
-MINIMAX_VIDEO_ENDPOINT_DEFAULT="${MINIMAX_VIDEO_ENDPOINT:-/v1/video_generation}"
-MINIMAX_VIDEO_QUERY_ENDPOINT_DEFAULT="${MINIMAX_VIDEO_QUERY_ENDPOINT:-/v1/query/video_generation}"
-MINIMAX_FILES_RETRIEVE_ENDPOINT_DEFAULT="${MINIMAX_FILES_RETRIEVE_ENDPOINT:-/v1/files/retrieve}"
-MINIMAX_MUSIC_MODEL_DEFAULT="${MINIMAX_MUSIC_MODEL:-music-2.5}"
-MINIMAX_MUSIC_ENDPOINT_DEFAULT="${MINIMAX_MUSIC_ENDPOINT:-/v1/music_generation}"
-GEMINI_BASE_URL_DEFAULT="${GEMINI_BASE_URL:-${GOOGLE_BASE_URL:-}}"
-GEMINI_IMAGE_MODEL_DEFAULT="${GEMINI_IMAGE_MODEL:-gemini-2.5-flash-image-preview}"
+# ================================ Skills 精简定义（去重后） ================================
+# 核心技能（基础档专有，扩展档不再重复）
+CORE_SKILLS="capability-evolver openclaw-cron-setup proactive-agent self-improving-agent-cn brainstorming reflection find-skills skill-creator subagent-driven-development using-superpowers verification-before-completion writing-skills agent-browser chrome-devtools-mcp github mcp-builder model-usage shell minimax-image-understanding minimax-web-search minimax-pdf minimax-docx minimax-xlsx tavily-search web-search news-radar url-to-markdown pdf nano-pdf docx pptx xlsx stock-monitor-skill multi-search-engine content-strategy social-content ai-image-generation media-downloader marketingskills inference-skills agentmail agentmail-cli agentmail-mcp agentmail-toolkit lark-calendar notebooklm-skill skill-security-auditor weather data-analyst task todo"
+
+# 扩展技能（仅扩展档/超级档，基础档不包含）
+EXTENDED_SKILLS="animation akshare-stock gemini-image-service oracle paperless-docs paperless-ngx-tools writing-plans planning-with-files finance-data"
+
+# 超级技能（仅超级档，baoyu系列等）
+SUPER_CURATED_SKILLS="baoyu-skills baoyu-article-illustrator baoyu-comic baoyu-compress-image baoyu-cover-image baoyu-danger-gemini-web baoyu-danger-x-to-markdown baoyu-format-markdown baoyu-image-gen baoyu-infographic baoyu-markdown-to-html baoyu-post-to-wechat baoyu-post-to-weibo baoyu-post-to-x baoyu-slide-deck baoyu-translate baoyu-url-to-markdown baoyu-xhs-images baoyu-youtube-transcript"
+
+# 各档位完整技能列表（去重）
+PROFILE_BASIC_SKILLS="${CORE_SKILLS}"
+PROFILE_EXTENDED_SKILLS="${CORE_SKILLS} ${EXTENDED_SKILLS}"
+PROFILE_SUPER_SKILLS="${CORE_SKILLS} ${EXTENDED_SKILLS} ${SUPER_CURATED_SKILLS}"
+
+# ================================ 生图配置（仅使用 ViviAI，不使用 MiniMax） ================================
 QIHANG_IMAGE_API_KEY_DEFAULT="${QIHANG_IMAGE_API_KEY:-${OPENCLAW_IMAGE_API_KEY:-}}"
 QIHANG_IMAGE_BASE_URL_DEFAULT="${QIHANG_IMAGE_BASE_URL:-${OPENCLAW_IMAGE_API_URL:-https://api.viviai.cc}}"
 QIHANG_IMAGE_ENDPOINT_DEFAULT="${QIHANG_IMAGE_ENDPOINT:-/v1/chat/completions}"
@@ -155,13 +151,8 @@ QIHANG_GEMINI_ENDPOINT_DEFAULT="${QIHANG_GEMINI_ENDPOINT:-/v1/chat/completions}"
 QIHANG_IMAGE_MODEL_DEFAULT="${QIHANG_IMAGE_MODEL:-gemini-3.1-flash-image-preview}"
 QIHANG_IMAGE_MODEL_SEEDREAM46_DEFAULT="${QIHANG_IMAGE_MODEL_SEEDREAM46:-gemini-3.1-flash-image-preview}"
 QIHANG_IMAGE_MODEL_GEMINI_DEFAULT="${QIHANG_IMAGE_MODEL_GEMINI:-${OPENCLAW_IMAGE_MODEL:-gemini-3.1-flash-image-preview}}"
-MOLIFANG_IMAGE_API_KEY_DEFAULT="${MOLIFANG_IMAGE_API_KEY:-}"
-MOLIFANG_IMAGE_BASE_URL_DEFAULT="${MOLIFANG_IMAGE_BASE_URL:-https://ai.gitee.com}"
-MOLIFANG_IMAGE_ENDPOINT_DEFAULT="${MOLIFANG_IMAGE_ENDPOINT:-/v1/images/generations}"
-MOLIFANG_IMAGE_MODEL_DEFAULT="${MOLIFANG_IMAGE_MODEL:-Qwen-Image}"
-MOLIFANG_IMAGE_MODEL_GLM_DEFAULT="${MOLIFANG_IMAGE_MODEL_GLM:-GLM-Image}"
-MOLIFANG_IMAGE_MODEL_LONGCAT_DEFAULT="${MOLIFANG_IMAGE_MODEL_LONGCAT:-LongCat-Image}"
-MOLIFANG_IMAGE_MODEL_ZTURBO_DEFAULT="${MOLIFANG_IMAGE_MODEL_ZTURBO:-z-image-turbo}"
+GEMINI_BASE_URL_DEFAULT="${GEMINI_BASE_URL:-${GOOGLE_BASE_URL:-}}"
+GEMINI_IMAGE_MODEL_DEFAULT="${GEMINI_IMAGE_MODEL:-gemini-2.5-flash-image-preview}"
 SILICONFLOW_FALLBACK_API_URL="${OPENCLAW_UNOFFICIAL_OPENAI_API_URL:-https://api.siliconflow.cn/v1}"
 SILICONFLOW_FALLBACK_MODEL="${OPENCLAW_UNOFFICIAL_OPENAI_MODEL:-Qwen/Qwen3-8B}"
 UNOFFICIAL_ADVANCED_DEFAULT_TYPE="${OPENCLAW_UNOFFICIAL_ADVANCED_API_TYPE:-openai}"
@@ -548,8 +539,6 @@ ${INSTALLER_NAME} (OpenClaw 安装增强版)
   OPENCLAW_RULE_PROFILE=low|medium|high|none
   MINIMAX_API_HOST=<默认由区域自动选择 minimaxi.com/minimax.io>
   OPENCLAW_MINIMAX_PROVIDER_URL=<可选，自定义 MiniMax Provider 地址，如 https://api.sfkey.cn>
-  MINIMAX_IMAGE_MODEL=<默认image-01>
-  MINIMAX_IMAGE_ENDPOINT=<默认/v1/image_generation>
   MINIMAX_TTS_MODEL=<默认speech-2.8-hd>
   MINIMAX_TTS_ENDPOINT=<默认/v1/t2a_v2>
   MINIMAX_VIDEO_MODEL=<默认MiniMax-Hailuo-2.3>
@@ -811,51 +800,101 @@ get_saved_env_export_install() {
     grep "^export ${key}=" "$env_file" 2>/dev/null | tail -1 | sed "s/^export ${key}=//" | tr -d '"'
 }
 
+OPENCLAW_COMMON_LIB_INSTALL_LOADED=0
+load_openclaw_common_lib_install() {
+    [ "${OPENCLAW_COMMON_LIB_INSTALL_LOADED:-0}" = "1" ] && return 0
+
+    local script_dir candidate
+    script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+    for candidate in \
+        "$script_dir/scripts/lib/openclaw-common.sh" \
+        "$HOME/.openclaw/.cache/auto-install-openclaw-repo/scripts/lib/openclaw-common.sh" \
+        "$HOME/.openclaw/workspace/auto-install-openclaw/scripts/lib/openclaw-common.sh" \
+        "$HOME/.openclaw/workspace/auto-install-Openclaw/scripts/lib/openclaw-common.sh"
+    do
+        if [ -f "$candidate" ]; then
+            # shellcheck disable=SC1090
+            . "$candidate"
+            OPENCLAW_COMMON_LIB_INSTALL_LOADED=1
+            return 0
+        fi
+    done
+
+    return 1
+}
+
 trim_value_install() {
-    printf "%s" "${1:-}" | sed 's/^[[:space:]]*//; s/[[:space:]]*$//'
+    load_openclaw_common_lib_install >/dev/null 2>&1 || true
+    if command -v openclaw_trim_value >/dev/null 2>&1; then
+        openclaw_trim_value "${1:-}"
+    else
+        printf "%s" "${1:-}" | sed 's/^[[:space:]]*//; s/[[:space:]]*$//'
+    fi
 }
 
 normalize_minimax_provider_url_install() {
-    local raw
-    raw="$(trim_value_install "$1")"
-    [ -n "$raw" ] || { echo ""; return 0; }
-    echo "$raw"
+    load_openclaw_common_lib_install >/dev/null 2>&1 || true
+    if command -v openclaw_normalize_minimax_provider_url >/dev/null 2>&1; then
+        openclaw_normalize_minimax_provider_url "${1:-}"
+    else
+        local raw
+        raw="$(trim_value_install "$1")"
+        [ -n "$raw" ] || { echo ""; return 0; }
+        echo "$raw"
+    fi
 }
 
 minimax_api_host_from_provider_url_install() {
-    local provider_url
-    provider_url="$(normalize_minimax_provider_url_install "$1")"
-    [ -n "$provider_url" ] || { echo ""; return 0; }
-    echo "$provider_url"
+    load_openclaw_common_lib_install >/dev/null 2>&1 || true
+    if command -v openclaw_minimax_api_host_from_provider_url >/dev/null 2>&1; then
+        openclaw_minimax_api_host_from_provider_url "${1:-}"
+    else
+        local provider_url
+        provider_url="$(normalize_minimax_provider_url_install "$1")"
+        [ -n "$provider_url" ] || { echo ""; return 0; }
+        echo "$provider_url"
+    fi
 }
 
 resolve_minimax_provider_base_url_install() {
-    local provider="$1"
-    local custom_provider_url="$2"
-    local default_base_url="https://api.minimax.io/anthropic"
-    if [ "$provider" = "minimax-cn" ]; then
-        default_base_url="https://api.minimaxi.com/anthropic"
-    fi
-
-    local normalized_custom
-    normalized_custom="$(normalize_minimax_provider_url_install "$custom_provider_url")"
-    if [ -n "$normalized_custom" ]; then
-        echo "$normalized_custom"
+    load_openclaw_common_lib_install >/dev/null 2>&1 || true
+    if command -v openclaw_resolve_minimax_provider_base_url >/dev/null 2>&1; then
+        openclaw_resolve_minimax_provider_base_url "${1:-}" "${2:-}"
     else
-        echo "$default_base_url"
+        local provider="$1"
+        local custom_provider_url="$2"
+        local default_base_url="https://api.minimax.io/anthropic"
+        if [ "$provider" = "minimax-cn" ]; then
+            default_base_url="https://api.minimaxi.com/anthropic"
+        fi
+
+        local normalized_custom
+        normalized_custom="$(normalize_minimax_provider_url_install "$custom_provider_url")"
+        if [ -n "$normalized_custom" ]; then
+            echo "$normalized_custom"
+        else
+            echo "$default_base_url"
+        fi
     fi
 }
 
 normalize_rule_profile_level() {
-    local level="$(echo "${1:-$RULE_PROFILE_DEFAULT}" | tr '[:upper:]' '[:lower:]' | tr -d '[:space:]')"
-    case "$level" in
-        low|medium|high|none) echo "$level" ;;
-        l) echo "low" ;;
-        m|mid) echo "medium" ;;
-        h) echo "high" ;;
-        n|no|skip|off) echo "none" ;;
-        *) echo "medium" ;;
-    esac
+    load_openclaw_common_lib_install >/dev/null 2>&1 || true
+    if command -v openclaw_normalize_rule_profile_level >/dev/null 2>&1; then
+        openclaw_normalize_rule_profile_level "${1:-$RULE_PROFILE_DEFAULT}" "${RULE_PROFILE_DEFAULT:-medium}"
+    else
+        local level
+        level="$(echo "${1:-$RULE_PROFILE_DEFAULT}" | tr '[:upper:]' '[:lower:]' | tr -d '[:space:]')"
+        case "$level" in
+            low|medium|high|none) echo "$level" ;;
+            l) echo "low" ;;
+            m|mid) echo "medium" ;;
+            h) echo "high" ;;
+            n|no|skip|off) echo "none" ;;
+            *) echo "medium" ;;
+        esac
+    fi
 }
 
 normalize_bool_flag() {
@@ -1134,19 +1173,27 @@ apply_generative_service_settings() {
     local image_api_url_raw="${OPENCLAW_IMAGE_API_URL:-${QIHANG_IMAGE_BASE_URL:-$QIHANG_IMAGE_BASE_URL_DEFAULT}}"
     local image_model="${OPENCLAW_IMAGE_MODEL:-${QIHANG_IMAGE_MODEL_GEMINI:-$QIHANG_IMAGE_MODEL_GEMINI_DEFAULT}}"
     local image_base_url="" image_endpoint=""
-    local host_part=""
+    local split_result=""
 
     image_api_url_raw="$(trim_value_install "$image_api_url_raw")"
     [ -n "$image_api_url_raw" ] || image_api_url_raw="https://api.viviai.cc/v1/chat/completions"
 
-    if [[ "$image_api_url_raw" == http://* || "$image_api_url_raw" == https://* ]]; then
-        host_part="$(echo "$image_api_url_raw" | sed -E 's#^(https?://[^/]+).*$#\1#')"
-        image_endpoint="${image_api_url_raw#"$host_part"}"
-        [ -n "$image_endpoint" ] || image_endpoint="/v1/chat/completions"
-        image_base_url="$host_part"
+    load_openclaw_common_lib_install >/dev/null 2>&1 || true
+    if command -v openclaw_split_api_url >/dev/null 2>&1; then
+        split_result="$(openclaw_split_api_url "$image_api_url_raw" "/v1/chat/completions")"
+        image_base_url="${split_result%%|*}"
+        image_endpoint="${split_result#*|}"
     else
-        image_base_url="$image_api_url_raw"
-        image_endpoint="/v1/chat/completions"
+        local host_part=""
+        if [[ "$image_api_url_raw" == http://* || "$image_api_url_raw" == https://* ]]; then
+            host_part="$(echo "$image_api_url_raw" | sed -E 's#^(https?://[^/]+).*$#\1#')"
+            image_endpoint="${image_api_url_raw#"$host_part"}"
+            [ -n "$image_endpoint" ] || image_endpoint="/v1/chat/completions"
+            image_base_url="$host_part"
+        else
+            image_base_url="$image_api_url_raw"
+            image_endpoint="/v1/chat/completions"
+        fi
     fi
 
     upsert_env_export_install "OPENCLAW_IMAGE_PROVIDER" "viviai"
@@ -4522,8 +4569,6 @@ configure_minimax_multimodal_vendor_install() {
     check_command openclaw || return 0
 
     openclaw config set "vendor.media.minimax.apiHost" "$api_host" >/dev/null 2>&1 || true
-    openclaw config set "vendor.media.minimax.image.model" "${MINIMAX_IMAGE_MODEL:-$MINIMAX_IMAGE_MODEL_DEFAULT}" >/dev/null 2>&1 || true
-    openclaw config set "vendor.media.minimax.image.endpoint" "${MINIMAX_IMAGE_ENDPOINT:-$MINIMAX_IMAGE_ENDPOINT_DEFAULT}" >/dev/null 2>&1 || true
     openclaw config set "vendor.media.minimax.tts.model" "${MINIMAX_TTS_MODEL:-$MINIMAX_TTS_MODEL_DEFAULT}" >/dev/null 2>&1 || true
     openclaw config set "vendor.media.minimax.tts.endpoint" "${MINIMAX_TTS_ENDPOINT:-$MINIMAX_TTS_ENDPOINT_DEFAULT}" >/dev/null 2>&1 || true
     openclaw config set "vendor.media.minimax.video.model" "${MINIMAX_VIDEO_MODEL:-$MINIMAX_VIDEO_MODEL_DEFAULT}" >/dev/null 2>&1 || true
@@ -4553,10 +4598,6 @@ payload = {
     "api_key": "$api_key",
     "api_host": "$api_host",
     "output_path": "${MINIMAX_MULTIMODAL_OUTPUT_PATH:-$MINIMAX_MULTIMODAL_OUTPUT_PATH_DEFAULT}",
-    "image": {
-        "model": "${MINIMAX_IMAGE_MODEL:-$MINIMAX_IMAGE_MODEL_DEFAULT}",
-        "endpoint": "${MINIMAX_IMAGE_ENDPOINT:-$MINIMAX_IMAGE_ENDPOINT_DEFAULT}"
-    },
     "tts": {
         "model": "${MINIMAX_TTS_MODEL:-$MINIMAX_TTS_MODEL_DEFAULT}",
         "endpoint": "${MINIMAX_TTS_ENDPOINT:-$MINIMAX_TTS_ENDPOINT_DEFAULT}"
@@ -4582,10 +4623,6 @@ PYEOF
   "api_key": "$api_key",
   "api_host": "$api_host",
   "output_path": "${MINIMAX_MULTIMODAL_OUTPUT_PATH:-$MINIMAX_MULTIMODAL_OUTPUT_PATH_DEFAULT}",
-  "image": {
-    "model": "${MINIMAX_IMAGE_MODEL:-$MINIMAX_IMAGE_MODEL_DEFAULT}",
-    "endpoint": "${MINIMAX_IMAGE_ENDPOINT:-$MINIMAX_IMAGE_ENDPOINT_DEFAULT}"
-  },
   "tts": {
     "model": "${MINIMAX_TTS_MODEL:-$MINIMAX_TTS_MODEL_DEFAULT}",
     "endpoint": "${MINIMAX_TTS_ENDPOINT:-$MINIMAX_TTS_ENDPOINT_DEFAULT}"
@@ -4685,8 +4722,6 @@ EOF
             OPENCLAW_MINIMAX_PROVIDER_URL="$minimax_provider_url"
             upsert_env_export_install "MINIMAX_API_HOST" "$minimax_api_host"
             upsert_env_export_install "MINIMAX_MULTIMODAL_OUTPUT_PATH" "${MINIMAX_MULTIMODAL_OUTPUT_PATH:-$MINIMAX_MULTIMODAL_OUTPUT_PATH_DEFAULT}"
-            upsert_env_export_install "MINIMAX_IMAGE_MODEL" "${MINIMAX_IMAGE_MODEL:-$MINIMAX_IMAGE_MODEL_DEFAULT}"
-            upsert_env_export_install "MINIMAX_IMAGE_ENDPOINT" "${MINIMAX_IMAGE_ENDPOINT:-$MINIMAX_IMAGE_ENDPOINT_DEFAULT}"
             upsert_env_export_install "MINIMAX_TTS_MODEL" "${MINIMAX_TTS_MODEL:-$MINIMAX_TTS_MODEL_DEFAULT}"
             upsert_env_export_install "MINIMAX_TTS_ENDPOINT" "${MINIMAX_TTS_ENDPOINT:-$MINIMAX_TTS_ENDPOINT_DEFAULT}"
             upsert_env_export_install "MINIMAX_VIDEO_MODEL" "${MINIMAX_VIDEO_MODEL:-$MINIMAX_VIDEO_MODEL_DEFAULT}"

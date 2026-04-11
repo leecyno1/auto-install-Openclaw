@@ -1,7 +1,7 @@
 # video-agent 使用指南
 
 ## 1. 功能定位
-- |
+- HeyGen AI video creation API. Use when: (1) Using Video Agent for one-shot prompt-to-video generation, (2) Generating AI avatar videos with /v2/video/generate, (3) Working with...
 - 默认档位: 仅全量默认包/手动同步
 - 仓库目录: `skills/default/video-agent`
 - 安装后目录: `~/.openclaw/skills/video-agent`

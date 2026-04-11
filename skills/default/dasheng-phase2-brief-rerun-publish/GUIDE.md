@@ -1,7 +1,7 @@
 # dasheng-phase2-brief-rerun-publish 使用指南
 
 ## 1. 功能定位
-- Re-run Dasheng phase2 brief workflow, merge a user-specified backup topic into a 10-topic package, enforce full detailed briefs for all topics, publish full正文 to Feishu doc, and notify SOP group. Use when users ask “并入重跑brief”、“10个题都要详细brief”、“写入文档并发送到群”.
+- Re-run Dasheng phase2 brief workflow, merge a user-specified backup topic into a 10-topic package, enforce full detailed briefs for all topics, publish full正文 to Feishu doc, and...
 - 默认档位: 仅全量默认包/手动同步
 - 仓库目录: `skills/default/dasheng-phase2-brief-rerun-publish`
 - 安装后目录: `~/.openclaw/skills/dasheng-phase2-brief-rerun-publish`

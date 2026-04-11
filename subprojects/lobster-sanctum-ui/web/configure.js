@@ -16,18 +16,15 @@ const identityDefaults = {
   personality: "严谨、务实、可协作",
   workStyle: "先分析后执行，阶段性汇报",
 };
-const SLOT_ORDER = ["head", "shoulders", "core", "mainhand", "offhand", "belt", "legs", "boots", "ring", "chest"];
+const SLOT_ORDER = ["head", "amulet", "mainhand", "offhand", "chest", "belt", "boots"];
 const SLOT_POSITION_CLASS = {
   head: "slot-head",
-  shoulders: "slot-shoulders",
-  core: "slot-core",
+  amulet: "slot-amulet",
   mainhand: "slot-mainhand",
   offhand: "slot-offhand",
-  belt: "slot-belt",
-  legs: "slot-legs",
-  boots: "slot-boots",
-  ring: "slot-ring",
   chest: "slot-chest",
+  belt: "slot-belt",
+  boots: "slot-boots",
 };
 
 const pixelRoleImage = (role) => `./assets/pixel-roles/${role}.png`;
@@ -93,9 +90,9 @@ const roleProfiles = {
     specialty: "增长转化",
     taskFocus: ["内容运营", "渠道分析", "营销策划", "客户沟通"],
   },
-  archer: {
+  designer: {
     className: "设计创意",
-    title: "设计师 · 弓箭手",
+    title: "设计师",
     desc: "适合做 UI、海报、配图、KV、图像生成、分镜和创意方案。",
     image: pixelRoleImage("archer"),
     portraitPosition: "center center",
@@ -139,28 +136,22 @@ const securityOptions = [
 
 const slotLabels = {
   head: "头部",
-  shoulders: "肩甲",
-  core: "项链",
+  amulet: "项链",
   mainhand: "主手",
   offhand: "副手",
-  belt: "腰带",
-  legs: "腿位",
-  boots: "靴位",
-  ring: "戒位",
   chest: "胸部",
+  belt: "腰带",
+  boots: "靴位",
 };
 
 const slotShortLabels = {
   head: "冠",
-  shoulders: "肩",
-  core: "链",
+  amulet: "链",
   mainhand: "主",
   offhand: "副",
-  belt: "带",
-  legs: "腿",
-  boots: "靴",
-  ring: "戒",
   chest: "胸",
+  belt: "带",
+  boots: "靴",
 };
 
 const toolTypeGlyph = {
@@ -248,13 +239,13 @@ const skillCatalog = [
   { id: "openclaw-cron-setup", name: "Cron Setup", tier: "low", branch: "控制中枢", desc: "配置 OpenClaw 内置 Cron 调度器，创建一次性提醒、周期任务和后台自动化。", deps: [], roles: ["druid", "summoner", "warrior"], pack: ["low", "medium", "high"] },
   { id: "proactive-agent", name: "Proactive Agent", tier: "low", branch: "控制中枢", desc: "把 Agent 从被动应答改造成会预判需求、主动跟进和持续改进的协作伙伴。", deps: [], roles: ["druid", "summoner"], pack: ["low", "medium", "high"] },
   { id: "self-improving-agent-cn", name: "Self Improving CN", tier: "low", branch: "控制中枢", desc: "记录错误、用户纠正和最佳实践，沉淀为可跨会话复用的长期记忆。", deps: ["reflection"], roles: ["druid", "mage"], pack: ["low", "medium", "high"] },
-  { id: "brainstorming", name: "Brainstorming", tier: "low", branch: "控制中枢", desc: "在创意和改动前先澄清目标、约束和方案，再进入实现。", deps: [], roles: ["mage", "paladin", "archer"], pack: ["low", "medium", "high"] },
+  { id: "brainstorming", name: "Brainstorming", tier: "low", branch: "控制中枢", desc: "在创意和改动前先澄清目标、约束和方案，再进入实现。", deps: [], roles: ["mage", "paladin", "designer"], pack: ["low", "medium", "high"] },
   { id: "reflection", name: "Reflection", tier: "low", branch: "控制中枢", desc: "在交付前后做自检、复盘和模式识别，减少重复犯错。", deps: [], roles: ["druid", "mage", "summoner"], pack: ["low", "medium", "high"] },
   { id: "find-skills", name: "Find Skills", tier: "low", branch: "控制中枢", desc: "帮用户从 skills 生态里查找、安装和更新合适的技能。", deps: ["web-search"], roles: ["druid"], pack: ["low", "medium", "high"] },
   { id: "skill-creator", name: "Skill Creator", tier: "low", branch: "控制中枢", desc: "用于设计、编写和迭代新的 Skill，包括结构、说明和工作流。", deps: ["find-skills"], roles: ["warrior", "mage"], pack: ["low", "medium", "high"] },
 
-  { id: "agent-browser", name: "Agent Browser", tier: "low", branch: "执行系统", desc: "使用结构化命令驱动无头浏览器，完成打开、点击、输入和抓取页面。", deps: [], roles: ["warrior", "archer"], pack: ["low", "medium", "high"] },
-  { id: "chrome-devtools-mcp", name: "Chrome DevTools MCP", tier: "low", branch: "执行系统", desc: "通过官方 Chrome DevTools MCP 控制浏览器，做调试、抓包、性能和自动化测试。", deps: ["agent-browser"], roles: ["warrior", "archer"], pack: ["low", "medium", "high"] },
+  { id: "agent-browser", name: "Agent Browser", tier: "low", branch: "执行系统", desc: "使用结构化命令驱动无头浏览器，完成打开、点击、输入和抓取页面。", deps: [], roles: ["warrior", "designer"], pack: ["low", "medium", "high"] },
+  { id: "chrome-devtools-mcp", name: "Chrome DevTools MCP", tier: "low", branch: "执行系统", desc: "通过官方 Chrome DevTools MCP 控制浏览器，做调试、抓包、性能和自动化测试。", deps: ["agent-browser"], roles: ["warrior", "designer"], pack: ["low", "medium", "high"] },
   { id: "github", name: "GitHub", tier: "low", branch: "执行系统", desc: "用 gh CLI 读写 GitHub 仓库、PR、Issue 和工作流运行记录。", deps: [], roles: ["warrior", "summoner"], pack: ["low", "medium", "high"] },
   { id: "mcp-builder", name: "MCP Builder", tier: "low", branch: "执行系统", desc: "设计和实现高质量 MCP 服务，把外部 API 封装成可供模型调用的工具。", deps: ["github"], roles: ["warrior"], pack: ["low", "medium", "high"] },
   { id: "model-usage", name: "Model Usage", tier: "low", branch: "执行系统", desc: "汇总本地模型用量和成本，查看当前模型或完整模型分布。", deps: [], roles: ["warrior", "druid"], pack: ["low", "medium", "high"] },
@@ -270,7 +261,7 @@ const skillCatalog = [
   { id: "pdf", name: "PDF", tier: "low", branch: "知识文档", desc: "提供 PDF 文本/表格提取、合并拆分、创建和表单处理。", deps: [], roles: ["mage", "summoner"], pack: ["low", "medium", "high"] },
   { id: "nano-pdf", name: "Nano PDF", tier: "medium", branch: "知识文档", desc: "用自然语言指令直接修改 PDF 页面内容。", deps: ["pdf"], roles: ["mage"], pack: ["medium", "high"] },
   { id: "docx", name: "Docx", tier: "low", branch: "知识文档", desc: "创建、编辑和分析 Word 文档，支持批注、修订和格式保留。", deps: [], roles: ["summoner", "paladin"], pack: ["low", "medium", "high"] },
-  { id: "pptx", name: "PPTX", tier: "low", branch: "知识文档", desc: "创建、编辑和分析 PPT，支持版式、批注和讲稿内容处理。", deps: ["docx"], roles: ["summoner", "paladin", "archer"], pack: ["low", "medium", "high"] },
+  { id: "pptx", name: "PPTX", tier: "low", branch: "知识文档", desc: "创建、编辑和分析 PPT，支持版式、批注和讲稿内容处理。", deps: ["docx"], roles: ["summoner", "paladin", "designer"], pack: ["low", "medium", "high"] },
   { id: "xlsx", name: "XLSX", tier: "low", branch: "知识文档", desc: "创建、编辑和分析电子表格，支持公式、格式和数据建模。", deps: [], roles: ["assassin", "summoner"], pack: ["low", "medium", "high"] },
   { id: "summarize", name: "Summarize", tier: "medium", branch: "知识文档", desc: "用 summarize CLI 压缩 URL、PDF、图片、音频和 YouTube 内容。", deps: ["url-to-markdown"], roles: ["mage", "druid"], pack: ["medium", "high"] },
   { id: "notebooklm-skill", name: "NotebookLM", tier: "medium", branch: "知识文档", desc: "直接查询 Google NotebookLM 笔记库，获得带来源依据的回答。", deps: ["pdf", "summarize"], roles: ["mage"], pack: ["medium", "high"] },
@@ -283,49 +274,49 @@ const skillCatalog = [
   { id: "content-strategy", name: "Content Strategy", tier: "medium", branch: "增长工坊", desc: "规划内容策略、主题集群、栏目和选题路线。", deps: ["summarize", "web-search"], roles: ["paladin"], pack: ["medium", "high"] },
   { id: "social-content", name: "Social Content", tier: "medium", branch: "增长工坊", desc: "生成和优化多平台社媒内容、发布节奏和互动策略。", deps: ["content-strategy"], roles: ["paladin"], pack: ["medium", "high"] },
   { id: "marketingskills", name: "Marketing Skills", tier: "high", branch: "增长工坊", desc: "营销技能总入口，用于路由到内容策略和社媒子技能。", deps: ["content-strategy", "social-content"], roles: ["paladin"], pack: ["high"] },
-  { id: "baoyu-skills", name: "Baoyu Skills", tier: "high", branch: "增长工坊", desc: "baoyu 内容生产与分发技能总入口，可路由到配图、发文、翻译等子技能。", deps: ["social-content"], roles: ["paladin", "archer"], pack: ["high"] },
+  { id: "baoyu-skills", name: "Baoyu Skills", tier: "high", branch: "增长工坊", desc: "baoyu 内容生产与分发技能总入口，可路由到配图、发文、翻译等子技能。", deps: ["social-content"], roles: ["paladin", "designer"], pack: ["high"] },
 
-  { id: "frontend-design", name: "Frontend Design", tier: "high", branch: "创意工坊", desc: "生成高质量、非模板化的前端界面和页面实现。", deps: [], roles: ["archer", "warrior"], pack: ["high"] },
-  { id: "web-design", name: "Web Design", tier: "high", branch: "创意工坊", desc: "按 Web Interface Guidelines 审查 UI/UX、可用性和可访问性问题。", deps: ["frontend-design"], roles: ["archer"], pack: ["high"] },
-  { id: "ai-image-generation", name: "AI Image Generation", tier: "medium", branch: "创意工坊", desc: "通过 inference.sh 调用 50+ 模型生成和编辑图片。", deps: [], roles: ["archer"], pack: ["medium", "high"] },
-  { id: "gemini-image-service", name: "Gemini Image Service", tier: "medium", branch: "创意工坊", desc: "使用 Gemini 图像接口生成图片，支持自定义代理地址和模型名。", deps: ["ai-image-generation"], roles: ["archer"], pack: ["medium", "high"] },
-  { id: "nano-banana-service", name: "Nano Banana Service", tier: "medium", branch: "创意工坊", desc: "使用 Gemini 3 Pro Image（Nano Banana）生成或编辑高分辨率图片。", deps: ["ai-image-generation"], roles: ["archer"], pack: ["medium", "high"] },
-  { id: "grok-imagine-1.0-video", name: "Grok Imagine Video", tier: "high", branch: "创意工坊", desc: "调用 grok-imagine-1.0-video 生成短视频和镜头内容。", deps: ["gemini-image-service", "nano-banana-service"], roles: ["archer"], pack: ["high"] },
-  { id: "inference-skills", name: "Inference Skills", tier: "high", branch: "创意工坊", desc: "inference.sh 工具技能总入口，当前主要路由到图像生成能力。", deps: ["ai-image-generation"], roles: ["archer"], pack: ["high"] },
+  { id: "frontend-design", name: "Frontend Design", tier: "high", branch: "创意工坊", desc: "生成高质量、非模板化的前端界面和页面实现。", deps: [], roles: ["designer", "warrior"], pack: ["high"] },
+  { id: "web-design", name: "Web Design", tier: "high", branch: "创意工坊", desc: "按 Web Interface Guidelines 审查 UI/UX、可用性和可访问性问题。", deps: ["frontend-design"], roles: ["designer"], pack: ["high"] },
+  { id: "ai-image-generation", name: "AI Image Generation", tier: "medium", branch: "创意工坊", desc: "通过 inference.sh 调用 50+ 模型生成和编辑图片。", deps: [], roles: ["designer"], pack: ["medium", "high"] },
+  { id: "gemini-image-service", name: "Gemini Image Service", tier: "medium", branch: "创意工坊", desc: "使用 Gemini 图像接口生成图片，支持自定义代理地址和模型名。", deps: ["ai-image-generation"], roles: ["designer"], pack: ["medium", "high"] },
+  { id: "nano-banana-service", name: "Nano Banana Service", tier: "medium", branch: "创意工坊", desc: "使用 Gemini 3 Pro Image（Nano Banana）生成或编辑高分辨率图片。", deps: ["ai-image-generation"], roles: ["designer"], pack: ["medium", "high"] },
+  { id: "grok-imagine-1.0-video", name: "Grok Imagine Video", tier: "high", branch: "创意工坊", desc: "调用 grok-imagine-1.0-video 生成短视频和镜头内容。", deps: ["gemini-image-service", "nano-banana-service"], roles: ["designer"], pack: ["high"] },
+  { id: "inference-skills", name: "Inference Skills", tier: "high", branch: "创意工坊", desc: "inference.sh 工具技能总入口，当前主要路由到图像生成能力。", deps: ["ai-image-generation"], roles: ["designer"], pack: ["high"] },
 
-  { id: "minimax-image-understanding", name: "MiniMax Image Understanding", tier: "low", branch: "视觉理解", desc: "优先使用 MiniMax 识图工具分析、描述和提取图片信息。", deps: [], roles: ["archer", "warrior"], pack: ["low", "medium", "high"] },
+  { id: "minimax-image-understanding", name: "MiniMax Image Understanding", tier: "low", branch: "视觉理解", desc: "优先使用 MiniMax 识图工具分析、描述和提取图片信息。", deps: [], roles: ["designer", "warrior"], pack: ["low", "medium", "high"] },
 ];
 
 const toolCatalog = [
   { id: "minimax-2-7", name: "MiniMax 2.7", type: "模型", rarity: "rare", slot: "chest", desc: "默认主力大模型，平衡速度与质量。", roles: ALL_ROLE_IDS },
   { id: "claude-main", name: "Claude Main", type: "模型", rarity: "mythic", slot: "chest", desc: "长文本、规划与复杂推理。", roles: ["druid", "assassin", "mage", "summoner", "paladin"] },
   { id: "codex-core", name: "Codex Core", type: "模型", rarity: "mythic", slot: "chest", desc: "代码实现、调试与验证。", roles: ["warrior"] },
-  { id: "gemini-vision", name: "Gemini Vision", type: "模型", rarity: "mythic", slot: "chest", desc: "多模态理解与图像任务。", roles: ["archer", "mage", "paladin"] },
-  { id: "nano-banana", name: "Nano Banana", type: "模型", rarity: "rare", slot: "chest", desc: "视觉创作与人物图生成。", roles: ["archer"] },
+  { id: "gemini-vision", name: "Gemini Vision", type: "模型", rarity: "mythic", slot: "chest", desc: "多模态理解与图像任务。", roles: ["designer", "mage", "paladin"] },
+  { id: "nano-banana", name: "Nano Banana", type: "模型", rarity: "rare", slot: "chest", desc: "视觉创作与人物图生成。", roles: ["designer"] },
   { id: "focus-crown", name: "Focus Crown", type: "App", rarity: "magic", slot: "shoulders", desc: "集中上下文和任务优先级。", roles: ["druid", "mage", "summoner"] },
   { id: "ops-harness", name: "Ops Harness", type: "Tool", rarity: "rare", slot: "shoulders", desc: "稳定任务分派和组织调度。", roles: ["summoner", "warrior"] },
-  { id: "router-glyph", name: "Model Router Glyph", type: "Tool", rarity: "rare", slot: "core", desc: "模型自动切换路由。", roles: ["druid", "warrior", "archer"] },
+  { id: "router-glyph", name: "Model Router Glyph", type: "Tool", rarity: "rare", slot: "core", desc: "模型自动切换路由。", roles: ["druid", "warrior", "designer"] },
   { id: "reflection-seal", name: "Reflection Seal", type: "Tool", rarity: "magic", slot: "core", desc: "复盘、自纠与规则注入。", roles: ["druid", "mage", "summoner"] },
   { id: "notebook-vault", name: "Notebook Vault", type: "App", rarity: "rare", slot: "core", desc: "研究笔记和知识库联动。", roles: ["mage"] },
-  { id: "chrome-devtools", name: "Chrome DevTools", type: "MCP", rarity: "rare", slot: "mainhand", desc: "页面调试与网络分析。", roles: ["warrior", "archer"] },
-  { id: "agent-browser-rig", name: "Agent Browser Rig", type: "Tool", rarity: "magic", slot: "mainhand", desc: "浏览器自动化和任务流。", roles: ["warrior", "archer"] },
+  { id: "chrome-devtools", name: "Chrome DevTools", type: "MCP", rarity: "rare", slot: "mainhand", desc: "页面调试与网络分析。", roles: ["warrior", "designer"] },
+  { id: "agent-browser-rig", name: "Agent Browser Rig", type: "Tool", rarity: "magic", slot: "mainhand", desc: "浏览器自动化和任务流。", roles: ["warrior", "designer"] },
   { id: "shell-runner", name: "Shell Runner", type: "Tool", rarity: "common", slot: "mainhand", desc: "命令行、脚本和文件操作。", roles: ["warrior", "druid"] },
   { id: "github-mcp", name: "GitHub MCP", type: "MCP", rarity: "rare", slot: "offhand", desc: "仓库读写与协同。", roles: ["warrior", "summoner"] },
-  { id: "image-studio", name: "Image Studio", type: "Tool", rarity: "rare", slot: "offhand", desc: "图像生成与补图。", roles: ["archer"] },
+  { id: "image-studio", name: "Image Studio", type: "Tool", rarity: "rare", slot: "offhand", desc: "图像生成与补图。", roles: ["designer"] },
   { id: "document-forge", name: "Document Forge", type: "Tool", rarity: "magic", slot: "legs", desc: "Docx / PDF / PPTX 输出。", roles: ["mage", "summoner", "paladin"] },
   { id: "sheet-engine", name: "Sheet Engine", type: "Tool", rarity: "magic", slot: "legs", desc: "XLSX 分析与表格建模。", roles: ["assassin", "summoner"] },
   { id: "search-array", name: "Search Array", type: "API", rarity: "magic", slot: "ring", desc: "搜索 API 聚合阵列。", roles: ["druid", "assassin", "paladin"] },
   { id: "tavily-core", name: "Tavily Core", type: "API", rarity: "magic", slot: "ring", desc: "结构化外部搜索接口。", roles: ["assassin", "mage"] },
   { id: "market-radar", name: "Market Radar", type: "API", rarity: "rare", slot: "ring", desc: "新闻雷达与市场情报。", roles: ["assassin", "paladin"] },
   { id: "agentmail-suite", name: "AgentMail Suite", type: "App", rarity: "magic", slot: "shoulders", desc: "邮件往来与客户沟通。", roles: ["druid", "paladin", "summoner"] },
-  { id: "video-anvil", name: "Video Anvil", type: "Tool", rarity: "rare", slot: "shoulders", desc: "视频分镜与成片链路。", roles: ["archer"] },
+  { id: "video-anvil", name: "Video Anvil", type: "Tool", rarity: "rare", slot: "shoulders", desc: "视频分镜与成片链路。", roles: ["designer"] },
   { id: "cron-orb", name: "Cron Orb", type: "Tool", rarity: "rare", slot: "belt", desc: "定时任务与后台巡检。", roles: ["druid", "summoner", "warrior"] },
   { id: "watchtower-daemon", name: "Watchtower Daemon", type: "Tool", rarity: "magic", slot: "belt", desc: "心跳巡检与异常恢复。", roles: ["druid", "warrior"] },
   { id: "utility-belt", name: "Utility Belt", type: "Tool", rarity: "common", slot: "belt", desc: "整理高频工具与快捷命令。", roles: ["druid", "warrior", "summoner"] },
   { id: "campaign-belt", name: "Campaign Belt", type: "App", rarity: "magic", slot: "belt", desc: "渠道分发、营销节奏和触达配置。", roles: ["paladin"] },
   { id: "field-boots", name: "Field Boots", type: "Tool", rarity: "common", slot: "boots", desc: "提高情报巡航和执行节奏。", roles: ["assassin", "warrior", "druid"] },
-  { id: "atelier-boots", name: "Atelier Boots", type: "Tool", rarity: "magic", slot: "boots", desc: "提高创意流转和素材整合效率。", roles: ["archer"] },
-  { id: "signal-ring", name: "Signal Ring", type: "API", rarity: "rare", slot: "ring", desc: "将外部接口与角色核心建立联动。", roles: ["druid", "warrior", "archer", "assassin"] },
+  { id: "atelier-boots", name: "Atelier Boots", type: "Tool", rarity: "magic", slot: "boots", desc: "提高创意流转和素材整合效率。", roles: ["designer"] },
+  { id: "signal-ring", name: "Signal Ring", type: "API", rarity: "rare", slot: "ring", desc: "将外部接口与角色核心建立联动。", roles: ["druid", "warrior", "designer", "assassin"] },
   { id: "memo-ring", name: "Memo Ring", type: "App", rarity: "magic", slot: "ring", desc: "记忆、注释和上下文收纳。", roles: ["mage", "summoner"] },
 ];
 
@@ -499,7 +490,13 @@ async function resolveLegacyWorldUrl(role) {
 
 function loadStore() {
   try {
-    return JSON.parse(window.localStorage.getItem(stateKey) || "{}");
+    const parsed = JSON.parse(window.localStorage.getItem(stateKey) || "{}");
+    if (parsed && typeof parsed === "object" && parsed.archer && !parsed.designer) {
+      parsed.designer = parsed.archer;
+      delete parsed.archer;
+      window.localStorage.setItem(stateKey, JSON.stringify(parsed));
+    }
+    return parsed;
   } catch {
     return {};
   }
@@ -527,8 +524,14 @@ function toolById(id) {
 
 function normalizeRoleIdForUi(roleId) {
   const raw = String(roleId || "").trim().toLowerCase();
-  if (raw === "designer") return "archer";
+  if (raw === "archer") return "designer";
   return raw;
+}
+
+function notifyEmbeddedHost(type, payload) {
+  if (window.parent && window.parent !== window) {
+    window.parent.postMessage({ type, ...payload }, window.location.origin);
+  }
 }
 
 function friendlyNameFromId(id) {
@@ -579,19 +582,38 @@ function normalizeToolType(rawType, name) {
   return "Tool";
 }
 
-function normalizeToolSlot(rawSlot, type, name, index = 0) {
+function normalizeSlotId(rawSlot) {
   const slot = String(rawSlot || "").trim().toLowerCase();
+  const legacyMap = {
+    shoulders: "head",
+    core: "amulet",
+    ring: "amulet",
+    legs: "boots",
+    relic: "boots",
+    network: "amulet",
+    companion: "head",
+    automation: "belt",
+  };
+  return legacyMap[slot] || slot;
+}
+
+function normalizeToolSlot(rawSlot, type, name, index = 0) {
+  const slot = normalizeSlotId(rawSlot);
   if (SLOT_ORDER.includes(slot)) return slot;
   const typeLow = String(type || "").toLowerCase();
   const low = `${typeLow} ${String(name || "")}`.toLowerCase();
   if (typeLow.includes("模型") || typeLow.includes("model")) return "chest";
-  if (/api|key|token|search|radar/.test(low)) return index % 2 === 0 ? "ring" : "core";
+  if (/api|key|token|search|radar/.test(low)) return "amulet";
   if (/mcp|browser|devtools/.test(low)) return index % 2 === 0 ? "mainhand" : "offhand";
-  if (/mail|calendar|wechat|app/.test(low)) return "shoulders";
-  if (/image|video|design/.test(low)) return index % 2 === 0 ? "offhand" : "legs";
+  if (/mail|calendar|wechat|app/.test(low)) return "head";
+  if (/image|video|design/.test(low)) return index % 2 === 0 ? "offhand" : "belt";
   if (/shell|tool|github/.test(low)) return "belt";
   return "boots";
 }
+
+toolCatalog.forEach((tool, index) => {
+  tool.slot = normalizeToolSlot(tool.slot, tool.type, tool.name, index);
+});
 function normalizePopularity(raw) {
   const value = Number(raw);
   return Number.isFinite(value) && value > 0 ? value : 0;
@@ -854,7 +876,7 @@ function recommendedSkillIds(role) {
         skillCatalog.filter((skill) => skill.roles.includes(role) && (skill.desc.includes(focus) || skill.name.includes(focus))).map((skill) => skill.id),
       ),
       ...fromSynergy,
-      ...roleDefaultSkills(role, role === "archer" || role === "paladin" ? "high" : "medium").slice(0, 8),
+      ...roleDefaultSkills(role, role === "designer" || role === "paladin" ? "high" : "medium").slice(0, 8),
     ]),
   );
 }
@@ -866,7 +888,7 @@ function recommendedToolIds(role) {
 
 
 function createDefaultState(role) {
-  const defaultPack = role === "archer" || role === "paladin" ? "high" : role === "warrior" || role === "assassin" ? "medium" : "medium";
+  const defaultPack = role === "designer" || role === "paladin" ? "high" : role === "warrior" || role === "assassin" ? "medium" : "medium";
   const installedSkills = roleDefaultSkills(role, defaultPack);
   const defaultHotbar = installedSkills.slice(0, HOTBAR_SIZE);
   const defaultToolIds = roleDefaultTools(role);
@@ -883,13 +905,13 @@ function createDefaultState(role) {
     summoner: "balanced",
     warrior: "codex",
     paladin: "growth",
-    archer: "creative",
+    designer: "creative",
   };
 
   return {
     activeTab: "skills",
     skillPack: defaultPack,
-    tokenRule: role === "warrior" || role === "archer" || role === "assassin" ? "high" : "medium",
+    tokenRule: role === "warrior" || role === "designer" || role === "assassin" ? "high" : "medium",
     modelRoute: routeByRole[role] || "balanced",
     installedSkills,
     hotbar: Array.from({ length: HOTBAR_SIZE }, (_, index) => defaultHotbar[index] || null),
@@ -1031,6 +1053,7 @@ function computePresetPayload(role, roleState) {
 
 function buildRuntimeProjection(role, roleState) {
   const activeSynergies = computeActiveSynergies(roleState).map((item) => item.name);
+  const runtime = normalizeRuntime(currentRuntime);
   return {
     version: 1,
     generatedAt: new Date().toISOString(),
@@ -1054,11 +1077,11 @@ function buildRuntimeProjection(role, roleState) {
       activeSynergies,
     },
     runtime: {
-      state: "idle",
-      detail: "运行世界初始化完成，等待任务。",
-      progress: 0,
+      state: runtime.state,
+      detail: runtime.detail || "运行世界初始化完成，等待任务。",
+      progress: runtime.progress,
       source: "profile",
-      updatedAt: new Date().toISOString(),
+      updatedAt: runtime.updatedAt && runtime.updatedAt !== "-" ? runtime.updatedAt : new Date().toISOString(),
     },
   };
 }
@@ -1206,6 +1229,7 @@ const OFFICE_PLAQUE_STORAGE_KEY = "officePlaqueCustomTitle";
 const STATUS_ENDPOINT = "/status";
 const STATUS_SUMMARY_ENDPOINT = "/openclaw/status/summary";
 const APPLY_CONFIG_ENDPOINT = "/openclaw/config/apply";
+const TASK_DISPATCH_ENDPOINT = "/openclaw/tasks/dispatch";
 const DIAGNOSE_ENDPOINT = "/openclaw/diagnose";
 const CATALOG_ENDPOINT = "/openclaw/catalog";
 const API_CACHE = window.OpenClawApiClient || null;
@@ -1236,6 +1260,7 @@ let currentIdentity = readIdentityProfile();
 let selectedSkillId = null;
 let selectedToolId = null;
 let statusDiagBusy = false;
+let taskDispatchBusy = false;
 
 async function fetchJsonCached(url, ttl = 15000) {
   if (API_CACHE && API_CACHE.cachedFetch) {
@@ -1399,7 +1424,16 @@ function hydrateRoleState(role, roleState) {
     merged.disabledSkills = [];
   }
   merged.catalogSeedVersion = 2;
-  const legacySlotMap = { relic: "legs", network: "ring", companion: "shoulders", automation: "belt" };
+  const legacySlotMap = {
+    relic: "boots",
+    network: "amulet",
+    companion: "head",
+    automation: "belt",
+    shoulders: "head",
+    core: "amulet",
+    legs: "boots",
+    ring: "amulet",
+  };
   Object.entries(legacySlotMap).forEach(([legacySlot, nextSlot]) => {
     const legacyToolId = roleState?.equipped?.[legacySlot];
     if (legacyToolId && !merged.equipped[nextSlot]) {
@@ -1442,7 +1476,10 @@ function hydrateRoleState(role, roleState) {
 }
 
 function syncProjection() {
-  window.localStorage.setItem(runtimeProjectionKey, JSON.stringify(buildRuntimeProjection(currentRole, currentRoleState)));
+  const projection = buildRuntimeProjection(currentRole, currentRoleState);
+  window.localStorage.setItem(runtimeProjectionKey, JSON.stringify(projection));
+  notifyEmbeddedHost("lobster-world-console-projection", { projection });
+  notifyEmbeddedHost("lobster-world-console-status", projection.runtime);
 }
 
 function persistCurrentRoleState() {
@@ -1469,6 +1506,19 @@ function setSaveStatus(scope, message) {
   const el = document.getElementById(targetId);
   if (!el) return;
   el.textContent = message;
+}
+
+function setTaskDispatchOutput(message) {
+  const el = document.getElementById("taskDispatchOutput");
+  if (el) el.textContent = message;
+}
+
+function updateTaskDispatchMeta() {
+  const profile = roleProfiles[currentRole] || roleProfiles[defaultRole];
+  const meta = document.getElementById("taskDispatchMeta");
+  if (meta) {
+    meta.textContent = `目标职业: ${profile.title} · 当前状态: ${stateLabelMap[currentRuntime.state] || currentRuntime.state}`;
+  }
 }
 
 function markCurrentTabDirty() {
@@ -1510,8 +1560,12 @@ async function applyRoleStateToBackend(scope, sourceButton) {
         currentIdentity = writeIdentityProfile({ ...currentIdentity, ...result.summary.identity });
       }
     }
+    syncProjection();
     setSaveStatus(scope, `已保存 ${new Date().toLocaleTimeString()}`);
+    renderBanner();
+    renderSummaryStrip();
     renderStatusTab();
+    renderTasksTab();
     return true;
   } catch (error) {
     setSaveStatus(scope, `保存失败: ${error.message}`);
@@ -2068,6 +2122,14 @@ function renderStatusTab() {
   const xp = Number(summary.xp || localLevel.xp || 0);
   const xpNext = Number(summary.xpNextTarget || localLevel.need || 320);
   const xpPercent = Number(summary.xpProgressPercent || localLevel.ratio || 0);
+  const requestUsage = summary?.policy?.requestUsage || {};
+  const requestLimit = Number(summary?.policy?.maxRequests ?? requestUsage.limit ?? 0);
+  const requestUsed = Number(requestUsage.used || 0);
+  const requestPending = Number(requestUsage.pending || 0);
+  const requestUnlimited = Boolean(requestUsage.unlimited) || requestLimit <= 0;
+  const requestRemainingLabel = requestUnlimited
+    ? "不限"
+    : `${Math.max(0, Number(requestUsage.remaining ?? requestLimit - requestUsed - requestPending))}`;
 
   setText("statusLevelLabel", `Lv.${level} ${levelName}`);
   setText("statusXpLabel", `当前经验 ${xp} / ${xpNext}`);
@@ -2078,6 +2140,7 @@ function renderStatusTab() {
     { label: "模型路由", value: optionLabel(modelRoutes, currentRoleState.modelRoute), note: "当前主路线" },
     { label: "规则档位", value: optionLabel(tokenRules, currentRoleState.tokenRule), note: "调用节奏" },
     { label: "技能包", value: optionLabel(packageDefs, currentRoleState.skillPack), note: "默认基线" },
+    { label: "文字请求额度", value: `${requestUsed}${requestUnlimited ? "" : ` / ${requestLimit}`}`, note: `待处理 ${requestPending} · 剩余 ${requestRemainingLabel}` },
     { label: "Token消耗", value: `${Number(summary.tokensUsed || 0)}`, note: `使用时长 ${Number(summary.hoursPlayed || 0).toFixed(2)} 小时` },
     { label: "任务成功率", value: `${(Number(summary.successRate || 0) * 100).toFixed(1)}%`, note: `完成 ${Number(summary.tasksCompleted || 0)} / 成功 ${Number(summary.tasksSuccess || 0)}` },
     { label: "Skill使用率", value: `${Number(summary.skillUsageRate || 0).toFixed(1)}%`, note: `使用 ${Number(summary.usedSkillsCount || 0)} / 已装 ${Number(summary.installedSkillsCount || currentRoleState.installedSkills.length)}` },
@@ -2165,11 +2228,12 @@ ${error.message}`);
 }
 
 function renderTasksTab() {
+  updateTaskDispatchMeta();
   const workflow = [
-    { step: "01", title: "确认任务边界", body: "明确目标、时限与输出格式。" },
-    { step: "02", title: "装配当前构筑", body: "补齐技能与装备后再执行。" },
-    { step: "03", title: "执行并回传进度", body: "关键节点同步进度与结果。" },
-    { step: "04", title: "复盘并结算", body: "记录异常、建议与后续动作。" },
+    { step: "01", title: "确认边界", body: "明确目标、时限、输出。" },
+    { step: "02", title: "装配构筑", body: "补齐技能和装备后执行。" },
+    { step: "03", title: "回传进度", body: "关键节点同步状态。" },
+    { step: "04", title: "复盘结算", body: "记录结果和后续动作。" },
   ];
   const workflowTarget = document.getElementById("workflowBoard");
   if (workflowTarget) {
@@ -2186,9 +2250,9 @@ function renderTasksTab() {
   }
 
   const rewards = [
-    { step: "XP", title: "经验奖励", body: `当前构筑预计经验 ${computeLevel(currentRoleState).xp}。` },
-    { step: "FIT", title: "构筑适配", body: `已启用 ${enabledSkillIds(currentRoleState).length} 技能 / 已装备 ${Object.values(currentRoleState.equipped).filter(Boolean).length} 工具。` },
-    { step: "RANK", title: "未来星级", body: "预留社区质量评分与排行入口。" },
+    { step: "XP", title: "经验奖励", body: `当前构筑预计经验 ${computeLevel(currentRoleState).xp}` },
+    { step: "FIT", title: "构筑适配", body: `已启用 ${enabledSkillIds(currentRoleState).length} 技能 / 已装备 ${Object.values(currentRoleState.equipped).filter(Boolean).length} 工具` },
+    { step: "RANK", title: "未来星级", body: "预留质量评分入口" },
   ];
   const rewardTarget = document.getElementById("rewardBoard");
   if (rewardTarget) {
@@ -2202,6 +2266,60 @@ function renderTasksTab() {
           </article>`,
       )
       .join("");
+  }
+}
+
+async function dispatchWorkbenchTask() {
+  if (taskDispatchBusy) return;
+  const input = document.getElementById("taskDispatchInput");
+  const button = document.getElementById("taskDispatchBtn");
+  const prompt = String(input?.value || "").trim();
+  if (!prompt) {
+    setTaskDispatchOutput("请输入任务描述后再派单。");
+    return;
+  }
+
+  taskDispatchBusy = true;
+  const originalText = button?.textContent || "开始派单";
+  if (button) {
+    button.disabled = true;
+    button.textContent = "派发中...";
+  }
+  setTaskDispatchOutput(`正在派发任务到 ${roleProfiles[currentRole]?.title || currentRole} ...`);
+
+  try {
+    const payload = await fetchJsonRaw(TASK_DISPATCH_ENDPOINT, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ prompt, role: currentRole }),
+    });
+    if (!payload?.ok) {
+      throw new Error(payload?.msg || "dispatch failed");
+    }
+    if (payload.runtime) {
+      currentRuntime = normalizeRuntime(payload.runtime);
+    }
+    invalidateApiCache(STATUS_SUMMARY_ENDPOINT, STATUS_ENDPOINT);
+    renderBanner();
+    renderStatusTab();
+    renderTasksTab();
+    notifyEmbeddedHost("lobster-world-console-status", currentRuntime);
+    setTaskDispatchOutput(
+      [
+        `已派发给 ${roleProfiles[currentRole]?.title || currentRole}`,
+        `状态: ${stateLabelMap[currentRuntime.state] || currentRuntime.state}`,
+        `进度: ${Number(currentRuntime.progress || 0)}%`,
+        `详情: ${currentRuntime.detail || "等待执行反馈"}`,
+      ].join("\n"),
+    );
+  } catch (error) {
+    setTaskDispatchOutput(`派单失败: ${error.message}`);
+  } finally {
+    taskDispatchBusy = false;
+    if (button) {
+      button.disabled = false;
+      button.textContent = originalText;
+    }
   }
 }
 
@@ -2270,6 +2388,8 @@ async function refreshRuntime() {
   renderBanner();
   renderSummaryStrip();
   renderStatusTab();
+  renderTasksTab();
+  notifyEmbeddedHost("lobster-world-console-status", currentRuntime);
 }
 
 function bindEvents() {
@@ -2343,6 +2463,10 @@ function bindEvents() {
 
   document.getElementById("applyRoleChangeBtn")?.addEventListener("click", () => {
     applyRoleChange();
+  });
+
+  document.getElementById("taskDispatchBtn")?.addEventListener("click", () => {
+    dispatchWorkbenchTask();
   });
 
   document.getElementById("roleConfirmModal")?.addEventListener("click", (event) => {

@@ -1,7 +1,7 @@
 # wechat-article-extractor-skill 使用指南
 
 ## 1. 功能定位
-- Extract metadata and content from WeChat Official Account articles. Use when user needs to parse WeChat article URLs (mp.weixin.qq.com), extract article info (title, author, content, publish time, cover image), or convert WeChat articles to structured data. Supports various article types including posts, videos, images, voice messages, and reposts.
+- Extract metadata and content from WeChat Official Account articles. Use when user needs to parse WeChat article URLs (mp.weixin.qq.com), extract article info (title, author, con...
 - 默认档位: 仅全量默认包/手动同步
 - 仓库目录: `skills/default/wechat-article-extractor-skill`
 - 安装后目录: `~/.openclaw/skills/wechat-article-extractor-skill`

@@ -1,7 +1,7 @@
 # demo-video 使用指南
 
 ## 1. 功能定位
-- Create product demo videos by automating browser interactions and capturing frames. Use when the user wants to record a demo, walkthrough, product showcase, or interactive video of a web application. Supports Playwright CDP screencast for high-quality capture and FFmpeg for video encoding.
+- Create product demo videos by automating browser interactions and capturing frames. Use when the user wants to record a demo, walkthrough, product showcase, or interactive video...
 - 默认档位: 仅全量默认包/手动同步
 - 仓库目录: `skills/default/demo-video`
 - 安装后目录: `~/.openclaw/skills/demo-video`

@@ -1,7 +1,7 @@
 # loading-state-patterns 使用指南
 
 ## 1. 功能定位
-- Patterns for skeleton loaders, shimmer effects, and loading states that match design system aesthetics. Covers skeleton components, shimmer animations, and progressive loading. Use when building polished loading experiences. Triggers on skeleton, loading state, shimmer, placeholder, loading animation.
+- Patterns for skeleton loaders, shimmer effects, and loading states that match design system aesthetics. Covers skeleton components, shimmer animations, and progressive loading....
 - 默认档位: 仅全量默认包/手动同步
 - 仓库目录: `skills/default/loading-state-patterns`
 - 安装后目录: `~/.openclaw/skills/loading-state-patterns`

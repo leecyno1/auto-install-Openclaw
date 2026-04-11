@@ -1,7 +1,7 @@
 # video-subtitles 使用指南
 
 ## 1. 功能定位
-- Generate SRT subtitles from video/audio with translation support. Transcribes Hebrew (ivrit.ai) and English (whisper), translates between languages, burns subtitles into video. Use for creating captions, transcripts, or hardcoded subtitles for WhatsApp/social media.
+- Generate SRT subtitles from video/audio with translation support. Transcribes Hebrew (ivrit.ai) and English (whisper), translates between languages, burns subtitles into video....
 - 默认档位: 仅全量默认包/手动同步
 - 仓库目录: `skills/default/video-subtitles`
 - 安装后目录: `~/.openclaw/skills/video-subtitles`

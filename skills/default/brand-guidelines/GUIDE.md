@@ -1,7 +1,7 @@
 # brand-guidelines 使用指南
 
 ## 1. 功能定位
-- Applies Anthropic's official brand colors and typography to any sort of artifact that may benefit from having Anthropic's look-and-feel. Use it when brand colors or style guidelines, visual formatting, or company design standards apply.
+- Applies Anthropic's official brand colors and typography to any sort of artifact that may benefit from having Anthropic's look-and-feel. Use it when brand colors or style guidel...
 - 默认档位: 仅全量默认包/手动同步
 - 仓库目录: `skills/default/brand-guidelines`
 - 安装后目录: `~/.openclaw/skills/brand-guidelines`

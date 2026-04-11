@@ -1,7 +1,7 @@
 # requesthunt 使用指南
 
 ## 1. 功能定位
-- Generate user demand research reports from real user feedback. Scrape and analyze feature requests, complaints, and questions from Reddit, X, and GitHub. Use when user wants to do demand research, find feature requests, analyze user demand, or run RequestHunt queries.
+- Generate user demand research reports from real user feedback. Scrape and analyze feature requests, complaints, and questions from Reddit, X, and GitHub. Use when user wants to...
 - 默认档位: 仅全量默认包/手动同步
 - 仓库目录: `skills/default/requesthunt`
 - 安装后目录: `~/.openclaw/skills/requesthunt`

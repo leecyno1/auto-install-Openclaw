@@ -1,7 +1,7 @@
 # todoist-api 使用指南
 
 ## 1. 功能定位
-- This skill provides instructions for interacting with Todoist using the td CLI tool. It covers CRUD operations for tasks/projects/sections/labels/comments, and requires confirmation before destructive actions. Use this skill when the user wants to read, create, update, or delete Todoist data.
+- This skill provides instructions for interacting with Todoist using the td CLI tool. It covers CRUD operations for tasks/projects/sections/labels/comments, and requires confirma...
 - 默认档位: 仅全量默认包/手动同步
 - 仓库目录: `skills/default/todoist-api`
 - 安装后目录: `~/.openclaw/skills/todoist-api`

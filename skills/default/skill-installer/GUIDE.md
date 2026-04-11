@@ -1,7 +1,7 @@
 # skill-installer 使用指南
 
 ## 1. 功能定位
-- Install Codex skills into $CODEX_HOME/skills from a curated list or a GitHub repo path. Use when a user asks to list installable skills, install a curated skill, or install a skill from another repo (including private repos).
+- Install Codex skills into $CODEX_HOME/skills from a curated list or a GitHub repo path. Use when a user asks to list installable skills, install a curated skill, or install a sk...
 - 默认档位: 仅全量默认包/手动同步
 - 仓库目录: `skills/default/skill-installer`
 - 安装后目录: `~/.openclaw/skills/skill-installer`

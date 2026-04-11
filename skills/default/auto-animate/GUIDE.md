@@ -1,7 +1,7 @@
 # auto-animate 使用指南
 
 ## 1. 功能定位
-- |
+- Zero-config animations for React, Vue, Solid, Svelte, Preact with @formkit/auto-animate (3.28kb). Prevents 15 documented errors including React 19 StrictMode bugs, SSR imports,...
 - 默认档位: 仅全量默认包/手动同步
 - 仓库目录: `skills/default/auto-animate`
 - 安装后目录: `~/.openclaw/skills/auto-animate`

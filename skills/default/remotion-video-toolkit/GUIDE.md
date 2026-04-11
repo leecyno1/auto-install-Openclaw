@@ -1,7 +1,7 @@
 # remotion-video-toolkit 使用指南
 
 ## 1. 功能定位
-- Complete toolkit for programmatic video creation with Remotion + React. Covers animations, timing, rendering (CLI/Node.js/Lambda/Cloud Run), captions, 3D, charts, text effects, transitions, and media handling. Use when writing Remotion code, building video generation pipelines, or creating data-driven video templates.
+- Complete toolkit for programmatic video creation with Remotion + React. Covers animations, timing, rendering (CLI/Node.js/Lambda/Cloud Run), captions, 3D, charts, text effects,...
 - 默认档位: 仅全量默认包/手动同步
 - 仓库目录: `skills/default/remotion-video-toolkit`
 - 安装后目录: `~/.openclaw/skills/remotion-video-toolkit`

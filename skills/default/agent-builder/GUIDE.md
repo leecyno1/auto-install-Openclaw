@@ -1,7 +1,7 @@
 # agent-builder 使用指南
 
 ## 1. 功能定位
-- Build high-performing OpenClaw agents end-to-end. Use when you want to design a new agent (persona + operating rules) and generate the required OpenClaw workspace files (SOUL.md, IDENTITY.md, AGENTS.md, USER.md, HEARTBEAT.md, optional MEMORY.md + memory/YYYY-MM-DD.md). Also use to iterate on an existing agent’s behavior, guardrails, autonomy model, heartbeat plan, and skill roster.
+- Build high-performing OpenClaw agents end-to-end. Use when you want to design a new agent (persona + operating rules) and generate the required OpenClaw workspace files (SOUL.md...
 - 默认档位: 仅全量默认包/手动同步
 - 仓库目录: `skills/default/agent-builder`
 - 安装后目录: `~/.openclaw/skills/agent-builder`

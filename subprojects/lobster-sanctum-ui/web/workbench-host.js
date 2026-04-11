@@ -61,7 +61,7 @@
     summoner: "管理者 · 召唤师",
     warrior: "技术员 · 战士",
     paladin: "营销者 · 圣骑士",
-    archer: "设计师 · 弓箭手",
+    designer: "设计师",
   };
   const VALID_STATIONS = ["role", "skills", "equipment", "status", "tasks"];
 

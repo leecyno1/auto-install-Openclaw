@@ -1,7 +1,7 @@
 # xiaohongshutools 使用指南
 
 ## 1. 功能定位
-- XiaoHongShu (Little Red Book) data collection and interaction toolkit. Use when working with XiaoHongShu (小红书) platform for: (1) Searching and scraping notes/posts, (2) Getting user profiles and details, (3) Extracting comments and likes, (4) Following users and liking posts, (5) Fetching home feed and trending content. Automatically handles all encryption parameters (cookies, headers) including a1, webId, x-s, x-s-common, x-t, sec_poison_id, websectiga, gid, x-b3-traceid, x-xray-traceid. Supports guest mode and authenticated sessions via web_session cookie.
+- XiaoHongShu (Little Red Book) data collection and interaction toolkit. Use when working with XiaoHongShu (小红书) platform for: (1) Searching and scraping notes/posts, (2) Getting...
 - 默认档位: 仅全量默认包/手动同步
 - 仓库目录: `skills/default/xiaohongshutools`
 - 安装后目录: `~/.openclaw/skills/xiaohongshutools`

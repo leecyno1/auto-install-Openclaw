@@ -1,7 +1,7 @@
 # openclaw-feeds 使用指南
 
 ## 1. 功能定位
-- >
+- RSS news aggregator. Fetches headlines from curated feeds across three categories: news, games, and finance. Use when the user asks about current news, headlines, what's happeni...
 - 默认档位: 仅全量默认包/手动同步
 - 仓库目录: `skills/default/openclaw-feeds`
 - 安装后目录: `~/.openclaw/skills/openclaw-feeds`

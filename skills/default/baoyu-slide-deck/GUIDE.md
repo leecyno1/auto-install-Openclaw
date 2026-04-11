@@ -1,7 +1,7 @@
 # baoyu-slide-deck 使用指南
 
 ## 1. 功能定位
-- Generates professional slide deck images from content. Creates outlines with style instructions, then generates individual slide images. Use when user asks to "create slides", "make a presentation", "generate deck", "slide deck", or "PPT".
+- Generates professional slide deck images from content. Creates outlines with style instructions, then generates individual slide images. Use when user asks to "create slides", "...
 - 默认档位: 仅全量默认包/手动同步
 - 仓库目录: `skills/default/baoyu-slide-deck`
 - 安装后目录: `~/.openclaw/skills/baoyu-slide-deck`

@@ -1,7 +1,7 @@
 # logo-creator 使用指南
 
 ## 1. 功能定位
-- Create logos using AI image generation. Discuss style/ratio, generate variations, iterate with user feedback, crop, remove background, and export as SVG. Use when user wants to create a logo, icon, favicon, brand mark, mascot, emblem, or design a logo.
+- Create logos using AI image generation. Discuss style/ratio, generate variations, iterate with user feedback, crop, remove background, and export as SVG. Use when user wants to...
 - 默认档位: 仅全量默认包/手动同步
 - 仓库目录: `skills/default/logo-creator`
 - 安装后目录: `~/.openclaw/skills/logo-creator`

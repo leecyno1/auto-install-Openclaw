@@ -3,6 +3,7 @@ import process from "node:process";
 import { homedir } from "node:os";
 import { fileURLToPath } from "node:url";
 import { access, mkdir, readFile, writeFile } from "node:fs/promises";
+import { reserveMediaQuota, commitMediaQuota, releaseMediaQuota } from "./quota";
 import type {
   BatchFile,
   BatchTaskInput,
@@ -652,6 +653,9 @@ export async function validateReferenceImages(referenceImages: string[]): Promis
 export function isRetryableGenerationError(error: unknown): boolean {
   const msg = error instanceof Error ? error.message : String(error);
   const nonRetryableMarkers = [
+    "Media quota check failed",
+    "quota disabled",
+    "quota exceeded",
     "Reference image",
     "not supported",
     "only supported",
@@ -835,11 +839,17 @@ async function generatePreparedTask(task: PreparedTask): Promise<TaskResult> {
   );
 
   let attempts = 0;
+  let reservationId: string | null = null;
   while (attempts < MAX_ATTEMPTS) {
     attempts += 1;
     try {
+      if (!reservationId) {
+        reservationId = reserveMediaQuota("image", Math.max(1, task.args.n || 1), `baoyu-image-gen:${task.provider}`);
+      }
       const imageData = await task.providerModule.generateImage(task.prompt, task.model, task.args);
       await writeImage(task.outputPath, imageData);
+      commitMediaQuota(reservationId);
+      reservationId = null;
       return {
         id: task.id,
         provider: task.provider,
@@ -856,6 +866,8 @@ async function generatePreparedTask(task: PreparedTask): Promise<TaskResult> {
         console.error(`[${task.id}] Attempt ${attempts}/${MAX_ATTEMPTS} failed, retrying...`);
         continue;
       }
+      releaseMediaQuota(reservationId);
+      reservationId = null;
       return {
         id: task.id,
         provider: task.provider,
@@ -867,6 +879,8 @@ async function generatePreparedTask(task: PreparedTask): Promise<TaskResult> {
       };
     }
   }
+
+  releaseMediaQuota(reservationId);
 
   return {
     id: task.id,

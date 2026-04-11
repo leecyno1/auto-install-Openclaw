@@ -1,7 +1,7 @@
 # data-reconciliation-exceptions 使用指南
 
 ## 1. 功能定位
-- Reconciles data sources using stable identifiers (Pay Number, driving licence, driver card, and driver qualification card numbers), producing exception reports and “no silent failure” checks. Use when you need weekly matching with explicit reasons for non-joins and mismatches.
+- Reconciles data sources using stable identifiers (Pay Number, driving licence, driver card, and driver qualification card numbers), producing exception reports and “no silent fa...
 - 默认档位: 仅全量默认包/手动同步
 - 仓库目录: `skills/default/data-reconciliation-exceptions`
 - 安装后目录: `~/.openclaw/skills/data-reconciliation-exceptions`

@@ -195,9 +195,9 @@ UNOFFICIAL_ADVANCED_DEFAULT_URL_ANTHROPIC="${OPENCLAW_UNOFFICIAL_ADVANCED_ANTHRO
 UNOFFICIAL_ADVANCED_DEFAULT_MODEL_CLAUDE="${OPENCLAW_UNOFFICIAL_ADVANCED_CLAUDE_MODEL:-claude-sonnet-4-6}"
 UNOFFICIAL_ADVANCED_DEFAULT_MODEL_GPT="${OPENCLAW_UNOFFICIAL_ADVANCED_GPT_MODEL:-Gpt-5.4}"
 UNOFFICIAL_ADVANCED_DEFAULT_API_KEY="${OPENCLAW_UNOFFICIAL_ADVANCED_API_KEY:-}"
-RULE_ADVANCED_DEFAULT_URL="${OPENCLAW_RULE_ADVANCED_MODEL_API_URL:-${OPENCLAW_UNOFFICIAL_ADVANCED_OPENAI_API_URL:-https://www.leishen-ai.cn/openai}}"
-RULE_ADVANCED_DEFAULT_MODEL="${OPENCLAW_RULE_ADVANCED_MODEL_NAME:-${OPENCLAW_UNOFFICIAL_ADVANCED_MODEL:-${UNOFFICIAL_ADVANCED_DEFAULT_MODEL_GPT:-Gpt-5.4}}}"
-RULE_ADVANCED_DEFAULT_KEY="${OPENCLAW_RULE_ADVANCED_MODEL_API_KEY:-${OPENCLAW_UNOFFICIAL_ADVANCED_API_KEY:-}}"
+RULE_ADVANCED_DEFAULT_URL="${OPENCLAW_RULE_ADVANCED_MODEL_API_URL:-${OPENCLAW_UNOFFICIAL_ADVANCED_OPENAI_API_URL:-https://api.openai.com/v1}}"
+RULE_ADVANCED_DEFAULT_MODEL="${OPENCLAW_RULE_ADVANCED_MODEL_NAME:-${OPENCLAW_EXPERT_MODEL:-GPT-5.4}}"
+RULE_ADVANCED_DEFAULT_KEY="${OPENCLAW_RULE_ADVANCED_MODEL_API_KEY:-${OPENCLAW_EXPERT_API_KEY:-${OPENCLAW_UNOFFICIAL_ADVANCED_API_KEY:-}}}"
 UNOFFICIAL_ROUTING_DEFAULT_STRATEGY="${OPENCLAW_UNOFFICIAL_ROUTING_STRATEGY:-auto}"
 UNOFFICIAL_ROUTING_DEFAULT_FAILOVER="${OPENCLAW_UNOFFICIAL_ROUTING_FAILOVER:-1}"
 SKILL_PIP_PACKAGES_DEFAULT="duckduckgo-search akshare requests pyyaml pypdf pillow openpyxl python-pptx python-docx lxml defusedxml pdf2image"
@@ -207,8 +207,6 @@ DEFAULT_SKILLS_BUNDLE_SENTINELS="agentmail agentmail-cli agentmail-mcp agentmail
 MINIMAX_API_HOST_CN_DEFAULT="${MINIMAX_API_HOST_CN:-https://api.minimaxi.com}"
 MINIMAX_API_HOST_GLOBAL_DEFAULT="${MINIMAX_API_HOST_GLOBAL:-https://api.minimax.io}"
 MINIMAX_MULTIMODAL_OUTPUT_PATH_DEFAULT="${MINIMAX_MULTIMODAL_OUTPUT_PATH:-~/.openclaw/workspace/minimax-output}"
-MINIMAX_IMAGE_MODEL_DEFAULT="${MINIMAX_IMAGE_MODEL:-image-01}"
-MINIMAX_IMAGE_ENDPOINT_DEFAULT="${MINIMAX_IMAGE_ENDPOINT:-/v1/image_generation}"
 MINIMAX_TTS_MODEL_DEFAULT="${MINIMAX_TTS_MODEL:-speech-2.8-hd}"
 MINIMAX_TTS_ENDPOINT_DEFAULT="${MINIMAX_TTS_ENDPOINT:-/v1/t2a_v2}"
 MINIMAX_VIDEO_MODEL_DEFAULT="${MINIMAX_VIDEO_MODEL:-MiniMax-Hailuo-2.3}"
@@ -941,16 +939,21 @@ remove_env_export() {
 }
 
 normalize_rule_profile_level() {
-    local level
-    level="$(echo "${1:-$RULE_PROFILE_DEFAULT}" | tr '[:upper:]' '[:lower:]' | tr -d '[:space:]')"
-    case "$level" in
-        low|medium|high|none) echo "$level" ;;
-        l) echo "low" ;;
-        m|mid) echo "medium" ;;
-        h) echo "high" ;;
-        n|no|skip|off) echo "none" ;;
-        *) echo "medium" ;;
-    esac
+    load_openclaw_common_lib_menu >/dev/null 2>&1 || true
+    if command -v openclaw_normalize_rule_profile_level >/dev/null 2>&1; then
+        openclaw_normalize_rule_profile_level "${1:-$RULE_PROFILE_DEFAULT}" "${RULE_PROFILE_DEFAULT:-medium}"
+    else
+        local level
+        level="$(echo "${1:-$RULE_PROFILE_DEFAULT}" | tr '[:upper:]' '[:lower:]' | tr -d '[:space:]')"
+        case "$level" in
+            low|medium|high|none) echo "$level" ;;
+            l) echo "low" ;;
+            m|mid) echo "medium" ;;
+            h) echo "high" ;;
+            n|no|skip|off) echo "none" ;;
+            *) echo "medium" ;;
+        esac
+    fi
 }
 
 normalize_gateway_bind_mode() {
@@ -1124,38 +1127,83 @@ sanitize_config_value_menu() {
     esac
 }
 
+OPENCLAW_COMMON_LIB_MENU_LOADED=0
+load_openclaw_common_lib_menu() {
+    [ "${OPENCLAW_COMMON_LIB_MENU_LOADED:-0}" = "1" ] && return 0
+
+    local script_dir candidate
+    script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+    for candidate in \
+        "$script_dir/scripts/lib/openclaw-common.sh" \
+        "$script_dir/lib/openclaw-common.sh" \
+        "$HOME/.openclaw/.cache/auto-install-openclaw-repo/scripts/lib/openclaw-common.sh" \
+        "$HOME/.openclaw/workspace/auto-install-openclaw/scripts/lib/openclaw-common.sh" \
+        "$HOME/.openclaw/workspace/auto-install-Openclaw/scripts/lib/openclaw-common.sh"
+    do
+        if [ -f "$candidate" ]; then
+            # shellcheck disable=SC1090
+            . "$candidate"
+            OPENCLAW_COMMON_LIB_MENU_LOADED=1
+            return 0
+        fi
+    done
+
+    return 1
+}
+
 trim_value_menu() {
-    printf "%s" "${1:-}" | sed 's/^[[:space:]]*//; s/[[:space:]]*$//'
+    load_openclaw_common_lib_menu >/dev/null 2>&1 || true
+    if command -v openclaw_trim_value >/dev/null 2>&1; then
+        openclaw_trim_value "${1:-}"
+    else
+        printf "%s" "${1:-}" | sed 's/^[[:space:]]*//; s/[[:space:]]*$//'
+    fi
 }
 
 normalize_minimax_provider_url_menu() {
-    local raw
-    raw="$(trim_value_menu "$1")"
-    [ -n "$raw" ] || { echo ""; return 0; }
-    echo "$raw"
+    load_openclaw_common_lib_menu >/dev/null 2>&1 || true
+    if command -v openclaw_normalize_minimax_provider_url >/dev/null 2>&1; then
+        openclaw_normalize_minimax_provider_url "${1:-}"
+    else
+        local raw
+        raw="$(trim_value_menu "$1")"
+        [ -n "$raw" ] || { echo ""; return 0; }
+        echo "$raw"
+    fi
 }
 
 minimax_api_host_from_provider_url_menu() {
-    local provider_url
-    provider_url="$(normalize_minimax_provider_url_menu "$1")"
-    [ -n "$provider_url" ] || { echo ""; return 0; }
-    echo "$provider_url"
+    load_openclaw_common_lib_menu >/dev/null 2>&1 || true
+    if command -v openclaw_minimax_api_host_from_provider_url >/dev/null 2>&1; then
+        openclaw_minimax_api_host_from_provider_url "${1:-}"
+    else
+        local provider_url
+        provider_url="$(normalize_minimax_provider_url_menu "$1")"
+        [ -n "$provider_url" ] || { echo ""; return 0; }
+        echo "$provider_url"
+    fi
 }
 
 resolve_minimax_provider_base_url_menu() {
-    local provider="$1"
-    local custom_provider_url="$2"
-    local default_base_url="https://api.minimax.io/anthropic"
-    if [ "$provider" = "minimax-cn" ]; then
-        default_base_url="https://api.minimaxi.com/anthropic"
-    fi
-
-    local normalized_custom
-    normalized_custom="$(normalize_minimax_provider_url_menu "$custom_provider_url")"
-    if [ -n "$normalized_custom" ]; then
-        echo "$normalized_custom"
+    load_openclaw_common_lib_menu >/dev/null 2>&1 || true
+    if command -v openclaw_resolve_minimax_provider_base_url >/dev/null 2>&1; then
+        openclaw_resolve_minimax_provider_base_url "${1:-}" "${2:-}"
     else
-        echo "$default_base_url"
+        local provider="$1"
+        local custom_provider_url="$2"
+        local default_base_url="https://api.minimax.io/anthropic"
+        if [ "$provider" = "minimax-cn" ]; then
+            default_base_url="https://api.minimaxi.com/anthropic"
+        fi
+
+        local normalized_custom
+        normalized_custom="$(normalize_minimax_provider_url_menu "$custom_provider_url")"
+        if [ -n "$normalized_custom" ]; then
+            echo "$normalized_custom"
+        else
+            echo "$default_base_url"
+        fi
     fi
 }
 
@@ -1993,19 +2041,27 @@ apply_generative_service_settings_menu() {
     local image_key="${OPENCLAW_IMAGE_API_KEY:-${QIHANG_IMAGE_API_KEY:-$QIHANG_IMAGE_API_KEY_DEFAULT}}"
     local image_api_url_raw="${OPENCLAW_IMAGE_API_URL:-${QIHANG_IMAGE_BASE_URL:-$QIHANG_IMAGE_BASE_URL_DEFAULT}}"
     local image_model="${OPENCLAW_IMAGE_MODEL:-${QIHANG_IMAGE_MODEL_GEMINI:-$QIHANG_IMAGE_MODEL_GEMINI_DEFAULT}}"
-    local image_base_url="" image_endpoint="" host_part=""
+    local image_base_url="" image_endpoint="" split_result=""
 
     image_api_url_raw="$(trim_value_menu "$image_api_url_raw")"
     [ -n "$image_api_url_raw" ] || image_api_url_raw="https://api.viviai.cc/v1/chat/completions"
 
-    if [[ "$image_api_url_raw" == http://* || "$image_api_url_raw" == https://* ]]; then
-        host_part="$(echo "$image_api_url_raw" | sed -E 's#^(https?://[^/]+).*$#\1#')"
-        image_endpoint="${image_api_url_raw#"$host_part"}"
-        [ -n "$image_endpoint" ] || image_endpoint="/v1/chat/completions"
-        image_base_url="$host_part"
+    load_openclaw_common_lib_menu >/dev/null 2>&1 || true
+    if command -v openclaw_split_api_url >/dev/null 2>&1; then
+        split_result="$(openclaw_split_api_url "$image_api_url_raw" "/v1/chat/completions")"
+        image_base_url="${split_result%%|*}"
+        image_endpoint="${split_result#*|}"
     else
-        image_base_url="$image_api_url_raw"
-        image_endpoint="/v1/chat/completions"
+        local host_part=""
+        if [[ "$image_api_url_raw" == http://* || "$image_api_url_raw" == https://* ]]; then
+            host_part="$(echo "$image_api_url_raw" | sed -E 's#^(https?://[^/]+).*$#\1#')"
+            image_endpoint="${image_api_url_raw#"$host_part"}"
+            [ -n "$image_endpoint" ] || image_endpoint="/v1/chat/completions"
+            image_base_url="$host_part"
+        else
+            image_base_url="$image_api_url_raw"
+            image_endpoint="/v1/chat/completions"
+        fi
     fi
 
     upsert_env_export "OPENCLAW_IMAGE_PROVIDER" "viviai"
@@ -2156,10 +2212,12 @@ apply_profile_advanced_model_routing_menu() {
         *) return 0 ;;
     esac
 
-    local adv_type="${UNOFFICIAL_ADVANCED_DEFAULT_TYPE:-openai}"
-    local adv_api_type="openai"
-    local adv_url="${OPENCLAW_RULE_ADVANCED_MODEL_API_URL:-${OPENCLAW_UNOFFICIAL_ADVANCED_OPENAI_API_URL:-${UNOFFICIAL_ADVANCED_DEFAULT_URL_OPENAI:-https://www.leishen-ai.cn/openai}}}"
-    local adv_model="${OPENCLAW_RULE_ADVANCED_MODEL_NAME:-${OPENCLAW_UNOFFICIAL_ADVANCED_MODEL:-${UNOFFICIAL_ADVANCED_DEFAULT_MODEL_GPT:-Gpt-5.4}}}"
+    local expert_provider="${OPENCLAW_EXPERT_PROVIDER:-openai}"
+    local adv_api_type="$expert_provider"
+    local adv_type="$( [ "$expert_provider" = "anthropic" ] && echo "claude" || echo "gpt" )"
+    local expert_provider="${OPENCLAW_EXPERT_PROVIDER:-openai}"
+    local adv_url="${OPENCLAW_RULE_ADVANCED_MODEL_API_URL:-${OPENCLAW_UNOFFICIAL_ADVANCED_OPENAI_API_URL:-${OPENCLAW_UNOFFICIAL_ADVANCED_DEFAULT_URL_OPENAI:-https://api.openai.com/v1}}}"
+    local adv_model="${OPENCLAW_RULE_ADVANCED_MODEL_NAME:-${OPENCLAW_EXPERT_MODEL:-${OPENCLAW_UNOFFICIAL_ADVANCED_MODEL:-GPT-5.4}}}"
     local adv_key="${OPENCLAW_RULE_ADVANCED_MODEL_API_KEY:-${OPENCLAW_UNOFFICIAL_ADVANCED_API_KEY:-${UNOFFICIAL_ADVANCED_DEFAULT_API_KEY:-}}}"
     local routing_strategy="${UNOFFICIAL_ROUTING_DEFAULT_STRATEGY:-auto}"
     local routing_failover="${UNOFFICIAL_ROUTING_DEFAULT_FAILOVER:-1}"
@@ -2215,7 +2273,7 @@ apply_profile_advanced_model_routing_menu() {
         openclaw config set "vendor.control.advanced.model" "$adv_model" >/dev/null 2>&1 || true
         openclaw config set "vendor.control.advanced.apiKey" "$adv_key" >/dev/null 2>&1 || true
         openclaw config set "vendor.control.advanced.bmCommand" "/bm" >/dev/null 2>&1 || true
-        openclaw config set "vendor.control.advanced.routingRule" "complex_or_code_to_subagent" >/dev/null 2>&1 || true
+        openclaw config set "vendor.control.advanced.routingRule" "$( [ -n "$OPENCLAW_EXPERT_MODEL" ] && echo "expert_to_subagent" || echo "complex_or_code_to_subagent" )" >/dev/null 2>&1 || true
     fi
 
     log_info "中/高档默认已启用高级模型路由（${adv_model}，命令: /bm）"
@@ -2284,6 +2342,122 @@ configure_rule_advanced_model_menu() {
         log_warn "高级模型 Key 仍未配置：中/高档规则将保留路由规则，但不会实际切换高级模型。"
     else
         log_info "高级模型配置已保存：${adv_model}"
+    fi
+    press_enter
+}
+
+# 专家模型配置菜单：支持 OpenAI / Anthropic 规范，默认 GPT-5.4 / Claude Sonnet 4.6
+configure_expert_model_menu() {
+    clear_screen
+    print_header
+    echo -e "${WHITE}🧠 专家模型配置${NC}"
+    print_divider
+    echo ""
+    echo -e "${GRAY}用于复杂任务的专家模型路由：编码或超复杂问题将自动触发子 Agent 使用专家模型。${NC}"
+    echo ""
+
+    # 读取当前配置
+    local current_provider="${OPENCLAW_EXPERT_PROVIDER:-openai}"
+    local current_url="${OPENCLAW_EXPERT_API_URL:-https://api.openai.com/v1}"
+    local current_model="${OPENCLAW_EXPERT_MODEL:-GPT-5.4}"
+    local current_key="${OPENCLAW_EXPERT_API_KEY:-}"
+
+    echo -e "${CYAN}当前配置:${NC}"
+    echo -e "  规范类型: ${WHITE}${current_provider}${NC}"
+    echo -e "  API URL:  ${WHITE}${current_url}${NC}"
+    echo -e "  模型:     ${WHITE}${current_model}${NC}"
+    echo -e "  API Key:  $(if [ -n "$current_key" ]; then echo "${GREEN}已配置${NC}"; else echo "${YELLOW}未配置${NC}"; fi)"
+    echo ""
+
+    echo -e "${YELLOW}选择规范类型:${NC}"
+    echo -e "  ${CYAN}[1]${NC} OpenAI 规范（默认模型: GPT-5.4）"
+    echo -e "  ${CYAN}[2]${NC} Anthropic 规范（默认模型: claude-sonnet-4-6）"
+    echo ""
+    read -p "$(echo -e "${YELLOW}请选择 [1-2] (默认: 1): ${NC}")" provider_choice < "$TTY_INPUT"
+    provider_choice="${provider_choice:-1}"
+
+    local provider_type="openai"
+    local default_model="GPT-5.4"
+    local default_url="https://api.openai.com/v1"
+
+    case "$provider_choice" in
+        2)
+            provider_type="anthropic"
+            default_model="claude-sonnet-4-6"
+            default_url="https://api.anthropic.com"
+            ;;
+        *)
+            provider_type="openai"
+            default_model="GPT-5.4"
+            default_url="https://api.openai.com/v1"
+            ;;
+    esac
+
+    echo ""
+    echo -e "${YELLOW}API URL（留空使用默认）:${NC}"
+    echo -e "  默认: ${WHITE}${default_url}${NC}"
+    local input_url=""
+    read_input "API URL: " input_url
+    input_url="$(trim_value_menu "$input_url")"
+    local expert_url="${input_url:-$default_url}"
+
+    echo ""
+    echo -e "${YELLOW}模型名称（留空使用默认 ${default_model}）:${NC}"
+    local input_model=""
+    read_input "模型名称: " input_model
+    input_model="$(trim_value_menu "$input_model")"
+    local expert_model="${input_model:-$default_model}"
+
+    echo ""
+    echo -e "${YELLOW}API Key:${NC}"
+    local input_key=""
+    read_secret_input "API Key: " input_key
+    local expert_key="${input_key:-$current_key}"
+
+    if [ -z "$expert_url" ] || [ -z "$expert_model" ]; then
+        log_error "API URL 和模型名称不能为空"
+        press_enter
+        return
+    fi
+
+    # 保存到环境变量
+    upsert_env_export "OPENCLAW_EXPERT_PROVIDER" "$provider_type"
+    upsert_env_export "OPENCLAW_EXPERT_API_URL" "$expert_url"
+    upsert_env_export "OPENCLAW_EXPERT_MODEL" "$expert_model"
+    upsert_env_export "OPENCLAW_EXPERT_API_KEY" "$expert_key"
+    upsert_env_export "OPENCLAW_EXPERT_ROUTING_RULE" "expert_to_subagent"
+
+    # 同步到高级模型配置（保持向后兼容）
+    upsert_env_export "OPENCLAW_RULE_ADVANCED_MODEL_API_URL" "$expert_url"
+    upsert_env_export "OPENCLAW_RULE_ADVANCED_MODEL_NAME" "$expert_model"
+    upsert_env_export "OPENCLAW_RULE_ADVANCED_MODEL_API_KEY" "$expert_key"
+    upsert_env_export "OPENCLAW_UNOFFICIAL_ADVANCED_API_TYPE" "$provider_type"
+    upsert_env_export "OPENCLAW_UNOFFICIAL_ADVANCED_MODEL_TYPE" "$( [ "$provider_type" = "anthropic" ] && echo "claude" || echo "gpt" )"
+    upsert_env_export "OPENCLAW_UNOFFICIAL_ADVANCED_OPENAI_API_URL" "$expert_url"
+    upsert_env_export "OPENCLAW_UNOFFICIAL_ADVANCED_MODEL" "$expert_model"
+    upsert_env_export "OPENCLAW_UNOFFICIAL_ADVANCED_API_KEY" "$expert_key"
+
+    # 保存到 openclaw config
+    if check_openclaw_installed; then
+        openclaw config set "vendor.expert.provider" "$provider_type" >/dev/null 2>&1 || true
+        openclaw config set "vendor.expert.apiUrl" "$expert_url" >/dev/null 2>&1 || true
+        openclaw config set "vendor.expert.model" "$expert_model" >/dev/null 2>&1 || true
+        openclaw config set "vendor.expert.apiKey" "$expert_key" >/dev/null 2>&1 || true
+        openclaw config set "vendor.expert.routingRule" "expert_to_subagent" >/dev/null 2>&1 || true
+        # 同时更新高级模型配置
+        openclaw config set "vendor.control.advanced.enabled" true >/dev/null 2>&1 || true
+        openclaw config set "vendor.control.advanced.apiType" "$provider_type" >/dev/null 2>&1 || true
+        openclaw config set "vendor.control.advanced.apiUrl" "$expert_url" >/dev/null 2>&1 || true
+        openclaw config set "vendor.control.advanced.model" "$expert_model" >/dev/null 2>&1 || true
+        openclaw config set "vendor.control.advanced.apiKey" "$expert_key" >/dev/null 2>&1 || true
+        openclaw config set "vendor.control.advanced.routingRule" "expert_to_subagent" >/dev/null 2>&1 || true
+    fi
+
+    echo ""
+    if [ -z "$expert_key" ]; then
+        log_warn "专家模型 API Key 未配置：将保留路由规则，但不会实际切换专家模型。"
+    else
+        log_info "专家模型配置已保存（${provider_type}）：${expert_model}"
     fi
     press_enter
 }
@@ -3905,65 +4079,6 @@ config_ai_model() {
                 ;;
         esac
     done
-    return
-    
-    echo -e "${CYAN}选择 AI 提供商:${NC}"
-    echo -e "${GRAY}提示: 支持自定义 API 地址（通过自定义 Provider 配置）${NC}"
-    echo ""
-    echo -e "${WHITE}主流服务商:${NC}"
-    print_menu_item "1" "Anthropic Claude" "🟣"
-    print_menu_item "2" "OpenAI GPT" "🟢"
-    print_menu_item "3" "DeepSeek" "🔵"
-    print_menu_item "4" "Kimi (Moonshot)" "🌙"
-    print_menu_item "5" "Google Gemini" "🔴"
-    echo ""
-    echo -e "${WHITE}多模型网关:${NC}"
-    print_menu_item "6" "OpenRouter (多模型网关)" "🔄"
-    print_menu_item "7" "OpenCode (免费多模型)" "🆓"
-    echo ""
-    echo -e "${WHITE}快速推理:${NC}"
-    print_menu_item "8" "Groq (超快推理)" "⚡"
-    print_menu_item "9" "Mistral AI" "🌬️"
-    echo ""
-    echo -e "${WHITE}本地/企业:${NC}"
-    print_menu_item "10" "Ollama 本地模型" "🟠"
-    print_menu_item "11" "Azure OpenAI" "☁️"
-    echo ""
-    echo -e "${WHITE}国产/其他:${NC}"
-    print_menu_item "12" "xAI Grok" "𝕏"
-    print_menu_item "13" "智谱 GLM (Zai)" "🇨🇳"
-    print_menu_item "14" "MiniMax" "🤖"
-    echo ""
-    echo -e "${WHITE}实验性:${NC}"
-    print_menu_item "15" "Google Gemini CLI" "🧪"
-    print_menu_item "16" "Google Antigravity" "🚀"
-    echo ""
-    print_menu_item "0" "返回主菜单" "↩️"
-    echo ""
-    
-    echo -en "${YELLOW}请选择 [0-16]: ${NC}"
-    read choice < "$TTY_INPUT"
-    
-    case $choice in
-        1) config_anthropic ;;
-        2) config_openai ;;
-        3) config_deepseek ;;
-        4) config_kimi ;;
-        5) config_google_gemini ;;
-        6) config_openrouter ;;
-        7) config_opencode ;;
-        8) config_groq ;;
-        9) config_mistral ;;
-        10) config_ollama ;;
-        11) config_azure_openai ;;
-        12) config_xai ;;
-        13) config_zai ;;
-        14) config_minimax ;;
-        15) config_google_gemini_cli ;;
-        16) config_google_antigravity ;;
-        0) return ;;
-        *) log_error "无效选择"; press_enter; config_ai_model ;;
-    esac
 }
 
 config_image_provider_viviai() {
@@ -10600,8 +10715,6 @@ configure_minimax_multimodal_vendor_menu() {
     check_openclaw_installed || return 0
 
     openclaw config set "vendor.media.minimax.apiHost" "$api_host" >/dev/null 2>&1 || true
-    openclaw config set "vendor.media.minimax.image.model" "${MINIMAX_IMAGE_MODEL:-$MINIMAX_IMAGE_MODEL_DEFAULT}" >/dev/null 2>&1 || true
-    openclaw config set "vendor.media.minimax.image.endpoint" "${MINIMAX_IMAGE_ENDPOINT:-$MINIMAX_IMAGE_ENDPOINT_DEFAULT}" >/dev/null 2>&1 || true
     openclaw config set "vendor.media.minimax.tts.model" "${MINIMAX_TTS_MODEL:-$MINIMAX_TTS_MODEL_DEFAULT}" >/dev/null 2>&1 || true
     openclaw config set "vendor.media.minimax.tts.endpoint" "${MINIMAX_TTS_ENDPOINT:-$MINIMAX_TTS_ENDPOINT_DEFAULT}" >/dev/null 2>&1 || true
     openclaw config set "vendor.media.minimax.video.model" "${MINIMAX_VIDEO_MODEL:-$MINIMAX_VIDEO_MODEL_DEFAULT}" >/dev/null 2>&1 || true
@@ -10631,10 +10744,6 @@ payload = {
     "api_key": "$api_key",
     "api_host": "$api_host",
     "output_path": "${MINIMAX_MULTIMODAL_OUTPUT_PATH:-$MINIMAX_MULTIMODAL_OUTPUT_PATH_DEFAULT}",
-    "image": {
-        "model": "${MINIMAX_IMAGE_MODEL:-$MINIMAX_IMAGE_MODEL_DEFAULT}",
-        "endpoint": "${MINIMAX_IMAGE_ENDPOINT:-$MINIMAX_IMAGE_ENDPOINT_DEFAULT}"
-    },
     "tts": {
         "model": "${MINIMAX_TTS_MODEL:-$MINIMAX_TTS_MODEL_DEFAULT}",
         "endpoint": "${MINIMAX_TTS_ENDPOINT:-$MINIMAX_TTS_ENDPOINT_DEFAULT}"
@@ -10660,10 +10769,6 @@ PYEOF
   "api_key": "$api_key",
   "api_host": "$api_host",
   "output_path": "${MINIMAX_MULTIMODAL_OUTPUT_PATH:-$MINIMAX_MULTIMODAL_OUTPUT_PATH_DEFAULT}",
-  "image": {
-    "model": "${MINIMAX_IMAGE_MODEL:-$MINIMAX_IMAGE_MODEL_DEFAULT}",
-    "endpoint": "${MINIMAX_IMAGE_ENDPOINT:-$MINIMAX_IMAGE_ENDPOINT_DEFAULT}"
-  },
   "tts": {
     "model": "${MINIMAX_TTS_MODEL:-$MINIMAX_TTS_MODEL_DEFAULT}",
     "endpoint": "${MINIMAX_TTS_ENDPOINT:-$MINIMAX_TTS_ENDPOINT_DEFAULT}"
@@ -10700,8 +10805,6 @@ repair_minimax_multimodal_defaults_menu() {
     upsert_env_export "MINIMAX_API_HOST" "$api_host"
     [ -n "$custom_provider_url" ] && upsert_env_export "OPENCLAW_MINIMAX_PROVIDER_URL" "$custom_provider_url"
     upsert_env_export "MINIMAX_MULTIMODAL_OUTPUT_PATH" "${MINIMAX_MULTIMODAL_OUTPUT_PATH:-$MINIMAX_MULTIMODAL_OUTPUT_PATH_DEFAULT}"
-    upsert_env_export "MINIMAX_IMAGE_MODEL" "${MINIMAX_IMAGE_MODEL:-$MINIMAX_IMAGE_MODEL_DEFAULT}"
-    upsert_env_export "MINIMAX_IMAGE_ENDPOINT" "${MINIMAX_IMAGE_ENDPOINT:-$MINIMAX_IMAGE_ENDPOINT_DEFAULT}"
     upsert_env_export "MINIMAX_TTS_MODEL" "${MINIMAX_TTS_MODEL:-$MINIMAX_TTS_MODEL_DEFAULT}"
     upsert_env_export "MINIMAX_TTS_ENDPOINT" "${MINIMAX_TTS_ENDPOINT:-$MINIMAX_TTS_ENDPOINT_DEFAULT}"
     upsert_env_export "MINIMAX_VIDEO_MODEL" "${MINIMAX_VIDEO_MODEL:-$MINIMAX_VIDEO_MODEL_DEFAULT}"
@@ -10811,8 +10914,6 @@ EOF
             OPENCLAW_MINIMAX_PROVIDER_URL="$minimax_provider_url"
             upsert_env_export "MINIMAX_API_HOST" "$minimax_api_host"
             upsert_env_export "MINIMAX_MULTIMODAL_OUTPUT_PATH" "${MINIMAX_MULTIMODAL_OUTPUT_PATH:-$MINIMAX_MULTIMODAL_OUTPUT_PATH_DEFAULT}"
-            upsert_env_export "MINIMAX_IMAGE_MODEL" "${MINIMAX_IMAGE_MODEL:-$MINIMAX_IMAGE_MODEL_DEFAULT}"
-            upsert_env_export "MINIMAX_IMAGE_ENDPOINT" "${MINIMAX_IMAGE_ENDPOINT:-$MINIMAX_IMAGE_ENDPOINT_DEFAULT}"
             upsert_env_export "MINIMAX_TTS_MODEL" "${MINIMAX_TTS_MODEL:-$MINIMAX_TTS_MODEL_DEFAULT}"
             upsert_env_export "MINIMAX_TTS_ENDPOINT" "${MINIMAX_TTS_ENDPOINT:-$MINIMAX_TTS_ENDPOINT_DEFAULT}"
             upsert_env_export "MINIMAX_VIDEO_MODEL" "${MINIMAX_VIDEO_MODEL:-$MINIMAX_VIDEO_MODEL_DEFAULT}"
@@ -12283,10 +12384,11 @@ advanced_settings() {
     print_menu_item "9" "token规划规则注入（低/中/高/跳过）" "🏭"
     print_menu_item "10" "配置修复 / 迁移（保留记忆）" "🩺"
     print_menu_item "11" "高级模型配置（中/高档）" "🚀"
+    print_menu_item "12" "专家模型配置（OpenAI/Anthropic）" "🧠"
     print_menu_item "0" "返回主菜单" "↩️"
     echo ""
-    
-    echo -en "${YELLOW}请选择 [0-11]: ${NC}"
+
+    echo -en "${YELLOW}请选择 [0-12]: ${NC}"
     read choice < "$TTY_INPUT"
     
     case $choice in
@@ -12352,6 +12454,9 @@ advanced_settings() {
             ;;
         11)
             configure_rule_advanced_model_menu
+            ;;
+        12)
+            configure_expert_model_menu
             ;;
         0)
             return

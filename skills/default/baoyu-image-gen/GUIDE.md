@@ -1,7 +1,7 @@
 # baoyu-image-gen 使用指南
 
 ## 1. 功能定位
-- AI image generation with OpenAI, Google, OpenRouter, DashScope, Jimeng, Seedream and Replicate APIs. Supports text-to-image, reference images, aspect ratios, and batch generation from saved prompt files. Sequential by default; use batch parallel generation when the user already has multiple prompts or wants stable multi-image throughput. Use when user asks to generate, create, or draw images.
+- AI image generation with OpenAI, Google, OpenRouter, DashScope, Jimeng, Seedream and Replicate APIs. Supports text-to-image, reference images, aspect ratios, and batch generatio...
 - 默认档位: 仅全量默认包/手动同步
 - 仓库目录: `skills/default/baoyu-image-gen`
 - 安装后目录: `~/.openclaw/skills/baoyu-image-gen`

@@ -1,7 +1,7 @@
 # seo-geo 使用指南
 
 ## 1. 功能定位
-- |
+- SEO & GEO (Generative Engine Optimization) for websites. Analyze keywords, generate schema markup, optimize for AI search engines (ChatGPT, Perplexity, Gemini, Copilot, Claude)...
 - 默认档位: 仅全量默认包/手动同步
 - 仓库目录: `skills/default/seo-geo`
 - 安装后目录: `~/.openclaw/skills/seo-geo`

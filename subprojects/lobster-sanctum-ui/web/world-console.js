@@ -33,7 +33,7 @@ const roleProfiles = {
   summoner: { className: "组织管理", title: "管理者 · 召唤师" },
   warrior: { className: "工程开发", title: "技术员 · 战士" },
   paladin: { className: "增长运营", title: "营销者 · 圣骑士" },
-  archer: { className: "设计创意", title: "设计师 · 弓箭手" },
+  designer: { className: "设计创意", title: "设计师" },
 };
 
 const stations = {
@@ -81,11 +81,12 @@ function notifyParent(type, payload) {
 }
 
 function readRole() {
-  const role =
+  const rawRole =
     PAGE_PARAMS.get("role") ||
     serverRole ||
     window.localStorage.getItem(PERSONA_KEY) ||
     "druid";
+  const role = rawRole === "archer" ? "designer" : rawRole;
   return roleProfiles[role] ? role : "druid";
 }
 
@@ -103,7 +104,8 @@ function equipSlotsFromCatalog(payload) {
 
 function buildProjectionFromCatalog(payload) {
   if (!payload?.ok) return null;
-  const role = roleProfiles[payload.role] ? payload.role : "druid";
+  const normalizedRole = payload.role === "archer" ? "designer" : payload.role;
+  const role = roleProfiles[normalizedRole] ? normalizedRole : "druid";
   const roleState = readRoleState(role) || {};
   const meta = roleProfiles[role] || roleProfiles.druid;
   const installedSkills = Array.isArray(payload?.skills?.installed) ? payload.skills.installed : [];

@@ -1,7 +1,7 @@
 # baoyu-markdown-to-html 使用指南
 
 ## 1. 功能定位
-- Converts Markdown to styled HTML with WeChat-compatible themes. Supports code highlighting, math, PlantUML, footnotes, alerts, infographics, and optional bottom citations for external links. Use when user asks for "markdown to html", "convert md to html", "md 转 html", "微信外链转底部引用", or needs styled HTML output from markdown.
+- Converts Markdown to styled HTML with WeChat-compatible themes. Supports code highlighting, math, PlantUML, footnotes, alerts, infographics, and optional bottom citations for ex...
 - 默认档位: 仅全量默认包/手动同步
 - 仓库目录: `skills/default/baoyu-markdown-to-html`
 - 安装后目录: `~/.openclaw/skills/baoyu-markdown-to-html`

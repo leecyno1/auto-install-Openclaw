@@ -1,7 +1,7 @@
 # programmatic-seo 使用指南
 
 ## 1. 功能定位
-- When the user wants to create SEO-driven pages at scale using templates and data. Also use when the user mentions "programmatic SEO," "template pages," "pages at scale," "directory pages," "location pages," "[keyword] + [city] pages," "comparison pages," "integration pages," or "building many pages for SEO." For auditing existing SEO issues, see seo-audit.
+- When the user wants to create SEO-driven pages at scale using templates and data. Also use when the user mentions "programmatic SEO," "template pages," "pages at scale," "direct...
 - 默认档位: 仅全量默认包/手动同步
 - 仓库目录: `skills/default/programmatic-seo`
 - 安装后目录: `~/.openclaw/skills/programmatic-seo`

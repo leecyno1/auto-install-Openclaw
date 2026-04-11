@@ -1,7 +1,7 @@
 # wechat-multi-publisher 使用指南
 
 ## 1. 功能定位
-- Publish one or multiple Markdown articles to WeChat Official Account (公众号) draft box in a single API call. Supports multi-article combined drafts (main article + sub-articles), smart cover image selection with Unsplash auto-match + 12-image fallback rotation, custom styling (gold quote highlights, && section dividers, accent headings), inline image auto-upload to WeChat CDN, digest auto-extraction, and optional immediate publish. Activate when user wants to push Markdown files to WeChat MP, publish to 公众号草稿箱, schedule WeChat articles, or automate public account content delivery.
+- Publish one or multiple Markdown articles to WeChat Official Account (公众号) draft box in a single API call. Supports multi-article combined drafts (main article + sub-articles),...
 - 默认档位: 仅全量默认包/手动同步
 - 仓库目录: `skills/default/wechat-multi-publisher`
 - 安装后目录: `~/.openclaw/skills/wechat-multi-publisher`

@@ -1,7 +1,7 @@
 # domain-hunter 使用指南
 
 ## 1. 功能定位
-- Search domains, compare prices, find promo codes, get purchase recommendations. Use when user wants to buy a domain, check domain prices, find domain deals, compare registrars, or search for .ai/.com domains.
+- Search domains, compare prices, find promo codes, get purchase recommendations. Use when user wants to buy a domain, check domain prices, find domain deals, compare registrars,...
 - 默认档位: 仅全量默认包/手动同步
 - 仓库目录: `skills/default/domain-hunter`
 - 安装后目录: `~/.openclaw/skills/domain-hunter`

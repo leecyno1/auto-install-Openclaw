@@ -237,7 +237,7 @@ body.config-body.world-console-embedded {
 }
 
 .tasks-grid {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
 }
 
 .panel-card {
@@ -614,6 +614,7 @@ body.config-body.world-console-embedded {
   display: grid;
   grid-template-columns: minmax(0, 1.2fr) 320px;
   gap: 10px;
+  align-items: stretch;
 }
 
 .skill-tile-grid,
@@ -671,7 +672,7 @@ body.config-body.world-console-embedded {
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  min-height: 30px;
+  min-height: 24px;
 }
 
 .skill-actions,
@@ -768,28 +769,37 @@ body.config-body.world-console-embedded {
   min-width: 0;
 }
 
+.tab-panel[data-panel="equipment"] .set-note-card,
+.tab-panel[data-panel="equipment"] .tool-note-card,
+.tab-panel[data-panel="equipment"] .equipment-center-card,
+.tab-panel[data-panel="equipment"] .inventory-card {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+}
+
 .status-grid .wide,
 .tasks-grid .wide {
   grid-column: 1 / -1;
 }
 
 .equipment-board {
-  padding: 10px;
+  padding: 8px;
   border: 1px solid rgba(126, 164, 231, 0.14);
   background: rgba(8, 12, 19, 0.78);
+  height: 100%;
 }
 
 .mannequin-board {
   position: relative;
-  min-height: 640px;
+  min-height: 470px;
 }
 
 .equipment-portrait-wrap {
   position: absolute;
   left: 50%;
-  top: 57%;
-  width: 252px;
-  height: 540px;
+  top: 55%;
+  width: 220px;
+  height: 420px;
   transform: translate(-50%, -50%);
   pointer-events: none;
 }
@@ -816,16 +826,16 @@ body.config-body.world-console-embedded {
 
 .equipment-slot-layer {
   position: relative;
-  min-height: 640px;
+  min-height: 470px;
 }
 
 .equipment-slot {
   position: absolute;
   display: grid;
   gap: 4px;
-  width: 134px;
-  min-height: 74px;
-  padding: 7px;
+  width: 118px;
+  min-height: 66px;
+  padding: 6px;
   border: 1px solid rgba(126, 164, 231, 0.16);
   background: rgba(10, 15, 23, 0.92);
 }
@@ -840,16 +850,13 @@ body.config-body.world-console-embedded {
   font-size: 10px;
 }
 
-.slot-head { left: calc(50% - 146px); top: 32px; }
-.slot-core { left: calc(50% + 12px); top: 32px; }
-.slot-belt { left: calc(50% - 146px); top: 540px; }
-.slot-shoulders { left: 22px; top: 156px; }
-.slot-mainhand { left: 22px; top: 284px; }
-.slot-legs { left: 22px; top: 412px; }
-.slot-offhand { right: 22px; top: 156px; }
-.slot-ring { right: 22px; top: 284px; }
-.slot-boots { right: 22px; top: 412px; }
-.slot-chest { left: calc(50% + 12px); top: 540px; right: auto; }
+.slot-head { left: calc(50% - 128px); top: 18px; }
+.slot-amulet { left: calc(50% + 10px); top: 18px; }
+.slot-mainhand { left: 12px; top: 126px; }
+.slot-offhand { right: 12px; top: 126px; }
+.slot-chest { left: calc(50% - 128px); top: 354px; right: auto; }
+.slot-belt { left: calc(50% + 10px); top: 354px; right: auto; }
+.slot-boots { left: calc(50% - 59px); top: 420px; right: auto; }
 
 .inventory-grid {
   grid-template-columns: repeat(6, minmax(0, 1fr));
@@ -857,7 +864,7 @@ body.config-body.world-console-embedded {
 }
 
 .inventory-tile {
-  min-height: 118px;
+  min-height: 96px;
 }
 
 .inventory-tile .glyph {
@@ -976,9 +983,70 @@ body.config-body.world-console-embedded {
   gap: 6px;
 }
 
+#workflowBoard {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+#rewardBoard {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.task-dispatch-card {
+  display: grid;
+  gap: 8px;
+}
+
+.task-dispatch-label {
+  color: var(--blue);
+  font-size: 10px;
+  font-family: "ArkPixelWorkbench", monospace;
+  letter-spacing: 0.06em;
+}
+
+.task-dispatch-card textarea {
+  min-height: 60px;
+  resize: vertical;
+}
+
+.task-dispatch-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.task-dispatch-row small {
+  color: var(--muted);
+  font-size: 10px;
+}
+
+#taskDispatchOutput {
+  min-height: 54px;
+  max-height: 110px;
+  margin: 0;
+  overflow: auto;
+  padding: 8px 10px;
+  border: 1px solid rgba(126, 164, 231, 0.16);
+  background: rgba(8, 12, 19, 0.88);
+  color: var(--text);
+  font-size: 11px;
+  line-height: 1.45;
+  white-space: pre-wrap;
+}
+
 .task-card {
   display: grid;
   gap: 2px;
+  padding: 7px 9px;
+  min-height: 54px;
+}
+
+.future-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.future-grid article {
   padding: 8px 10px;
 }
 
@@ -1201,4 +1269,178 @@ body.config-body *::after {
   backdrop-filter: none !important;
   filter: none !important;
   text-shadow: none !important;
+}
+
+/* Compact pass for unified control center */
+.config-shell {
+  width: min(1460px, calc(100vw - 16px));
+  padding: 8px;
+}
+
+.config-banner {
+  padding: 10px 12px 8px;
+}
+
+.panel-card {
+  padding: 10px;
+}
+
+.panel-head {
+  margin-bottom: 6px;
+}
+
+.panel-head h2 {
+  font-size: 16px;
+}
+
+.tab-bar {
+  gap: 6px;
+  margin-top: 8px;
+  padding: 6px;
+}
+
+.tab-button {
+  min-width: 96px;
+  min-height: 34px;
+  padding: 0 10px;
+}
+
+.tab-toolbar {
+  padding: 2px 0;
+}
+
+.role-grid {
+  grid-template-columns: 1.12fr 1fr;
+}
+
+.role-controls-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.identity-card {
+  grid-column: 1 / -1;
+}
+
+.identity-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.skill-layout {
+  grid-template-columns: 1.35fr 1fr;
+  grid-template-areas:
+    "installed library"
+    "installed pack";
+  gap: 10px;
+}
+
+.tab-panel[data-panel="skills"].active,
+.tab-panel[data-panel="equipment"].active {
+  align-content: start;
+  max-height: calc(100vh - 194px);
+  overflow: hidden;
+}
+
+.tab-panel[data-panel="skills"] .panel-card,
+.tab-panel[data-panel="equipment"] .panel-card {
+  min-height: 0;
+}
+
+.tab-panel[data-panel="skills"] .skill-layout {
+  height: calc(100vh - 244px);
+  min-height: 0;
+  align-items: start;
+}
+
+.tab-panel[data-panel="skills"] #installedSkillGrid {
+  max-height: calc(100vh - 346px);
+  overflow: auto;
+  padding-right: 4px;
+}
+
+.tab-panel[data-panel="skills"] #skillLibraryGrid {
+  max-height: calc(100vh - 346px);
+  overflow: auto;
+  padding-right: 4px;
+}
+
+.tab-panel[data-panel="skills"] #skillInspector {
+  max-height: calc(100vh - 346px);
+  overflow: auto;
+}
+
+.tab-panel[data-panel="skills"] #skillPackSummary {
+  max-height: 150px;
+  overflow: auto;
+}
+
+.skill-layout > .panel-card:nth-child(1) { grid-area: installed; }
+.skill-layout > .panel-card:nth-child(2) { grid-area: library; }
+.skill-layout > .panel-card:nth-child(3) { grid-area: pack; }
+
+.skill-library-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(165px, 1fr));
+  gap: 7px;
+}
+
+.skill-tile {
+  gap: 4px;
+  padding: 7px;
+}
+
+.skill-tile p {
+  min-height: 24px;
+  font-size: 10px;
+  line-height: 1.35;
+}
+
+.equipment-layout {
+  grid-template-columns: 210px minmax(0, 1fr) 220px;
+  gap: 8px;
+  grid-template-rows: minmax(0, 1fr) 186px;
+  height: calc(100vh - 244px);
+  min-height: 0;
+}
+
+.inventory-grid {
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+
+.inventory-card {
+  grid-column: 1 / -1;
+}
+
+.tab-panel[data-panel="equipment"] .set-note-card .stack-list,
+.tab-panel[data-panel="equipment"] .tool-note-card .tool-inspector,
+.tab-panel[data-panel="equipment"] .inventory-card #inventoryGrid {
+  max-height: 100%;
+  overflow: auto;
+  padding-right: 4px;
+}
+
+.status-grid {
+  gap: 10px;
+}
+
+.status-level-card .status-highlight {
+  gap: 6px 10px;
+  padding: 8px;
+}
+
+.status-system-card .status-metric-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.metric-card {
+  padding: 7px 9px;
+}
+
+.tasks-grid {
+  gap: 10px;
+}
+
+.task-card {
+  padding: 7px 9px;
 }

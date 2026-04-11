@@ -1,7 +1,7 @@
 # video-download 使用指南
 
 ## 1. 功能定位
-- Download videos from 1800+ websites and generate subtitles using Faster Whisper AI. Use when user wants to download videos from YouTube, Bilibili, Twitter, TikTok, Facebook, Vimeo, or any other supported video site, extract audio, or transcribe video content to text/subtitles.
+- Download videos from 1800+ websites and generate subtitles using Faster Whisper AI. Use when user wants to download videos from YouTube, Bilibili, Twitter, TikTok, Facebook, Vim...
 - 默认档位: 仅全量默认包/手动同步
 - 仓库目录: `skills/default/video-download`
 - 安装后目录: `~/.openclaw/skills/video-download`

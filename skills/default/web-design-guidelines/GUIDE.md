@@ -1,7 +1,7 @@
 # web-design-guidelines 使用指南
 
 ## 1. 功能定位
-- Review UI code for Web Interface Guidelines compliance. Use when asked to "review my UI", "check accessibility", "audit design", "review UX", or "check my site against best practices".
+- Review UI code for Web Interface Guidelines compliance. Use when asked to "review my UI", "check accessibility", "audit design", "review UX", or "check my site against best prac...
 - 默认档位: 仅全量默认包/手动同步
 - 仓库目录: `skills/default/web-design-guidelines`
 - 安装后目录: `~/.openclaw/skills/web-design-guidelines`

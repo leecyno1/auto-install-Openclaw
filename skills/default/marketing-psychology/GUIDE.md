@@ -1,7 +1,7 @@
 # marketing-psychology 使用指南
 
 ## 1. 功能定位
-- When the user wants to apply psychological principles, mental models, or behavioral science to marketing. Also use when the user mentions 'psychology,' 'mental models,' 'cognitive bias,' 'persuasion,' 'behavioral science,' 'why people buy,' 'decision-making,' or 'consumer behavior.' This skill provides 70+ mental models organized for marketing application.
+- When the user wants to apply psychological principles, mental models, or behavioral science to marketing. Also use when the user mentions 'psychology,' 'mental models,' 'cogniti...
 - 默认档位: 仅全量默认包/手动同步
 - 仓库目录: `skills/default/marketing-psychology`
 - 安装后目录: `~/.openclaw/skills/marketing-psychology`

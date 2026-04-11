@@ -18,6 +18,10 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+QUOTA_RESERVATION_ID=""
+
+# shellcheck source=/dev/null
+source "$PROJECT_ROOT/scripts/quota.sh"
 
 API_BASE="${MINIMAX_API_HOST:-https://api.minimaxi.com}/v1"
 MUSIC_API_URL="${API_BASE}/music_generation"
@@ -299,6 +303,7 @@ generate_music_instrumental() {
 main() {
   load_env
   check_api_key
+  quota_setup_trap
 
   local scenes=() model="" segment_duration=10 resolution="768P"
   local first_frame="" subject_reference="" crossfade=0.5
@@ -361,6 +366,8 @@ USAGE
   if [[ -z "$output" ]]; then
     echo "Error: --output / -o is required" >&2; exit 1
   fi
+
+  quota_reserve_or_exit "video" "1" "minimax-long-video"
 
   local output_dir
   output_dir="$(dirname "$output")"
@@ -474,6 +481,7 @@ USAGE
   echo "=== Done! Output: $output ==="
   echo "  Intermediate files in: $tmpdir"
   echo "  Delete with: rm -rf $tmpdir"
+  quota_commit_or_warn
 }
 
 main "$@"

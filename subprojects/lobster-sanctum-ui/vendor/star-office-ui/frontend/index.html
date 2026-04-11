@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Star 的像素办公室</title>
+    <title>OpenClaw 像素基地</title>
     <style>
         @font-face {
             font-family: 'ArkPixel';
@@ -139,6 +139,45 @@
             text-overflow: ellipsis;
             line-height: 1.2;
         }
+        #runtime-summary-card {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            width: min(360px, calc(100% - 24px));
+            padding: 10px 12px;
+            border: 2px solid #0e1119;
+            background: rgba(9, 14, 22, 0.92);
+            color: #dbeafe;
+            font-family: 'ArkPixel', 'Courier New', monospace;
+            z-index: 32;
+        }
+        #runtime-summary-title {
+            color: #f8d477;
+            font-size: 12px;
+            margin-bottom: 6px;
+            letter-spacing: .4px;
+        }
+        .runtime-summary-row {
+            display: grid;
+            grid-template-columns: 76px 1fr;
+            gap: 8px;
+            align-items: start;
+            margin-bottom: 4px;
+            font-size: 11px;
+            line-height: 1.35;
+        }
+        .runtime-summary-row:last-child {
+            margin-bottom: 0;
+        }
+        .runtime-summary-label {
+            color: #93c5fd;
+            text-transform: uppercase;
+            letter-spacing: .2px;
+        }
+        .runtime-summary-value {
+            color: #e5efff;
+            word-break: break-word;
+        }
         /* 状态控制栏 */
         #control-bar {
             position: relative;
@@ -222,7 +261,7 @@
             align-items: stretch;
         }
         #control-buttons .control-row-primary {
-            grid-template-columns: repeat(4, minmax(0, 1fr)) 52px;
+            grid-template-columns: repeat(4, minmax(0, 1fr)) 64px;
         }
         #control-buttons .control-row-secondary {
             grid-template-columns: repeat(5, minmax(0, 1fr));
@@ -639,13 +678,10 @@
                     transparent 1px,
                     transparent 10px
                 );
-            box-shadow:
-                0 18px 44px rgba(0,0,0,0.36),
-                inset 0 0 0 1px rgba(96, 165, 250, 0.12);
+            box-shadow: inset 0 0 0 1px rgba(96, 165, 250, 0.12);
             color: #e5efff;
             font-family: 'ArkPixel', monospace;
             pointer-events: none;
-            backdrop-filter: blur(5px);
         }
         #room-workbench-hud.is-active {
             border-color: rgba(96, 165, 250, 0.72);
@@ -698,15 +734,12 @@
         #workbench-overlay {
             position: fixed;
             inset: 0;
-            background:
-                radial-gradient(circle at 50% 16%, rgba(59, 130, 246, 0.12), transparent 34%),
-                linear-gradient(rgba(4, 7, 14, 0.8), rgba(4, 7, 14, 0.88));
+            background: rgba(4, 7, 14, 0.84);
             z-index: 1000020;
             display: none;
             align-items: center;
             justify-content: center;
             padding: 18px;
-            backdrop-filter: blur(6px);
         }
         #workbench-overlay.open {
             display: flex;
@@ -968,11 +1001,11 @@
             font-weight: 400 !important;
             font-size: 11px !important;
             text-shadow: none !important;
-            width: 52px !important;
-            min-width: 52px !important;
+            width: 64px !important;
+            min-width: 64px !important;
             height: 52px !important;
             min-height: 52px !important;
-            padding: 0 4px 8px !important;
+            padding: 0 2px 8px !important;
             line-height: 1 !important;
             transition: padding-top .08s ease, padding-bottom .08s ease, filter .12s ease;
         }
@@ -1321,7 +1354,7 @@
                 gap: 6px;
             }
             #control-buttons .control-row-primary {
-                grid-template-columns: repeat(4, minmax(0, 1fr)) 40px;
+                grid-template-columns: repeat(4, minmax(0, 1fr)) 48px;
             }
             #control-buttons .control-row-secondary {
                 grid-template-columns: repeat(5, minmax(0, 1fr));
@@ -1332,8 +1365,8 @@
                 font-size: 11px;
             }
             #control-bar #btn-open-drawer {
-                width: 40px !important;
-                min-width: 40px !important;
+                width: 48px !important;
+                min-width: 48px !important;
                 height: 40px !important;
                 min-height: 40px !important;
                 font-size: 9px !important;
@@ -1360,8 +1393,18 @@
                 padding: 8px 12px;
             }
 
-            #coords-toggle,
-            #pan-toggle,
+            #runtime-summary-card {
+                width: calc(100vw - 20px);
+                right: 10px;
+                top: calc(env(safe-area-inset-top, 0px) + 10px);
+                padding: 8px 10px;
+            }
+
+            .runtime-summary-row {
+                grid-template-columns: 70px 1fr;
+                font-size: 10px;
+            }
+
             #lang-btn-en,
             #lang-btn-jp,
             #lang-btn-cn {
@@ -1462,6 +1505,14 @@
         <div id="game-container">
             <div id="game-skeleton"><div class="hint">正在进入像素办公室…</div></div>
             <div id="status-text">加载中...</div>
+            <aside id="runtime-summary-card" aria-live="polite">
+                <div id="runtime-summary-title">运行摘要</div>
+                <div class="runtime-summary-row"><span class="runtime-summary-label" id="runtime-summary-label-role">角色</span><span class="runtime-summary-value" id="runtime-summary-role">-</span></div>
+                <div class="runtime-summary-row"><span class="runtime-summary-label" id="runtime-summary-label-build">构筑</span><span class="runtime-summary-value" id="runtime-summary-build">-</span></div>
+                <div class="runtime-summary-row"><span class="runtime-summary-label" id="runtime-summary-label-route">路由</span><span class="runtime-summary-value" id="runtime-summary-route">-</span></div>
+                <div class="runtime-summary-row"><span class="runtime-summary-label" id="runtime-summary-label-state">状态</span><span class="runtime-summary-value" id="runtime-summary-state">-</span></div>
+                <div class="runtime-summary-row"><span class="runtime-summary-label" id="runtime-summary-label-updated">更新时间</span><span class="runtime-summary-value" id="runtime-summary-updated">-</span></div>
+            </aside>
         </div>
     
     <!-- 底部面板容器 -->
@@ -1479,14 +1530,14 @@
         
         <!-- 状态控制栏 -->
         <div id="control-bar">
-            <div id="control-bar-title">Star 状态</div>
+            <div id="control-bar-title">OpenClaw 控制台</div>
             <div id="control-buttons">
                 <div class="control-row control-row-primary">
                     <button id="btn-state-idle" onclick="setState('idle','待命')">待命</button>
                     <button id="btn-state-writing" onclick="setState('writing','工作中')">工作</button>
                     <button id="btn-state-syncing" onclick="setState('syncing','同步中')">同步</button>
                     <button id="btn-state-error" onclick="setState('error','报警中')">报警</button>
-                    <button id="btn-open-drawer" onclick="toggleAssetDrawer()" title="装修房间">装修</button>
+                    <button id="btn-open-drawer" onclick="toggleAssetDrawer()" title="装修房间">装修房间</button>
                 </div>
                 <div class="control-row control-row-secondary">
                     <button id="btn-open-role" class="btn-workbench" onclick="openWorkbench('role')">职业</button>
@@ -1619,15 +1670,6 @@
             </div>
         </section>
     </div>
-    <div id="coords-overlay" style="display:none; position:fixed; pointer-events:none; background:rgba(0,0,0,0.85); color:#fff; font-family:ArkPixel,monospace; font-size:14px; padding:8px 12px; border-radius:4px; z-index:99999;">
-        <div id="coords-display">X: 0 | Y: 0</div>
-    </div>
-    <button id="coords-toggle" style="position:fixed; top:calc(env(safe-area-inset-top, 0px) + 12px); right:12px; z-index:999999; padding:8px 10px; font-family:ArkPixel,monospace; font-size:13px; cursor:pointer; border:2px solid #333; border-radius:5px; background:#333; color:#fff;">
-        显示坐标
-    </button>
-    <button id="pan-toggle" style="position:fixed; top:calc(env(safe-area-inset-top, 0px) + 12px); left:12px; z-index:999999; padding:8px 10px; font-family:ArkPixel,monospace; font-size:13px; cursor:pointer; border:2px solid #333; border-radius:5px; background:#333; color:#fff;">
-        移动视野
-    </button>
     <div id="lang-toggle-group" style="position:fixed; top:calc(env(safe-area-inset-top, 0px) + 52px); left:12px; z-index:1000002; display:flex; gap:2px; align-items:center;">
         <button id="lang-btn-en" onclick="setUILanguage('en')" style="padding:8px 10px; font-family:ArkPixel,monospace; font-size:13px; cursor:pointer; border:2px solid #333; border-radius:5px; background:#333; color:#fff;">EN</button>
         <button id="lang-btn-jp" onclick="setUILanguage('ja')" style="padding:8px 10px; font-family:ArkPixel,monospace; font-size:13px; cursor:pointer; border:2px solid #333; border-radius:5px; background:#333; color:#fff;">JP</button>
@@ -1640,8 +1682,9 @@
         let uiLang = localStorage.getItem('uiLang') || 'zh';
         const I18N = {
             zh: {
-                controlTitle: '龙虾工作台',
-                btnIdle: '待命', btnWork: '工作', btnSync: '同步', btnError: '报警', btnDecor: '装修',
+                controlTitle: 'OpenClaw 控制台',
+                btnIdle: '待命', btnWork: '工作', btnSync: '同步', btnError: '报警', btnDecor: '装修房间',
+                runtimeSummaryTitle: '运行摘要', runtimeSummaryRole: '角色', runtimeSummaryBuild: '构筑', runtimeSummaryRoute: '路由', runtimeSummaryState: '状态', runtimeSummaryUpdated: '更新时间',
                 drawerTitle: '装修房间 · 资产侧边栏', drawerClose: '关闭',
                 authTitle: '请输入装修验证码', authPlaceholder: '输入验证码', authVerify: '验证', authDefaultPassHint: '默认密码：1234（可随时让我帮你改，建议改成强密码）',
                 drawerVisibilityTip: '可见性：点击条目右侧眼睛按钮切换该资产显示',
@@ -1688,8 +1731,9 @@
                 portalCat: '值班猫'
             },
             en: {
-                controlTitle: 'Lobster Console',
-                btnIdle: 'Idle', btnWork: 'Work', btnSync: 'Sync', btnError: 'Alert', btnDecor: 'Decor',
+                controlTitle: 'OpenClaw Console',
+                btnIdle: 'Idle', btnWork: 'Work', btnSync: 'Sync', btnError: 'Alert', btnDecor: 'Decorate',
+                runtimeSummaryTitle: 'Runtime Summary', runtimeSummaryRole: 'Role', runtimeSummaryBuild: 'Build', runtimeSummaryRoute: 'Route', runtimeSummaryState: 'State', runtimeSummaryUpdated: 'Updated',
                 drawerTitle: 'Decorate Room · Asset Sidebar', drawerClose: 'Close',
                 authTitle: 'Enter Decor Passcode', authPlaceholder: 'Enter passcode', authVerify: 'Verify', authDefaultPassHint: 'Default passcode: 1234 (ask me anytime to change it; stronger passcode recommended)',
                 drawerVisibilityTip: 'Visibility: use the eye button on each row to hide/show that asset',
@@ -1736,8 +1780,9 @@
                 portalCat: 'Duty Cat'
             },
             ja: {
-                controlTitle: 'ロブスター工房',
+                controlTitle: 'OpenClaw コンソール',
                 btnIdle: '待機', btnWork: '作業', btnSync: '同期', btnError: '警報', btnDecor: '部屋を編集',
+                runtimeSummaryTitle: '実行サマリー', runtimeSummaryRole: 'ロール', runtimeSummaryBuild: 'ビルド', runtimeSummaryRoute: 'ルート', runtimeSummaryState: '状態', runtimeSummaryUpdated: '更新時刻',
                 drawerTitle: '部屋編集・アセットサイドバー', drawerClose: '閉じる',
                 authTitle: '編集パスコードを入力', authPlaceholder: 'パスコード入力', authVerify: '認証', authDefaultPassHint: '初期パスコード：1234（いつでも変更を相談可。強固なパス推奨）',
                 drawerVisibilityTip: '表示切替：各行右側の目ボタンで資産を表示/非表示',
@@ -1806,10 +1851,10 @@
             summoner: { title: '管理者 · 召唤师', className: '组织管理' },
             warrior: { title: '技术员 · 战士', className: '工程开发' },
             paladin: { title: '营销者 · 圣骑士', className: '增长运营' },
-            archer: { title: '设计师 · 弓箭手', className: '设计创意' }
+            designer: { title: '设计师', className: '设计创意' }
         };
         const HOUSE_ROLE_ALIASES = {
-            designer: 'archer'
+            archer: 'designer'
         };
         const HOUSE_ROLE_IDS = new Set(Object.keys(HOUSE_ROLE_META));
         const HOUSE_ROUTE_LABELS = {
@@ -2146,6 +2191,37 @@
             ].filter(Boolean).join(' · ');
         }
 
+        function syncRuntimeSummary(summary, runtimeState, runtimeDetail) {
+            const runtime = normalizeHouseRuntime(currentHouseRuntime);
+            const set = (id, value) => {
+                const el = document.getElementById(id);
+                if (el) el.textContent = value;
+            };
+            set('runtime-summary-title', t('runtimeSummaryTitle'));
+            set('runtime-summary-label-role', t('runtimeSummaryRole'));
+            set('runtime-summary-label-build', t('runtimeSummaryBuild'));
+            set('runtime-summary-label-route', t('runtimeSummaryRoute'));
+            set('runtime-summary-label-state', t('runtimeSummaryState'));
+            set('runtime-summary-label-updated', t('runtimeSummaryUpdated'));
+            set('runtime-summary-role', `${summary.title} · ${summary.className}`);
+            set('runtime-summary-build', summary.buildText);
+            set('runtime-summary-route', `${summary.routeText} · ${summary.ruleText} · ${summary.packText}`);
+            set('runtime-summary-state', `${stateLabel(runtimeState)} · ${runtimeDetail || runtime.detail || '-'}`);
+            set('runtime-summary-updated', runtime.updatedAt || '-');
+        }
+
+        function applyProjectionStatusLine(line, { freezeTypewriter = false } = {}) {
+            const statusEl = document.getElementById('status-text');
+            if (statusEl) {
+                statusEl.textContent = line;
+            }
+            if (freezeTypewriter) {
+                typewriterTarget = line;
+                typewriterText = line;
+                typewriterIndex = line.length;
+            }
+        }
+
         function syncWorkbenchQuickButtons(mode = currentWorkbenchMode) {
             Object.entries(HOUSE_QUICK_BUTTONS).forEach(([id, modes]) => {
                 const button = document.getElementById(id);
@@ -2169,12 +2245,18 @@
             const runtimeState = currentHouseRuntime?.state || currentHouseProjection?.runtime?.state || 'idle';
             const runtimeDetail = currentHouseRuntime?.detail || currentHouseProjection?.runtime?.detail || summary.runtimeDetail;
             const controlBarTitle = document.getElementById('control-bar-title');
-            const statusEl = document.getElementById('status-text');
             if (controlBarTitle) {
                 controlBarTitle.textContent = `${t('controlTitle')} · ${summary.title}`;
             }
-            if (statusEl && (forceStatusText || !typewriterTarget || !typewriterText)) {
-                statusEl.textContent = composeProjectionStatusLine(runtimeState, runtimeDetail);
+            const nextLine = composeProjectionStatusLine(runtimeState, runtimeDetail);
+            if (forceStatusText) {
+                applyProjectionStatusLine(nextLine, { freezeTypewriter: true });
+            } else if (!typewriterTarget || !typewriterText) {
+                applyProjectionStatusLine(nextLine);
+            }
+            syncRuntimeSummary(summary, runtimeState, runtimeDetail);
+            if (window.officePlaqueText && window.officePlaqueText.setText) {
+                window.officePlaqueText.setText(resolvePlaqueTitle());
             }
             if (!document.getElementById('room-workbench-hud')?.classList.contains('is-active')) {
                 updateRoomWorkbenchHud();
@@ -2381,10 +2463,7 @@
                 syncHouseProjectionUI(true);
             } else if (event.data.type === 'lobster-world-console-status') {
                 currentHouseRuntime = normalizeHouseRuntime(event.data);
-                typewriterTarget = composeProjectionStatusLine(currentHouseRuntime.state, currentHouseRuntime.detail);
-                typewriterText = '';
-                typewriterIndex = 0;
-                syncHouseProjectionUI();
+                syncHouseProjectionUI(true);
             }
         });
 
@@ -5308,12 +5387,14 @@ function toggleBrokerPanel() {
             coordsToggle = document.getElementById('coords-toggle');
 
             // guest agent 将由 /agents 动态拉取并渲染到右侧访客列表
-            coordsToggle.addEventListener('click', () => {
-                showCoords = !showCoords;
-                coordsOverlay.style.display = showCoords ? 'block' : 'none';
-                coordsToggle.textContent = showCoords ? t('hideCoords') : t('showCoords');
-                coordsToggle.style.background = showCoords ? '#e94560' : '#333';
-            });
+            if (coordsToggle && coordsOverlay) {
+                coordsToggle.addEventListener('click', () => {
+                    showCoords = !showCoords;
+                    coordsOverlay.style.display = showCoords ? 'block' : 'none';
+                    coordsToggle.textContent = showCoords ? t('hideCoords') : t('showCoords');
+                    coordsToggle.style.background = showCoords ? '#e94560' : '#333';
+                });
+            }
 
             // 允许手机端“拖动/滑动”来移动视野（本质：移动 Phaser Camera）
             // iPhone 等触屏设备默认开启；桌面端默认关闭（可手动开）。
@@ -5484,7 +5565,7 @@ function toggleBrokerPanel() {
 
             // Mouse move handler for coordinate display
             game.input.on('pointermove', (pointer) => {
-                if (!showCoords) return;
+                if (!showCoords || !coordsDisplay || !coordsOverlay) return;
                 // Clamp to map size (0..width-1 / 0..height-1)
                 const x = Math.max(0, Math.min(config.width - 1, Math.round(pointer.x)));
                 const y = Math.max(0, Math.min(config.height - 1, Math.round(pointer.y)));

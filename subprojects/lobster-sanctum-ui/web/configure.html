@@ -224,22 +224,17 @@
               </div>
               <div id="toolInspector" class="tool-inspector"></div>
             </article>
+            <article class="panel-card inventory-card">
+              <div class="panel-head">
+                <span class="panel-kicker">物品栏</span>
+                <h2>物品栏</h2>
+              </div>
+              <div class="inventory-grid" id="inventoryGrid"></div>
+            </article>
           </div>
-
-          <article class="panel-card inventory-card">
-            <div class="panel-head">
-              <span class="panel-kicker">物品栏</span>
-              <h2>物品栏</h2>
-            </div>
-            <div class="inventory-grid" id="inventoryGrid"></div>
-          </article>
         </section>
 
         <section class="tab-panel" data-panel="status">
-          <div class="tab-toolbar">
-            <button id="saveStatusTabBtn" class="tab-save-btn" data-scope="status" type="button">同步状态配置</button>
-            <small id="tabSaveStatusStatus">未保存</small>
-          </div>
           <div class="status-grid">
             <article class="panel-card wide status-level-card">
               <div class="panel-head">
@@ -259,7 +254,7 @@
             <article class="panel-card status-runtime-card">
               <div class="panel-head">
                 <span class="panel-kicker">运行状态</span>
-                <h2>运行状态</h2>
+                <h2>运行态</h2>
               </div>
               <div class="status-highlight">
                 <strong id="statusRuntimeLabel">待命</strong>
@@ -274,7 +269,7 @@
             <article class="panel-card status-system-card">
               <div class="panel-head">
                 <span class="panel-kicker">系统参数</span>
-                <h2>系统参数</h2>
+                <h2>核心指标</h2>
               </div>
               <div class="status-metric-grid" id="systemMetrics"></div>
             </article>
@@ -282,22 +277,9 @@
             <article class="panel-card wide status-build-card">
               <div class="panel-head">
                 <span class="panel-kicker">只读概览</span>
-                <h2>当前构筑状态</h2>
+                <h2>当前构筑</h2>
               </div>
               <div class="readonly-grid" id="readonlyOverview"></div>
-            </article>
-
-            <article class="panel-card wide status-diagnose-card">
-              <div class="panel-head">
-                <span class="panel-kicker">诊断工具</span>
-                <h2>OpenClaw 检查</h2>
-              </div>
-              <div class="status-diag-actions">
-                <button id="statusRunDoctorBtn" class="status-diag-btn" type="button">openclaw doctor</button>
-                <button id="statusRunStatusBtn" class="status-diag-btn" type="button">openclaw status</button>
-                <button id="statusRunHealthBtn" class="status-diag-btn" type="button">openclaw health</button>
-              </div>
-              <pre id="statusDiagOutput" class="status-diag-output">点击上方按钮后，将在这里显示后台执行结果。</pre>
             </article>
           </div>
         </section>
@@ -308,6 +290,22 @@
             <small id="tabSaveStatusTasks">未保存</small>
           </div>
           <div class="tasks-grid">
+            <article class="panel-card wide">
+              <div class="panel-head">
+                <span class="panel-kicker">即时派单</span>
+                <h2>任务桌</h2>
+              </div>
+              <div class="task-dispatch-card">
+                <label class="task-dispatch-label" for="taskDispatchInput">派发给当前职业</label>
+                <textarea id="taskDispatchInput" rows="3" placeholder="例如：检查 openclaw 配置菜单并修复角色切换失败问题"></textarea>
+                <div class="task-dispatch-row">
+                  <small id="taskDispatchMeta">目标职业: 当前角色</small>
+                  <button id="taskDispatchBtn" type="button">开始派单</button>
+                </div>
+                <pre id="taskDispatchOutput">等待任务指令</pre>
+              </div>
+            </article>
+
             <article class="panel-card">
               <div class="panel-head">
                 <span class="panel-kicker">标准工作流</span>
@@ -327,20 +325,20 @@
             <article class="panel-card wide">
               <div class="panel-head">
                 <span class="panel-kicker">未来占位</span>
-                <h2>任务系统占位</h2>
+                <h2>后续扩展</h2>
               </div>
               <div class="future-grid">
                 <article>
                   <strong>任务奖励</strong>
-                  <p>按标准工作流完成后发放经验、构筑评分与里程碑奖励。</p>
+                  <p>完成后发放经验和构筑评分。</p>
                 </article>
                 <article>
                   <strong>社区星级</strong>
-                  <p>未来会根据结果质量与社区同类任务对比，给出星级与排名。</p>
+                  <p>按同类任务质量对比给出星级。</p>
                 </article>
                 <article>
                   <strong>流程模板</strong>
-                  <p>未来将接入行业模板，把研究、开发、运营、设计变成可执行委托。</p>
+                  <p>接入行业模板，快速生成委托。</p>
                 </article>
               </div>
             </article>

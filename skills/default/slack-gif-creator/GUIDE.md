@@ -1,7 +1,7 @@
 # slack-gif-creator 使用指南
 
 ## 1. 功能定位
-- Knowledge and utilities for creating animated GIFs optimized for Slack. Provides constraints, validation tools, and animation concepts. Use when users request animated GIFs for Slack like "make me a GIF of X doing Y for Slack.
+- Knowledge and utilities for creating animated GIFs optimized for Slack. Provides constraints, validation tools, and animation concepts. Use when users request animated GIFs for...
 - 默认档位: 仅全量默认包/手动同步
 - 仓库目录: `skills/default/slack-gif-creator`
 - 安装后目录: `~/.openclaw/skills/slack-gif-creator`

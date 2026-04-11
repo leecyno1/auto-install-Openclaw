@@ -1,7 +1,7 @@
 # notebooklm-skill 使用指南
 
 ## 1. 功能定位
-- Use this skill to query your Google NotebookLM notebooks directly from Claude Code for source-grounded, citation-backed answers from Gemini. Browser automation, library management, persistent auth. Drastically reduced hallucinations through document-only responses.
+- Use this skill to query your Google NotebookLM notebooks directly from Claude Code for source-grounded, citation-backed answers from Gemini. Browser automation, library manageme...
 - 默认档位: 基础档默认安装
 - 仓库目录: `skills/default/notebooklm-skill`
 - 安装后目录: `~/.openclaw/skills/notebooklm-skill`

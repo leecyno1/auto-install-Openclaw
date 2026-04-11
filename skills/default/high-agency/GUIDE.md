@@ -1,7 +1,7 @@
 # high-agency 使用指南
 
 ## 1. 功能定位
-- Builds sustained high agency through internalized standards, identity anchoring, cross-session learning, and self-recovery — all delivered in corporate PUA rhetoric. This is PUA's evolution: same pressure culture, but with an inner engine that never burns out. Use for ALL tasks to maintain always-on high agency. Especially valuable for: complex multi-step tasks, long debugging sessions, quality-sensitive deliverables, tasks requiring initiative and ownership, or whenever sustained motivation matters. Works standalone or stacked with PUA — when stacked, this skill's Recovery Protocol runs before PUA's L1 pressure kicks in. Trigger on: any task start, sustained work sessions, multi-turn problem solving, or when you need the agent to think like an owner not a tool.
+- Builds sustained high agency through internalized standards, identity anchoring, cross-session learning, and self-recovery — all delivered in corporate PUA rhetoric. This is PUA...
 - 默认档位: 仅全量默认包/手动同步
 - 仓库目录: `skills/default/high-agency`
 - 安装后目录: `~/.openclaw/skills/high-agency`

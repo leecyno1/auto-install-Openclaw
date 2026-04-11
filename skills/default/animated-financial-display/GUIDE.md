@@ -1,7 +1,7 @@
 # animated-financial-display 使用指南
 
 ## 1. 功能定位
-- Patterns for animating financial numbers with spring physics, formatting, and visual feedback. Covers animated counters, price tickers, percentage changes, and value flash effects. Use when building financial dashboards or trading UIs. Triggers on animated number, price animation, financial display, number formatting, spring animation, value ticker.
+- Patterns for animating financial numbers with spring physics, formatting, and visual feedback. Covers animated counters, price tickers, percentage changes, and value flash effec...
 - 默认档位: 仅全量默认包/手动同步
 - 仓库目录: `skills/default/animated-financial-display`
 - 安装后目录: `~/.openclaw/skills/animated-financial-display`

@@ -9,6 +9,10 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+QUOTA_RESERVATION_ID=""
+
+# shellcheck source=/dev/null
+source "$PROJECT_ROOT/scripts/quota.sh"
 
 # ============================================================================
 # Common functions
@@ -133,6 +137,7 @@ build_payload() {
 main() {
   load_env
   check_api_key
+  quota_setup_trap
 
   local mode="t2i" prompt="" model="image-01"
   local aspect_ratio="" width="" height=""
@@ -212,6 +217,8 @@ USAGE
   if [[ "$n" -lt 1 || "$n" -gt 9 ]] 2>/dev/null; then
     echo "Error: -n must be between 1 and 9" >&2; exit 1
   fi
+
+  quota_reserve_or_exit "image" "$n" "minimax-image"
 
   # Build payload using temp-file method (avoids Windows cmd.exe arg-length limit)
   local payload
@@ -322,6 +329,7 @@ USAGE
     fi
   fi
 
+  quota_commit_or_warn
   echo "Done!"
 }
 

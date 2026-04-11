@@ -1,7 +1,7 @@
 # baoyu-comic 使用指南
 
 ## 1. 功能定位
-- Knowledge comic creator supporting multiple art styles and tones. Creates original educational comics with detailed panel layouts and sequential image generation. Use when user asks to create "知识漫画", "教育漫画", "biography comic", "tutorial comic", or "Logicomix-style comic".
+- Knowledge comic creator supporting multiple art styles and tones. Creates original educational comics with detailed panel layouts and sequential image generation. Use when user...
 - 默认档位: 仅全量默认包/手动同步
 - 仓库目录: `skills/default/baoyu-comic`
 - 安装后目录: `~/.openclaw/skills/baoyu-comic`

@@ -1,7 +1,7 @@
 # douyin-upload-skill 使用指南
 
 ## 1. 功能定位
-- Login and publish Douyin (China mainland) videos from local files with OAuth, local speech-to-text, and generated caption drafts. Use when users ask to authorize Douyin accounts, upload local videos, auto-generate title/description from video audio, confirm content, and publish via official Douyin OpenAPI with fallback export when publish permissions are missing.
+- Login and publish Douyin (China mainland) videos from local files with OAuth, local speech-to-text, and generated caption drafts. Use when users ask to authorize Douyin accounts...
 - 默认档位: 仅全量默认包/手动同步
 - 仓库目录: `skills/default/douyin-upload-skill`
 - 安装后目录: `~/.openclaw/skills/douyin-upload-skill`

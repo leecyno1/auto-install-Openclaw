@@ -1,38 +1,26 @@
-# OpenClaw Stock 使用指南
+# openclaw-stock 使用指南
 
 ## 1. 功能定位
-- 一个 AI 驱动的自动化交易系统项目，包含短线、长线、回测、报警、风控与多数据源方案。
-- 适合做系统参考、模拟盘研究、自动交易方案设计。
-- 安装形态: 增强技能，按需手动安装
+- 自动化交易项目参考技能。内含短线/长线策略、风控、回测、API 配置和多数据源架构说明。适用于研究自动交易系统设计、策略编排、模拟盘部署和数据源接入方案，不建议直接无验证接入实盘。
+- 默认档位: 仅全量默认包/手动同步
 - 仓库目录: `skills/default/openclaw-stock`
 - 安装后目录: `~/.openclaw/skills/openclaw-stock`
 
-## 2. 常见依赖与密钥
-- 股票数据: `FINNHUB_API_KEY`
-- AI 分析: `GOOGLE_AI_API_KEY`、`DEEPSEEK_API_KEY`
-- 新闻/资讯: `NAVER_CLIENT_SECRET`、`CRYPTOPANIC_API_KEY`
-- 通知: `TELEGRAM_BOT_TOKEN`
-- 其他扩展源按 `API_CONFIGURATION_GUIDE.md` 配置
+## 2. 使用前准备
+- 无强制 API Key；按 skill 自身依赖运行。
 
-## 3. 推荐使用方式
-- 先读 `QUICKSTART.md` 和 `FREE_DATA_SOURCES_GUIDE.md`
-- 再按 `BACKTEST_GUIDE.md` 做回测
-- 最后才考虑模拟盘或接入通知
+## 3. 配置步骤
+1. 通常无需额外配置。若运行时报缺依赖，再按 `SKILL.md` 补装。
 
 ## 4. 推荐提问方式
-- 请用 openclaw-stock 给我一套低成本的自动交易架构方案。
-- 请用 openclaw-stock 整理短线监控、报警和风控流程。
-- 请用 openclaw-stock 说明 Finnhub、Gemini、DeepSeek 分别承担什么角色。
+- 请使用 openclaw-stock 帮我处理当前任务。
+- 如果 openclaw-stock 需要额外配置，请先告诉我缺少什么。
 
 ## 5. 手动验证
 ```bash
-ls skills/default/openclaw-stock
+ls -la ~/.openclaw/skills/openclaw-stock
 ```
 
 ## 6. 参考资料
-- 上游来源: https://github.com/Superandyfre/Openclaw-stock
-- 本地说明: `SKILL.md`
-
-## 7. 注意事项
-- 该项目面向自动交易，风险高于普通分析 skill。
-- 本仓库收录它是为了本地可检索与方案复用，不代表建议默认实盘启用。
+- 上游来源: 见 docs/upstream-sources.md
+- 本技能说明: `SKILL.md`

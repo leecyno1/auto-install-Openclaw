@@ -1,7 +1,7 @@
 # theme-factory 使用指南
 
 ## 1. 功能定位
-- Toolkit for styling artifacts with a theme. These artifacts can be slides, docs, reportings, HTML landing pages, etc. There are 10 pre-set themes with colors/fonts that you can apply to any artifact that has been creating, or can generate a new theme on-the-fly.
+- Toolkit for styling artifacts with a theme. These artifacts can be slides, docs, reportings, HTML landing pages, etc. There are 10 pre-set themes with colors/fonts that you can...
 - 默认档位: 仅全量默认包/手动同步
 - 仓库目录: `skills/default/theme-factory`
 - 安装后目录: `~/.openclaw/skills/theme-factory`

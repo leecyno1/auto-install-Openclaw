@@ -14,6 +14,7 @@ import tempfile
 import threading
 import time
 from pathlib import Path
+from urllib import request as urllib_request, error as urllib_error
 from security_utils import is_production_mode, is_strong_secret, is_strong_drawer_pass
 from memo_utils import get_yesterday_date_str, sanitize_content, extract_memo_from_file
 from store_utils import (
@@ -76,9 +77,13 @@ OPENCLAW_WEB_PROFILE_JSON = os.path.join(OPENCLAW_PROFILE_DIR, "web-config-profi
 OPENCLAW_WEB_LOADOUT_JSON = os.path.join(OPENCLAW_PROFILE_DIR, "web-config-loadout.json")
 OPENCLAW_WEB_MANAGED_SKILLS_JSON = os.path.join(OPENCLAW_PROFILE_DIR, "web-config-managed-skills.json")
 OPENCLAW_GAME_PROGRESS_JSON = os.path.join(OPENCLAW_PROFILE_DIR, "game-progress.json")
+OPENCLAW_TASK_QUEUE_JSON = os.path.join(OPENCLAW_PROFILE_DIR, "web-task-queue.json")
+OPENCLAW_MEDIA_QUOTA_STATE_FILE = os.environ.get("OPENCLAW_MEDIA_QUOTA_STATE_FILE") or os.path.join(OPENCLAW_HOME, "quota", "media-state.json")
+OPENCLAW_MEDIA_QUOTA_SCRIPT = os.environ.get("OPENCLAW_MEDIA_QUOTA_SCRIPT") or ""
 OPENCLAW_SKILLS_DIR = os.path.join(OPENCLAW_HOME, "skills")
 OPENCLAW_SESSIONS_DIR = os.path.join(OPENCLAW_HOME, "agents", "main", "sessions")
 OPENCLAW_LOGS_DIR = os.path.join(OPENCLAW_HOME, "logs")
+PROJECTION_API_INGEST_URL = os.environ.get("PROJECTION_API_INGEST_URL", "http://127.0.0.1:19100/runtime/ingest")
 RUNTIME_SUMMARY_TTL_SECONDS = int(os.getenv("OPENCLAW_RUNTIME_SUMMARY_TTL_SECONDS", "45"))
 RUNTIME_SCAN_MAX_FILES = int(os.getenv("OPENCLAW_RUNTIME_SCAN_MAX_FILES", "90"))
 RUNTIME_SCAN_MAX_BYTES = int(os.getenv("OPENCLAW_RUNTIME_SCAN_MAX_BYTES", "180000"))
@@ -227,7 +232,18 @@ def get_office_name_from_identity():
         m = re.search(r"-\s*\*\*Name:\*\*\s*(.+)", content)
         if m:
             name = m.group(1).strip().replace("\r", "").split("\n")[0].strip()
-            return f"{name}的办公室" if name else None
+            if not name:
+                return None
+            low = name.lower()
+            suspicious = [
+                "pick something you like",
+                "office name",
+                "placeholder",
+                "default",
+            ]
+            if any(flag in low for flag in suspicious) or len(name) > 40:
+                return None
+            return f"{name}的办公室"
     except Exception:
         pass
     return None
@@ -724,7 +740,7 @@ ROLE_META = {
     "summoner": {"title": "管理者 · 召唤师", "className": "组织管理"},
     "warrior": {"title": "技术员 · 战士", "className": "工程开发"},
     "paladin": {"title": "营销者 · 圣骑士", "className": "增长运营"},
-    "designer": {"title": "设计师 · 弓箭手", "className": "设计创意"},
+    "designer": {"title": "设计师", "className": "设计创意"},
 }
 
 
@@ -851,11 +867,58 @@ def _list_skill_dirs(base_dir: str) -> list[str]:
     return sorted(set(names))
 
 
+def _role_ids_for_ui() -> list[str]:
+    return ["druid", "assassin", "mage", "summoner", "warrior", "paladin", "designer"]
+
+
+def _frontmatter_description(text: str) -> str:
+    if not text:
+        return ""
+    match = re.search(r'^\s*description:\s*"?(.*?)"?\s*$', text, re.M)
+    return match.group(1).strip() if match else ""
+
+
+def _first_nonempty_content_line(text: str) -> str:
+    for raw in (text or "").splitlines():
+        line = raw.strip()
+        if not line or line.startswith("#") or line.startswith("---"):
+            continue
+        return line
+    return ""
+
+
+def _read_skill_description(skill_id: str) -> str:
+    bundle_dir = _resolve_default_skills_bundle_dir()
+    candidates = [
+        os.path.join(OPENCLAW_SKILLS_DIR, skill_id),
+        os.path.join(bundle_dir, skill_id) if bundle_dir else "",
+    ]
+    checked = set()
+    for skill_dir in candidates:
+        if not skill_dir or skill_dir in checked or not os.path.isdir(skill_dir):
+            continue
+        checked.add(skill_dir)
+        for filename in ("SKILL.md", "GUIDE.md"):
+            file_path = os.path.join(skill_dir, filename)
+            if not os.path.isfile(file_path):
+                continue
+            try:
+                with open(file_path, "r", encoding="utf-8") as f:
+                    content = f.read()
+            except Exception:
+                continue
+            desc = _frontmatter_description(content) or _first_nonempty_content_line(content)
+            if desc:
+                return desc
+    return f"{_guess_skill_branch(skill_id)}能力，可按需加入当前构筑。"
+
+
 def _collect_skill_catalog() -> dict:
     installed = _list_skill_dirs(OPENCLAW_SKILLS_DIR)
     bundle_dir = _resolve_default_skills_bundle_dir()
     bundle = _list_skill_dirs(bundle_dir) if bundle_dir else []
     all_ids = sorted(set(installed) | set(bundle))
+
     return {
         "installed": installed,
         "bundle": bundle,
@@ -1170,8 +1233,169 @@ def _collect_runtime_signals_cached() -> dict:
     return data
 
 
+def _default_quota_limits(profile: str) -> tuple[int, int, int]:
+    normalized = str(profile or "medium").strip().lower()
+    if normalized == "low":
+        return (0, 0, 100)
+    if normalized == "high":
+        return (50, 2, 0)
+    if normalized == "none":
+        return (0, 0, 0)
+    return (20, 1, 300)
+
+
+def _resolve_media_quota_script() -> str:
+    candidates = []
+    if OPENCLAW_MEDIA_QUOTA_SCRIPT:
+        candidates.append(OPENCLAW_MEDIA_QUOTA_SCRIPT)
+    try:
+        app_file = Path(__file__).resolve()
+        for parent in app_file.parents:
+            candidates.append(str(parent / "scripts" / "media_quota.py"))
+    except Exception:
+        pass
+    candidates.append(os.path.join(OPENCLAW_HOME, ".cache", "auto-install-openclaw-repo", "scripts", "media_quota.py"))
+    candidates.append(os.path.join(OPENCLAW_WORKSPACE, "auto-install-openclaw", "scripts", "media_quota.py"))
+    for raw in candidates:
+        path = str(raw or "").strip()
+        if not path:
+            continue
+        expanded = os.path.expanduser(path)
+        if os.path.isfile(expanded):
+            return expanded
+    return ""
+
+
+def _run_media_quota_command(args: list[str]) -> tuple[bool, dict]:
+    script_path = _resolve_media_quota_script()
+    if not script_path:
+        return False, {"ok": False, "reason": "quota_script_missing", "message": "quota script not found"}
+    try:
+        proc = subprocess.run(
+            ["python3", script_path, *args],
+            capture_output=True,
+            text=True,
+            timeout=8,
+        )
+        raw = (proc.stdout or "").strip() or (proc.stderr or "").strip()
+        payload = {}
+        if raw:
+            try:
+                payload = json.loads(raw)
+            except Exception:
+                payload = {"ok": False, "reason": "quota_parse_error", "message": raw}
+        if proc.returncode == 0:
+            return True, payload if isinstance(payload, dict) else {}
+        if isinstance(payload, dict) and payload:
+            return False, payload
+        return False, {"ok": False, "reason": "quota_command_failed", "message": raw or f"exit={proc.returncode}"}
+    except Exception as exc:
+        return False, {"ok": False, "reason": "quota_command_exception", "message": str(exc)}
+
+
+def _reserve_quota(category: str, units: int, tool_name: str) -> tuple[str | None, dict]:
+    ok, payload = _run_media_quota_command(
+        ["reserve", "--category", str(category), "--units", str(max(1, int(units))), "--tool", str(tool_name or "unknown")]
+    )
+    if not ok:
+        return None, payload if isinstance(payload, dict) else {}
+    reservation = payload.get("reservation") if isinstance(payload, dict) else {}
+    reservation_id = str((reservation or {}).get("id") or "").strip()
+    if not reservation_id:
+        return None, {"ok": False, "reason": "reservation_missing", "message": "reservation id missing", "raw": payload}
+    return reservation_id, payload
+
+
+def _commit_quota(reservation_id: str | None) -> None:
+    rid = str(reservation_id or "").strip()
+    if not rid:
+        return
+    _run_media_quota_command(["commit", "--id", rid])
+
+
+def _release_quota(reservation_id: str | None) -> None:
+    rid = str(reservation_id or "").strip()
+    if not rid:
+        return
+    _run_media_quota_command(["release", "--id", rid])
+
+
+def _collect_media_quota_state(env_data: dict[str, str]) -> dict[str, dict]:
+    def _safe_int(value, default=0) -> int:
+        try:
+            return int(float(value))
+        except Exception:
+            return int(default)
+
+    rule_profile = str(env_data.get("OPENCLAW_RULE_PROFILE") or "medium").strip().lower()
+    default_image_quota, default_video_quota, default_text_quota = _default_quota_limits(rule_profile)
+    window_hours = max(1, int(_safe_int(env_data.get("OPENCLAW_RULE_WINDOW_HOURS"), 5)))
+    reservation_ttl = max(60, int(_safe_int(env_data.get("OPENCLAW_MEDIA_QUOTA_RESERVATION_TTL_SECONDS"), 1800)))
+    state_file = str(env_data.get("OPENCLAW_MEDIA_QUOTA_STATE_FILE") or OPENCLAW_MEDIA_QUOTA_STATE_FILE)
+    now_epoch = int(time.time())
+    cutoff = now_epoch - window_hours * 3600
+    raw_state = _json_read(state_file, {"entries": []})
+    entries = raw_state.get("entries") if isinstance(raw_state, dict) else []
+    if not isinstance(entries, list):
+        entries = []
+
+    def _summarize(category: str, limit_default: int) -> dict:
+        env_key = {
+            "image": "OPENCLAW_RULE_MAX_IMAGE_REQUESTS",
+            "video": "OPENCLAW_RULE_MAX_VIDEO_REQUESTS",
+            "text": "OPENCLAW_RULE_MAX_REQUESTS",
+        }.get(category, "")
+        limit = max(0, int(_safe_int(env_data.get(env_key), limit_default)))
+        valid_committed = []
+        valid_reserved = []
+        for entry in entries:
+            if not isinstance(entry, dict):
+                continue
+            if str(entry.get("category") or "").strip().lower() != category:
+                continue
+            status = str(entry.get("status") or "").strip().lower()
+            reserved_at = int(_safe_int(entry.get("reserved_at"), 0))
+            committed_at = int(_safe_int(entry.get("committed_at"), 0))
+            expires_at = int(_safe_int(entry.get("expires_at"), 0))
+            if status == "committed":
+                ts = committed_at or reserved_at
+                if ts > 0 and ts >= cutoff:
+                    valid_committed.append(entry)
+            elif status == "reserved":
+                expiry = expires_at or (reserved_at + reservation_ttl)
+                if reserved_at > 0 and expiry >= now_epoch:
+                    valid_reserved.append(entry)
+
+        used = sum(max(0, int(_safe_int(item.get("units"), 0))) for item in valid_committed)
+        pending = sum(max(0, int(_safe_int(item.get("units"), 0))) for item in valid_reserved)
+        unlimited = bool(category == "text" and limit <= 0)
+        remaining = -1 if unlimited else (0 if limit <= 0 else max(0, limit - used - pending))
+        reset_candidates = []
+        for item in valid_committed:
+            ts = int(_safe_int(item.get("committed_at"), 0) or _safe_int(item.get("reserved_at"), 0))
+            if ts > 0:
+                reset_candidates.append(ts + window_hours * 3600)
+        reset_at = min(reset_candidates) if reset_candidates else now_epoch
+        return {
+            "limit": int(limit),
+            "used": int(used),
+            "pending": int(pending),
+            "remaining": int(remaining),
+            "windowHours": int(window_hours),
+            "resetAt": int(reset_at),
+            "enabled": True if unlimited else bool(limit > 0),
+            "unlimited": unlimited,
+        }
+
+    return {
+        "image": _summarize("image", default_image_quota),
+        "video": _summarize("video", default_video_quota),
+        "text": _summarize("text", default_text_quota),
+    }
+
+
 def _collect_dynamic_loadout_items(env_data: dict[str, str], installed_skills: list[str]) -> list[dict]:
-    role_all = ["druid", "assassin", "mage", "summoner", "warrior", "paladin", "archer"]
+    role_all = _role_ids_for_ui()
     items = []
     seen = set()
 
@@ -1243,6 +1467,41 @@ def _json_write(path: str, payload):
     with open(path, "w", encoding="utf-8") as f:
         json.dump(payload, f, ensure_ascii=False, indent=2)
         f.write("\n")
+
+
+def _append_task_queue(item: dict):
+    payload = _json_read(OPENCLAW_TASK_QUEUE_JSON, {"tasks": []})
+    tasks = payload.get("tasks") if isinstance(payload, dict) else []
+    if not isinstance(tasks, list):
+        tasks = []
+    tasks = [item, *tasks][:60]
+    _json_write(OPENCLAW_TASK_QUEUE_JSON, {"updatedAt": datetime.now().isoformat(), "tasks": tasks})
+
+
+def _push_projection_runtime(state: str, detail: str, progress: int, source: str = "lobster-world"):
+    try:
+        payload = json.dumps(
+            {
+                "state": state,
+                "detail": detail,
+                "progress": max(0, min(100, int(progress))),
+                "source": source,
+                "updated_at": datetime.now().isoformat(),
+            },
+            ensure_ascii=False,
+        ).encode("utf-8")
+        req = urllib_request.Request(
+            PROJECTION_API_INGEST_URL,
+            data=payload,
+            headers={"Content-Type": "application/json"},
+            method="POST",
+        )
+        with urllib_request.urlopen(req, timeout=2):
+            return True
+    except (urllib_error.URLError, TimeoutError, ValueError):
+        return False
+    except Exception:
+        return False
 
 
 def _upsert_env_export(key: str, value: str):
@@ -1625,6 +1884,14 @@ def _build_openclaw_status_summary():
         "Clawd",
         80,
     )
+    rule_profile = str(policy.get("ruleProfile") or env_data.get("OPENCLAW_RULE_PROFILE") or "medium")
+    default_image_quota, default_video_quota, default_text_quota = _default_quota_limits(rule_profile)
+    quota_state = _collect_media_quota_state(env_data)
+    media_quota = {
+        "image": quota_state.get("image", {}),
+        "video": quota_state.get("video", {}),
+    }
+    text_quota = quota_state.get("text", {})
 
     return {
         "assistantName": assistant_name,
@@ -1654,11 +1921,15 @@ def _build_openclaw_status_summary():
             "sandboxMode": bool(security.get("sandboxMode", False)),
         },
         "policy": {
-            "ruleProfile": str(policy.get("ruleProfile") or env_data.get("OPENCLAW_RULE_PROFILE") or "medium"),
+            "ruleProfile": rule_profile,
             "windowHours": int(_to_int(policy.get("windowHours"), _to_int(env_data.get("OPENCLAW_RULE_WINDOW_HOURS"), 5))),
-            "maxRequests": int(_to_int(policy.get("maxRequests"), _to_int(env_data.get("OPENCLAW_RULE_MAX_REQUESTS"), 300))),
+            "maxRequests": int(_to_int(policy.get("maxRequests"), _to_int(env_data.get("OPENCLAW_RULE_MAX_REQUESTS"), default_text_quota))),
             "maxTokens": int(_to_int(policy.get("maxTokens"), _to_int(env_data.get("OPENCLAW_RULE_MAX_TOKENS"), 2400000))),
             "maxTokensPerRequest": int(_to_int(policy.get("maxTokensPerRequest"), _to_int(env_data.get("OPENCLAW_RULE_MAX_TOKENS_PER_REQUEST"), 48000))),
+            "maxImageRequests": int(_to_int(policy.get("maxImageRequests"), _to_int(env_data.get("OPENCLAW_RULE_MAX_IMAGE_REQUESTS"), default_image_quota))),
+            "maxVideoRequests": int(_to_int(policy.get("maxVideoRequests"), _to_int(env_data.get("OPENCLAW_RULE_MAX_VIDEO_REQUESTS"), default_video_quota))),
+            "mediaUsage": media_quota,
+            "requestUsage": text_quota,
         },
         "identity": {
             "assistantName": assistant_name,
@@ -2284,7 +2555,6 @@ def openclaw_catalog():
         skills = _collect_skill_catalog_with_fallback()
         env_data = _read_env_exports()
         role_id = _normalize_persona_role(env_data.get("OPENCLAW_PERSONA_ROLE") or "druid")
-        ui_role = "archer" if role_id == "designer" else role_id
 
         def _skill_obj(skill_id: str) -> dict:
             return {
@@ -2292,9 +2562,9 @@ def openclaw_catalog():
                 "name": _friendly_name_from_id(skill_id),
                 "tier": "low",
                 "branch": _guess_skill_branch(skill_id),
-                "desc": f"{_guess_skill_branch(skill_id)} · {skill_id}",
+                "desc": _read_skill_description(skill_id),
                 "deps": [],
-                "roles": ["druid", "assassin", "mage", "summoner", "warrior", "paladin", "archer"],
+                "roles": _role_ids_for_ui(),
                 "pack": ["low", "medium", "high"],
                 "dynamic": True,
             }
@@ -2307,7 +2577,7 @@ def openclaw_catalog():
         return jsonify(
             {
                 "ok": True,
-                "role": ui_role,
+                "role": role_id,
                 "skills": {
                     "installed": sorted(installed_set),
                     "available": sorted(available_set),
@@ -2338,6 +2608,7 @@ def openclaw_config_apply():
         role_id = _normalize_persona_role(role_ui)
         role_meta = ROLE_META.get(role_id, ROLE_META["druid"])
         role_state = data.get("roleState") if isinstance(data.get("roleState"), dict) else {}
+        draft_only = bool(data.get("draftOnly"))
         env_data = _read_env_exports()
         identity_defaults = _collect_identity_profile_from_env(env_data, role_id)
         identity_input = data.get("identity") if isinstance(data.get("identity"), dict) else {}
@@ -2433,37 +2704,108 @@ def openclaw_config_apply():
             for env_key, env_val in bindings.items():
                 _upsert_env_export(env_key, env_val)
 
-        _apply_openclaw_side_effects_async(
-            role_id=role_id,
-            role_meta=role_meta,
-            identity_profile=identity_profile,
-            model_route=model_route,
-            skill_pack=skill_pack,
-            security=security,
-            hotbar=hotbar,
-            pinned=pinned,
-            equipped=equipped,
-            disabled_skills=disabled_skills,
-        )
-        script_result = {"used": True, "scheduled": True, "msg": "background sync queued"}
+        if draft_only:
+            script_result = {"used": False, "scheduled": False, "msg": "draft saved only"}
+            skills_result = {
+                "bundleDir": _resolve_default_skills_bundle_dir() or "",
+                "desired": sorted(set(installed_skills)),
+                "installed": _list_skill_dirs(OPENCLAW_SKILLS_DIR),
+                "removed": [],
+                "missing": [],
+                "remoteInstallFallback": False,
+            }
+        else:
+            _apply_openclaw_side_effects_async(
+                role_id=role_id,
+                role_meta=role_meta,
+                identity_profile=identity_profile,
+                model_route=model_route,
+                skill_pack=skill_pack,
+                security=security,
+                hotbar=hotbar,
+                pinned=pinned,
+                equipped=equipped,
+                disabled_skills=disabled_skills,
+            )
+            script_result = {"used": True, "scheduled": True, "msg": "background sync queued"}
 
-        skills_result = _sync_skills_to_local(
-            payload_skills=installed_skills,
-            role_id=role_id,
-            scope=scope,
-            equipped_tool_ids=equipped_tool_ids,
-        )
+            skills_result = _sync_skills_to_local(
+                payload_skills=installed_skills,
+                role_id=role_id,
+                scope=scope,
+                equipped_tool_ids=equipped_tool_ids,
+            )
 
         summary = _build_openclaw_status_summary()
         return jsonify({
             "ok": True,
             "scope": scope,
             "role": role_id,
+            "draftOnly": draft_only,
             "skills": skills_result,
             "script": script_result,
             "summary": summary,
         })
     except Exception as e:
+        return jsonify({"ok": False, "msg": str(e)}), 500
+
+
+@app.route("/openclaw/tasks/dispatch", methods=["POST"])
+def openclaw_task_dispatch():
+    text_reservation_id = None
+    try:
+        data = request.get_json(silent=True) or {}
+        prompt = str(data.get("prompt") or data.get("task") or "").strip()
+        if not prompt:
+            return jsonify({"ok": False, "msg": "缺少任务内容"}), 400
+
+        text_reservation_id, quota_payload = _reserve_quota("text", 1, "openclaw-task-dispatch")
+        if not text_reservation_id:
+            reason = str((quota_payload or {}).get("reason") or "")
+            code = 429 if reason in {"quota_exceeded", "disabled"} else 503
+            message = str((quota_payload or {}).get("message") or "文本请求配额检查失败")
+            return jsonify({"ok": False, "code": reason or "quota_error", "msg": message, "quota": quota_payload}), code
+
+        role_id = _normalize_persona_role(data.get("role") or _read_env_exports().get("OPENCLAW_PERSONA_ROLE") or "druid")
+        task_id = f"task_{int(time.time() * 1000)}"
+        created_at = datetime.now().isoformat()
+        state_payload = {
+            "state": "executing",
+            "detail": f"任务已派发：{prompt[:72]}",
+            "progress": 12,
+            "updated_at": created_at,
+            "task_id": task_id,
+            "role": role_id,
+        }
+        save_state(state_payload)
+        _append_task_queue(
+            {
+                "id": task_id,
+                "role": role_id,
+                "prompt": prompt,
+                "status": "queued",
+                "createdAt": created_at,
+            }
+        )
+        projection_ok = _push_projection_runtime("executing", state_payload["detail"], 12, source="openclaw-task-dispatch")
+        _commit_quota(text_reservation_id)
+        text_reservation_id = None
+        return jsonify(
+            {
+                "ok": True,
+                "task": {
+                    "id": task_id,
+                    "role": role_id,
+                    "prompt": prompt,
+                    "status": "queued",
+                    "createdAt": created_at,
+                },
+                "projection": {"pushed": projection_ok},
+                "runtime": _extract_runtime_from_state(state_payload),
+            }
+        )
+    except Exception as e:
+        _release_quota(text_reservation_id)
         return jsonify({"ok": False, "msg": str(e)}), 500
 
 
@@ -2676,7 +3018,7 @@ def assets_list():
     return jsonify({"ok": True, "count": len(items), "items": items})
 
 
-def _bg_generate_worker(task_id: str, custom_prompt: str, speed_mode: str):
+def _bg_generate_worker(task_id: str, custom_prompt: str, speed_mode: str, reservation_id: str | None = None):
     """Background worker for RPG background generation."""
     try:
         target = FRONTEND_PATH / "office_bg_small.webp"
@@ -2712,7 +3054,9 @@ def _bg_generate_worker(task_id: str, custom_prompt: str, speed_mode: str):
                     "msg": "已生成并替换 RPG 房间底图（已自动归档）",
                 },
             }
+        _commit_quota(reservation_id)
     except Exception as e:
+        _release_quota(reservation_id)
         msg = str(e)
         error_result = {"ok": False, "msg": msg}
         if msg == "MISSING_API_KEY":
@@ -2736,6 +3080,7 @@ def assets_generate_rpg_background():
     guard = _require_asset_editor_auth()
     if guard:
         return guard
+    image_reservation_id = None
     try:
         req = request.get_json(silent=True) or {}
         custom_prompt = (req.get("prompt") or "").strip() if isinstance(req, dict) else ""
@@ -2761,17 +3106,30 @@ def assets_generate_rpg_background():
                 if task.get("status") == "pending":
                     return jsonify({"ok": True, "async": True, "task_id": tid, "msg": "已有生图任务进行中，请等待完成"}), 200
 
+        image_reservation_id, quota_payload = _reserve_quota("image", 1, "lobster-bg-generate")
+        if not image_reservation_id:
+            reason = str((quota_payload or {}).get("reason") or "")
+            code = 429 if reason in {"quota_exceeded", "disabled"} else 503
+            message = str((quota_payload or {}).get("message") or "图片配额检查失败")
+            return jsonify({"ok": False, "code": reason or "quota_error", "msg": message, "quota": quota_payload}), code
+
         # Create async task
         import string as _string
         task_id = "gen_" + str(int(datetime.now().timestamp() * 1000)) + "_" + "".join(random.choices(_string.ascii_lowercase + _string.digits, k=4))
         with _bg_tasks_lock:
-            _bg_tasks[task_id] = {"status": "pending", "created_at": datetime.now().isoformat()}
+            _bg_tasks[task_id] = {
+                "status": "pending",
+                "created_at": datetime.now().isoformat(),
+                "reservation_id": image_reservation_id,
+            }
 
-        t = threading.Thread(target=_bg_generate_worker, args=(task_id, custom_prompt, speed_mode), daemon=True)
+        t = threading.Thread(target=_bg_generate_worker, args=(task_id, custom_prompt, speed_mode, image_reservation_id), daemon=True)
         t.start()
+        image_reservation_id = None
 
         return jsonify({"ok": True, "async": True, "task_id": task_id, "msg": "生图任务已启动，请通过 task_id 轮询结果"})
     except Exception as e:
+        _release_quota(image_reservation_id)
         return jsonify({"ok": False, "msg": str(e)}), 500
 
 

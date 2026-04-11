@@ -1,7 +1,7 @@
 # baoyu-post-to-weibo 使用指南
 
 ## 1. 功能定位
-- Posts content to Weibo (微博). Supports regular posts with text, images, and videos, and headline articles (头条文章) with Markdown input via Chrome CDP. Use when user asks to "post to Weibo", "发微博", "发布微博", "publish to Weibo", "share on Weibo", "写微博", or "微博头条文章".
+- Posts content to Weibo (微博). Supports regular posts with text, images, and videos, and headline articles (头条文章) with Markdown input via Chrome CDP. Use when user asks to "post t...
 - 默认档位: 仅全量默认包/手动同步
 - 仓库目录: `skills/default/baoyu-post-to-weibo`
 - 安装后目录: `~/.openclaw/skills/baoyu-post-to-weibo`

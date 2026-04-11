@@ -1,7 +1,7 @@
 # ai-meeting-notes 使用指南
 
 ## 1. 功能定位
-- Messy notes → Clear action items. Instantly. Paste any meeting notes, transcript, or text. Get summaries, action items with owners and deadlines. Auto-saved, searchable, with integrated to-do tracking. No bot. No subscription. No setup.
+- Messy notes → Clear action items. Instantly. Paste any meeting notes, transcript, or text. Get summaries, action items with owners and deadlines. Auto-saved, searchable, with in...
 - 默认档位: 仅全量默认包/手动同步
 - 仓库目录: `skills/default/ai-meeting-notes`
 - 安装后目录: `~/.openclaw/skills/ai-meeting-notes`

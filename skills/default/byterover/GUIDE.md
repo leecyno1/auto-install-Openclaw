@@ -1,7 +1,7 @@
 # byterover 使用指南
 
 ## 1. 功能定位
-- Manages project knowledge using ByteRover context tree. Provides two operations: query (retrieve knowledge) and curate (store knowledge). Invoke when user requests information lookup, pattern discovery, or knowledge persistence. Developed by ByteRover Inc. (https://byterover.dev/)
+- Manages project knowledge using ByteRover context tree. Provides two operations: query (retrieve knowledge) and curate (store knowledge). Invoke when user requests information l...
 - 默认档位: 仅全量默认包/手动同步
 - 仓库目录: `skills/default/byterover`
 - 安装后目录: `~/.openclaw/skills/byterover`

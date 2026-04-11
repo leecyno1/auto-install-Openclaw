@@ -11,6 +11,10 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+QUOTA_RESERVATION_ID=""
+
+# shellcheck source=/dev/null
+source "$PROJECT_ROOT/scripts/quota.sh"
 
 API_BASE="${MINIMAX_API_HOST:-https://api.minimaxi.com}/v1"
 TEMPLATE_URL="${API_BASE}/video_template_generation"
@@ -67,6 +71,7 @@ resolve_media_input() {
 main() {
   load_env
   check_api_key
+  quota_setup_trap
 
   local template_id="" output=""
   local media_inputs=() text_inputs=()
@@ -115,6 +120,8 @@ USAGE
   if [[ -z "$output" ]]; then
     echo "Error: --output / -o is required" >&2; exit 1
   fi
+
+  quota_reserve_or_exit "video" "1" "minimax-template-video"
 
   # Build payload
   local payload
@@ -210,6 +217,7 @@ USAGE
   curl -s -o "$output" --max-time $((REQUEST_TIMEOUT * 3)) "$video_url"
   local size; size="$(wc -c < "$output" | tr -d ' ')"
   echo "Video saved to: $output ($size bytes)"
+  quota_commit_or_warn
   echo "Done!"
 }
 

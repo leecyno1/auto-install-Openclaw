@@ -1,7 +1,7 @@
 # content-strategy 使用指南
 
 ## 1. 功能定位
-- When the user wants to plan a content strategy, decide what content to create, or figure out what topics to cover. Also use when the user mentions "content strategy," "what should I write about," "content ideas," "blog strategy," "topic clusters," "content planning," "editorial calendar," "content marketing," "content roadmap," "what content should I create," "blog topics," "content pillars," or "I don't know what to write." Use this whenever someone needs help deciding what content to produce, not just writing it. For writing individual pieces, see copywriting. For SEO-specific audits, see seo-audit. For social media content specifically, see social-content.
+- When the user wants to plan a content strategy, decide what content to create, or figure out what topics to cover. Also use when the user mentions "content strategy," "what shou...
 - 默认档位: 基础档默认安装
 - 仓库目录: `skills/default/content-strategy`
 - 安装后目录: `~/.openclaw/skills/content-strategy`

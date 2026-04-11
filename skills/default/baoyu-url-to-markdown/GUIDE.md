@@ -1,7 +1,7 @@
 # baoyu-url-to-markdown 使用指南
 
 ## 1. 功能定位
-- Fetch any URL and convert to markdown using Chrome CDP. Saves the rendered HTML snapshot alongside the markdown, uses an upgraded Defuddle pipeline with better web-component handling and YouTube transcript extraction, and automatically falls back to the pre-Defuddle HTML-to-Markdown pipeline when needed. If local browser capture fails entirely, it can fall back to the hosted defuddle.md API. Supports two modes - auto-capture on page load, or wait for user signal (for pages requiring login). Use when user wants to save a webpage as markdown.
+- Fetch any URL and convert to markdown using Chrome CDP. Saves the rendered HTML snapshot alongside the markdown, uses an upgraded Defuddle pipeline with better web-component han...
 - 默认档位: 仅全量默认包/手动同步
 - 仓库目录: `skills/default/baoyu-url-to-markdown`
 - 安装后目录: `~/.openclaw/skills/baoyu-url-to-markdown`

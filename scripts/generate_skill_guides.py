@@ -292,18 +292,71 @@ UPSTREAM_OVERRIDES = {
 }
 
 
+FRONTMATTER_KEY_PATTERN = re.compile(r"^[A-Za-z0-9_-]+:\s*.*$")
+
+
+def clean_desc(text: str, limit: int = 180) -> str:
+    value = " ".join(text.strip().split())
+    value = value.replace("|", " ")
+    if len(value) > limit:
+        value = value[: limit - 3].rstrip() + "..."
+    return value
+
+
 def parse_description(skill_dir: Path) -> str:
     skill_md = skill_dir / 'SKILL.md'
     if not skill_md.exists():
         return '未提供描述。'
     text = skill_md.read_text(encoding='utf-8', errors='ignore')
+
+    if text.startswith('---\n'):
+        parts = text.split('\n---\n', 1)
+        if len(parts) == 2:
+            fm = parts[0].splitlines()[1:]
+            i = 0
+            while i < len(fm):
+                line = fm[i]
+                if line.startswith('description:'):
+                    raw = line.split(':', 1)[1].strip()
+                    if raw and raw not in {'|', '>'}:
+                        return clean_desc(raw.strip("\"'"))
+                    block: list[str] = []
+                    j = i + 1
+                    while j < len(fm):
+                        cur = fm[j]
+                        if cur.startswith(('  ', '\t')):
+                            block.append(cur.strip())
+                            j += 1
+                            continue
+                        if FRONTMATTER_KEY_PATTERN.match(cur):
+                            break
+                        if not cur.strip():
+                            block.append('')
+                            j += 1
+                            continue
+                        break
+                    merged = ' '.join(x for x in block if x.strip())
+                    if merged.strip():
+                        return clean_desc(merged)
+                    break
+                i += 1
+
     m = re.search(r'^description:\s*["\']?(.*?)["\']?$', text, re.M)
     if m and m.group(1).strip():
-        return m.group(1).strip()
-    for line in text.splitlines():
+        return clean_desc(m.group(1))
+
+    in_frontmatter = False
+    for idx, line in enumerate(text.splitlines()):
+        if idx == 0 and line.strip() == '---':
+            in_frontmatter = True
+            continue
+        if in_frontmatter:
+            if line.strip() == '---':
+                in_frontmatter = False
+            continue
         line = line.strip()
-        if line and not line.startswith('#') and not line.startswith('---'):
-            return line[:140]
+        if line and not line.startswith('#') and not line.startswith('---') and not line.startswith('```'):
+            return clean_desc(line)
     return '未提供描述。'
 
 

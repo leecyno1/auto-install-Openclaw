@@ -1,7 +1,7 @@
 # finishing-a-development-branch 使用指南
 
 ## 1. 功能定位
-- Use when implementation is complete, all tests pass, and you need to decide how to integrate the work - guides completion of development work by presenting structured options for merge, PR, or cleanup
+- Use when implementation is complete, all tests pass, and you need to decide how to integrate the work - guides completion of development work by presenting structured options fo...
 - 默认档位: 仅全量默认包/手动同步
 - 仓库目录: `skills/default/finishing-a-development-branch`
 - 安装后目录: `~/.openclaw/skills/finishing-a-development-branch`

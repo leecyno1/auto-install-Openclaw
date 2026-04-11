@@ -1,7 +1,7 @@
 # baoyu-xhs-images 使用指南
 
 ## 1. 功能定位
-- Generates Xiaohongshu (Little Red Book) infographic series with 11 visual styles and 8 layouts. Breaks content into 1-10 cartoon-style images optimized for XHS engagement. Use when user mentions "小红书图片", "XHS images", "RedNote infographics", "小红书种草", or wants social media infographics for Chinese platforms.
+- Generates Xiaohongshu (Little Red Book) infographic series with 11 visual styles and 8 layouts. Breaks content into 1-10 cartoon-style images optimized for XHS engagement. Use w...
 - 默认档位: 仅全量默认包/手动同步
 - 仓库目录: `skills/default/baoyu-xhs-images`
 - 安装后目录: `~/.openclaw/skills/baoyu-xhs-images`

@@ -1,7 +1,7 @@
 # xiaohongshu-extract 使用指南
 
 ## 1. 功能定位
-- Extract metadata from Xiaohongshu (XHS) share or discovery URLs by parsing window.__INITIAL_STATE__ and returning note details. Use when asked to fetch XHS page content, note metadata, video info, or engagement stats from a public XHS link.
+- Extract metadata from Xiaohongshu (XHS) share or discovery URLs by parsing window.__INITIAL_STATE__ and returning note details. Use when asked to fetch XHS page content, note me...
 - 默认档位: 仅全量默认包/手动同步
 - 仓库目录: `skills/default/xiaohongshu-extract`
 - 安装后目录: `~/.openclaw/skills/xiaohongshu-extract`

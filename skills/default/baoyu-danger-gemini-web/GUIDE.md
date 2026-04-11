@@ -1,7 +1,7 @@
 # baoyu-danger-gemini-web 使用指南
 
 ## 1. 功能定位
-- Generates images and text via reverse-engineered Gemini Web API. Supports text generation, image generation from prompts, reference images for vision input, and multi-turn conversations. Use when other skills need image generation backend, or when user requests "generate image with Gemini", "Gemini text generation", or needs vision-capable AI generation.
+- Generates images and text via reverse-engineered Gemini Web API. Supports text generation, image generation from prompts, reference images for vision input, and multi-turn conve...
 - 默认档位: 仅全量默认包/手动同步
 - 仓库目录: `skills/default/baoyu-danger-gemini-web`
 - 安装后目录: `~/.openclaw/skills/baoyu-danger-gemini-web`

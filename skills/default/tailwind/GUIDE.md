@@ -1,7 +1,7 @@
 # tailwind 使用指南
 
 ## 1. 功能定位
-- Build scalable design systems with Tailwind CSS v4, design tokens, component libraries, and responsive patterns. Use when creating component libraries, implementing design systems, or standardizing UI patterns.
+- Build scalable design systems with Tailwind CSS v4, design tokens, component libraries, and responsive patterns. Use when creating component libraries, implementing design syste...
 - 默认档位: 仅全量默认包/手动同步
 - 仓库目录: `skills/default/tailwind`
 - 安装后目录: `~/.openclaw/skills/tailwind`
