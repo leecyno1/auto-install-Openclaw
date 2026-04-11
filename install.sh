@@ -6409,6 +6409,63 @@ start_openclaw_service() {
     fi
 }
 
+# ================================ 清理旧配置（保留用户数据） ================================
+clean_legacy_config_if_needed() {
+    # 如果 OpenClaw 已经安装过，提示清理旧配置
+    if [ ! -d "$CONFIG_DIR" ]; then
+        return 0  # 全新安装，无需清理
+    fi
+
+    if [ ! -f "$CONFIG_DIR/env" ]; then
+        return 0  # 配置不完整，可能是损坏的安装
+    fi
+
+    echo ""
+    echo -e "${YELLOW}检测到已存在的 OpenClaw 配置${NC}"
+    echo -e "${YELLOW}  位置: $CONFIG_DIR${NC}"
+    echo ""
+    echo "可能需要清理:"
+    echo "  • 非官方渠道的飞书配置"
+    echo "  • 其他消息渠道配置"
+    echo "  • 旧的模型配置"
+    echo ""
+    echo "保留的数据:"
+    echo "  ✓ 用户 Memory 与对话历史"
+    echo "  ✓ Sessions 与登录信息"
+    echo "  ✓ API Keys 与凭证"
+    echo ""
+
+    if confirm "是否清理旧配置？(推荐在升级时选择'是')" "y"; then
+        log_step "执行配置清理与修复..."
+
+        # 检查 config-menu.sh 是否可用
+        local config_menu_path="./config-menu.sh"
+        local script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+        local local_config_menu="$script_dir/config-menu.sh"
+
+        if [ -f "$local_config_menu" ]; then
+            config_menu_path="$local_config_menu"
+        fi
+
+        if [ -f "$config_menu_path" ]; then
+            # 使用 config-menu.sh 的修复函数
+            if bash "$config_menu_path" --repair-config 2>/dev/null; then
+                log_info "旧配置清理完成（保留 Memory/Sessions/API Keys）"
+                return 0
+            else
+                log_warn "配置清理失败，继续安装"
+                return 1
+            fi
+        else
+            log_warn "未找到 config-menu.sh，跳过清理"
+            return 0
+        fi
+    else
+        log_info "已跳过清理，使用现有配置"
+        return 0
+    fi
+}
+
 # 下载并运行配置菜单
 run_config_menu() {
     local menu_args=("$@")
@@ -6493,7 +6550,7 @@ main() {
 
     print_banner
     print_install_plan
-    
+
     echo -e "${YELLOW}⚠️  警告: OpenClaw 需要完全的计算机权限${NC}"
     echo -e "${YELLOW}    不建议在主要工作电脑上安装，建议使用专用服务器或虚拟机${NC}"
     echo ""
@@ -6507,7 +6564,10 @@ main() {
         echo "安装已取消"
         exit 0
     fi
-    
+
+    echo ""
+    # 检查并清理旧配置
+    clean_legacy_config_if_needed
     echo ""
     detect_os
     check_root
