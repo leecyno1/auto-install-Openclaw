@@ -10902,14 +10902,16 @@ configure_minimax_multimodal_vendor_menu() {
     check_openclaw_installed || return 0
 
     openclaw config set "vendor.media.minimax.apiHost" "$api_host" >/dev/null 2>&1 || true
-    openclaw config set "vendor.media.minimax.tts.model" "${MINIMAX_TTS_MODEL:-$MINIMAX_TTS_MODEL_DEFAULT}" >/dev/null 2>&1 || true
-    openclaw config set "vendor.media.minimax.tts.endpoint" "${MINIMAX_TTS_ENDPOINT:-$MINIMAX_TTS_ENDPOINT_DEFAULT}" >/dev/null 2>&1 || true
-    openclaw config set "vendor.media.minimax.video.model" "${MINIMAX_VIDEO_MODEL:-$MINIMAX_VIDEO_MODEL_DEFAULT}" >/dev/null 2>&1 || true
-    openclaw config set "vendor.media.minimax.video.endpoint" "${MINIMAX_VIDEO_ENDPOINT:-$MINIMAX_VIDEO_ENDPOINT_DEFAULT}" >/dev/null 2>&1 || true
-    openclaw config set "vendor.media.minimax.video.queryEndpoint" "${MINIMAX_VIDEO_QUERY_ENDPOINT:-$MINIMAX_VIDEO_QUERY_ENDPOINT_DEFAULT}" >/dev/null 2>&1 || true
-    openclaw config set "vendor.media.minimax.video.retrieveEndpoint" "${MINIMAX_FILES_RETRIEVE_ENDPOINT:-$MINIMAX_FILES_RETRIEVE_ENDPOINT_DEFAULT}" >/dev/null 2>&1 || true
-    openclaw config set "vendor.media.minimax.music.model" "${MINIMAX_MUSIC_MODEL:-$MINIMAX_MUSIC_MODEL_DEFAULT}" >/dev/null 2>&1 || true
-    openclaw config set "vendor.media.minimax.music.endpoint" "${MINIMAX_MUSIC_ENDPOINT:-$MINIMAX_MUSIC_ENDPOINT_DEFAULT}" >/dev/null 2>&1 || true
+    openclaw config set "vendor.media.minimax.image.model" "${MINIMAX_IMAGE_MODEL:-image-01}" >/dev/null 2>&1 || true
+    openclaw config set "vendor.media.minimax.image.endpoint" "${MINIMAX_IMAGE_ENDPOINT:-/v1/image_generation}" >/dev/null 2>&1 || true
+    openclaw config set "vendor.media.minimax.tts.model" "${MINIMAX_TTS_MODEL:-speech-2.8-hd}" >/dev/null 2>&1 || true
+    openclaw config set "vendor.media.minimax.tts.endpoint" "${MINIMAX_TTS_ENDPOINT:-/v1/t2a_v2}" >/dev/null 2>&1 || true
+    openclaw config set "vendor.media.minimax.video.model" "${MINIMAX_VIDEO_MODEL:-MiniMax-Hailuo-2.3}" >/dev/null 2>&1 || true
+    openclaw config set "vendor.media.minimax.video.endpoint" "${MINIMAX_VIDEO_ENDPOINT:-/v1/video_generation}" >/dev/null 2>&1 || true
+    openclaw config set "vendor.media.minimax.video.queryEndpoint" "${MINIMAX_VIDEO_QUERY_ENDPOINT:-/v1/query/video_generation}" >/dev/null 2>&1 || true
+    openclaw config set "vendor.media.minimax.video.retrieveEndpoint" "${MINIMAX_FILES_RETRIEVE_ENDPOINT:-/v1/files/retrieve}" >/dev/null 2>&1 || true
+    openclaw config set "vendor.media.minimax.music.model" "${MINIMAX_MUSIC_MODEL:-music-2.5}" >/dev/null 2>&1 || true
+    openclaw config set "vendor.media.minimax.music.endpoint" "${MINIMAX_MUSIC_ENDPOINT:-/v1/music_generation}" >/dev/null 2>&1 || true
 }
 
 write_minimax_skill_config_menu() {
@@ -10930,20 +10932,24 @@ cfg_file = os.path.expanduser("$cfg_file")
 payload = {
     "api_key": "$api_key",
     "api_host": "$api_host",
-    "output_path": "${MINIMAX_MULTIMODAL_OUTPUT_PATH:-$MINIMAX_MULTIMODAL_OUTPUT_PATH_DEFAULT}",
+    "output_path": "${MINIMAX_MULTIMODAL_OUTPUT_PATH:-~/.openclaw/workspace/minimax-output}",
+    "image": {
+        "model": "${MINIMAX_IMAGE_MODEL:-image-01}",
+        "endpoint": "${MINIMAX_IMAGE_ENDPOINT:-/v1/image_generation}"
+    },
     "tts": {
-        "model": "${MINIMAX_TTS_MODEL:-$MINIMAX_TTS_MODEL_DEFAULT}",
-        "endpoint": "${MINIMAX_TTS_ENDPOINT:-$MINIMAX_TTS_ENDPOINT_DEFAULT}"
+        "model": "${MINIMAX_TTS_MODEL:-speech-2.8-hd}",
+        "endpoint": "${MINIMAX_TTS_ENDPOINT:-/v1/t2a_v2}"
     },
     "video": {
-        "model": "${MINIMAX_VIDEO_MODEL:-$MINIMAX_VIDEO_MODEL_DEFAULT}",
-        "endpoint": "${MINIMAX_VIDEO_ENDPOINT:-$MINIMAX_VIDEO_ENDPOINT_DEFAULT}",
-        "query_endpoint": "${MINIMAX_VIDEO_QUERY_ENDPOINT:-$MINIMAX_VIDEO_QUERY_ENDPOINT_DEFAULT}",
-        "retrieve_endpoint": "${MINIMAX_FILES_RETRIEVE_ENDPOINT:-$MINIMAX_FILES_RETRIEVE_ENDPOINT_DEFAULT}"
+        "model": "${MINIMAX_VIDEO_MODEL:-MiniMax-Hailuo-2.3}",
+        "endpoint": "${MINIMAX_VIDEO_ENDPOINT:-/v1/video_generation}",
+        "query_endpoint": "${MINIMAX_VIDEO_QUERY_ENDPOINT:-/v1/query/video_generation}",
+        "retrieve_endpoint": "${MINIMAX_FILES_RETRIEVE_ENDPOINT:-/v1/files/retrieve}"
     },
     "music": {
-        "model": "${MINIMAX_MUSIC_MODEL:-$MINIMAX_MUSIC_MODEL_DEFAULT}",
-        "endpoint": "${MINIMAX_MUSIC_ENDPOINT:-$MINIMAX_MUSIC_ENDPOINT_DEFAULT}"
+        "model": "${MINIMAX_MUSIC_MODEL:-music-2.5}",
+        "endpoint": "${MINIMAX_MUSIC_ENDPOINT:-/v1/music_generation}"
     }
 }
 os.makedirs(os.path.dirname(cfg_file), exist_ok=True)
@@ -10955,20 +10961,24 @@ PYEOF
 {
   "api_key": "$api_key",
   "api_host": "$api_host",
-  "output_path": "${MINIMAX_MULTIMODAL_OUTPUT_PATH:-$MINIMAX_MULTIMODAL_OUTPUT_PATH_DEFAULT}",
+  "output_path": "${MINIMAX_MULTIMODAL_OUTPUT_PATH:-~/.openclaw/workspace/minimax-output}",
+  "image": {
+    "model": "${MINIMAX_IMAGE_MODEL:-image-01}",
+    "endpoint": "${MINIMAX_IMAGE_ENDPOINT:-/v1/image_generation}"
+  },
   "tts": {
-    "model": "${MINIMAX_TTS_MODEL:-$MINIMAX_TTS_MODEL_DEFAULT}",
-    "endpoint": "${MINIMAX_TTS_ENDPOINT:-$MINIMAX_TTS_ENDPOINT_DEFAULT}"
+    "model": "${MINIMAX_TTS_MODEL:-speech-2.8-hd}",
+    "endpoint": "${MINIMAX_TTS_ENDPOINT:-/v1/t2a_v2}"
   },
   "video": {
-    "model": "${MINIMAX_VIDEO_MODEL:-$MINIMAX_VIDEO_MODEL_DEFAULT}",
-    "endpoint": "${MINIMAX_VIDEO_ENDPOINT:-$MINIMAX_VIDEO_ENDPOINT_DEFAULT}",
-    "query_endpoint": "${MINIMAX_VIDEO_QUERY_ENDPOINT:-$MINIMAX_VIDEO_QUERY_ENDPOINT_DEFAULT}",
-    "retrieve_endpoint": "${MINIMAX_FILES_RETRIEVE_ENDPOINT:-$MINIMAX_FILES_RETRIEVE_ENDPOINT_DEFAULT}"
+    "model": "${MINIMAX_VIDEO_MODEL:-MiniMax-Hailuo-2.3}",
+    "endpoint": "${MINIMAX_VIDEO_ENDPOINT:-/v1/video_generation}",
+    "query_endpoint": "${MINIMAX_VIDEO_QUERY_ENDPOINT:-/v1/query/video_generation}",
+    "retrieve_endpoint": "${MINIMAX_FILES_RETRIEVE_ENDPOINT:-/v1/files/retrieve}"
   },
   "music": {
-    "model": "${MINIMAX_MUSIC_MODEL:-$MINIMAX_MUSIC_MODEL_DEFAULT}",
-    "endpoint": "${MINIMAX_MUSIC_ENDPOINT:-$MINIMAX_MUSIC_ENDPOINT_DEFAULT}"
+    "model": "${MINIMAX_MUSIC_MODEL:-music-2.5}",
+    "endpoint": "${MINIMAX_MUSIC_ENDPOINT:-/v1/music_generation}"
   }
 }
 EOF
