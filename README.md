@@ -67,20 +67,24 @@ curl -fsSL --proto '=https' --tlsv1.2 --connect-timeout 8 --max-time 25 https://
 ### 3. 统一入口（推荐）
 
 ```bash
-openclaw-setup install       # 等同于 bash install.sh
-openclaw-setup config        # 等同于 bash ~/.openclaw/config-menu.sh
-openclaw-setup repair       # 修复历史错误配置（保留记忆/对话）
-openclaw-setup workbench    # 启动像素小屋工作台
-openclaw-setup status       # 查看所有服务状态
-openclaw-setup doctor       # 健康检查并自动修复
-openclaw-setup backup       # 一键备份配置
-openclaw-setup help         # 显示帮助
+lobster-setup install       # 等同于 bash install.sh
+lobster-setup config        # 等同于 bash ~/.openclaw/config-menu.sh
+lobster-setup repair        # 修复历史错误配置（保留记忆/对话）
+lobster-setup workbench     # 启动像素小屋工作台
+lobster-setup status        # 查看所有服务状态
+lobster-setup doctor        # 健康检查并自动修复
+lobster-setup engine        # 打开引擎管理
+lobster-setup backup        # 一键备份配置
+lobster-setup help          # 显示帮助
 ```
+
+兼容说明：
+`openclaw-setup` 仍保留为兼容别名，但新的统一入口以 `lobster-setup` 为准。
 
 ### 4. 安装后打开配置中心
 
 ```bash
-openclaw-setup config
+lobster-setup config
 # 或
 bash ~/.openclaw/config-menu.sh
 ```
@@ -88,7 +92,7 @@ bash ~/.openclaw/config-menu.sh
 ### 5. 修复历史错误配置并保留记忆/对话
 
 ```bash
-openclaw-setup repair
+lobster-setup repair
 # 或
 bash ~/.openclaw/config-menu.sh --repair-config
 ```
@@ -96,7 +100,7 @@ bash ~/.openclaw/config-menu.sh --repair-config
 ### 6. 补装或修复像素小屋工作台
 
 ```bash
-openclaw-setup workbench
+lobster-setup workbench
 # 或
 bash ~/.openclaw/config-menu.sh --install-pixel-house
 ```
@@ -108,7 +112,7 @@ bash ~/.openclaw/config-menu.sh --install-pixel-house
 - 自动清理历史残留插件项，避免 `pairing required`、`plugin not found`、`unknown channel id` 这类老问题反复出现。
 - 默认内置本地 Skills 仓，尽量避免安装时依赖外网动态拉取，降低大规模部署的不确定性。
 - 提供像素小屋工作台，把角色、技能、装备、状态、任务和 OpenClaw 后端配置映射到可视化页面。
-- 支持专家模型路由（OpenAI / Anthropic 规范），复杂任务自动路由到子 Agent 处理。
+- 支持高级模型路由（OpenAI / Anthropic 规范）与独立生图 API 配置，复杂任务可自动路由到子 Agent 处理。
 - Gateway 层配额强制执行，超额自动拦截并返回 429。
 
 ## 视觉预览
@@ -138,13 +142,13 @@ bash ~/.openclaw/config-menu.sh --install-pixel-house
 | 模块 | 现在能做什么 |
 | --- | --- |
 | 安装器 | 安装 OpenClaw、依赖、默认运行环境、配置入口、像素小屋启动器 |
-| 配置菜单 | 模型配置、官方插件管理、权限设置、技能管理、身份配置、服务管理、配置修复、专家模型配置 |
+| 配置菜单 | 模型配置、官方插件管理、权限设置、技能管理、身份配置、服务管理、配置修复、高级模型路由、生图 API 配置 |
 | 配置修复 | 清理历史残留插件/错误渠道配置，保留用户 Memory、Session、对话历史与 API Key |
 | Skills 仓 | 内置基础 / 扩展 / 超级技能包，支持本地同步、缓存重建、缺失修复 |
 | 像素小屋 | 默认工作台端口 `19000`，映射角色、技能、装备、状态与后端运行世界 |
 | Gateway | 默认收敛到 `127.0.0.1:13145`，降低误暴露风险 |
-| 健康检查 | 默认端口 `13146`，监控 Gateway 和像素小屋运行状态 |
-| 配额强制 | 默认端口 `13147`，拦截媒体生成请求检查配额，超额返回 429 |
+| 健康检查 | 默认端口 `13146`，随像素小屋工作台启动链拉起，监控 Gateway 和像素小屋运行状态 |
+| 配额强制 | 默认端口 `13147`，随像素小屋工作台启动链拉起，拦截媒体生成请求检查配额，超额返回 429 |
 
 ## 档位规则
 
@@ -197,9 +201,9 @@ bash ~/.openclaw/config-menu.sh --install-pixel-house
 ### 建议顺序
 
 1. 先运行安装脚本，完成 OpenClaw 与依赖初始化。
-2. 安装后执行 `bash ~/.openclaw/config-menu.sh`，走一次模型配置与服务检查。
-3. 对历史服务器执行 `bash ~/.openclaw/config-menu.sh --repair-config`，刷新本地技能缓存并修复旧配置。
-4. 需要可视化界面时执行 `bash ~/.openclaw/config-menu.sh --install-pixel-house`，然后访问 `http://127.0.0.1:19000/`。
+2. 安装后执行 `lobster-setup config`，走一次模型配置与服务检查。
+3. 对历史服务器执行 `lobster-setup repair`，刷新本地技能缓存并修复旧配置。
+4. 需要可视化界面时执行 `lobster-setup workbench`，然后访问 `http://127.0.0.1:19000/`。
 
 ## 仓库结构
 
@@ -216,24 +220,29 @@ bash ~/.openclaw/config-menu.sh --install-pixel-house
 
 ## 常用命令
 
-### openclaw-setup 统一入口（推荐）
+### lobster-setup 统一入口（推荐）
 
 ```bash
-openclaw-setup install       # 等同于 bash install.sh
-openclaw-setup config        # 等同于 bash ~/.openclaw/config-menu.sh
-openclaw-setup repair       # 修复历史错误配置（保留记忆/对话）
-openclaw-setup workbench    # 启动像素小屋工作台
-openclaw-setup status       # 查看所有服务状态
-openclaw-setup doctor       # 健康检查并自动修复
-openclaw-setup backup       # 一键备份配置
-openclaw-setup help         # 显示帮助
+lobster-setup install       # 等同于 bash install.sh
+lobster-setup config        # 等同于 bash ~/.openclaw/config-menu.sh
+lobster-setup repair        # 修复历史错误配置（保留记忆/对话）
+lobster-setup workbench     # 启动像素小屋工作台
+lobster-setup status        # 查看所有服务状态
+lobster-setup doctor        # 健康检查并自动修复
+lobster-setup engine        # 打开引擎管理
+lobster-setup backup        # 一键备份配置
+lobster-setup help          # 显示帮助
 ```
 
 ### 配置与修复
 
 ```bash
 bash ~/.openclaw/config-menu.sh
+bash ~/.openclaw/config-menu.sh --model-only
+bash ~/.openclaw/config-menu.sh --official-channels-only
+bash ~/.openclaw/config-menu.sh --engine-menu
 bash ~/.openclaw/config-menu.sh --repair-config
+bash ~/.openclaw/config-menu.sh --repair-pairing
 bash ~/.openclaw/config-menu.sh --install-pixel-house
 ```
 
@@ -256,6 +265,8 @@ source ~/.openclaw/env && openclaw plugins update --all
 ```
 
 ### 健康检查与配额服务
+
+默认在安装像素小屋工作台时一并落盘；工作台启动链会自动拉起这两个辅助服务。若你后续执行补装/修复像素小屋，也会重新接线并启动。
 
 ```bash
 ~/.openclaw/health-server.sh status

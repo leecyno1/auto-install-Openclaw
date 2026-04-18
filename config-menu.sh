@@ -8,6 +8,30 @@
 # ╚═══════════════════════════════════════════════════════════════════════════╝
 #
 
+# ================================ 帮助输出 ================================
+print_usage() {
+    cat <<'EOF'
+OpenClaw 配置菜单
+
+用法:
+  bash config-menu.sh
+  bash config-menu.sh [选项]
+
+选项:
+  --help, -h                 显示帮助
+  --model-only               直接进入模型配置
+  --official-channels-only   直接进入官方渠道插件配置
+  --repair-config            修复运行时配置（保留数据）
+  --repair-pairing           修复 Dashboard / 配置页配对
+  --install-pixel-house      补装像素小屋
+  --engine-menu              直接进入引擎管理
+
+常用入口:
+  lobster-setup config
+  bash ~/.openclaw/config-menu.sh
+EOF
+}
+
 # ================================ TTY 检测 ================================
 # 当通过 curl | bash 或被其他脚本调用时，stdin 可能不是终端
 # 需要优先选择“可读”的输入源，避免 /dev/tty 存在但不可用导致循环报错
@@ -43,10 +67,17 @@ resolve_onboard_term_menu() {
 
 allow_noninteractive_shortcut_menu() {
     case "${1:-}" in
-        --repair-config|--repair-pairing|--install-pixel-house) return 0 ;;
+        --help|-h|--repair-config|--repair-pairing|--install-pixel-house|--engine-menu|--model-only|--official-channels-only) return 0 ;;
         *) return 1 ;;
     esac
 }
+
+case "${1:-}" in
+    --help|-h)
+        print_usage
+        exit 0
+        ;;
+esac
 
 if ! TTY_INPUT="$(resolve_tty_input)"; then
     if allow_noninteractive_shortcut_menu "${1:-}"; then
@@ -103,23 +134,28 @@ read_secret_input() {
 }
 
 # ================================ 颜色定义 ================================
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
+RED='\033[1;31m'
+GREEN='\033[1;34m'
+YELLOW='\033[1;31m'
 BLUE='\033[0;34m'
-PURPLE='\033[0;35m'
-CYAN='\033[0;36m'
+PURPLE='\033[0;31m'
+CYAN='\033[1;34m'
 WHITE='\033[1;37m'
 GRAY='\033[0;90m'
 NC='\033[0m'
 
 # 背景色
 BG_BLUE='\033[44m'
-BG_GREEN='\033[42m'
+BG_GREEN='\033[44m'
 BG_RED='\033[41m'
 
 # ================================ 配置变量 ================================
 CONFIG_DIR="$HOME/.openclaw"
+LOBSTER_HOME="${LOBSTER_HOME:-$HOME/.lobster}"
+LOBSTER_CONFIG_DIR="$LOBSTER_HOME/config"
+LOBSTER_ENGINE_ENV="$LOBSTER_CONFIG_DIR/engine.env"
+HERMES_HOME="${HERMES_HOME:-$HOME/.hermes}"
+HERMES_INSTALL_DIR="${HERMES_INSTALL_DIR:-$HERMES_HOME/hermes-agent}"
 
 # OpenClaw 环境变量配置
 OPENCLAW_ENV="$CONFIG_DIR/env"
@@ -164,12 +200,65 @@ PLUGIN_INSTALL_BACKOFF_SECONDS="${OPENCLAW_PLUGIN_INSTALL_BACKOFF_SECONDS:-2}"
 
 DEFAULT_OFFICIAL_PLUGINS="@openclaw/feishu @openclaw/discord @openclaw/whatsapp"
 DEFAULT_BUILTIN_CHANNEL_PLUGINS="telegram imessage"
-ENHANCED_SKILLS_LIST="capability-evolver openclaw-cron-setup proactive-agent self-improving-agent-cn brainstorming reflection find-skills skill-creator subagent-driven-development using-superpowers verification-before-completion writing-skills agent-browser chrome-devtools-mcp github mcp-builder model-usage shell minimax-image-understanding minimax-web-search minimax-pdf minimax-docx minimax-xlsx tavily-search web-search news-radar url-to-markdown pdf nano-pdf docx pptx xlsx frontend-design web-design stock-monitor-skill stock-daily-analysis-skill openclaw-stock-kb stock_datasource openclaw-stock-analyzer tushare-openclaw-skill openclaw-stock-data-skill stock-analysis openclaw-stock multi-search-engine akshare-stock content-strategy social-content ai-image-generation animation media-downloader marketingskills inference-skills gemini-image-service oracle paperless-docs paperless-ngx-tools writing-plans agentmail agentmail-cli agentmail-mcp agentmail-toolkit lark-calendar notebooklm-skill skill-security-auditor weather data-analyst finance-data task todo"
+
+OPENCLAW_SKILLS_LIB_MENU_LOADED=0
+load_openclaw_skills_lib_menu() {
+    [ "${OPENCLAW_SKILLS_LIB_MENU_LOADED:-0}" = "1" ] && return 0
+
+    local script_dir candidate
+    script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    for candidate in \
+        "$script_dir/scripts/lib/skills.sh" \
+        "$script_dir/lib/skills.sh" \
+        "$HOME/.openclaw/.cache/auto-install-openclaw-repo/scripts/lib/skills.sh" \
+        "$HOME/.openclaw/workspace/auto-install-openclaw/scripts/lib/skills.sh" \
+        "$HOME/.openclaw/workspace/auto-install-Openclaw/scripts/lib/skills.sh"
+    do
+        if [ -f "$candidate" ]; then
+            # shellcheck disable=SC1090
+            . "$candidate"
+            OPENCLAW_SKILLS_LIB_MENU_LOADED=1
+            return 0
+        fi
+    done
+    return 1
+}
+
+apply_skill_manifest_defaults_menu() {
+    load_openclaw_skills_lib_menu >/dev/null 2>&1 || return 0
+    command -v openclaw_skill_manifest_list >/dev/null 2>&1 || return 0
+
+    local value
+    if value="$(openclaw_skill_manifest_list minimax_official 2>/dev/null)" && [ -n "$value" ]; then
+        MINIMAX_OFFICIAL_SKILLS="$value"
+    fi
+    if value="$(openclaw_skill_manifest_list group:minimax_local_compat 2>/dev/null)" && [ -n "$value" ]; then
+        MINIMAX_LOCAL_COMPAT_SKILLS="$value"
+    fi
+    MINIMAX_SKILLS="${MINIMAX_LOCAL_COMPAT_SKILLS} ${MINIMAX_OFFICIAL_SKILLS}"
+    if value="$(openclaw_skill_manifest_list tier:basic 2>/dev/null)" && [ -n "$value" ]; then
+        PROFILE_BASIC_SKILLS="$value"
+    fi
+    if value="$(openclaw_skill_manifest_list tier:extended 2>/dev/null)" && [ -n "$value" ]; then
+        PROFILE_EXTENDED_SKILLS="$value"
+    fi
+    if value="$(openclaw_skill_manifest_list menu_enhanced 2>/dev/null)" && [ -n "$value" ]; then
+        ENHANCED_SKILLS_LIST="$value"
+    fi
+    if value="$(openclaw_skill_manifest_list tier:super 2>/dev/null)" && [ -n "$value" ]; then
+        PROFILE_SUPER_SKILLS="$value"
+    fi
+    if value="$(openclaw_skill_manifest_list group:baoyu 2>/dev/null)" && [ -n "$value" ]; then
+        SUPER_CURATED_SKILLS_LIST="$value"
+    fi
+    if value="$(openclaw_skill_manifest_default_sentinels 2>/dev/null)" && [ -n "$value" ]; then
+        DEFAULT_SKILLS_BUNDLE_SENTINELS="$value"
+    fi
+}
+
 RULE_PROFILE_DEFAULT="${OPENCLAW_RULE_PROFILE:-medium}"
-PROFILE_BASIC_SKILLS="capability-evolver openclaw-cron-setup proactive-agent self-improving-agent-cn brainstorming reflection find-skills skill-creator subagent-driven-development using-superpowers verification-before-completion writing-skills agent-browser chrome-devtools-mcp github mcp-builder model-usage shell minimax-image-understanding minimax-web-search minimax-pdf minimax-docx minimax-xlsx tavily-search web-search news-radar url-to-markdown pdf nano-pdf docx pptx xlsx stock-monitor-skill multi-search-engine akshare-stock content-strategy social-content ai-image-generation media-downloader marketingskills inference-skills agentmail agentmail-cli agentmail-mcp agentmail-toolkit lark-calendar notebooklm-skill skill-security-auditor weather data-analyst finance-data task todo"
-PROFILE_EXTENDED_SKILLS="capability-evolver openclaw-cron-setup proactive-agent self-improving-agent-cn brainstorming reflection find-skills skill-creator subagent-driven-development using-superpowers verification-before-completion writing-skills agent-browser chrome-devtools-mcp github mcp-builder model-usage shell minimax-image-understanding minimax-web-search minimax-pdf minimax-docx minimax-xlsx tavily-search web-search news-radar url-to-markdown pdf nano-pdf docx pptx xlsx stock-monitor-skill multi-search-engine akshare-stock content-strategy social-content ai-image-generation animation media-downloader marketingskills inference-skills gemini-image-service oracle paperless-docs paperless-ngx-tools writing-plans agentmail agentmail-cli agentmail-mcp agentmail-toolkit lark-calendar notebooklm-skill skill-security-auditor weather data-analyst finance-data task todo"
-SUPER_CURATED_SKILLS_LIST="baoyu-skills baoyu-article-illustrator baoyu-comic baoyu-compress-image baoyu-cover-image baoyu-danger-gemini-web baoyu-danger-x-to-markdown baoyu-format-markdown baoyu-image-gen baoyu-infographic baoyu-markdown-to-html baoyu-post-to-wechat baoyu-post-to-weibo baoyu-post-to-x baoyu-slide-deck baoyu-translate baoyu-url-to-markdown baoyu-xhs-images baoyu-youtube-transcript"
-PROFILE_SUPER_SKILLS="${PROFILE_EXTENDED_SKILLS} planning-with-files ${SUPER_CURATED_SKILLS_LIST}"
+load_openclaw_skills_lib_menu >/dev/null 2>&1 || true
+openclaw_skill_fallback_init menu
 RULE_PROFILE_MENU_SELECTED=""
 GEMINI_BASE_URL_DEFAULT="${GEMINI_BASE_URL:-${GOOGLE_BASE_URL:-}}"
 GEMINI_IMAGE_MODEL_DEFAULT="${GEMINI_IMAGE_MODEL:-gemini-2.5-flash-image-preview}"
@@ -196,14 +285,14 @@ UNOFFICIAL_ADVANCED_DEFAULT_MODEL_CLAUDE="${OPENCLAW_UNOFFICIAL_ADVANCED_CLAUDE_
 UNOFFICIAL_ADVANCED_DEFAULT_MODEL_GPT="${OPENCLAW_UNOFFICIAL_ADVANCED_GPT_MODEL:-Gpt-5.4}"
 UNOFFICIAL_ADVANCED_DEFAULT_API_KEY="${OPENCLAW_UNOFFICIAL_ADVANCED_API_KEY:-}"
 RULE_ADVANCED_DEFAULT_URL="${OPENCLAW_RULE_ADVANCED_MODEL_API_URL:-${OPENCLAW_UNOFFICIAL_ADVANCED_OPENAI_API_URL:-https://api.openai.com/v1}}"
-RULE_ADVANCED_DEFAULT_MODEL="${OPENCLAW_RULE_ADVANCED_MODEL_NAME:-${OPENCLAW_EXPERT_MODEL:-GPT-5.4}}"
-RULE_ADVANCED_DEFAULT_KEY="${OPENCLAW_RULE_ADVANCED_MODEL_API_KEY:-${OPENCLAW_EXPERT_API_KEY:-${OPENCLAW_UNOFFICIAL_ADVANCED_API_KEY:-}}}"
+RULE_ADVANCED_DEFAULT_MODEL="${OPENCLAW_RULE_ADVANCED_MODEL_NAME:-${OPENCLAW_UNOFFICIAL_ADVANCED_MODEL:-GPT-5.4}}"
+RULE_ADVANCED_DEFAULT_KEY="${OPENCLAW_RULE_ADVANCED_MODEL_API_KEY:-${OPENCLAW_UNOFFICIAL_ADVANCED_API_KEY:-}}"
 UNOFFICIAL_ROUTING_DEFAULT_STRATEGY="${OPENCLAW_UNOFFICIAL_ROUTING_STRATEGY:-auto}"
 UNOFFICIAL_ROUTING_DEFAULT_FAILOVER="${OPENCLAW_UNOFFICIAL_ROUTING_FAILOVER:-1}"
 SKILL_PIP_PACKAGES_DEFAULT="duckduckgo-search akshare requests pyyaml pypdf pillow openpyxl python-pptx python-docx lxml defusedxml pdf2image"
 SKILL_PIP_PACKAGES="${OPENCLAW_SKILL_PIP_PACKAGES:-$SKILL_PIP_PACKAGES_DEFAULT}"
 SKILL_PIP_PACKAGES_FILE_REL="skills/requirements-runtime.txt"
-DEFAULT_SKILLS_BUNDLE_SENTINELS="agentmail agentmail-cli agentmail-mcp agentmail-toolkit content-strategy social-content ai-image-generation media-downloader marketingskills inference-skills minimax-image-understanding minimax-web-search minimax-pdf minimax-docx minimax-xlsx subagent-driven-development using-superpowers verification-before-completion writing-skills lark-calendar notebooklm-skill skill-security-auditor weather data-analyst finance-data task todo"
+apply_skill_manifest_defaults_menu
 MINIMAX_API_HOST_CN_DEFAULT="${MINIMAX_API_HOST_CN:-https://api.minimaxi.com}"
 MINIMAX_API_HOST_GLOBAL_DEFAULT="${MINIMAX_API_HOST_GLOBAL:-https://api.minimax.io}"
 MINIMAX_MULTIMODAL_OUTPUT_PATH_DEFAULT="${MINIMAX_MULTIMODAL_OUTPUT_PATH:-~/.openclaw/workspace/minimax-output}"
@@ -1159,6 +1248,196 @@ trim_value_menu() {
     else
         printf "%s" "${1:-}" | sed 's/^[[:space:]]*//; s/[[:space:]]*$//'
     fi
+}
+
+normalize_lobster_engine_menu() {
+    load_openclaw_common_lib_menu >/dev/null 2>&1 || true
+    if command -v openclaw_normalize_engine_id >/dev/null 2>&1; then
+        openclaw_normalize_engine_id "${1:-openclaw}"
+    else
+        case "$(printf "%s" "${1:-openclaw}" | tr '[:upper:]' '[:lower:]' | tr -d '[:space:]')" in
+            hermes) echo "hermes" ;;
+            both|all|dual) echo "both" ;;
+            *) echo "openclaw" ;;
+        esac
+    fi
+}
+
+get_lobster_default_engine_menu() {
+    load_openclaw_common_lib_menu >/dev/null 2>&1 || true
+    if command -v openclaw_get_lobster_default_engine >/dev/null 2>&1; then
+        openclaw_get_lobster_default_engine
+    else
+        echo "openclaw"
+    fi
+}
+
+get_lobster_installed_engines_menu() {
+    load_openclaw_common_lib_menu >/dev/null 2>&1 || true
+    if command -v openclaw_get_lobster_installed_engines >/dev/null 2>&1; then
+        openclaw_get_lobster_installed_engines
+    else
+        echo "openclaw"
+    fi
+}
+
+set_lobster_engine_state_menu() {
+    local default_engine installed_csv
+    default_engine="$(normalize_lobster_engine_menu "${1:-openclaw}")"
+    installed_csv="${2:-openclaw}"
+    load_openclaw_common_lib_menu >/dev/null 2>&1 || true
+    if command -v openclaw_set_lobster_engine_state >/dev/null 2>&1; then
+        openclaw_set_lobster_engine_state "$default_engine" "$installed_csv"
+    else
+        mkdir -p "$LOBSTER_CONFIG_DIR" 2>/dev/null || true
+        cat > "$LOBSTER_ENGINE_ENV" <<EOF
+LOBSTER_DEFAULT_ENGINE="$default_engine"
+LOBSTER_INSTALLED_ENGINES="$installed_csv"
+LOBSTER_OPENCLAW_HOME="$HOME/.openclaw"
+LOBSTER_HERMES_HOME="$HOME/.hermes"
+LOBSTER_PIXEL_HOUSE_ENGINE="openclaw"
+EOF
+        chmod 600 "$LOBSTER_ENGINE_ENV" 2>/dev/null || true
+    fi
+    sync_lobster_shared_state_menu
+}
+
+sync_lobster_shared_state_menu() {
+    load_openclaw_common_lib_menu >/dev/null 2>&1 || true
+    if command -v openclaw_sync_dual_engine_state >/dev/null 2>&1; then
+        openclaw_sync_dual_engine_state "$OPENCLAW_ENV" "$HERMES_HOME" || true
+    fi
+}
+
+check_hermes_installed_menu() {
+    command -v hermes >/dev/null 2>&1 || [ -x "$HOME/.local/bin/hermes" ]
+}
+
+ensure_hermes_on_path_menu() {
+    local candidate
+    for candidate in "$HOME/.local/bin" "$HOME/.cargo/bin" "/usr/local/bin" "/usr/bin"; do
+        if [ -d "$candidate" ]; then
+            case ":$PATH:" in
+                *":$candidate:"*) ;;
+                *) export PATH="$candidate:$PATH" ;;
+            esac
+        fi
+    done
+}
+
+run_hermes_status_menu() {
+    ensure_hermes_on_path_menu
+    if ! check_hermes_installed_menu; then
+        log_error "未检测到 Hermes，请先安装"
+        return 1
+    fi
+    hermes status || true
+    echo ""
+    hermes doctor || true
+}
+
+apply_hermes_profile_menu() {
+    ensure_hermes_on_path_menu
+    if ! check_hermes_installed_menu; then
+        log_error "未检测到 Hermes，请先安装"
+        return 1
+    fi
+    load_openclaw_common_lib_menu >/dev/null 2>&1 || true
+    if ! command -v openclaw_sync_dual_engine_state >/dev/null 2>&1; then
+        log_error "未加载共享控制层，无法应用 Hermes 映射"
+        return 1
+    fi
+    if openclaw_sync_dual_engine_state "$OPENCLAW_ENV" "$HERMES_HOME"; then
+        log_info "Hermes 已应用当前职业 / 规则 / 工具映射"
+        return 0
+    fi
+    log_error "Hermes 映射应用失败"
+    return 1
+}
+
+install_hermes_menu() {
+    ensure_hermes_on_path_menu
+    if check_hermes_installed_menu; then
+        log_warn "Hermes 已安装"
+        if ! confirm "是否重新安装/更新 Hermes？" "n"; then
+            return 0
+        fi
+    fi
+
+    local tmp_script
+    tmp_script="$(mktemp /tmp/hermes-install.XXXXXX.sh)"
+    if ! curl -fsSL --proto '=https' --tlsv1.2 --connect-timeout 8 --max-time 30 \
+        "https://raw.githubusercontent.com/NousResearch/hermes-agent/main/scripts/install.sh" -o "$tmp_script"; then
+        rm -f "$tmp_script" 2>/dev/null || true
+        log_error "Hermes 安装脚本下载失败"
+        return 1
+    fi
+
+    bash "$tmp_script" --skip-setup --dir "$HERMES_INSTALL_DIR"
+    local install_exit=$?
+    rm -f "$tmp_script" 2>/dev/null || true
+    if [ $install_exit -ne 0 ]; then
+        log_error "Hermes 安装失败"
+        return 1
+    fi
+
+    ensure_hermes_on_path_menu
+    if ! check_hermes_installed_menu; then
+        log_error "Hermes 安装后未检测到命令"
+        return 1
+    fi
+
+    local installed_csv
+    installed_csv="$(get_lobster_installed_engines_menu)"
+    case "$installed_csv" in
+        *hermes*) ;;
+        "")
+            installed_csv="hermes"
+            ;;
+        *)
+            installed_csv="${installed_csv},hermes"
+            ;;
+    esac
+    installed_csv="$(printf "%s" "$installed_csv" | awk -F',' '
+        {
+          out="";
+          for (i=1;i<=NF;i++) {
+            if ($i != "" && !seen[$i]++) out = out (out ? "," : "") $i;
+          }
+          print out
+        }')"
+    set_lobster_engine_state_menu "$(get_lobster_default_engine_menu)" "$installed_csv"
+    apply_hermes_profile_menu || true
+    log_info "Hermes 安装完成"
+}
+
+run_hermes_migration_menu() {
+    ensure_hermes_on_path_menu
+    if ! check_hermes_installed_menu; then
+        log_error "未检测到 Hermes，请先安装"
+        return 1
+    fi
+
+    echo ""
+    echo -e "${WHITE}Hermes 提供从 OpenClaw 的可选迁移能力。${NC}"
+    echo -e "${GRAY}不会自动共享 ~/.openclaw 和 ~/.hermes，仅在你确认时执行导入。${NC}"
+    echo ""
+    print_menu_item "1" "预演迁移（dry-run）" "🧪"
+    print_menu_item "2" "执行迁移" "🚚"
+    print_menu_item "0" "返回" "↩️"
+    echo ""
+    echo -en "${YELLOW}请选择 [0-2]: ${NC}"
+    local choice=""
+    read choice < "$TTY_INPUT"
+    case "$choice" in
+        1) hermes claw migrate --dry-run || true ;;
+        2)
+            if confirm "确认执行 OpenClaw -> Hermes 迁移？" "n"; then
+                hermes claw migrate || true
+            fi
+            ;;
+        *) ;;
+    esac
 }
 
 normalize_minimax_provider_url_menu() {
@@ -2145,6 +2424,7 @@ EOF
     mv "${tmp_file}.new" "$baoyu_env"
     chmod 600 "$baoyu_env" 2>/dev/null || true
     rm -f "$tmp_file" 2>/dev/null || true
+    sync_lobster_shared_state_menu
 }
 
 configure_profile_api_keys_menu() {
@@ -2212,12 +2492,10 @@ apply_profile_advanced_model_routing_menu() {
         *) return 0 ;;
     esac
 
-    local expert_provider="${OPENCLAW_EXPERT_PROVIDER:-openai}"
-    local adv_api_type="$expert_provider"
-    local adv_type="$( [ "$expert_provider" = "anthropic" ] && echo "claude" || echo "gpt" )"
-    local expert_provider="${OPENCLAW_EXPERT_PROVIDER:-openai}"
+    local adv_api_type="${OPENCLAW_UNOFFICIAL_ADVANCED_API_TYPE:-openai}"
+    local adv_type="$( [ "$adv_api_type" = "anthropic" ] && echo "claude" || echo "gpt" )"
     local adv_url="${OPENCLAW_RULE_ADVANCED_MODEL_API_URL:-${OPENCLAW_UNOFFICIAL_ADVANCED_OPENAI_API_URL:-${OPENCLAW_UNOFFICIAL_ADVANCED_DEFAULT_URL_OPENAI:-https://api.openai.com/v1}}}"
-    local adv_model="${OPENCLAW_RULE_ADVANCED_MODEL_NAME:-${OPENCLAW_EXPERT_MODEL:-${OPENCLAW_UNOFFICIAL_ADVANCED_MODEL:-GPT-5.4}}}"
+    local adv_model="${OPENCLAW_RULE_ADVANCED_MODEL_NAME:-${OPENCLAW_UNOFFICIAL_ADVANCED_MODEL:-GPT-5.4}}"
     local adv_key="${OPENCLAW_RULE_ADVANCED_MODEL_API_KEY:-${OPENCLAW_UNOFFICIAL_ADVANCED_API_KEY:-${UNOFFICIAL_ADVANCED_DEFAULT_API_KEY:-}}}"
     local routing_strategy="${UNOFFICIAL_ROUTING_DEFAULT_STRATEGY:-auto}"
     local routing_failover="${UNOFFICIAL_ROUTING_DEFAULT_FAILOVER:-1}"
@@ -2241,6 +2519,7 @@ apply_profile_advanced_model_routing_menu() {
     upsert_env_export "OPENCLAW_UNOFFICIAL_ROUTING_SECONDARY" "fallback"
     upsert_env_export "OPENCLAW_UNOFFICIAL_ROUTING_FAILOVER" "$routing_failover"
     upsert_env_export "OPENCLAW_BM_COMMAND" "/bm"
+    sync_lobster_shared_state_menu
 
     if check_openclaw_installed; then
         openclaw config set channels.unofficial.advanced.enabled true >/dev/null 2>&1 || true
@@ -2273,7 +2552,7 @@ apply_profile_advanced_model_routing_menu() {
         openclaw config set "vendor.control.advanced.model" "$adv_model" >/dev/null 2>&1 || true
         openclaw config set "vendor.control.advanced.apiKey" "$adv_key" >/dev/null 2>&1 || true
         openclaw config set "vendor.control.advanced.bmCommand" "/bm" >/dev/null 2>&1 || true
-        openclaw config set "vendor.control.advanced.routingRule" "$( [ -n "$OPENCLAW_EXPERT_MODEL" ] && echo "expert_to_subagent" || echo "complex_or_code_to_subagent" )" >/dev/null 2>&1 || true
+        openclaw config set "vendor.control.advanced.routingRule" "complex_or_code_to_subagent" >/dev/null 2>&1 || true
     fi
 
     log_info "中/高档默认已启用高级模型路由（${adv_model}，命令: /bm）"
@@ -2346,122 +2625,6 @@ configure_rule_advanced_model_menu() {
     press_enter
 }
 
-# 专家模型配置菜单：支持 OpenAI / Anthropic 规范，默认 GPT-5.4 / Claude Sonnet 4.6
-configure_expert_model_menu() {
-    clear_screen
-    print_header
-    echo -e "${WHITE}🧠 专家模型配置${NC}"
-    print_divider
-    echo ""
-    echo -e "${GRAY}用于复杂任务的专家模型路由：编码或超复杂问题将自动触发子 Agent 使用专家模型。${NC}"
-    echo ""
-
-    # 读取当前配置
-    local current_provider="${OPENCLAW_EXPERT_PROVIDER:-openai}"
-    local current_url="${OPENCLAW_EXPERT_API_URL:-https://api.openai.com/v1}"
-    local current_model="${OPENCLAW_EXPERT_MODEL:-GPT-5.4}"
-    local current_key="${OPENCLAW_EXPERT_API_KEY:-}"
-
-    echo -e "${CYAN}当前配置:${NC}"
-    echo -e "  规范类型: ${WHITE}${current_provider}${NC}"
-    echo -e "  API URL:  ${WHITE}${current_url}${NC}"
-    echo -e "  模型:     ${WHITE}${current_model}${NC}"
-    echo -e "  API Key:  $(if [ -n "$current_key" ]; then echo "${GREEN}已配置${NC}"; else echo "${YELLOW}未配置${NC}"; fi)"
-    echo ""
-
-    echo -e "${YELLOW}选择规范类型:${NC}"
-    echo -e "  ${CYAN}[1]${NC} OpenAI 规范（默认模型: GPT-5.4）"
-    echo -e "  ${CYAN}[2]${NC} Anthropic 规范（默认模型: claude-sonnet-4-6）"
-    echo ""
-    read -p "$(echo -e "${YELLOW}请选择 [1-2] (默认: 1): ${NC}")" provider_choice < "$TTY_INPUT"
-    provider_choice="${provider_choice:-1}"
-
-    local provider_type="openai"
-    local default_model="GPT-5.4"
-    local default_url="https://api.openai.com/v1"
-
-    case "$provider_choice" in
-        2)
-            provider_type="anthropic"
-            default_model="claude-sonnet-4-6"
-            default_url="https://api.anthropic.com"
-            ;;
-        *)
-            provider_type="openai"
-            default_model="GPT-5.4"
-            default_url="https://api.openai.com/v1"
-            ;;
-    esac
-
-    echo ""
-    echo -e "${YELLOW}API URL（留空使用默认）:${NC}"
-    echo -e "  默认: ${WHITE}${default_url}${NC}"
-    local input_url=""
-    read_input "API URL: " input_url
-    input_url="$(trim_value_menu "$input_url")"
-    local expert_url="${input_url:-$default_url}"
-
-    echo ""
-    echo -e "${YELLOW}模型名称（留空使用默认 ${default_model}）:${NC}"
-    local input_model=""
-    read_input "模型名称: " input_model
-    input_model="$(trim_value_menu "$input_model")"
-    local expert_model="${input_model:-$default_model}"
-
-    echo ""
-    echo -e "${YELLOW}API Key:${NC}"
-    local input_key=""
-    read_secret_input "API Key: " input_key
-    local expert_key="${input_key:-$current_key}"
-
-    if [ -z "$expert_url" ] || [ -z "$expert_model" ]; then
-        log_error "API URL 和模型名称不能为空"
-        press_enter
-        return
-    fi
-
-    # 保存到环境变量
-    upsert_env_export "OPENCLAW_EXPERT_PROVIDER" "$provider_type"
-    upsert_env_export "OPENCLAW_EXPERT_API_URL" "$expert_url"
-    upsert_env_export "OPENCLAW_EXPERT_MODEL" "$expert_model"
-    upsert_env_export "OPENCLAW_EXPERT_API_KEY" "$expert_key"
-    upsert_env_export "OPENCLAW_EXPERT_ROUTING_RULE" "expert_to_subagent"
-
-    # 同步到高级模型配置（保持向后兼容）
-    upsert_env_export "OPENCLAW_RULE_ADVANCED_MODEL_API_URL" "$expert_url"
-    upsert_env_export "OPENCLAW_RULE_ADVANCED_MODEL_NAME" "$expert_model"
-    upsert_env_export "OPENCLAW_RULE_ADVANCED_MODEL_API_KEY" "$expert_key"
-    upsert_env_export "OPENCLAW_UNOFFICIAL_ADVANCED_API_TYPE" "$provider_type"
-    upsert_env_export "OPENCLAW_UNOFFICIAL_ADVANCED_MODEL_TYPE" "$( [ "$provider_type" = "anthropic" ] && echo "claude" || echo "gpt" )"
-    upsert_env_export "OPENCLAW_UNOFFICIAL_ADVANCED_OPENAI_API_URL" "$expert_url"
-    upsert_env_export "OPENCLAW_UNOFFICIAL_ADVANCED_MODEL" "$expert_model"
-    upsert_env_export "OPENCLAW_UNOFFICIAL_ADVANCED_API_KEY" "$expert_key"
-
-    # 保存到 openclaw config
-    if check_openclaw_installed; then
-        openclaw config set "vendor.expert.provider" "$provider_type" >/dev/null 2>&1 || true
-        openclaw config set "vendor.expert.apiUrl" "$expert_url" >/dev/null 2>&1 || true
-        openclaw config set "vendor.expert.model" "$expert_model" >/dev/null 2>&1 || true
-        openclaw config set "vendor.expert.apiKey" "$expert_key" >/dev/null 2>&1 || true
-        openclaw config set "vendor.expert.routingRule" "expert_to_subagent" >/dev/null 2>&1 || true
-        # 同时更新高级模型配置
-        openclaw config set "vendor.control.advanced.enabled" true >/dev/null 2>&1 || true
-        openclaw config set "vendor.control.advanced.apiType" "$provider_type" >/dev/null 2>&1 || true
-        openclaw config set "vendor.control.advanced.apiUrl" "$expert_url" >/dev/null 2>&1 || true
-        openclaw config set "vendor.control.advanced.model" "$expert_model" >/dev/null 2>&1 || true
-        openclaw config set "vendor.control.advanced.apiKey" "$expert_key" >/dev/null 2>&1 || true
-        openclaw config set "vendor.control.advanced.routingRule" "expert_to_subagent" >/dev/null 2>&1 || true
-    fi
-
-    echo ""
-    if [ -z "$expert_key" ]; then
-        log_warn "专家模型 API Key 未配置：将保留路由规则，但不会实际切换专家模型。"
-    else
-        log_info "专家模型配置已保存（${provider_type}）：${expert_model}"
-    fi
-    press_enter
-}
-
 apply_profile_token_policy_menu() {
     local level limits media_limits window_hours max_requests max_tokens max_tokens_per_req max_requests_display
     local max_image_requests max_video_requests
@@ -2518,7 +2681,7 @@ apply_profile_token_policy_menu() {
 }
 
 apply_profile_skill_policy_menu() {
-    local level bundle_dir skills_list target_dir force_update copied skipped missing
+    local level bundle_dir skills_list target_dir force_update copied skipped missing skill_count skill_pack_label
     level="$(normalize_rule_profile_level "$1")"
     if [ "$level" = "none" ]; then
         log_info "已选择 NONE，跳过档位技能注入。"
@@ -2535,6 +2698,16 @@ apply_profile_skill_policy_menu() {
     fi
     mkdir -p "$target_dir" 2>/dev/null || true
     skills_list="$(get_profile_skill_list "$level")"
+    skill_count="$(printf "%s\n" "$skills_list" | wc -w | tr -d ' ')"
+    case "$level" in
+        low) skill_pack_label="基础技能包（基础）" ;;
+        medium) skill_pack_label="增强技能包（增强）" ;;
+        high) skill_pack_label="全量技能包（高级）" ;;
+        *) skill_pack_label="增强技能包（增强）" ;;
+    esac
+    upsert_env_export "OPENCLAW_PROFILE_SKILL_PACK_LABEL" "$skill_pack_label"
+    upsert_env_export "OPENCLAW_PROFILE_SKILL_LIST" "$skills_list"
+    upsert_env_export "OPENCLAW_PROFILE_SKILL_COUNT" "$skill_count"
 
     if [ "$skills_list" = "__ALL_DEFAULT__" ]; then
         local src_all dst_all name_all
@@ -3023,6 +3196,7 @@ apply_vendor_rule_profile_menu() {
     level="$RULE_PROFILE_MENU_SELECTED"
     level="$(normalize_rule_profile_level "$level")"
     upsert_env_export "OPENCLAW_RULE_PROFILE" "$level"
+    upsert_env_export "OPENCLAW_WEB_SKILL_PACK" "${OPENCLAW_WEB_SKILL_PACK:-$level}"
 
     if [ "$level" = "none" ]; then
         echo ""
@@ -3035,6 +3209,7 @@ apply_vendor_rule_profile_menu() {
     apply_profile_token_policy_menu "$level"
     apply_profile_skill_policy_menu "$level" 0 || true
     write_profile_policy_files_menu "$level"
+    sync_lobster_shared_state_menu
 
     limits="$(get_profile_token_limits "$level")"
     media_limits="$(get_profile_media_limits "$level")"
@@ -3386,19 +3561,19 @@ test_ai_connection() {
         return 0
     fi
 
-    log_warn "模型探针未通过，尝试一次本地 agent 调用获取详细报错..."
+    log_warn "模型探针未通过，尝试一次本地 infer 调用获取详细报错..."
     local result=""
     local exit_code=1
     if [ -n "$target_model_ref" ]; then
-        result=$(openclaw agent --local --model "$target_model_ref" --message "只回复 OK" 2>&1)
+        result=$(openclaw infer model run --prompt "只回复 OK" --model "$target_model_ref" --json 2>&1)
         exit_code=$?
     else
-        result=$(openclaw agent --local --message "只回复 OK" 2>&1)
+        result=$(openclaw infer model run --prompt "只回复 OK" --json 2>&1)
         exit_code=$?
     fi
 
     echo ""
-    if [ $exit_code -eq 0 ] && ! echo "$result" | grep -qiE "error|failed|401|403|Unknown model"; then
+    if [ $exit_code -eq 0 ] && ! echo "$result" | grep -qiE "error|failed|401|403|Unknown model|FailoverError"; then
         log_info "OpenClaw AI 测试成功！"
         return 0
     fi
@@ -3912,16 +4087,24 @@ run_official_model_onboard() {
     cleanup_stale_plugin_state_menu || true
 
     local onboard_term
+    local onboard_args=(
+        --skip-channels
+        --skip-skills
+        --skip-search
+        --skip-ui
+        --skip-daemon
+        --skip-health
+    )
     onboard_term="$(resolve_onboard_term_menu)"
     echo ""
     if [ "$onboard_term" != "${TERM:-}" ]; then
         log_warn "检测到当前终端 TERM=${TERM:-unset}，临时切换为 ${onboard_term} 以兼容官方向导。"
     fi
-    log_info "启动官方模型配置向导: openclaw onboard"
+    log_info "启动官方模型配置向导: openclaw onboard ${onboard_args[*]}"
     if [ -e /dev/tty ] && ( : < /dev/tty ) 2>/dev/null; then
-        env TERM="$onboard_term" COLORTERM="${COLORTERM:-truecolor}" openclaw onboard < /dev/tty > /dev/tty 2>&1
+        env TERM="$onboard_term" COLORTERM="${COLORTERM:-truecolor}" openclaw onboard "${onboard_args[@]}" < /dev/tty > /dev/tty 2>&1
     else
-        env TERM="$onboard_term" COLORTERM="${COLORTERM:-truecolor}" openclaw onboard
+        env TERM="$onboard_term" COLORTERM="${COLORTERM:-truecolor}" openclaw onboard "${onboard_args[@]}"
     fi
 }
 
@@ -4134,6 +4317,7 @@ config_image_provider_viviai() {
     upsert_env_export "OPENCLAW_IMAGE_MODEL" "$OPENCLAW_IMAGE_MODEL"
     upsert_env_export "OPENCLAW_IMAGE_API_KEY" "$OPENCLAW_IMAGE_API_KEY"
     apply_generative_service_settings_menu
+    sync_lobster_shared_state_menu
 
     echo ""
     log_info "生图接口配置已保存并应用。"
@@ -8899,8 +9083,11 @@ config_identity() {
     upsert_env_export "OPENCLAW_ASSISTANT_PERSONALITY" "$personality"
     upsert_env_export "OPENCLAW_ASSISTANT_WORK_MODE" "$work_style"
     upsert_env_export "OPENCLAW_ASSISTANT_WORK_STYLE" "$work_style"
+    upsert_env_export "OPENCLAW_ROLE_CORE_SKILLS" "$PERSONA_ROLE_CORE_SKILLS_MENU"
+    upsert_env_export "OPENCLAW_ROLE_EXTRA_SKILLS" "$PERSONA_ROLE_EXTRA_SKILLS_MENU"
     remove_env_export "OPENCLAW_WELCOME_CHANNEL"
     remove_env_export "OPENCLAW_WELCOME_TARGET"
+    sync_lobster_shared_state_menu
 
     profile_doc="$CONFIG_DIR/docs/assistant-base-profile.md"
     mkdir -p "$CONFIG_DIR/docs" 2>/dev/null || true
@@ -11048,6 +11235,7 @@ EOF
         fi
     fi
     
+    sync_lobster_shared_state_menu
     log_info "环境变量已保存到: $env_file"
 }
 
@@ -11674,6 +11862,8 @@ manage_pixel_house() {
         echo ""
         echo -e "  当前端口: ${WHITE}${port}${NC}"
         echo -e "  默认地址: ${WHITE}http://127.0.0.1:${port}${NC}"
+        echo -e "  辅助服务: ${WHITE}13146 健康检查${NC} / ${WHITE}13147 配额强制${NC}"
+        echo -e "  说明: 安装/修复像素小屋时会同步接线并启动这两个辅助服务"
         echo ""
 
         print_menu_item "1" "安装/修复像素小屋并挂钩 OpenClaw" "🧩"
@@ -12384,7 +12574,7 @@ advanced_settings() {
     print_menu_item "9" "token规划规则注入（低/中/高/跳过）" "🏭"
     print_menu_item "10" "配置修复 / 迁移（保留记忆）" "🩺"
     print_menu_item "11" "高级模型配置（中/高档）" "🚀"
-    print_menu_item "12" "专家模型配置（OpenAI/Anthropic）" "🧠"
+    print_menu_item "12" "生图 API 配置（图片生成）" "🖼️"
     print_menu_item "0" "返回主菜单" "↩️"
     echo ""
 
@@ -12456,7 +12646,7 @@ advanced_settings() {
             configure_rule_advanced_model_menu
             ;;
         12)
-            configure_expert_model_menu
+            config_image_provider_viviai
             ;;
         0)
             return
@@ -12989,6 +13179,84 @@ run_all_tests() {
     quick_test_menu
 }
 
+manage_engine_menu() {
+    while true; do
+        clear_screen
+        print_header
+
+        local default_engine installed_engines openclaw_status hermes_status
+        default_engine="$(get_lobster_default_engine_menu)"
+        installed_engines="$(get_lobster_installed_engines_menu)"
+        check_openclaw_installed && openclaw_status="${GREEN}已安装${NC}" || openclaw_status="${GRAY}未安装${NC}"
+        check_hermes_installed_menu && hermes_status="${GREEN}已安装${NC}" || hermes_status="${GRAY}未安装${NC}"
+
+        echo -e "${WHITE}🧭 引擎管理${NC}"
+        print_divider
+        echo ""
+        echo -e "  默认引擎: ${WHITE}${default_engine}${NC}"
+        echo -e "  已安装引擎: ${WHITE}${installed_engines}${NC}"
+        echo -e "  OpenClaw: ${openclaw_status}"
+        echo -e "  Hermes: ${hermes_status}"
+        echo -e "  像素小屋: ${WHITE}仅支持 OpenClaw${NC}"
+        echo -e "  Hermes 派生档案: ${WHITE}${HERMES_HOME}/lobster-profile.env${NC}"
+        echo ""
+
+        print_menu_item "1" "设为默认引擎：OpenClaw" "🦞"
+        print_menu_item "2" "设为默认引擎：Hermes" "⚕️"
+        print_menu_item "3" "安装 / 更新 OpenClaw" "⬇️"
+        print_menu_item "4" "安装 / 更新 Hermes" "⬇️"
+        print_menu_item "5" "查看 Hermes 状态 / 诊断" "📋"
+        print_menu_item "6" "OpenClaw -> Hermes 迁移" "🚚"
+        print_menu_item "7" "重应用 Hermes 角色 / 规则 / 工具映射" "🔁"
+        print_menu_item "0" "返回主菜单" "↩️"
+        echo ""
+        echo -en "${YELLOW}请选择 [0-7]: ${NC}"
+
+        local choice=""
+        if ! read choice < "$TTY_INPUT"; then
+            echo ""
+            log_error "无法读取输入（TTY 不可用），退出配置菜单。"
+            exit 1
+        fi
+
+        case "$choice" in
+            1)
+                set_lobster_engine_state_menu "openclaw" "$installed_engines"
+                log_info "默认引擎已切换为 OpenClaw"
+                ;;
+            2)
+                if ! check_hermes_installed_menu; then
+                    log_warn "Hermes 尚未安装，建议先执行安装。"
+                fi
+                set_lobster_engine_state_menu "hermes" "$installed_engines"
+                log_info "默认引擎已切换为 Hermes"
+                ;;
+            3)
+                log_info "请使用统一入口重新执行安装器补装 OpenClaw: lobster-setup install --engine openclaw"
+                ;;
+            4)
+                install_hermes_menu
+                ;;
+            5)
+                run_hermes_status_menu
+                ;;
+            6)
+                run_hermes_migration_menu
+                ;;
+            7)
+                apply_hermes_profile_menu
+                ;;
+            0)
+                return
+                ;;
+            *)
+                log_error "无效选择"
+                ;;
+        esac
+        press_enter
+    done
+}
+
 # ================================ 主菜单 ================================
 
 show_main_menu() {
@@ -13008,6 +13276,7 @@ show_main_menu() {
     print_menu_item "8" "身份配置" "👤"
     print_menu_item "9" "服务管理（含连通性）" "⚙️"
     print_menu_item "10" "像素小屋" "🏠"
+    print_menu_item "11" "引擎管理" "🧭"
     echo ""
     print_menu_item "0" "退出" "🚪"
     echo ""
@@ -13057,12 +13326,18 @@ main() {
             echo -e "${CYAN}像素小屋补装流程结束。${NC}"
             exit 0
             ;;
+        --engine-menu)
+            manage_engine_menu
+            echo ""
+            echo -e "${CYAN}引擎管理流程结束。${NC}"
+            exit 0
+            ;;
     esac
     
     # 主循环
     while true; do
         show_main_menu
-        echo -en "${YELLOW}请选择 [0-10]: ${NC}"
+        echo -en "${YELLOW}请选择 [0-11]: ${NC}"
         if ! read choice < "$TTY_INPUT"; then
             echo ""
             log_error "无法读取输入（TTY 不可用），退出配置菜单。"
@@ -13080,6 +13355,7 @@ main() {
             8) config_identity ;;
             9) manage_service ;;
             10) manage_pixel_house ;;
+            11) manage_engine_menu ;;
             0)
                 echo ""
                 echo -e "${CYAN}再见！🦞${NC}"

@@ -105,12 +105,12 @@ resolve_onboard_term() {
 }
 
 # ================================ 颜色定义 ================================
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
+RED='\033[1;31m'
+GREEN='\033[1;34m'
+YELLOW='\033[1;31m'
 BLUE='\033[0;34m'
-PURPLE='\033[0;35m'
-CYAN='\033[0;36m'
+PURPLE='\033[0;31m'
+CYAN='\033[1;34m'
 WHITE='\033[1;37m'
 GRAY='\033[0;90m'
 NC='\033[0m' # 无颜色
@@ -137,6 +137,11 @@ map_legacy_env "OPENCLAW_VERBOSE" "CLAWDBOT_VERBOSE"
 
 OPENCLAW_VERSION="${OPENCLAW_VERSION:-latest}"
 CONFIG_DIR="$HOME/.openclaw"
+LOBSTER_HOME="${LOBSTER_HOME:-$HOME/.lobster}"
+LOBSTER_CONFIG_DIR="$LOBSTER_HOME/config"
+LOBSTER_BIN_DIR="$HOME/.local/bin"
+HERMES_HOME="${HERMES_HOME:-$HOME/.hermes}"
+HERMES_INSTALL_DIR="${HERMES_INSTALL_DIR:-$HERMES_HOME/hermes-agent}"
 MIN_NODE_MAJOR=22
 MIN_NODE_MINOR=12
 INSTALLER_NAME="auto-install-Openclaw"
@@ -166,6 +171,8 @@ PROJECTION_API_PORT_DEFAULT="19100"
 LOBSTER_WORLD_SERVICE_NAME="lobster-world.service"
 LOBSTER_PROJECTION_SERVICE_NAME="lobster-projection-api.service"
 LOBSTER_BRIDGE_SERVICE_NAME="lobster-openclaw-bridge.service"
+LOBSTER_HEALTH_SERVICE_NAME="lobster-health.service"
+LOBSTER_QUOTA_SERVICE_NAME="lobster-quota-enforcer.service"
 GATEWAY_CONVERGE_MARKER="/tmp/openclaw-installer-gateway-converged.$$"
 RESET_CHAT_AFTER_INSTALL="${OPENCLAW_RESET_CHAT_AFTER_INSTALL:-1}"
 AUTO_SWAP_ENABLE="${OPENCLAW_AUTO_SWAP:-1}"
@@ -184,22 +191,61 @@ DEFAULT_OFFICIAL_PLUGINS="@openclaw/feishu @openclaw/discord @openclaw/whatsapp"
 DEFAULT_BUILTIN_CHANNEL_PLUGINS="telegram imessage"
 RULE_PROFILE_DEFAULT="${OPENCLAW_RULE_PROFILE:-medium}"
 RULE_PROFILE_SELECTED="$(echo "${RULE_PROFILE_DEFAULT}" | tr '[:upper:]' '[:lower:]')"
+
+OPENCLAW_SKILLS_LIB_INSTALL_LOADED=0
+load_openclaw_skills_lib_install() {
+    [ "${OPENCLAW_SKILLS_LIB_INSTALL_LOADED:-0}" = "1" ] && return 0
+
+    local script_dir candidate
+    script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    for candidate in \
+        "$script_dir/scripts/lib/skills.sh" \
+        "$HOME/.openclaw/.cache/auto-install-openclaw-repo/scripts/lib/skills.sh" \
+        "$HOME/.openclaw/workspace/auto-install-openclaw/scripts/lib/skills.sh" \
+        "$HOME/.openclaw/workspace/auto-install-Openclaw/scripts/lib/skills.sh"
+    do
+        if [ -f "$candidate" ]; then
+            # shellcheck disable=SC1090
+            . "$candidate"
+            OPENCLAW_SKILLS_LIB_INSTALL_LOADED=1
+            return 0
+        fi
+    done
+    return 1
+}
+
+apply_skill_manifest_defaults_install() {
+    load_openclaw_skills_lib_install >/dev/null 2>&1 || return 0
+    command -v openclaw_skill_manifest_list >/dev/null 2>&1 || return 0
+
+    local value
+    if value="$(openclaw_skill_manifest_list minimax_official 2>/dev/null)" && [ -n "$value" ]; then
+        MINIMAX_OFFICIAL_SKILLS="$value"
+    fi
+    if value="$(openclaw_skill_manifest_list group:minimax_local_compat 2>/dev/null)" && [ -n "$value" ]; then
+        MINIMAX_LOCAL_COMPAT_SKILLS="$value"
+    fi
+    MINIMAX_SKILLS="${MINIMAX_LOCAL_COMPAT_SKILLS} ${MINIMAX_OFFICIAL_SKILLS}"
+    if value="$(openclaw_skill_manifest_list tier:basic 2>/dev/null)" && [ -n "$value" ]; then
+        CORE_SKILLS="$value"
+        PROFILE_BASIC_SKILLS="$value"
+    fi
+    if value="$(openclaw_skill_manifest_list tier:extended 2>/dev/null)" && [ -n "$value" ]; then
+        PROFILE_EXTENDED_SKILLS="$value"
+    fi
+    if value="$(openclaw_skill_manifest_list tier:super 2>/dev/null)" && [ -n "$value" ]; then
+        PROFILE_SUPER_SKILLS="$value"
+    fi
+    if value="$(openclaw_skill_manifest_default_sentinels 2>/dev/null)" && [ -n "$value" ]; then
+        DEFAULT_SKILLS_BUNDLE_SENTINELS="$value"
+    fi
+}
 # ================================ Skills 精简定义（去重后） ================================
-# 核心技能（基础档专有，扩展档不再重复）
-CORE_SKILLS="capability-evolver openclaw-cron-setup proactive-agent self-improving-agent-cn brainstorming reflection find-skills skill-creator subagent-driven-development using-superpowers verification-before-completion writing-skills agent-browser chrome-devtools-mcp github mcp-builder model-usage shell minimax-image-understanding minimax-web-search minimax-pdf minimax-docx minimax-xlsx tavily-search web-search news-radar url-to-markdown pdf nano-pdf docx pptx xlsx stock-monitor-skill multi-search-engine content-strategy social-content ai-image-generation media-downloader marketingskills inference-skills agentmail agentmail-cli agentmail-mcp agentmail-toolkit lark-calendar notebooklm-skill skill-security-auditor weather data-analyst task todo"
+load_openclaw_skills_lib_install >/dev/null 2>&1 || true
+openclaw_skill_fallback_init install
+apply_skill_manifest_defaults_install
 
-# 扩展技能（仅扩展档/超级档，基础档不包含）
-EXTENDED_SKILLS="animation akshare-stock gemini-image-service oracle paperless-docs paperless-ngx-tools writing-plans planning-with-files finance-data"
-
-# 超级技能（仅超级档，baoyu系列等）
-SUPER_CURATED_SKILLS="baoyu-skills baoyu-article-illustrator baoyu-comic baoyu-compress-image baoyu-cover-image baoyu-danger-gemini-web baoyu-danger-x-to-markdown baoyu-format-markdown baoyu-image-gen baoyu-infographic baoyu-markdown-to-html baoyu-post-to-wechat baoyu-post-to-weibo baoyu-post-to-x baoyu-slide-deck baoyu-translate baoyu-url-to-markdown baoyu-xhs-images baoyu-youtube-transcript"
-
-# 各档位完整技能列表（去重）
-PROFILE_BASIC_SKILLS="${CORE_SKILLS}"
-PROFILE_EXTENDED_SKILLS="${CORE_SKILLS} ${EXTENDED_SKILLS}"
-PROFILE_SUPER_SKILLS="${CORE_SKILLS} ${EXTENDED_SKILLS} ${SUPER_CURATED_SKILLS}"
-
-# ================================ 生图配置（仅使用 ViviAI，不使用 MiniMax） ================================
+# ================================ 生图配置（默认使用 ViviAI，不使用 MiniMax 生图） ================================
 QIHANG_IMAGE_API_KEY_DEFAULT="${QIHANG_IMAGE_API_KEY:-${OPENCLAW_IMAGE_API_KEY:-}}"
 QIHANG_IMAGE_BASE_URL_DEFAULT="${QIHANG_IMAGE_BASE_URL:-${OPENCLAW_IMAGE_API_URL:-https://api.viviai.cc}}"
 QIHANG_IMAGE_ENDPOINT_DEFAULT="${QIHANG_IMAGE_ENDPOINT:-/v1/chat/completions}"
@@ -220,6 +266,7 @@ UNOFFICIAL_ROUTING_DEFAULT_FAILOVER="${OPENCLAW_UNOFFICIAL_ROUTING_FAILOVER:-1}"
 WELCOME_DOC_URL_GITEE="https://gitee.com/leecyno1/auto-install-openclaw/blob/main/docs/channels-configuration-guide.md"
 WELCOME_DOC_URL_GITHUB="https://github.com/leecyno1/auto-install-Openclaw/blob/main/docs/channels-configuration-guide.md"
 PERSONA_ROLE_SELECTED="$(echo "${OPENCLAW_PERSONA_ROLE:-druid}" | tr '[:upper:]' '[:lower:]')"
+LOBSTER_ENGINE="${LOBSTER_ENGINE:-openclaw}"
 
 NO_ONBOARD="${OPENCLAW_NO_ONBOARD:-0}"
 NO_PROMPT="${OPENCLAW_NO_PROMPT:-0}"
@@ -251,6 +298,58 @@ EOF
     echo ""
 }
 
+print_lobster_setup_quick_commands() {
+    local mode="${1:-full}"
+    echo -e "${WHITE}统一入口（推荐）:${NC}"
+    if [ "$mode" = "compact" ]; then
+        echo "  lobster-setup status       # 查看所有服务状态"
+        echo "  lobster-setup doctor       # 健康检查并自动修复"
+        echo "  lobster-setup config       # 打开配置菜单"
+        echo "  lobster-setup workbench    # 启动像素小屋"
+        return 0
+    fi
+
+    echo "  lobster-setup install      # 重新运行安装脚本"
+    echo "  lobster-setup config       # 打开配置菜单"
+    echo "  lobster-setup repair       # 修复历史错误配置（保留记忆）"
+    echo "  lobster-setup workbench    # 启动像素小屋工作台（仅 OpenClaw）"
+    echo "  lobster-setup status       # 查看已安装引擎状态"
+    echo "  lobster-setup doctor       # 执行引擎健康检查"
+    echo "  lobster-setup engine       # 打开引擎管理"
+    echo "  lobster-setup backup       # 一键备份 OpenClaw 配置"
+    echo "  openclaw-setup ...         # 兼容旧命令，等价转发到 lobster-setup"
+    echo "  像素小屋补装/修复后会同步接线 13146 健康检查 与 13147 配额强制"
+}
+
+print_post_install_config_hint() {
+    local mode="${1:-prompt}"
+    echo ""
+    echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo -e "${WHITE}           📝 配置菜单（命令行版）${NC}"
+    echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo ""
+    echo -e "${GRAY}配置菜单支持: 模型、官方渠道、Skills、权限、服务管理、引擎管理、像素小屋等${NC}"
+    echo ""
+    echo -e "${WHITE}💡 下次可以直接运行配置菜单:${NC}"
+    echo -e "   ${CYAN}lobster-setup config${NC}"
+    echo ""
+
+    case "$mode" in
+        prompt)
+            return 0
+            ;;
+        auto)
+            log_info "全自动模式：已跳过配置菜单，请按需手动执行: lobster-setup config"
+            ;;
+        later)
+            echo ""
+            echo -e "${CYAN}稍后可以通过以下命令打开配置菜单:${NC}"
+            echo "  lobster-setup config"
+            echo ""
+            ;;
+    esac
+}
+
 print_exit_hint() {
     local exit_code="${1:-0}"
     echo ""
@@ -259,18 +358,14 @@ print_exit_hint() {
     else
         echo -e "${YELLOW}安装脚本提前退出（状态码: ${exit_code}）。${NC}"
     fi
-    echo -e "${CYAN}后续可执行命令（推荐使用 openclaw-setup）:${NC}"
+    echo -e "${CYAN}后续可执行命令（推荐使用 lobster-setup）:${NC}"
     echo ""
-    echo -e "${WHITE}统一入口（推荐）:${NC}"
-    echo "  openclaw-setup status      # 查看所有服务状态"
-    echo "  openclaw-setup doctor      # 健康检查并自动修复"
-    echo "  openclaw-setup config      # 打开配置菜单"
-    echo "  openclaw-setup workbench   # 启动像素小屋"
+    print_lobster_setup_quick_commands "compact"
     echo ""
     echo -e "${WHITE}直接命令:${NC}"
     echo "  source ~/.openclaw/env && openclaw doctor"
     echo "  source ~/.openclaw/env && openclaw models status --probe --check"
-    echo "  bash ~/.openclaw/config-menu.sh"
+    echo "  lobster-setup config"
     echo "  ~/.openclaw/lobster-world.sh start"
     echo ""
 }
@@ -537,6 +632,7 @@ ${INSTALLER_NAME} (OpenClaw 安装增强版)
 
 选项:
   --install-method, --method npm|git   安装方式 (默认: npm)
+  --engine openclaw|hermes|both        安装引擎 (默认: openclaw)
   --npm                                等价于 --install-method npm
   --git, --github                      等价于 --install-method git
   --version <version|dist-tag>         指定 OpenClaw 版本 (默认: latest)
@@ -570,6 +666,7 @@ ${INSTALLER_NAME} (OpenClaw 安装增强版)
 
 环境变量:
   OPENCLAW_INSTALL_METHOD=git|npm
+  LOBSTER_ENGINE=openclaw|hermes|both
   OPENCLAW_VERSION=latest|next|<semver>
   OPENCLAW_BETA=0|1
   OPENCLAW_GIT_DIR=<path>
@@ -624,6 +721,10 @@ parse_args() {
         case "$1" in
             --install-method|--method)
                 INSTALL_METHOD="$2"
+                shift 2
+                ;;
+            --engine)
+                LOBSTER_ENGINE="$2"
                 shift 2
                 ;;
             --npm)
@@ -1342,6 +1443,7 @@ EOF
     mv "${tmp_file}.new" "$baoyu_env"
     chmod 600 "$baoyu_env" 2>/dev/null || true
     rm -f "$tmp_file" 2>/dev/null || true
+    sync_lobster_shared_state_install
 }
 
 configure_profile_api_keys() {
@@ -1398,6 +1500,7 @@ configure_profile_api_keys() {
     remove_env_export_install "NANO_BANANA_VIDEO_MODEL"
 
     apply_generative_service_settings
+    sync_lobster_shared_state_install
 }
 
 apply_profile_advanced_model_routing() {
@@ -1432,6 +1535,7 @@ apply_profile_advanced_model_routing() {
     upsert_env_export_install "OPENCLAW_UNOFFICIAL_ROUTING_SECONDARY" "fallback"
     upsert_env_export_install "OPENCLAW_UNOFFICIAL_ROUTING_FAILOVER" "$routing_failover"
     upsert_env_export_install "OPENCLAW_BM_COMMAND" "/bm"
+    sync_lobster_shared_state_install
 
     if check_command openclaw; then
         openclaw config set channels.unofficial.advanced.enabled true >/dev/null 2>&1 || true
@@ -1519,7 +1623,7 @@ apply_profile_skill_policy() {
         log_info "已选择 NONE，跳过档位技能注入。"
         return 0
     fi
-    local bundle_dir skills_list target_dir force_update copied skipped missing
+    local bundle_dir skills_list target_dir force_update copied skipped missing skill_count skill_pack_label
     copied=0
     skipped=0
     missing=0
@@ -1534,6 +1638,16 @@ apply_profile_skill_policy() {
 
     mkdir -p "$target_dir" 2>/dev/null || true
     skills_list="$(get_profile_skill_list "$level")"
+    skill_count="$(printf "%s\n" "$skills_list" | wc -w | tr -d ' ')"
+    case "$level" in
+        low) skill_pack_label="基础技能包（基础）" ;;
+        medium) skill_pack_label="增强技能包（增强）" ;;
+        high) skill_pack_label="全量技能包（高级）" ;;
+        *) skill_pack_label="增强技能包（增强）" ;;
+    esac
+    upsert_env_export_install "OPENCLAW_PROFILE_SKILL_PACK_LABEL" "$skill_pack_label"
+    upsert_env_export_install "OPENCLAW_PROFILE_SKILL_LIST" "$skills_list"
+    upsert_env_export_install "OPENCLAW_PROFILE_SKILL_COUNT" "$skill_count"
 
     if [ "$skills_list" = "__ALL_DEFAULT__" ]; then
         local src_all
@@ -1952,6 +2066,7 @@ apply_vendor_rule_profile() {
     level="$(normalize_rule_profile_level "$RULE_PROFILE_SELECTED")"
     RULE_PROFILE_SELECTED="$level"
     upsert_env_export_install "OPENCLAW_RULE_PROFILE" "$level"
+    upsert_env_export_install "OPENCLAW_WEB_SKILL_PACK" "${OPENCLAW_WEB_SKILL_PACK:-$level}"
 
     if [ "$level" = "none" ]; then
         echo ""
@@ -1976,6 +2091,7 @@ apply_vendor_rule_profile() {
     apply_profile_token_policy "$level"
     apply_profile_skill_policy "$level" || true
     write_profile_policy_files "$level"
+    sync_lobster_shared_state_install
 
     echo ""
     log_info "token规划规则注入完成"
@@ -2000,6 +2116,17 @@ normalize_install_options() {
     if [ "$INSTALL_METHOD" != "npm" ] && [ "$INSTALL_METHOD" != "git" ]; then
         log_error "无效安装方式: $INSTALL_METHOD（仅支持 npm|git）"
         exit 2
+    fi
+
+    load_openclaw_common_lib_install >/dev/null 2>&1 || true
+    if command -v openclaw_normalize_engine_id >/dev/null 2>&1; then
+        LOBSTER_ENGINE="$(openclaw_normalize_engine_id "$LOBSTER_ENGINE")"
+    else
+        case "$(printf "%s" "$LOBSTER_ENGINE" | tr '[:upper:]' '[:lower:]' | tr -d '[:space:]')" in
+            hermes) LOBSTER_ENGINE="hermes" ;;
+            both|all|dual) LOBSTER_ENGINE="both" ;;
+            *) LOBSTER_ENGINE="openclaw" ;;
+        esac
     fi
 
     if [ "${AUTO_CONFIRM_ALL:-0}" = "1" ]; then
@@ -2042,12 +2169,14 @@ normalize_install_options() {
     RESET_CHAT_AFTER_INSTALL="$(normalize_bool_flag "$RESET_CHAT_AFTER_INSTALL" "1")"
     export OPENCLAW_RESET_CHAT_AFTER_INSTALL="$RESET_CHAT_AFTER_INSTALL"
     RULE_PROFILE_SELECTED="$(normalize_rule_profile_level "$RULE_PROFILE_SELECTED")"
+    export LOBSTER_ENGINE
 }
 
 print_install_plan() {
     echo ""
     echo -e "${CYAN}安装计划:${NC}"
     echo "  - installer: $INSTALLER_NAME"
+    echo "  - engine: $LOBSTER_ENGINE"
     echo "  - install_method: $INSTALL_METHOD"
     echo "  - openclaw_version: $OPENCLAW_VERSION"
     echo "  - no_onboard: $NO_ONBOARD"
@@ -2430,8 +2559,29 @@ create_directories() {
     log_step "创建配置目录..."
     
     mkdir -p "$CONFIG_DIR"
+    mkdir -p "$CONFIG_DIR/scripts"
+    mkdir -p "$LOBSTER_CONFIG_DIR"
+    mkdir -p "$LOBSTER_BIN_DIR"
+    mkdir -p "$HERMES_HOME"
     
     log_info "配置目录: $CONFIG_DIR"
+    log_info "Lobster 控制目录: $LOBSTER_HOME"
+}
+
+install_backup_manager_script() {
+    local script_dir source_script target_script
+    script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    source_script="$script_dir/scripts/backup-manager.sh"
+    target_script="$CONFIG_DIR/backup-manager.sh"
+
+    if [ ! -f "$source_script" ]; then
+        log_warn "未找到备份管理脚本源码，跳过安装: $source_script"
+        return 1
+    fi
+
+    cp "$source_script" "$target_script"
+    chmod +x "$CONFIG_DIR/backup-manager.sh" 2>/dev/null || true
+    log_info "已安装备份管理脚本: $target_script"
 }
 
 install_openclaw_via_official() {
@@ -2937,6 +3087,91 @@ EOF
     fi
 }
 
+check_hermes_installed() {
+    if command -v hermes >/dev/null 2>&1; then
+        return 0
+    fi
+    [ -x "$HOME/.local/bin/hermes" ]
+}
+
+ensure_hermes_on_path() {
+    local candidate
+    for candidate in "$HOME/.local/bin" "$HOME/.cargo/bin" "/usr/local/bin" "/usr/bin"; do
+        if [ -d "$candidate" ]; then
+            case ":$PATH:" in
+                *":$candidate:"*) ;;
+                *) export PATH="$candidate:$PATH" ;;
+            esac
+        fi
+    done
+}
+
+run_hermes_status_summary() {
+    if ! check_hermes_installed; then
+        return 1
+    fi
+    ensure_hermes_on_path
+    if hermes status >/dev/null 2>&1; then
+        hermes status 2>/dev/null | head -12 || true
+        return 0
+    fi
+    return 1
+}
+
+apply_hermes_profile_cli_install() {
+    load_openclaw_common_lib_install >/dev/null 2>&1 || return 0
+    if command -v openclaw_sync_dual_engine_state >/dev/null 2>&1; then
+        openclaw_sync_dual_engine_state "$CONFIG_DIR/env" "$HERMES_HOME"
+        return $?
+    fi
+    return 0
+}
+
+install_hermes() {
+    log_step "安装 Hermes..."
+
+    ensure_hermes_on_path
+    if check_hermes_installed; then
+        local current_version="installed"
+        current_version="$(hermes --version 2>/dev/null || echo "installed")"
+        log_warn "Hermes 已安装 (${current_version})"
+        if ! confirm "是否重新安装/更新 Hermes？" "n"; then
+            return 0
+        fi
+    fi
+
+    local tmp_script
+    tmp_script="$(mktemp /tmp/hermes-install.XXXXXX.sh)"
+    if ! curl -fsSL --proto '=https' --tlsv1.2 --connect-timeout "${CURL_CONNECT_TIMEOUT:-8}" --max-time "${CURL_MAX_TIME:-30}" \
+        "https://raw.githubusercontent.com/NousResearch/hermes-agent/main/scripts/install.sh" -o "$tmp_script"; then
+        rm -f "$tmp_script" 2>/dev/null || true
+        log_error "Hermes 官方安装脚本下载失败"
+        return 1
+    fi
+
+    bash "$tmp_script" --skip-setup --dir "$HERMES_INSTALL_DIR"
+    local install_exit=$?
+    rm -f "$tmp_script" 2>/dev/null || true
+    if [ $install_exit -ne 0 ]; then
+        log_error "Hermes 安装失败"
+        return 1
+    fi
+
+    ensure_hermes_on_path
+    if ! check_hermes_installed; then
+        log_error "Hermes 安装后未检测到命令"
+        return 1
+    fi
+
+    log_info "Hermes 安装成功: $(hermes --version 2>/dev/null || echo installed)"
+    if apply_hermes_profile_cli_install; then
+        log_info "Hermes 已同步当前龙虾角色 / 规则 / 工具映射"
+    else
+        log_warn "Hermes 已安装，但 Lobster 配置映射应用失败；可稍后在配置菜单中重试"
+    fi
+    run_hermes_status_summary || true
+}
+
 run_official_onboard() {
     if [ "$NO_PROMPT" = "1" ] && [ "${AUTO_CONFIRM_ALL:-0}" != "1" ]; then
         log_info "NO_PROMPT 模式下跳过交互式官方向导，可稍后手动运行: openclaw onboard"
@@ -2950,6 +3185,7 @@ run_official_onboard() {
 
     # 先清理已移除渠道的历史插件残留，避免 onboard 阶段反复输出 Config warnings
     cleanup_stale_plugin_state || true
+    normalize_channel_policy_in_json_install || true
 
     if [ "$NO_PROMPT" = "1" ] && [ "${AUTO_CONFIRM_ALL:-0}" = "1" ]; then
         log_step "全自动模式：执行官方模型配置（非交互，跳过官方其它步骤）..."
@@ -3013,14 +3249,19 @@ run_official_onboard() {
 
     log_step "启动官方配置向导（openclaw onboard）..."
     local onboard_term
+    local onboard_args=()
     onboard_term="$(resolve_onboard_term)"
+    if has_existing_messaging_channel_config_install; then
+        log_warn "检测到已有消息渠道配置，官方向导将跳过渠道步骤，避免重入已有渠道时触发上游异常。"
+        onboard_args+=(--skip-channels)
+    fi
     if [ "$onboard_term" != "${TERM:-}" ]; then
         log_warn "检测到当前终端 TERM=${TERM:-unset}，临时切换为 ${onboard_term} 以兼容官方向导。"
     fi
     if [ -e /dev/tty ] && ( : < /dev/tty ) 2>/dev/null; then
-        env TERM="$onboard_term" COLORTERM="${COLORTERM:-truecolor}" openclaw onboard < /dev/tty > /dev/tty 2>&1
+        env TERM="$onboard_term" COLORTERM="${COLORTERM:-truecolor}" openclaw onboard "${onboard_args[@]}" < /dev/tty > /dev/tty 2>&1
     else
-        env TERM="$onboard_term" COLORTERM="${COLORTERM:-truecolor}" openclaw onboard
+        env TERM="$onboard_term" COLORTERM="${COLORTERM:-truecolor}" openclaw onboard "${onboard_args[@]}"
     fi
 }
 
@@ -3258,16 +3499,51 @@ install_projection_api_launcher() {
         "PROJECTION_API_PORT" "$PROJECTION_API_PORT_DEFAULT"
 }
 
+install_health_server_launcher() {
+    install_repo_backed_launcher_install \
+        "$CONFIG_DIR/health-server.sh" \
+        "scripts/health-server.sh" \
+        "HEALTH_PORT" "13146"
+}
+
 install_openclaw_bridge_launcher() {
     install_repo_backed_launcher_install \
         "$CONFIG_DIR/lobster-openclaw-bridge.sh" \
         "subprojects/lobster-sanctum-ui/openclaw-runtime-bridge.sh"
 }
 
+install_gateway_quota_enforcer_script() {
+    local script_dir source_script target_script source_media_quota target_media_quota
+    script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    source_script="$script_dir/scripts/gateway-quota-enforcer.py"
+    target_script="$CONFIG_DIR/scripts/gateway-quota-enforcer.py"
+    source_media_quota="$script_dir/scripts/media_quota.py"
+    target_media_quota="$CONFIG_DIR/scripts/media_quota.py"
+
+    if [ ! -f "$source_script" ]; then
+        log_warn "未找到配额强制脚本源码，跳过安装: $source_script"
+        return 1
+    fi
+    if [ ! -f "$source_media_quota" ]; then
+        log_warn "未找到媒体配额脚本源码，跳过安装: $source_media_quota"
+        return 1
+    fi
+
+    mkdir -p "$CONFIG_DIR/scripts"
+    cp "$source_script" "$target_script"
+    cp "$source_media_quota" "$target_media_quota"
+    chmod +x "$CONFIG_DIR/scripts/gateway-quota-enforcer.py" 2>/dev/null || true
+    chmod +x "$CONFIG_DIR/scripts/media_quota.py" 2>/dev/null || true
+    log_info "已安装配额强制脚本: $target_script"
+    log_info "已安装媒体配额脚本: $target_media_quota"
+}
+
 install_pixel_house_launchers_install() {
     install_lobster_world_launcher
     install_projection_api_launcher
+    install_health_server_launcher
     install_openclaw_bridge_launcher
+    install_gateway_quota_enforcer_script
 }
 
 pixel_house_systemd_available_install() {
@@ -3280,7 +3556,7 @@ install_pixel_house_systemd_units_install() {
     fi
 
     local service_user service_group service_home env_file gateway_status_url projection_ingest_url
-    local world_unit projection_unit bridge_unit
+    local world_unit projection_unit bridge_unit health_unit quota_unit
     service_user="$(id -un)"
     service_group="$(id -gn)"
     service_home="$HOME"
@@ -3290,6 +3566,8 @@ install_pixel_house_systemd_units_install() {
     world_unit="/etc/systemd/system/${LOBSTER_WORLD_SERVICE_NAME}"
     projection_unit="/etc/systemd/system/${LOBSTER_PROJECTION_SERVICE_NAME}"
     bridge_unit="/etc/systemd/system/${LOBSTER_BRIDGE_SERVICE_NAME}"
+    health_unit="/etc/systemd/system/${LOBSTER_HEALTH_SERVICE_NAME}"
+    quota_unit="/etc/systemd/system/${LOBSTER_QUOTA_SERVICE_NAME}"
 
     run_as_root mkdir -p /etc/systemd/system
 
@@ -3367,8 +3645,55 @@ RestartSec=3
 WantedBy=multi-user.target
 EOF
 
+    cat <<EOF | run_as_root tee "$quota_unit" >/dev/null
+[Unit]
+Description=Lobster Gateway Quota Enforcer
+After=network-online.target openclaw-gateway.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=${service_user}
+Group=${service_group}
+WorkingDirectory=${service_home}
+Environment=QUOTA_ENFORCER_PORT=13147
+Environment=QUOTA_GATEWAY_HOST=127.0.0.1
+Environment=QUOTA_GATEWAY_PORT=${GATEWAY_PORT}
+ExecStart=/bin/bash -lc 'source "${env_file}" >/dev/null 2>&1 || true; exec python3 "${service_home}/.openclaw/scripts/gateway-quota-enforcer.py" start'
+ExecStop=/bin/bash -lc 'source "${env_file}" >/dev/null 2>&1 || true; python3 "${service_home}/.openclaw/scripts/gateway-quota-enforcer.py" stop'
+ExecReload=/bin/bash -lc 'source "${env_file}" >/dev/null 2>&1 || true; python3 "${service_home}/.openclaw/scripts/gateway-quota-enforcer.py" stop; sleep 1; exec python3 "${service_home}/.openclaw/scripts/gateway-quota-enforcer.py" start'
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+    cat <<EOF | run_as_root tee "$health_unit" >/dev/null
+[Unit]
+Description=Lobster Health Server
+After=network-online.target ${LOBSTER_WORLD_SERVICE_NAME} ${LOBSTER_QUOTA_SERVICE_NAME}
+Wants=network-online.target
+
+[Service]
+Type=forking
+User=${service_user}
+Group=${service_group}
+WorkingDirectory=${service_home}
+Environment=HEALTH_PORT=13146
+ExecStart=/bin/bash -lc 'source "${env_file}" >/dev/null 2>&1 || true; "${service_home}/.openclaw/health-server.sh" start'
+ExecStop=/bin/bash -lc 'source "${env_file}" >/dev/null 2>&1 || true; "${service_home}/.openclaw/health-server.sh" stop'
+ExecReload=/bin/bash -lc 'source "${env_file}" >/dev/null 2>&1 || true; "${service_home}/.openclaw/health-server.sh" restart'
+PIDFile=/tmp/openclaw-health.pid
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
     run_as_root systemctl daemon-reload >/dev/null 2>&1 || true
-    run_as_root systemctl enable "$LOBSTER_WORLD_SERVICE_NAME" "$LOBSTER_PROJECTION_SERVICE_NAME" "$LOBSTER_BRIDGE_SERVICE_NAME" >/dev/null 2>&1 || true
+    run_as_root systemctl enable "$LOBSTER_WORLD_SERVICE_NAME" "$LOBSTER_PROJECTION_SERVICE_NAME" "$LOBSTER_BRIDGE_SERVICE_NAME" "$LOBSTER_QUOTA_SERVICE_NAME" "$LOBSTER_HEALTH_SERVICE_NAME" >/dev/null 2>&1 || true
 }
 
 start_pixel_house_stack_install() {
@@ -3377,6 +3702,8 @@ start_pixel_house_stack_install() {
         run_as_root systemctl restart "$LOBSTER_PROJECTION_SERVICE_NAME" >/dev/null 2>&1 || true
         run_as_root systemctl restart "$LOBSTER_BRIDGE_SERVICE_NAME" >/dev/null 2>&1 || true
         run_as_root systemctl restart "$LOBSTER_WORLD_SERVICE_NAME" >/dev/null 2>&1 || true
+        run_as_root systemctl restart "$LOBSTER_QUOTA_SERVICE_NAME" >/dev/null 2>&1 || true
+        run_as_root systemctl restart "$LOBSTER_HEALTH_SERVICE_NAME" >/dev/null 2>&1 || true
     else
         PROJECTION_API_HOST="$PROJECTION_API_HOST_DEFAULT" PROJECTION_API_PORT="$PROJECTION_API_PORT_DEFAULT" \
             "$CONFIG_DIR/lobster-projection-api.sh" restart >/dev/null 2>&1 || true
@@ -3385,6 +3712,9 @@ start_pixel_house_stack_install() {
             "$CONFIG_DIR/lobster-openclaw-bridge.sh" restart >/dev/null 2>&1 || true
         STAR_BACKEND_HOST="0.0.0.0" STAR_BACKEND_PORT="$LOBSTER_WORLD_PORT_DEFAULT" \
             "$CONFIG_DIR/lobster-world.sh" restart >/dev/null 2>&1 || true
+        QUOTA_GATEWAY_HOST="127.0.0.1" QUOTA_GATEWAY_PORT="$GATEWAY_PORT" QUOTA_ENFORCER_PORT="13147" \
+            nohup python3 "$CONFIG_DIR/scripts/gateway-quota-enforcer.py" restart >/tmp/openclaw-quota-enforcer.log 2>&1 &
+        HEALTH_PORT="13146" "$CONFIG_DIR/health-server.sh" restart >/dev/null 2>&1 || true
     fi
 }
 
@@ -3427,6 +3757,116 @@ EOF
     chmod +x "$launcher" 2>/dev/null || true
 }
 
+install_lobster_setup_launcher() {
+    local launcher="$LOBSTER_BIN_DIR/lobster-setup"
+    local compat_launcher="$LOBSTER_BIN_DIR/openclaw-setup"
+    local install_script
+    install_script="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/install.sh"
+
+    mkdir -p "$LOBSTER_BIN_DIR" 2>/dev/null || true
+
+    cat > "$launcher" <<EOF
+#!/usr/bin/env bash
+set -euo pipefail
+
+install_script="$install_script"
+config_menu="\$HOME/.openclaw/config-menu.sh"
+workbench="\$HOME/.openclaw/lobster-world.sh"
+env_file="\$HOME/.openclaw/env"
+
+print_lobster_setup_help() {
+  echo "用法: lobster-setup {install|config|repair|workbench|status|doctor|engine|migrate|backup|help}"
+  echo ""
+  echo "  install      重新运行安装脚本"
+  echo "  config       打开配置菜单"
+  echo "  repair       修复历史错误配置（保留记忆）"
+  echo "  workbench    启动或查看像素小屋工作台"
+  echo "  status       查看已安装引擎状态"
+  echo "  doctor       执行引擎健康检查"
+  echo "  engine       打开引擎管理"
+  echo "  migrate      执行 OpenClaw -> Hermes 迁移"
+  echo "  backup       打开备份管理脚本"
+  echo "  help         显示帮助"
+  echo ""
+  echo "  说明         像素小屋补装/修复后会同步接线并启动 13146 健康检查 与 13147 配额强制"
+}
+
+cmd="\${1:-config}"
+shift || true
+
+case "\$cmd" in
+  help|-h|--help)
+    print_lobster_setup_help
+    ;;
+  install)
+    bash "\$install_script" "\$@"
+    ;;
+  config)
+    bash "\$config_menu" "\$@"
+    ;;
+  repair)
+    bash "\$config_menu" --repair-config "\$@"
+    ;;
+  workbench)
+    bash "\$workbench" "\${1:-status}"
+    ;;
+  status)
+    if command -v openclaw >/dev/null 2>&1; then
+      openclaw gateway status || true
+    fi
+    if command -v hermes >/dev/null 2>&1; then
+      hermes status || true
+    fi
+    ;;
+  doctor)
+    if command -v openclaw >/dev/null 2>&1; then
+      openclaw doctor || true
+    fi
+    if command -v hermes >/dev/null 2>&1; then
+      hermes doctor || true
+    fi
+    ;;
+  engine)
+    if [ -f "\$config_menu" ]; then
+      bash "\$config_menu" --engine-menu "\$@"
+    else
+      echo "[ERROR] 未找到配置菜单: \$config_menu"
+      exit 1
+    fi
+    ;;
+  migrate)
+    sub="\${1:-}"
+    if [ "\$sub" = "openclaw-to-hermes" ]; then
+      shift || true
+      hermes claw migrate "\$@"
+    else
+      echo "用法: lobster-setup migrate openclaw-to-hermes [--dry-run]"
+      exit 1
+    fi
+    ;;
+  backup)
+    if [ -f "\$HOME/.openclaw/backup-manager.sh" ]; then
+      bash "\$HOME/.openclaw/backup-manager.sh" "\$@"
+    else
+      echo "[WARN] 备份脚本未安装"
+      exit 1
+    fi
+    ;;
+  *)
+    print_lobster_setup_help
+    exit 1
+    ;;
+esac
+EOF
+    chmod +x "$launcher" 2>/dev/null || true
+
+    cat > "$compat_launcher" <<EOF
+#!/usr/bin/env bash
+exec "$launcher" "\$@"
+EOF
+    chmod +x "$compat_launcher" 2>/dev/null || true
+}
+
 setup_lobster_world_defaults_install() {
     local world_script
     log_step "配置像素小屋默认参数..."
@@ -3449,11 +3889,93 @@ setup_lobster_world_defaults_install() {
                 log_info "像素小屋已注册 systemd 服务：${LOBSTER_WORLD_SERVICE_NAME}"
             fi
         else
-            log_warn "像素小屋脚本已安装，但 19000 端口尚未就绪；可稍后执行: bash ~/.openclaw/config-menu.sh --install-pixel-house"
+            log_warn "像素小屋脚本已安装，但 19000 端口尚未就绪；可稍后执行: lobster-setup config --install-pixel-house"
         fi
     else
         log_warn "未检测到像素小屋服务脚本，稍后可执行配置菜单自动修复。"
     fi
+}
+
+persist_lobster_engine_state_install() {
+    load_openclaw_common_lib_install >/dev/null 2>&1 || true
+    if command -v openclaw_set_lobster_engine_state >/dev/null 2>&1; then
+        local default_engine installed_csv
+        default_engine="openclaw"
+        if [ "$LOBSTER_ENGINE" = "hermes" ]; then
+            default_engine="hermes"
+        fi
+        installed_csv="$(openclaw_engine_installed_csv "$LOBSTER_ENGINE")"
+        openclaw_set_lobster_engine_state "$default_engine" "$installed_csv" || true
+    fi
+    sync_lobster_shared_state_install
+}
+
+sync_lobster_shared_state_install() {
+    load_openclaw_common_lib_install >/dev/null 2>&1 || true
+    if command -v openclaw_sync_dual_engine_state >/dev/null 2>&1; then
+        openclaw_sync_dual_engine_state "$CONFIG_DIR/env" "$HERMES_HOME" || true
+    fi
+}
+
+has_existing_messaging_channel_config_install() {
+    local cfg="$CONFIG_DIR/openclaw.json"
+    [ -f "$cfg" ] || return 1
+
+    if check_command python3; then
+        python3 - "$cfg" <<'PY' >/dev/null 2>&1
+import json
+import sys
+
+path = sys.argv[1]
+channel_keys = (
+    "discord", "dingtalk", "feishu", "imessage", "line", "matrix",
+    "mattermost", "qqbot", "slack", "teams", "telegram", "wechat",
+    "wecom", "whatsapp", "zalo"
+)
+ignore_keys = {
+    "allowFrom", "dmPolicy", "groupPolicy", "historyLimit", "dmHistoryLimit",
+    "requireMention", "topicSessionMode"
+}
+
+def meaningful(value):
+    if value is None:
+        return False
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, (int, float)):
+        return True
+    if isinstance(value, str):
+        return bool(value.strip())
+    if isinstance(value, list):
+        return any(meaningful(item) for item in value)
+    if isinstance(value, dict):
+        for key, item in value.items():
+            if key in ignore_keys:
+                continue
+            if meaningful(item):
+                return True
+        return False
+    return False
+
+try:
+    with open(path, "r", encoding="utf-8") as fh:
+        data = json.load(fh)
+except Exception:
+    sys.exit(1)
+
+channels = data.get("channels") or {}
+if not isinstance(channels, dict):
+    sys.exit(1)
+
+for key in channel_keys:
+    if meaningful(channels.get(key)):
+        sys.exit(0)
+sys.exit(1)
+PY
+        return $?
+    fi
+
+    return 1
 }
 
 cleanup_stale_plugin_state() {
@@ -4242,7 +4764,7 @@ install_channel_assets() {
 
 请优先使用：
 1) `openclaw onboard`（官方模型配置）
-2) `bash ~/.openclaw/config-menu.sh`（统一配置入口）
+2) `lobster-setup config`（统一配置入口）
 
 关键渠道推荐：
 - 飞书（官方）：`@openclaw/feishu`
@@ -5365,7 +5887,7 @@ setup_ai_provider() {
     echo -e "${GRAY}说明:${NC}"
     echo -e "${GRAY}  • 本安装向导提供官方常用提供商的快速入口（与官方文档对齐的精简集）${NC}"
     echo -e "${GRAY}  • 更多提供商（如 Venice / Qwen / Vercel Gateway 等）可在安装后运行：${NC}"
-    echo -e "${GRAY}    openclaw onboard 或 bash ~/.openclaw/config-menu.sh${NC}"
+    echo -e "${GRAY}    openclaw onboard 或 lobster-setup config${NC}"
     echo -e "${GRAY}  • 官方模型文档: https://docs.openclaw.ai/providers/models${NC}"
     echo -e "${GRAY}  • 支持自定义 API 地址（通过 openclaw.json 配置自定义 Provider）${NC}"
     echo ""
@@ -5877,34 +6399,31 @@ test_api_connection() {
         echo -e "${RED}✗ 模型探针失败${NC}"
         echo "$probe_output" | head -10 | sed 's/^/  /'
         echo ""
-        echo -e "${YELLOW}尝试本地 agent 调用获取详细错误...${NC}"
-        local agent_output=""
-        local agent_exit=1
+        echo -e "${YELLOW}尝试本地 infer 调用获取详细错误...${NC}"
+        local infer_output=""
+        local infer_exit=1
+        set +e
         if [ -n "$current_model_ref" ]; then
-            set +e
             if check_command timeout; then
-                agent_output=$(timeout 30s openclaw agent --local --model "$current_model_ref" --message "只回复 OK" 2>&1)
+                infer_output=$(timeout 30s openclaw infer model run --prompt "只回复 OK" --model "$current_model_ref" --json 2>&1)
             else
-                agent_output=$(openclaw agent --local --model "$current_model_ref" --message "只回复 OK" 2>&1)
+                infer_output=$(openclaw infer model run --prompt "只回复 OK" --model "$current_model_ref" --json 2>&1)
             fi
-            agent_exit=$?
-            set -e
         else
-            set +e
             if check_command timeout; then
-                agent_output=$(timeout 30s openclaw agent --local --message "只回复 OK" 2>&1)
+                infer_output=$(timeout 30s openclaw infer model run --prompt "只回复 OK" --json 2>&1)
             else
-                agent_output=$(openclaw agent --local --message "只回复 OK" 2>&1)
+                infer_output=$(openclaw infer model run --prompt "只回复 OK" --json 2>&1)
             fi
-            agent_exit=$?
-            set -e
         fi
-        if [ $agent_exit -eq 0 ] && ! echo "$agent_output" | grep -qiE "error|failed|401|403|Unknown model"; then
+        infer_exit=$?
+        set -e
+        if [ $infer_exit -eq 0 ] && ! echo "$infer_output" | grep -qiE "error|failed|401|403|Unknown model|FailoverError"; then
             test_passed=true
-            echo -e "${GREEN}✓ OpenClaw AI 测试成功（agent 调用通过）${NC}"
+            echo -e "${GREEN}✓ OpenClaw AI 测试成功（infer 调用通过）${NC}"
         else
             echo -e "${RED}✗ OpenClaw AI 调用失败${NC}"
-            echo "$agent_output" | head -10 | sed 's/^/  /'
+            echo "$infer_output" | head -10 | sed 's/^/  /'
         fi
     fi
 
@@ -5998,8 +6517,11 @@ setup_identity() {
     upsert_env_export_install "OPENCLAW_ASSISTANT_WORK_MODE" "$work_style"
     upsert_env_export_install "OPENCLAW_ASSISTANT_WORK_STYLE" "$work_style"
     upsert_env_export_install "OPENCLAW_WELCOME_MESSAGE" "$welcome_text"
+    upsert_env_export_install "OPENCLAW_ROLE_CORE_SKILLS" "$PERSONA_ROLE_CORE_SKILLS"
+    upsert_env_export_install "OPENCLAW_ROLE_EXTRA_SKILLS" "$PERSONA_ROLE_EXTRA_SKILLS"
     remove_env_export_install "OPENCLAW_WELCOME_CHANNEL"
     remove_env_export_install "OPENCLAW_WELCOME_TARGET"
+    sync_lobster_shared_state_install
 
     if check_command openclaw; then
         openclaw config set identity.name "$bot_name" >/dev/null 2>&1 || true
@@ -6039,7 +6561,7 @@ setup_identity() {
 ${welcome_text}
 
 ## 渠道配置入口
-- 命令: \`bash ~/.openclaw/config-menu.sh\`
+- 命令: \`lobster-setup config\`
 - 文档:
   - ${WELCOME_DOC_URL_GITEE}
   - ${WELCOME_DOC_URL_GITHUB}
@@ -6087,7 +6609,7 @@ build_post_install_welcome_message() {
 ${welcome_text}
 
 渠道配置入口：
-- bash ~/.openclaw/config-menu.sh
+- lobster-setup config
 - ${WELCOME_DOC_URL_GITEE}
 - ${WELCOME_DOC_URL_GITHUB}
 EOF
@@ -6333,24 +6855,19 @@ print_success() {
     echo ""
     echo -e "${WHITE}配置目录:${NC}"
     echo "  OpenClaw 配置: ~/.openclaw/"
+    echo "  Hermes 配置: ~/.hermes/"
+    echo "  Lobster 控制层: ~/.lobster/"
     echo "  环境变量配置: ~/.openclaw/env"
     echo ""
-    echo -e "${CYAN}统一入口（推荐）:${NC}"
-    echo "  openclaw-setup install     # 重新运行安装脚本"
-    echo "  openclaw-setup config      # 打开配置菜单"
-    echo "  openclaw-setup repair      # 修复历史错误配置（保留记忆）"
-    echo "  openclaw-setup workbench   # 启动像素小屋工作台"
-    echo "  openclaw-setup status      # 查看所有服务状态"
-    echo "  openclaw-setup doctor      # 健康检查并自动修复"
-    echo "  openclaw-setup backup      # 一键备份配置"
+    print_lobster_setup_quick_commands "full"
     echo ""
     echo -e "${CYAN}常用命令:${NC}"
-    echo "  openclaw gateway start   # 后台启动服务"
-    echo "  openclaw gateway stop    # 停止服务"
-    echo "  openclaw gateway status  # 查看状态"
-    echo "  openclaw models status   # 查看模型配置"
-    echo "  openclaw channels list   # 查看渠道列表"
-    echo "  openclaw doctor          # 诊断问题"
+    echo "  openclaw gateway start    # 后台启动 OpenClaw"
+    echo "  openclaw gateway stop     # 停止 OpenClaw"
+    echo "  openclaw gateway status   # 查看 OpenClaw 状态"
+    echo "  hermes status             # 查看 Hermes 状态"
+    echo "  hermes doctor             # 诊断 Hermes 问题"
+    echo "  hermes claw migrate       # 从 OpenClaw 迁移（需手动执行）"
     echo ""
     echo -e "${CYAN}配置菜单:${NC}"
     echo "  bash ~/.openclaw/config-menu.sh                   # 打开统一配置菜单"
@@ -6364,6 +6881,7 @@ print_success() {
     echo "  默认地址: http://127.0.0.1:${LOBSTER_WORLD_PORT_DEFAULT}"
     echo ""
     echo -e "${CYAN}服务监控:${NC}"
+    echo "  像素小屋补装/修复后会自动接线并启动以下辅助服务"
     echo "  健康检查服务（端口 13146）: curl http://127.0.0.1:13146/health"
     echo "  配额强制服务（端口 13147）: curl http://127.0.0.1:13147/quota/status"
     echo ""
@@ -6596,72 +7114,89 @@ main() {
     ensure_sudo_privileges
     install_dependencies
     create_directories
-    install_channel_assets
-    if ! run_step_with_auto_fix "安装 OpenClaw" install_openclaw; then
-        log_error "OpenClaw 安装失败"
-        exit 1
-    fi
-    cleanup_stale_plugin_state
-    log_info "默认消息渠道插件自动安装已关闭（改为手动安装，避免安装阶段耗时与失败重试）。"
-    if [ "$NO_ONBOARD" = "1" ]; then
-        log_info "已按参数跳过 AI 初始化向导 (--no-onboard)"
-    else
-        if ! run_step_with_auto_fix "安装后配置向导" run_onboard_wizard; then
-            log_warn "安装后配置向导未完成，可稍后手动运行: openclaw onboard"
+    install_backup_manager_script
+    install_lobster_setup_launcher
+    if [ "$LOBSTER_ENGINE" != "hermes" ]; then
+        install_channel_assets
+        if ! run_step_with_auto_fix "安装 OpenClaw" install_openclaw; then
+            log_error "OpenClaw 安装失败"
+            exit 1
         fi
+        cleanup_stale_plugin_state
+        log_info "默认消息渠道插件自动安装已关闭（改为手动安装，避免安装阶段耗时与失败重试）。"
+        if [ "$NO_ONBOARD" = "1" ]; then
+            log_info "已按参数跳过 AI 初始化向导 (--no-onboard)"
+        else
+            if ! run_step_with_auto_fix "安装后配置向导" run_onboard_wizard; then
+                log_warn "安装后配置向导未完成，可稍后手动运行: openclaw onboard"
+            fi
+        fi
+        apply_default_feishu_runtime_flags
+        setup_identity
+        apply_vendor_rule_profile
+        apply_default_security_baseline
+        setup_lobster_world_defaults_install
+        reset_gateway_chat_history_for_fresh_start
+        apply_default_welcome_after_session_reset
+        if ! run_step_with_auto_fix "设置开机守护进程" setup_daemon; then
+            log_warn "守护进程设置失败，安装继续完成；稍后可手动执行: openclaw gateway install --force --port ${GATEWAY_PORT}"
+        fi
+    else
+        log_info "Hermes-only 模式：跳过 OpenClaw 渠道、像素小屋与 Gateway 初始化。"
     fi
-    apply_default_feishu_runtime_flags
-    setup_identity
-    apply_vendor_rule_profile
-    apply_default_security_baseline
-    setup_lobster_world_defaults_install
-    reset_gateway_chat_history_for_fresh_start
-    apply_default_welcome_after_session_reset
-    if ! run_step_with_auto_fix "设置开机守护进程" setup_daemon; then
-        log_warn "守护进程设置失败，安装继续完成；稍后可手动执行: openclaw gateway install --force --port ${GATEWAY_PORT}"
+
+    if [ "$LOBSTER_ENGINE" != "openclaw" ]; then
+        if ! run_step_with_auto_fix "安装 Hermes" install_hermes; then
+            log_error "Hermes 安装失败"
+            exit 1
+        fi
+        log_info "Hermes 已安装；如需导入 OpenClaw 数据，请稍后手动执行: hermes claw migrate --dry-run"
     fi
+
+    persist_lobster_engine_state_install
     print_success
     
     # 询问是否启动服务
-    if confirm "是否现在启动 OpenClaw 服务？" "y"; then
-        if ! start_openclaw_service; then
-            log_warn "安装已完成，但 Gateway 暂未成功启动。可稍后执行: openclaw doctor --fix && openclaw gateway restart"
-        fi
-    else
-        echo ""
-        echo -e "${CYAN}稍后可以通过以下命令启动服务:${NC}"
-        echo "  openclaw gateway restart"
-        echo ""
-    fi
-    
-    # 询问是否打开配置菜单进行详细配置
-    echo ""
-    echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-    echo -e "${WHITE}           📝 配置菜单（命令行版）${NC}"
-    echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-    echo ""
-    echo -e "${GRAY}配置菜单支持: 模型、官方渠道、Skills、权限、服务管理、像素小屋等${NC}"
-    echo ""
-    echo -e "${WHITE}💡 下次可以直接运行配置菜单:${NC}"
-    echo -e "   ${CYAN}bash ~/.openclaw/config-menu.sh${NC}"
-    echo ""
-    if [ "${AUTO_CONFIRM_ALL:-0}" = "1" ]; then
-        log_info "全自动模式：已跳过配置菜单，请按需手动执行: bash ~/.openclaw/config-menu.sh"
-    else
-        if confirm "是否现在打开配置菜单？" "n"; then
-            if ! run_config_menu; then
-                log_warn "配置菜单启动失败或被中断，可稍后手动运行: bash ~/.openclaw/config-menu.sh"
+    if [ "$LOBSTER_ENGINE" != "hermes" ]; then
+        if confirm "是否现在启动 OpenClaw 服务？" "y"; then
+            if ! start_openclaw_service; then
+                log_warn "安装已完成，但 Gateway 暂未成功启动。可稍后执行: openclaw doctor --fix && openclaw gateway restart"
             fi
         else
             echo ""
-            echo -e "${CYAN}稍后可以通过以下命令打开配置菜单:${NC}"
-            echo "  bash ~/.openclaw/config-menu.sh"
+            echo -e "${CYAN}稍后可以通过以下命令启动服务:${NC}"
+            echo "  openclaw gateway restart"
             echo ""
+        fi
+    else
+        echo ""
+        echo -e "${CYAN}Hermes-only 模式下不自动启动 OpenClaw Gateway。${NC}"
+        echo "  可稍后执行: hermes status / hermes setup"
+        echo ""
+    fi
+
+    if [ "$LOBSTER_ENGINE" = "both" ] || [ "$LOBSTER_ENGINE" = "hermes" ]; then
+        if confirm "是否现在检查 Hermes 状态？" "y"; then
+            run_hermes_status_summary || log_warn "Hermes 状态检查失败，可稍后手动执行: hermes status && hermes doctor"
+        fi
+    fi
+    
+    # 询问是否打开配置菜单进行详细配置
+    print_post_install_config_hint "prompt"
+    if [ "${AUTO_CONFIRM_ALL:-0}" = "1" ]; then
+        print_post_install_config_hint "auto"
+    else
+        if confirm "是否现在打开配置菜单？" "n"; then
+            if ! run_config_menu; then
+                log_warn "配置菜单启动失败或被中断，可稍后手动运行: lobster-setup config"
+            fi
+        else
+            print_post_install_config_hint "later"
         fi
     fi
     
     echo ""
-    echo -e "${GREEN}🦞 OpenClaw 安装完成！祝你使用愉快！${NC}"
+    echo -e "${GREEN}🦞 Lobster 安装完成！当前引擎: ${LOBSTER_ENGINE}${NC}"
     echo ""
 }
 
