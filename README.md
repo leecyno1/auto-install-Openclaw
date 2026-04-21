@@ -25,12 +25,25 @@
 
 ## 快速入口
 
-### 1. 一键安装（含龙虾小屋）
+### 1. 一键安装
 
 #### macOS / Linux 用户
 
 ```bash
 curl -fsSL --proto '=https' --tlsv1.2 --connect-timeout 8 --max-time 25 https://gitee.com/leecyno1/auto-install-openclaw/raw/main/install.sh | bash
+```
+
+按引擎区分：
+
+```bash
+# 安装 OpenClaw（默认）
+curl -fsSL --proto '=https' --tlsv1.2 --connect-timeout 8 --max-time 25 https://gitee.com/leecyno1/auto-install-openclaw/raw/main/install.sh | bash -s -- --engine openclaw
+
+# 安装 Hermes
+curl -fsSL --proto '=https' --tlsv1.2 --connect-timeout 8 --max-time 25 https://gitee.com/leecyno1/auto-install-openclaw/raw/main/install.sh | bash -s -- --engine hermes
+
+# 同时安装 OpenClaw + Hermes
+curl -fsSL --proto '=https' --tlsv1.2 --connect-timeout 8 --max-time 25 https://gitee.com/leecyno1/auto-install-openclaw/raw/main/install.sh | bash -s -- --engine both
 ```
 
 #### Windows 用户 - 自动检测与安装
@@ -61,7 +74,22 @@ curl -fsSL https://mirror.ghproxy.com/https://raw.githubusercontent.com/leecyno1
 ### 2. 全自动安装
 
 ```bash
-curl -fsSL --proto '=https' --tlsv1.2 --connect-timeout 8 --max-time 25 https://gitee.com/leecyno1/auto-install-openclaw/raw/main/install.sh | bash -s -- --auto-confirm-all
+# 全自动安装 OpenClaw（默认）
+curl -fsSL --proto '=https' --tlsv1.2 --connect-timeout 8 --max-time 25 https://gitee.com/leecyno1/auto-install-openclaw/raw/main/install.sh | bash -s -- --auto-confirm-all --engine openclaw
+
+# 全自动安装 Hermes
+curl -fsSL --proto '=https' --tlsv1.2 --connect-timeout 8 --max-time 25 https://gitee.com/leecyno1/auto-install-openclaw/raw/main/install.sh | bash -s -- --auto-confirm-all --engine hermes
+
+# 全自动双引擎安装
+curl -fsSL --proto '=https' --tlsv1.2 --connect-timeout 8 --max-time 25 https://gitee.com/leecyno1/auto-install-openclaw/raw/main/install.sh | bash -s -- --auto-confirm-all --engine both
+```
+
+常用附加参数：
+
+```bash
+--install-method git|npm
+--rule-profile low|medium|high|none
+--persona druid|assassin|mage|summoner|warrior|paladin|designer
 ```
 
 ### 3. 统一入口（推荐）
@@ -87,6 +115,16 @@ lobster-setup help          # 显示帮助
 lobster-setup config
 # 或
 bash ~/.openclaw/config-menu.sh
+```
+
+常用配置快捷命令：
+
+```bash
+lobster-setup config --model-only
+lobster-setup config --official-channels-only
+lobster-setup config --engine-menu
+lobster-setup repair
+lobster-setup workbench
 ```
 
 ### 5. 修复历史错误配置并保留记忆/对话
@@ -237,6 +275,12 @@ lobster-setup help          # 显示帮助
 ### 配置与修复
 
 ```bash
+lobster-setup config
+lobster-setup config --model-only
+lobster-setup config --official-channels-only
+lobster-setup config --engine-menu
+lobster-setup repair
+
 bash ~/.openclaw/config-menu.sh
 bash ~/.openclaw/config-menu.sh --model-only
 bash ~/.openclaw/config-menu.sh --official-channels-only

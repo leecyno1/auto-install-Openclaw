@@ -628,6 +628,7 @@ print_usage() {
 ${INSTALLER_NAME} (OpenClaw 安装增强版)
 
 用法:
+  curl -fsSL https://gitee.com/leecyno1/auto-install-openclaw/raw/main/install.sh | bash -s -- [选项]
   curl -fsSL https://raw.githubusercontent.com/${GITHUB_REPO}/main/install.sh | bash -s -- [选项]
 
 选项:
@@ -715,6 +716,27 @@ ${INSTALLER_NAME} (OpenClaw 安装增强版)
   OPENCLAW_IMAGE_API_URL=<默认https://api.viviai.cc/v1/chat/completions>
   OPENCLAW_IMAGE_MODEL=<默认gemini-3.1-flash-image-preview>
   OPENCLAW_WELCOME_MESSAGE=<欢迎语，留空使用默认文案>
+
+快速示例:
+  # 一键安装 OpenClaw（默认）
+  curl -fsSL https://gitee.com/leecyno1/auto-install-openclaw/raw/main/install.sh | bash -s -- --engine openclaw
+
+  # 一键安装 Hermes
+  curl -fsSL https://gitee.com/leecyno1/auto-install-openclaw/raw/main/install.sh | bash -s -- --engine hermes
+
+  # 一键安装双引擎
+  curl -fsSL https://gitee.com/leecyno1/auto-install-openclaw/raw/main/install.sh | bash -s -- --engine both
+
+  # 全自动安装
+  curl -fsSL https://gitee.com/leecyno1/auto-install-openclaw/raw/main/install.sh | bash -s -- --auto-confirm-all --engine openclaw
+  curl -fsSL https://gitee.com/leecyno1/auto-install-openclaw/raw/main/install.sh | bash -s -- --auto-confirm-all --engine hermes
+  curl -fsSL https://gitee.com/leecyno1/auto-install-openclaw/raw/main/install.sh | bash -s -- --auto-confirm-all --engine both
+
+  # 安装完成后打开配置
+  lobster-setup config
+  lobster-setup config --model-only
+  lobster-setup config --official-channels-only
+  lobster-setup config --engine-menu
 EOF
 }
 

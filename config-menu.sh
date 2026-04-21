@@ -28,6 +28,10 @@ OpenClaw 配置菜单
 
 常用入口:
   lobster-setup config
+  lobster-setup config --model-only
+  lobster-setup config --official-channels-only
+  lobster-setup config --engine-menu
+  lobster-setup repair
   bash ~/.openclaw/config-menu.sh
 EOF
 }

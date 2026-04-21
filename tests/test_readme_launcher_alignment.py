@@ -37,6 +37,15 @@ class ReadmeLauncherAlignmentTests(unittest.TestCase):
         self.assertIn('对历史服务器执行 `lobster-setup repair`', readme_text)
         self.assertIn('需要可视化界面时执行 `lobster-setup workbench`', readme_text)
 
+    def test_readme_lists_dual_engine_install_and_auto_install_commands(self):
+        readme_text = README.read_text(encoding='utf-8')
+        self.assertIn('--engine openclaw', readme_text)
+        self.assertIn('--engine hermes', readme_text)
+        self.assertIn('--engine both', readme_text)
+        self.assertIn('--auto-confirm-all --engine openclaw', readme_text)
+        self.assertIn('--auto-confirm-all --engine hermes', readme_text)
+        self.assertIn('--auto-confirm-all --engine both', readme_text)
+
     def test_readme_direct_helper_paths_match_installer_surface(self):
         readme_text = README.read_text(encoding='utf-8')
         install_text = INSTALL.read_text(encoding='utf-8')
@@ -74,6 +83,10 @@ class ReadmeLauncherAlignmentTests(unittest.TestCase):
         for shortcut in expected_shortcuts:
             self.assertIn(shortcut, config_menu_text)
             self.assertIn(f'bash ~/.openclaw/config-menu.sh {shortcut}', readme_text)
+        self.assertIn('lobster-setup config --model-only', config_menu_text)
+        self.assertIn('lobster-setup config --official-channels-only', config_menu_text)
+        self.assertIn('lobster-setup config --engine-menu', config_menu_text)
+        self.assertIn('lobster-setup repair', config_menu_text)
 
     def test_config_menu_mentions_health_and_quota_helpers_under_pixel_house(self):
         config_menu_text = (ROOT / 'config-menu.sh').read_text(encoding='utf-8')
