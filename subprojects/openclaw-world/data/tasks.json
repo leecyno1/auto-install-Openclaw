@@ -1,0 +1,74 @@
+[
+  {
+    "id": "task-1775183454331-56b7c3",
+    "prompt": "验证 Microverse Home Base 闭环",
+    "stationId": "task-desk",
+    "createdAt": "2026-04-03T02:30:54.331Z",
+    "steps": [
+      {
+        "state": "researching",
+        "stationId": "skill-shelf",
+        "progress": 20,
+        "detail": "正在理解任务: 验证 Microverse Home Base 闭环",
+        "delayMs": 800
+      },
+      {
+        "state": "executing",
+        "stationId": "task-desk",
+        "progress": 62,
+        "detail": "正在处理任务: 验证 Microverse Home Base 闭环",
+        "delayMs": 1000
+      },
+      {
+        "state": "syncing",
+        "stationId": "status-mirror",
+        "progress": 88,
+        "detail": "正在回传结果: 验证 Microverse Home Base 闭环",
+        "delayMs": 700
+      },
+      {
+        "state": "idle",
+        "stationId": "task-desk",
+        "progress": 100,
+        "detail": "任务已完成: 验证 Microverse Home Base 闭环",
+        "delayMs": 0
+      }
+    ]
+  },
+  {
+    "id": "task-1775142909361-8cc93b",
+    "prompt": "整理 OpenClaw 世界阶段一验收清单",
+    "stationId": "task-desk",
+    "createdAt": "2026-04-02T15:15:09.361Z",
+    "steps": [
+      {
+        "state": "researching",
+        "stationId": "skill-shelf",
+        "progress": 20,
+        "detail": "正在理解任务: 整理 OpenClaw 世界阶段一验收清单",
+        "delayMs": 800
+      },
+      {
+        "state": "executing",
+        "stationId": "task-desk",
+        "progress": 62,
+        "detail": "正在处理任务: 整理 OpenClaw 世界阶段一验收清单",
+        "delayMs": 1000
+      },
+      {
+        "state": "syncing",
+        "stationId": "status-mirror",
+        "progress": 88,
+        "detail": "正在回传结果: 整理 OpenClaw 世界阶段一验收清单",
+        "delayMs": 700
+      },
+      {
+        "state": "idle",
+        "stationId": "task-desk",
+        "progress": 100,
+        "detail": "任务已完成: 整理 OpenClaw 世界阶段一验收清单",
+        "delayMs": 0
+      }
+    ]
+  }
+]

@@ -10012,17 +10012,47 @@ install_super_skill_from_repo() {
 }
 
 install_super_skill_from_local() {
-    local src="$1"
+    local src_hint="$1"
     local skill_name="$2"
     local target_dir="$CONFIG_DIR/skills"
+    local src=""
 
-    if [ ! -f "$src/SKILL.md" ]; then
-        log_warn "本机不存在该技能: $src"
+    if [ -d "$src_hint" ] && [ -f "$src_hint/SKILL.md" ]; then
+        src="$src_hint"
+    else
+        local candidate
+        for candidate in \
+            "$CONFIG_DIR/skills/$skill_name" \
+            "${OPENCLAW_SKILLS_BUNDLE_DIR:-}/$skill_name" \
+            "$(get_config_menu_script_dir)/skills/default/$skill_name" \
+            "$(pwd)/skills/default/$skill_name" \
+            "$HOME/.openclaw/skills/$skill_name" \
+            "$HOME/.codex/skills/$skill_name"; do
+            [ -n "$candidate" ] || continue
+            if [ -f "$candidate/SKILL.md" ]; then
+                src="$candidate"
+                break
+            fi
+        done
+    fi
+
+    if [ -z "$src" ] || [ ! -f "$src/SKILL.md" ]; then
+        log_warn "本机不存在该技能: $skill_name"
         return 1
     fi
     mkdir -p "$target_dir" 2>/dev/null || true
     copy_skill_dir "$src" "$target_dir/$skill_name"
     log_info "已导入本地技能: $skill_name"
+}
+
+install_super_skill_from_bundle_or_repo() {
+    local skill_name="$1"
+    local repo_url="$2"
+    local hint_name="${3:-$1}"
+    if install_super_skill_from_local "$skill_name" "$hint_name"; then
+        return 0
+    fi
+    install_super_skill_from_repo "$repo_url" "$hint_name"
 }
 
 manage_super_skills() {
@@ -10033,8 +10063,8 @@ manage_super_skills() {
     echo ""
     print_menu_item "1" "查看高级技能包状态" "📊"
     print_menu_item "2" "同步高级技能包（本地：NotebookLM + Baoyu 全套）" "📦"
-    print_menu_item "3" "安装 Baoyu 系列技能（GitHub）" "📚"
-    print_menu_item "4" "安装 wechat-skills（GitHub）" "📝"
+    print_menu_item "3" "安装 Baoyu 系列技能（本地优先）" "📚"
+    print_menu_item "4" "安装 wechat-skills（本地优先）" "📝"
     print_menu_item "5" "导入 ai-meeting-notes（本机）" "🗒️"
     print_menu_item "6" "导入 tmux（本机）" "🧰"
     print_menu_item "0" "返回上级菜单" "↩️"
@@ -10044,10 +10074,10 @@ manage_super_skills() {
     case "$super_choice" in
         1) list_super_skills_status ;;
         2) sync_named_skills_from_bundle "$SUPER_CURATED_SKILLS_LIST" 0 ;;
-        3) install_super_skill_from_repo "https://github.com/JimLiu/baoyu-skills.git" "baoyu-skills" ;;
-        4) install_super_skill_from_repo "https://github.com/gainubi/wechat-skills.git" "wechat-skills" ;;
-        5) install_super_skill_from_local "/Users/lichengyin/.codex/skills/ai-meeting-notes" "ai-meeting-notes" ;;
-        6) install_super_skill_from_local "/Users/lichengyin/.codex/skills/tmux" "tmux" ;;
+        3) install_super_skill_from_bundle_or_repo "baoyu-skills" "https://github.com/JimLiu/baoyu-skills.git" "baoyu-skills" ;;
+        4) install_super_skill_from_bundle_or_repo "wechat-skills" "https://github.com/gainubi/wechat-skills.git" "wechat-skills" ;;
+        5) install_super_skill_from_local "ai-meeting-notes" "ai-meeting-notes" ;;
+        6) install_super_skill_from_local "tmux" "tmux" ;;
         0) return ;;
         *) log_error "无效选择" ;;
     esac

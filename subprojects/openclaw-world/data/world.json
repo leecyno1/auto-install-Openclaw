@@ -1,0 +1,12 @@
+{
+  "scene": "home-base",
+  "personaPanelStation": "status-mirror",
+  "connection": {
+    "openclawReachable": false,
+    "wsClients": 0
+  },
+  "sharedWorld": {
+    "shellReady": true,
+    "message": "公共世界入口已建好骨架，第二阶段接入多人同步与协作任务。"
+  }
+}

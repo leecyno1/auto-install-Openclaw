@@ -1,0 +1,3517 @@
+{
+  "version": 1,
+  "generated_from": "skills/default",
+  "notes": "Installer-facing skill catalog. Scripts should read this manifest instead of growing new hardcoded lists.",
+  "bundles": {
+    "basic": [
+      "agent-browser",
+      "agentmail",
+      "agentmail-cli",
+      "agentmail-mcp",
+      "agentmail-toolkit",
+      "ai-image-generation",
+      "akshare-stock",
+      "android-native-dev",
+      "brainstorming",
+      "buddy-sings",
+      "capability-evolver",
+      "chrome-devtools-mcp",
+      "content-strategy",
+      "data-analyst",
+      "docx",
+      "finance-data",
+      "find-skills",
+      "flutter-dev",
+      "frontend-dev",
+      "fullstack-dev",
+      "gif-sticker-maker",
+      "github",
+      "inference-skills",
+      "ios-application-dev",
+      "lark-calendar",
+      "marketingskills",
+      "mcp-builder",
+      "media-downloader",
+      "minimax-docx",
+      "minimax-image-understanding",
+      "minimax-multimodal-toolkit",
+      "minimax-music-gen",
+      "minimax-music-playlist",
+      "minimax-pdf",
+      "minimax-web-search",
+      "minimax-xlsx",
+      "model-usage",
+      "multi-search-engine",
+      "nano-pdf",
+      "news-radar",
+      "notebooklm-skill",
+      "openclaw-cron-setup",
+      "pdf",
+      "pptx",
+      "pptx-generator",
+      "proactive-agent",
+      "react-native-dev",
+      "reflection",
+      "self-improving-agent-cn",
+      "shader-dev",
+      "shell",
+      "skill-creator",
+      "skill-security-auditor",
+      "social-content",
+      "stock-monitor-skill",
+      "subagent-driven-development",
+      "task",
+      "tavily-search",
+      "todo",
+      "url-to-markdown",
+      "using-superpowers",
+      "verification-before-completion",
+      "vision-analysis",
+      "weather",
+      "web-search",
+      "writing-skills",
+      "xlsx"
+    ],
+    "extended": [
+      "agent-browser",
+      "agentmail",
+      "agentmail-cli",
+      "agentmail-mcp",
+      "agentmail-toolkit",
+      "ai-image-generation",
+      "akshare-stock",
+      "android-native-dev",
+      "animation",
+      "brainstorming",
+      "buddy-sings",
+      "capability-evolver",
+      "chrome-devtools-mcp",
+      "content-strategy",
+      "data-analyst",
+      "docx",
+      "finance-data",
+      "find-skills",
+      "flutter-dev",
+      "frontend-dev",
+      "fullstack-dev",
+      "gemini-image-service",
+      "gif-sticker-maker",
+      "github",
+      "inference-skills",
+      "ios-application-dev",
+      "lark-calendar",
+      "marketingskills",
+      "mcp-builder",
+      "media-downloader",
+      "minimax-docx",
+      "minimax-image-understanding",
+      "minimax-multimodal-toolkit",
+      "minimax-music-gen",
+      "minimax-music-playlist",
+      "minimax-pdf",
+      "minimax-web-search",
+      "minimax-xlsx",
+      "model-usage",
+      "multi-search-engine",
+      "nano-pdf",
+      "news-radar",
+      "notebooklm-skill",
+      "openclaw-cron-setup",
+      "oracle",
+      "paperless-docs",
+      "paperless-ngx-tools",
+      "pdf",
+      "planning-with-files",
+      "pptx",
+      "pptx-generator",
+      "proactive-agent",
+      "react-native-dev",
+      "reflection",
+      "self-improving-agent-cn",
+      "shader-dev",
+      "shell",
+      "skill-creator",
+      "skill-security-auditor",
+      "social-content",
+      "stock-monitor-skill",
+      "subagent-driven-development",
+      "task",
+      "tavily-search",
+      "todo",
+      "url-to-markdown",
+      "using-superpowers",
+      "verification-before-completion",
+      "vision-analysis",
+      "weather",
+      "web-search",
+      "writing-plans",
+      "writing-skills",
+      "xlsx"
+    ],
+    "super": [
+      "agent-browser",
+      "agentmail",
+      "agentmail-cli",
+      "agentmail-mcp",
+      "agentmail-toolkit",
+      "ai-image-generation",
+      "akshare-stock",
+      "android-native-dev",
+      "animation",
+      "baoyu-article-illustrator",
+      "baoyu-comic",
+      "baoyu-compress-image",
+      "baoyu-cover-image",
+      "baoyu-danger-gemini-web",
+      "baoyu-danger-x-to-markdown",
+      "baoyu-format-markdown",
+      "baoyu-image-gen",
+      "baoyu-infographic",
+      "baoyu-markdown-to-html",
+      "baoyu-post-to-wechat",
+      "baoyu-post-to-weibo",
+      "baoyu-post-to-x",
+      "baoyu-skills",
+      "baoyu-slide-deck",
+      "baoyu-translate",
+      "baoyu-url-to-markdown",
+      "baoyu-xhs-images",
+      "baoyu-youtube-transcript",
+      "brainstorming",
+      "buddy-sings",
+      "capability-evolver",
+      "chrome-devtools-mcp",
+      "content-strategy",
+      "data-analyst",
+      "docx",
+      "finance-data",
+      "find-skills",
+      "flutter-dev",
+      "frontend-dev",
+      "fullstack-dev",
+      "gemini-image-service",
+      "gif-sticker-maker",
+      "github",
+      "inference-skills",
+      "ios-application-dev",
+      "lark-calendar",
+      "marketingskills",
+      "mcp-builder",
+      "media-downloader",
+      "minimax-docx",
+      "minimax-image-understanding",
+      "minimax-multimodal-toolkit",
+      "minimax-music-gen",
+      "minimax-music-playlist",
+      "minimax-pdf",
+      "minimax-web-search",
+      "minimax-xlsx",
+      "model-usage",
+      "multi-search-engine",
+      "nano-pdf",
+      "news-radar",
+      "notebooklm-skill",
+      "openclaw-cron-setup",
+      "oracle",
+      "paperless-docs",
+      "paperless-ngx-tools",
+      "pdf",
+      "planning-with-files",
+      "pptx",
+      "pptx-generator",
+      "proactive-agent",
+      "react-native-dev",
+      "reflection",
+      "self-improving-agent-cn",
+      "shader-dev",
+      "shell",
+      "skill-creator",
+      "skill-security-auditor",
+      "social-content",
+      "stock-monitor-skill",
+      "subagent-driven-development",
+      "task",
+      "tavily-search",
+      "todo",
+      "url-to-markdown",
+      "using-superpowers",
+      "verification-before-completion",
+      "vision-analysis",
+      "weather",
+      "web-search",
+      "writing-plans",
+      "writing-skills",
+      "xlsx"
+    ],
+    "menu_enhanced": [
+      "agent-browser",
+      "agentmail",
+      "agentmail-cli",
+      "agentmail-mcp",
+      "agentmail-toolkit",
+      "ai-image-generation",
+      "akshare-stock",
+      "android-native-dev",
+      "animation",
+      "brainstorming",
+      "buddy-sings",
+      "capability-evolver",
+      "chrome-devtools-mcp",
+      "content-strategy",
+      "data-analyst",
+      "docx",
+      "finance-data",
+      "find-skills",
+      "flutter-dev",
+      "frontend-design",
+      "frontend-dev",
+      "fullstack-dev",
+      "gemini-image-service",
+      "gif-sticker-maker",
+      "github",
+      "inference-skills",
+      "ios-application-dev",
+      "lark-calendar",
+      "marketingskills",
+      "mcp-builder",
+      "media-downloader",
+      "minimax-docx",
+      "minimax-image-understanding",
+      "minimax-multimodal-toolkit",
+      "minimax-music-gen",
+      "minimax-music-playlist",
+      "minimax-pdf",
+      "minimax-web-search",
+      "minimax-xlsx",
+      "model-usage",
+      "multi-search-engine",
+      "nano-pdf",
+      "news-radar",
+      "notebooklm-skill",
+      "openclaw-cron-setup",
+      "openclaw-stock",
+      "openclaw-stock-analyzer",
+      "openclaw-stock-data-skill",
+      "openclaw-stock-kb",
+      "oracle",
+      "paperless-docs",
+      "paperless-ngx-tools",
+      "pdf",
+      "pptx",
+      "pptx-generator",
+      "proactive-agent",
+      "react-native-dev",
+      "reflection",
+      "self-improving-agent-cn",
+      "shader-dev",
+      "shell",
+      "skill-creator",
+      "skill-security-auditor",
+      "social-content",
+      "stock-analysis",
+      "stock-daily-analysis-skill",
+      "stock-monitor-skill",
+      "stock_datasource",
+      "subagent-driven-development",
+      "task",
+      "tavily-search",
+      "todo",
+      "tushare-openclaw-skill",
+      "url-to-markdown",
+      "using-superpowers",
+      "verification-before-completion",
+      "vision-analysis",
+      "weather",
+      "web-design",
+      "web-search",
+      "writing-plans",
+      "writing-skills",
+      "xlsx"
+    ],
+    "minimax_official": [
+      "android-native-dev",
+      "buddy-sings",
+      "flutter-dev",
+      "frontend-dev",
+      "fullstack-dev",
+      "gif-sticker-maker",
+      "ios-application-dev",
+      "minimax-docx",
+      "minimax-multimodal-toolkit",
+      "minimax-music-gen",
+      "minimax-music-playlist",
+      "minimax-pdf",
+      "minimax-xlsx",
+      "pptx-generator",
+      "react-native-dev",
+      "shader-dev",
+      "vision-analysis"
+    ],
+    "minimax_local_compat": [
+      "minimax-image-understanding",
+      "minimax-web-search"
+    ],
+    "default_sentinels": [
+      "agentmail",
+      "agentmail-cli",
+      "agentmail-mcp",
+      "agentmail-toolkit",
+      "ai-image-generation",
+      "android-native-dev",
+      "buddy-sings",
+      "content-strategy",
+      "data-analyst",
+      "finance-data",
+      "flutter-dev",
+      "frontend-dev",
+      "fullstack-dev",
+      "gif-sticker-maker",
+      "inference-skills",
+      "ios-application-dev",
+      "lark-calendar",
+      "marketingskills",
+      "media-downloader",
+      "minimax-docx",
+      "minimax-image-understanding",
+      "minimax-multimodal-toolkit",
+      "minimax-music-gen",
+      "minimax-music-playlist",
+      "minimax-pdf",
+      "minimax-web-search",
+      "minimax-xlsx",
+      "notebooklm-skill",
+      "pptx-generator",
+      "react-native-dev",
+      "shader-dev",
+      "skill-security-auditor",
+      "social-content",
+      "subagent-driven-development",
+      "task",
+      "todo",
+      "using-superpowers",
+      "verification-before-completion",
+      "vision-analysis",
+      "weather",
+      "writing-skills"
+    ]
+  },
+  "skills": [
+    {
+      "id": "agent-browser",
+      "name": "Agent Browser",
+      "description": "A fast Rust-based headless browser automation CLI with Node.js fallback that enables AI agents to navigate, click, type, and snapshot pages via structured commands.",
+      "path": "skills/default/agent-browser",
+      "tiers": [
+        "basic",
+        "extended",
+        "super"
+      ],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "agent-builder",
+      "name": "agent-builder",
+      "description": "Build high-performing OpenClaw agents end-to-end. Use when you want to design a new agent (persona + operating rules) and generate the required OpenClaw workspace files (SOUL.md, IDENTITY.md, AGENTS.md, USER.md, HEARTBEAT.md, optional MEMORY.md + memory/YYY...",
+      "path": "skills/default/agent-builder",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "agentmail",
+      "name": "agentmail",
+      "description": "Give AI agents their own email inboxes using the AgentMail API. Use when building email agents, sending/receiving emails programmatically, managing inboxes, handling attachments, organizing with labels, creating drafts for human approval, or setting up real...",
+      "path": "skills/default/agentmail",
+      "tiers": [
+        "basic",
+        "extended",
+        "super"
+      ],
+      "groups": [
+        "default_sentinel"
+      ],
+      "source": "local",
+      "requires_api_keys": true,
+      "api_keys": [
+        "YOUR_API_KEY"
+      ]
+    },
+    {
+      "id": "agentmail-cli",
+      "name": "agentmail-cli",
+      "description": "Send and receive emails programmatically using the AgentMail CLI. Use when agents need to manage inboxes, send/receive emails, handle threads, drafts, webhooks, and domains via command line.",
+      "path": "skills/default/agentmail-cli",
+      "tiers": [
+        "basic",
+        "extended",
+        "super"
+      ],
+      "groups": [
+        "default_sentinel"
+      ],
+      "source": "local",
+      "requires_api_keys": true,
+      "api_keys": [
+        "AGENTMAIL_API_KEY"
+      ]
+    },
+    {
+      "id": "agentmail-mcp",
+      "name": "agentmail-mcp",
+      "description": "AgentMail MCP server for email tools in AI assistants. Use when setting up AgentMail with Claude Desktop, Cursor, VS Code, Windsurf, or other MCP-compatible clients. Provides tools for inbox management, sending/receiving emails, and thread handling.",
+      "path": "skills/default/agentmail-mcp",
+      "tiers": [
+        "basic",
+        "extended",
+        "super"
+      ],
+      "groups": [
+        "default_sentinel"
+      ],
+      "source": "local",
+      "requires_api_keys": true,
+      "api_keys": [
+        "AGENTMAIL_API_KEY",
+        "YOUR_API_KEY"
+      ]
+    },
+    {
+      "id": "agentmail-toolkit",
+      "name": "agentmail-toolkit",
+      "description": "Add email capabilities to AI agents using popular frameworks. Provides pre-built tools for TypeScript and Python frameworks including Vercel AI SDK, LangChain, Clawdbot, OpenAI Agents SDK, and LiveKit Agents. Use when integrating AgentMail with agent framew...",
+      "path": "skills/default/agentmail-toolkit",
+      "tiers": [
+        "basic",
+        "extended",
+        "super"
+      ],
+      "groups": [
+        "default_sentinel"
+      ],
+      "source": "local",
+      "requires_api_keys": true,
+      "api_keys": [
+        "AGENTMAIL_API_KEY"
+      ]
+    },
+    {
+      "id": "ai-image-generation",
+      "name": "ai-image-generation",
+      "description": "Generate AI images with FLUX, Gemini, Grok, Seedream, Reve and 50+ models via inference.sh CLI. Models: FLUX Dev LoRA, FLUX.2 Klein LoRA, Gemini 3 Pro Image, Grok Imagine, Seedream 4.5, Reve, ImagineArt. Capabilities: text-to-image, image-to-image, inpainti...",
+      "path": "skills/default/ai-image-generation",
+      "tiers": [
+        "basic",
+        "extended",
+        "super"
+      ],
+      "groups": [
+        "default_sentinel"
+      ],
+      "source": "github:inference-sh/skills",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "ai-meeting-notes",
+      "name": "ai-meeting-notes",
+      "description": "Messy notes → Clear action items. Instantly. Paste any meeting notes, transcript, or text. Get summaries, action items with owners and deadlines. Auto-saved, searchable, with integrated to-do tracking. No bot. No subscription. No setup.",
+      "path": "skills/default/ai-meeting-notes",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "ai-music-generation",
+      "name": "ai-music-generation",
+      "description": "Generate AI music and songs with Diffrythm, Tencent Song Generation via inference.sh CLI. Models: Diffrythm (fast song generation), Tencent Song Generation (full songs with vocals). Capabilities: text-to-music, song generation, instrumental, lyrics to song,...",
+      "path": "skills/default/ai-music-generation",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "ai-music-prompts",
+      "name": "ai-music-prompts",
+      "description": "Generate AI music and songs with Diffrythm, Tencent Song Generation via inference.sh CLI. Models: Diffrythm (fast song generation), Tencent Song Generation (full songs with vocals). Capabilities: text-to-music, song generation, instrumental, lyrics to song,...",
+      "path": "skills/default/ai-music-prompts",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "akshare-stock",
+      "name": "akshare-stock",
+      "description": "A股量化数据分析工具，基于AkShare库获取A股行情、财务数据、板块信息等。用于回答关于A股股票查询、行情数据、财务分析、选股等问题。",
+      "path": "skills/default/akshare-stock",
+      "tiers": [
+        "basic",
+        "extended",
+        "super"
+      ],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "algorithmic-art",
+      "name": "algorithmic-art",
+      "description": "Creating algorithmic art using p5.js with seeded randomness and interactive parameter exploration. Use this when users request creating art using code, generative art, algorithmic art, flow fields, or particle systems. Create original algorithmic art rather...",
+      "path": "skills/default/algorithmic-art",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "android-native-dev",
+      "name": "android-native-dev",
+      "description": "Android native application development and UI design guide. Covers Material Design 3, Kotlin/Compose development, project configuration, accessibility, and build troubleshooting. Read this before Android native application development.",
+      "path": "skills/default/android-native-dev",
+      "tiers": [
+        "basic",
+        "extended",
+        "super"
+      ],
+      "groups": [
+        "minimax_official",
+        "default_sentinel"
+      ],
+      "source": "github:MiniMax-AI/skills",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "animated-financial-display",
+      "name": "animated-financial-display",
+      "description": "Patterns for animating financial numbers with spring physics, formatting, and visual feedback. Covers animated counters, price tickers, percentage changes, and value flash effects. Use when building financial dashboards or trading UIs. Triggers on animated...",
+      "path": "skills/default/animated-financial-display",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "animation",
+      "name": "animation",
+      "description": "Generate CSS and SVG animation code snippets using bash and Python. Use when building UI animations, keyframes, or transition effects.",
+      "path": "skills/default/animation",
+      "tiers": [
+        "extended",
+        "super"
+      ],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "atxp",
+      "name": "atxp",
+      "description": "Agent wallet, identity, and paid tools in one package. Register an agent, fund it via Stripe or USDC, then use the balance for web search, AI image generation, AI video generation, AI music creation, X/Twitter search, email send/receive, and 100+ LLM models...",
+      "path": "skills/default/atxp",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "auto-animate",
+      "name": "auto-animate",
+      "description": "Zero-config animations for React, Vue, Solid, Svelte, Preact with @formkit/auto-animate (3.28kb). Prevents 15 documented errors including React 19 StrictMode bugs, SSR imports, conditional parents, viewport issues, drag & drop conflicts, and CSS transform b...",
+      "path": "skills/default/auto-animate",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "baoyu-article-illustrator",
+      "name": "baoyu-article-illustrator",
+      "description": "Analyzes article structure, identifies positions requiring visual aids, generates illustrations with Type × Style two-dimension approach. Use when user asks to \"illustrate article\", \"add images\", \"generate images for article\", or \"为文章配图\".",
+      "path": "skills/default/baoyu-article-illustrator",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "baoyu"
+      ],
+      "source": "github:JimLiu/baoyu-skills",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "baoyu-comic",
+      "name": "baoyu-comic",
+      "description": "Knowledge comic creator supporting multiple art styles and tones. Creates original educational comics with detailed panel layouts and sequential image generation. Use when user asks to create \"知识漫画\", \"教育漫画\", \"biography comic\", \"tutorial comic\", or \"Logicomi...",
+      "path": "skills/default/baoyu-comic",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "baoyu"
+      ],
+      "source": "github:JimLiu/baoyu-skills",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "baoyu-compress-image",
+      "name": "baoyu-compress-image",
+      "description": "Compresses images to WebP (default) or PNG with automatic tool selection. Use when user asks to \"compress image\", \"optimize image\", \"convert to webp\", or reduce image file size.",
+      "path": "skills/default/baoyu-compress-image",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "baoyu"
+      ],
+      "source": "github:JimLiu/baoyu-skills",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "baoyu-cover-image",
+      "name": "baoyu-cover-image",
+      "description": "Generates article cover images with 5 dimensions (type, palette, rendering, text, mood) combining 10 color palettes and 7 rendering styles. Supports cinematic (2.35:1), widescreen (16:9), and square (1:1) aspects. Use when user asks to \"generate cover image...",
+      "path": "skills/default/baoyu-cover-image",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "baoyu"
+      ],
+      "source": "github:JimLiu/baoyu-skills",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "baoyu-danger-gemini-web",
+      "name": "baoyu-danger-gemini-web",
+      "description": "Generates images and text via reverse-engineered Gemini Web API. Supports text generation, image generation from prompts, reference images for vision input, and multi-turn conversations. Use when other skills need image generation backend, or when user requ...",
+      "path": "skills/default/baoyu-danger-gemini-web",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "baoyu"
+      ],
+      "source": "github:JimLiu/baoyu-skills",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "baoyu-danger-x-to-markdown",
+      "name": "baoyu-danger-x-to-markdown",
+      "description": "Converts X (Twitter) tweets and articles to markdown with YAML front matter. Uses reverse-engineered API requiring user consent. Use when user mentions \"X to markdown\", \"tweet to markdown\", \"save tweet\", or provides x.com/twitter.com URLs for conversion.",
+      "path": "skills/default/baoyu-danger-x-to-markdown",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "baoyu"
+      ],
+      "source": "github:JimLiu/baoyu-skills",
+      "requires_api_keys": true,
+      "api_keys": [
+        "X_AUTH_TOKEN"
+      ]
+    },
+    {
+      "id": "baoyu-format-markdown",
+      "name": "baoyu-format-markdown",
+      "description": "Formats plain text or markdown files with frontmatter, titles, summaries, headings, bold, lists, and code blocks. Use when user asks to \"format markdown\", \"beautify article\", \"add formatting\", or improve article layout. Outputs to {filename}-formatted.md.",
+      "path": "skills/default/baoyu-format-markdown",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "baoyu"
+      ],
+      "source": "github:JimLiu/baoyu-skills",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "baoyu-image-gen",
+      "name": "baoyu-image-gen",
+      "description": "[Deprecated: use baoyu-imagine] AI image generation with OpenAI, Azure OpenAI, Google, OpenRouter, DashScope, Z.AI GLM-Image, MiniMax, Jimeng, Seedream and Replicate APIs. Supports text-to-image, reference images, aspect ratios, and batch generation from sa...",
+      "path": "skills/default/baoyu-image-gen",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "baoyu"
+      ],
+      "source": "github:JimLiu/baoyu-skills",
+      "requires_api_keys": true,
+      "api_keys": [
+        "ARK_API_KEY",
+        "AZURE_OPENAI_API_KEY",
+        "BIGMODEL_API_KEY",
+        "DASHSCOPE_API_KEY",
+        "GOOGLE_API_KEY",
+        "MINIMAX_API_KEY",
+        "OPENAI_API_KEY",
+        "OPENROUTER_API_KEY",
+        "REPLICATE_API_TOKEN",
+        "ZAI_API_KEY"
+      ]
+    },
+    {
+      "id": "baoyu-infographic",
+      "name": "baoyu-infographic",
+      "description": "Generates professional infographics with 21 layout types and 20 visual styles. Analyzes content, recommends layout×style combinations, and generates publication-ready infographics. Use when user asks to create \"infographic\", \"信息图\", \"visual summary\", \"可视化\",...",
+      "path": "skills/default/baoyu-infographic",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "baoyu"
+      ],
+      "source": "github:JimLiu/baoyu-skills",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "baoyu-markdown-to-html",
+      "name": "baoyu-markdown-to-html",
+      "description": "Converts Markdown to styled HTML with WeChat-compatible themes. Supports code highlighting, math, PlantUML, footnotes, alerts, infographics, and optional bottom citations for external links. Use when user asks for \"markdown to html\", \"convert md to html\", \"...",
+      "path": "skills/default/baoyu-markdown-to-html",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "baoyu"
+      ],
+      "source": "github:JimLiu/baoyu-skills",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "baoyu-post-to-wechat",
+      "name": "baoyu-post-to-wechat",
+      "description": "Posts content to WeChat Official Account (微信公众号) via API or Chrome CDP. Supports article posting (文章) with HTML, markdown, or plain text input, and image-text posting (贴图, formerly 图文) with multiple images. Markdown article workflows default to converting o...",
+      "path": "skills/default/baoyu-post-to-wechat",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "baoyu"
+      ],
+      "source": "github:JimLiu/baoyu-skills",
+      "requires_api_keys": true,
+      "api_keys": [
+        "ACCESS_TOKEN",
+        "WECHAT_AI_TOOLS_APP_SECRET",
+        "WECHAT_APP_SECRET",
+        "WECHAT_BAOYU_APP_SECRET"
+      ]
+    },
+    {
+      "id": "baoyu-post-to-weibo",
+      "name": "baoyu-post-to-weibo",
+      "description": "Posts content to Weibo (微博). Supports regular posts with text, images, and videos, and headline articles (头条文章) with Markdown input via Chrome CDP. Use when user asks to \"post to Weibo\", \"发微博\", \"发布微博\", \"publish to Weibo\", \"share on Weibo\", \"写微博\", or \"微博头条文章\".",
+      "path": "skills/default/baoyu-post-to-weibo",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "baoyu"
+      ],
+      "source": "github:JimLiu/baoyu-skills",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "baoyu-post-to-x",
+      "name": "baoyu-post-to-x",
+      "description": "Posts content and articles to X (Twitter). Supports regular posts with images/videos and X Articles (long-form Markdown). Uses real Chrome with CDP to bypass anti-automation. Use when user asks to \"post to X\", \"tweet\", \"publish to Twitter\", or \"share on X\".",
+      "path": "skills/default/baoyu-post-to-x",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "baoyu"
+      ],
+      "source": "github:JimLiu/baoyu-skills",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "baoyu-skills",
+      "name": "baoyu-skills",
+      "description": "Baoyu 内容产出与分发技能包入口。用于在本地仓库中索引并路由 baoyu 系列子技能。",
+      "path": "skills/default/baoyu-skills",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "baoyu"
+      ],
+      "source": "github:JimLiu/baoyu-skills",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "baoyu-slide-deck",
+      "name": "baoyu-slide-deck",
+      "description": "Generates professional slide deck images from content. Creates outlines with style instructions, then generates individual slide images. Use when user asks to \"create slides\", \"make a presentation\", \"generate deck\", \"slide deck\", or \"PPT\".",
+      "path": "skills/default/baoyu-slide-deck",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "baoyu"
+      ],
+      "source": "github:JimLiu/baoyu-skills",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "baoyu-translate",
+      "name": "baoyu-translate",
+      "description": "Translates articles and documents between languages with three modes - quick (direct), normal (analyze then translate), and refined (analyze, translate, review, polish). Supports custom glossaries and terminology consistency via EXTEND.md. Use when user ask...",
+      "path": "skills/default/baoyu-translate",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "baoyu"
+      ],
+      "source": "github:JimLiu/baoyu-skills",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "baoyu-url-to-markdown",
+      "name": "baoyu-url-to-markdown",
+      "description": "Fetch any URL and convert to markdown using baoyu-fetch CLI (Chrome CDP with site-specific adapters). Built-in adapters for X/Twitter, YouTube transcripts, Hacker News threads, and generic pages via Defuddle. Handles login/CAPTCHA via interaction wait modes...",
+      "path": "skills/default/baoyu-url-to-markdown",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "baoyu"
+      ],
+      "source": "github:JimLiu/baoyu-skills",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "baoyu-xhs-images",
+      "name": "baoyu-xhs-images",
+      "description": "Generates Xiaohongshu (Little Red Book) infographic series with 11 visual styles and 8 layouts. Breaks content into 1-10 cartoon-style images optimized for XHS engagement. Use when user mentions \"小红书图片\", \"XHS images\", \"RedNote infographics\", \"小红书种草\", or wan...",
+      "path": "skills/default/baoyu-xhs-images",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "baoyu"
+      ],
+      "source": "github:JimLiu/baoyu-skills",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "baoyu-youtube-transcript",
+      "name": "baoyu-youtube-transcript",
+      "description": "Downloads YouTube video transcripts/subtitles and cover images by URL or video ID. Supports multiple languages, translation, chapters, and speaker identification. Caches raw data for fast re-formatting. Use when user asks to \"get YouTube transcript\", \"downl...",
+      "path": "skills/default/baoyu-youtube-transcript",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "baoyu"
+      ],
+      "source": "github:JimLiu/baoyu-skills",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "bilibili-youtube-watcher",
+      "name": "video-watcher",
+      "description": "Fetch and read transcripts from YouTube and Bilibili videos. Use when you need to summarize a video, answer questions about its content, or extract information from it.",
+      "path": "skills/default/bilibili-youtube-watcher",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "blogwatcher",
+      "name": "blogwatcher-cli",
+      "description": "Use when managing or interacting with favorite blogs via the BlogWatcher CLI—adding/removing blogs, scanning for new posts, listing articles, marking read/unread, or modifying related CLI behavior, scanning, storage, and tests.",
+      "path": "skills/default/blogwatcher",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "brainstorming",
+      "name": "brainstorming",
+      "description": "You MUST use this before any creative work - creating features, building components, adding functionality, or modifying behavior. Explores user intent, requirements and design before implementation.",
+      "path": "skills/default/brainstorming",
+      "tiers": [
+        "basic",
+        "extended",
+        "super"
+      ],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "brand-guidelines",
+      "name": "brand-guidelines",
+      "description": "Applies Anthropic's official brand colors and typography to any sort of artifact that may benefit from having Anthropic's look-and-feel. Use it when brand colors or style guidelines, visual formatting, or company design standards apply.",
+      "path": "skills/default/brand-guidelines",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "buddy-sings",
+      "name": "buddy-sings",
+      "description": "Use when user wants their Claude Code pet (/buddy) to sing a song. Triggers on any request that combines the concept of their Claude Code buddy, pet, or companion with singing or music. Supports multilingual triggers — match equivalent phrases in any language.",
+      "path": "skills/default/buddy-sings",
+      "tiers": [
+        "basic",
+        "extended",
+        "super"
+      ],
+      "groups": [
+        "minimax_official",
+        "default_sentinel"
+      ],
+      "source": "github:MiniMax-AI/skills",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "byterover",
+      "name": "byterover",
+      "description": "Manages project knowledge using ByteRover context tree. Provides two operations: query (retrieve knowledge) and curate (store knowledge). Invoke when user requests information lookup, pattern discovery, or knowledge persistence. Developed by ByteRover Inc....",
+      "path": "skills/default/byterover",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "canvas-design",
+      "name": "canvas-design",
+      "description": "Create beautiful visual art in .png and .pdf documents using design philosophy. You should use this skill when the user asks to create a poster, piece of art, design, or other static piece. Create original visual designs, never copying existing artists' wor...",
+      "path": "skills/default/canvas-design",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "capability-evolver",
+      "name": "capability-evolver",
+      "description": "A self-evolution engine for AI agents. Analyzes runtime history to identify improvements and applies protocol-constrained evolution.",
+      "path": "skills/default/capability-evolver",
+      "tiers": [
+        "basic",
+        "extended",
+        "super"
+      ],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "chrome-devtools-mcp",
+      "name": "chrome-devtools-mcp",
+      "description": "Chrome DevTools MCP — Google's official browser automation and testing server. Control Chrome via Puppeteer through MCP protocol: click, fill forms, navigate, screenshot, performance traces, network inspection, console debugging. Use for browser testing, we...",
+      "path": "skills/default/chrome-devtools-mcp",
+      "tiers": [
+        "basic",
+        "extended",
+        "super"
+      ],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "content-brief-builder",
+      "name": "content-brief-builder",
+      "description": "内容中台核心 Skill。用于把自动采集结果聚类归并，或把人工命题结构化整理，生成统一的 Content Brief。适用于话题策划、内容任务单生成、推荐媒介判断、生产价值评分，以及将 Brief 写入飞书文档。",
+      "path": "skills/default/content-brief-builder",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "content-intake-hub",
+      "name": "content-intake-hub",
+      "description": "统一的内容入口 Skill。用于接收自动采集结果与人工命题输入，标准化为 Topic Intake Record，为后续 Brief 构建提供统一上游。适用于热点采集、人工提题、手工指定大纲意图、跨媒介内容任务发起。",
+      "path": "skills/default/content-intake-hub",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "content-strategy",
+      "name": "content-strategy",
+      "description": "When the user wants to plan a content strategy, decide what content to create, or figure out what topics to cover. Also use when the user mentions \"content strategy,\" \"what should I write about,\" \"content ideas,\" \"blog strategy,\" \"topic clusters,\" \"content...",
+      "path": "skills/default/content-strategy",
+      "tiers": [
+        "basic",
+        "extended",
+        "super"
+      ],
+      "groups": [
+        "default_sentinel"
+      ],
+      "source": "github:coreyhaines31/marketingskills",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "dasheng-brief-builder",
+      "name": "dasheng-brief-builder",
+      "description": "内容 Brief 生成 Skill。用于将 Topic Cluster 或单条 Topic Intake Record 转化为可复用、可跨媒介消费的 Content Brief。包含风险评估、生产价值评分、媒介推荐等功能。",
+      "path": "skills/default/dasheng-brief-builder",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "dasheng-caiji",
+      "name": "dasheng-caiji",
+      "description": "已并入 `dasheng-daily-intake` / `daily intake`。保留此 Skill 仅用于兼容旧叫法；凡是“大圣采集/采集环节/caiji”相关调用，一律转到 `dasheng-daily-intake`。",
+      "path": "skills/default/dasheng-caiji",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "dasheng-clustering",
+      "name": "dasheng-clustering",
+      "description": "内容聚类 Skill。用于将多条 Topic Intake Record 按真实话题进行聚类分析，识别主要话题簇（如美伊战争、康波周期等），输出 Topic Cluster，供 dasheng-brief-builder 生成 Content Brief。",
+      "path": "skills/default/dasheng-clustering",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "dasheng-daily-brief",
+      "name": "dasheng-daily-brief",
+      "description": "dasheng-daily-brief",
+      "path": "skills/default/dasheng-daily-brief",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "dasheng-daily-clustering",
+      "name": "dasheng-daily-clustering",
+      "description": "dasheng-daily-clustering",
+      "path": "skills/default/dasheng-daily-clustering",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "dasheng-daily-draft",
+      "name": "dasheng-daily-draft",
+      "description": "大圣自媒体工作流初稿环节。接收已确认选题与大纲，按冻结标准生成可发布级公众号长稿。用于“进入初稿环节”“生成初稿”“写3篇长文（含数据/表格/来源）”等场景；默认执行 draft-standard-v2（每篇 >=5000 字，标准文章语体，不注入风格 DNA，证据仅来自底稿链接素材或外部公开数据源）。",
+      "path": "skills/default/dasheng-daily-draft",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "dasheng-daily-final",
+      "name": "dasheng-daily-final",
+      "description": "dasheng-daily-final",
+      "path": "skills/default/dasheng-daily-final",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "dasheng-daily-intake",
+      "name": "dasheng-daily-intake",
+      "description": "大圣自媒体 Intake 最终版（采集阶段唯一入口）：四渠道采集、24小时窗口底层入库、热度归并报告、截图与群回执交付。",
+      "path": "skills/default/dasheng-daily-intake",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "dasheng-daily-material",
+      "name": "dasheng-daily-material",
+      "description": "素材合并环节默认技能（material+补素材已合并）。用于在 dasheng 工作流中于 rewrite 之后统一补齐视频、图片、图表、CSV、引用与证据清单；支持通过 run_id 自动回溯 ContentBrief。适用于“改写后补素材”“补齐素材包并做审计”的场景。",
+      "path": "skills/default/dasheng-daily-material",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "dasheng-daily-outline",
+      "name": "dasheng-daily-outline",
+      "description": "dasheng-daily-outline",
+      "path": "skills/default/dasheng-daily-outline",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "dasheng-daily-phase2",
+      "name": "dasheng-daily-phase2",
+      "description": "大圣自媒体工作流第二环节技能。接收 `dasheng-daily-intake` 底稿（intake-records 或 dasheng_v11 输出），执行 v8 语义聚类并产出 8~10 个可执行详细 Brief。用于“进入第二环节”“生成详细 Brief”“给下一阶段选题包（含衍生话题与大纲）”场景。",
+      "path": "skills/default/dasheng-daily-phase2",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "dasheng-daily-postmortem",
+      "name": "dasheng-daily-postmortem",
+      "description": "dasheng-daily-postmortem",
+      "path": "skills/default/dasheng-daily-postmortem",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "dasheng-draft-rerun-feishu-sync",
+      "name": "dasheng-draft-rerun-feishu-sync",
+      "description": "Re-run Dasheng daily draft for a specified topic and sync the latest compliant article to an existing Feishu doc. Use when user asks to rerun a single topic draft (e.g. 选题2), enforce no intake-internal stats/no style-DNA wording, and update Feishu with writ...",
+      "path": "skills/default/dasheng-draft-rerun-feishu-sync",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "dasheng-intake-brief-prod",
+      "name": "dasheng-intake-brief-prod",
+      "description": "Execute the reusable Dasheng production workflow for \"rerun intake -> process ~1000-item draft in enhanced phase2 -> generate 8~10 detailed topic briefs (with derived topics + outlines)\". Use when users ask to rerun采集+第二环节、生成详细Brief选题包、或复用同类选题生产流程。",
+      "path": "skills/default/dasheng-intake-brief-prod",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "dasheng-phase2-brief-rerun-publish",
+      "name": "dasheng-phase2-brief-rerun-publish",
+      "description": "Re-run Dasheng phase2 brief workflow, merge a user-specified backup topic into a 10-topic package, enforce full detailed briefs for all topics, publish full正文 to Feishu doc, and notify SOP group. Use when users ask “并入重跑brief”、“10个题都要详细brief”、“写入文档并发送到群”.",
+      "path": "skills/default/dasheng-phase2-brief-rerun-publish",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "dasheng-standard-article",
+      "name": "dasheng-standard-article",
+      "description": "生成并交付“只含完整文章正文”的标准化初稿或终稿（不含口播脚本、视频脚本、标题候选、流程说明）。当用户提到“初稿就是完整文章”“直接覆盖飞书”“按固定标准产出长文（至少5000字、表格、来源）”时使用。适用于 dasheng 选题从 outline 到成稿、质检、飞书覆盖回写与回读验收。",
+      "path": "skills/default/dasheng-standard-article",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "dasheng-xuanti",
+      "name": "dasheng-xuanti",
+      "description": "内容采集适配器 Skill。用于从多平台采集热点内容、新闻、公众号文章与群分享链接，完成初步评分、归一化和候选主题整理，输出 Topic Intake Record，供 `content-intake-hub` 与 `content-brief-builder` 继续处理。",
+      "path": "skills/default/dasheng-xuanti",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "dasheng-xuanti-skill",
+      "name": "dasheng-xuanti-skill",
+      "description": "大圣-选题工作流",
+      "path": "skills/default/dasheng-xuanti-skill",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "data-analyst",
+      "name": "data-analyst",
+      "description": "Data visualization, report generation, SQL queries, and spreadsheet automation. Transform your AI agent into a data-savvy analyst that turns raw data into actionable insights.",
+      "path": "skills/default/data-analyst",
+      "tiers": [
+        "basic",
+        "extended",
+        "super"
+      ],
+      "groups": [
+        "default_sentinel"
+      ],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "data-reconciliation-exceptions",
+      "name": "data-reconciliation-exceptions",
+      "description": "Reconciles data sources using stable identifiers (Pay Number, driving licence, driver card, and driver qualification card numbers), producing exception reports and “no silent failure” checks. Use when you need weekly matching with explicit reasons for non-j...",
+      "path": "skills/default/data-reconciliation-exceptions",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "database",
+      "name": "database",
+      "description": "Guides for configuring Prisma with different database providers (PostgreSQL, MySQL, SQLite, MongoDB, etc.). Use when setting up a new project, changing databases, or troubleshooting connection issues. Triggers on \"configure postgres\", \"connect to mysql\", \"s...",
+      "path": "skills/default/database",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "demo-video",
+      "name": "demo-video",
+      "description": "Create product demo videos by automating browser interactions and capturing frames. Use when the user wants to record a demo, walkthrough, product showcase, or interactive video of a web application. Supports Playwright CDP screencast for high-quality captu...",
+      "path": "skills/default/demo-video",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "dispatching-parallel-agents",
+      "name": "dispatching-parallel-agents",
+      "description": "Use when facing 2+ independent tasks that can be worked on without shared state or sequential dependencies",
+      "path": "skills/default/dispatching-parallel-agents",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "doc-coauthoring",
+      "name": "doc-coauthoring",
+      "description": "Guide users through a structured workflow for co-authoring documentation. Use when user wants to write documentation, proposals, technical specs, decision docs, or similar structured content. This workflow helps users efficiently transfer context, refine co...",
+      "path": "skills/default/doc-coauthoring",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "docx",
+      "name": "docx",
+      "description": "Comprehensive document creation, editing, and analysis with support for tracked changes, comments, formatting preservation, and text extraction. When Claude needs to work with professional documents (.docx files) for: (1) Creating new documents, (2) Modifyi...",
+      "path": "skills/default/docx",
+      "tiers": [
+        "basic",
+        "extended",
+        "super"
+      ],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "domain-hunter",
+      "name": "domain-hunter",
+      "description": "Search domains, compare prices, find promo codes, get purchase recommendations. Use when user wants to buy a domain, check domain prices, find domain deals, compare registrars, or search for .ai/.com domains.",
+      "path": "skills/default/domain-hunter",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "douyin-hot-trend",
+      "name": "douyin-hot-trend",
+      "description": "获取抖音热榜/热搜榜数据，包含热门视频、挑战赛、音乐等多领域热门内容，并输出标题、热度值与跳转链接。",
+      "path": "skills/default/douyin-hot-trend",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "douyin-upload-skill",
+      "name": "douyin-upload-skill",
+      "description": "Login and publish Douyin (China mainland) videos from local files with OAuth, local speech-to-text, and generated caption drafts. Use when users ask to authorize Douyin accounts, upload local videos, auto-generate title/description from video audio, confirm...",
+      "path": "skills/default/douyin-upload-skill",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": true,
+      "api_keys": [
+        "DOUYIN_ASR_API_KEY",
+        "DOUYIN_CLIENT_SECRET"
+      ]
+    },
+    {
+      "id": "editorial-reviewer",
+      "name": "editorial-reviewer",
+      "description": "公众号终稿编辑复审适配器。用于对 Draft v1 进行结构、证据、语调的全面复审，输出结构化的修改建议。",
+      "path": "skills/default/editorial-reviewer",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "elevenlabs-music",
+      "name": "elevenlabs-music",
+      "description": "Generate AI music and songs with Diffrythm, Tencent Song Generation via inference.sh CLI. Models: Diffrythm (fast song generation), Tencent Song Generation (full songs with vocals). Capabilities: text-to-music, song generation, instrumental, lyrics to song,...",
+      "path": "skills/default/elevenlabs-music",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "executing-plans",
+      "name": "executing-plans",
+      "description": "Use when you have a written implementation plan to execute in a separate session with review checkpoints",
+      "path": "skills/default/executing-plans",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "finance-data",
+      "name": "finance-data",
+      "description": "Comprehensive financial data retrieval from OpenBB MCP and AKShare API. Query stock prices, financial statements, indices, ETFs, and perform data validation across multiple sources. Use when you need Chinese or US stock market data, fundamental analysis, te...",
+      "path": "skills/default/finance-data",
+      "tiers": [
+        "basic",
+        "extended",
+        "super"
+      ],
+      "groups": [
+        "default_sentinel"
+      ],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "find-skills",
+      "name": "find-skills",
+      "description": "Helps users discover and install agent skills when they ask questions like \"how do I do X\", \"find a skill for X\", \"is there a skill that can...\", or express interest in extending capabilities. This skill should be used when the user is looking for functiona...",
+      "path": "skills/default/find-skills",
+      "tiers": [
+        "basic",
+        "extended",
+        "super"
+      ],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "finishing-a-development-branch",
+      "name": "finishing-a-development-branch",
+      "description": "Use when implementation is complete, all tests pass, and you need to decide how to integrate the work - guides completion of development work by presenting structured options for merge, PR, or cleanup",
+      "path": "skills/default/finishing-a-development-branch",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "flutter-dev",
+      "name": "flutter-expert",
+      "description": "Use when building cross-platform applications with Flutter 3+ and Dart. Invoke for widget development, Riverpod/Bloc state management, GoRouter navigation, platform-specific implementations, performance optimization.",
+      "path": "skills/default/flutter-dev",
+      "tiers": [
+        "basic",
+        "extended",
+        "super"
+      ],
+      "groups": [
+        "minimax_official",
+        "default_sentinel"
+      ],
+      "source": "github:MiniMax-AI/skills",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "format-pro",
+      "name": "format-pro",
+      "description": "Formats plain text or markdown files with frontmatter, titles, summaries, headings, bold, lists, and code blocks. Use when user asks to \"format markdown\", \"beautify article\", \"add formatting\", or improve article layout. Outputs to {filename}-formatted.md.",
+      "path": "skills/default/format-pro",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "frontend-design",
+      "name": "frontend-design",
+      "description": "Create distinctive, production-grade frontend interfaces with high design quality. Use this skill when the user asks to build web components, pages, artifacts, posters, or applications (examples include websites, landing pages, dashboards, React components,...",
+      "path": "skills/default/frontend-design",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "frontend-dev",
+      "name": "frontend-design",
+      "description": "Create distinctive, production-grade frontend interfaces with high design quality. Use this skill when the user asks to build web components, pages, artifacts, posters, or applications (examples include websites, landing pages, dashboards, React components,...",
+      "path": "skills/default/frontend-dev",
+      "tiers": [
+        "basic",
+        "extended",
+        "super"
+      ],
+      "groups": [
+        "minimax_official",
+        "default_sentinel"
+      ],
+      "source": "github:MiniMax-AI/skills",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "fullstack-dev",
+      "name": "fullstack-guardian",
+      "description": "Builds security-focused full-stack web applications by implementing integrated frontend and backend components with layered security at every level. Covers the complete stack from database to UI, enforcing auth, input validation, output encoding, and parame...",
+      "path": "skills/default/fullstack-dev",
+      "tiers": [
+        "basic",
+        "extended",
+        "super"
+      ],
+      "groups": [
+        "minimax_official",
+        "default_sentinel"
+      ],
+      "source": "github:MiniMax-AI/skills",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "gemini-image-service",
+      "name": "gemini-image-service",
+      "description": "使用 Gemini 第三方服务生成图片。读取 GEMINI_API_KEY/GEMINI_BASE_URL/GEMINI_IMAGE_MODEL。",
+      "path": "skills/default/gemini-image-service",
+      "tiers": [
+        "extended",
+        "super"
+      ],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": true,
+      "api_keys": [
+        "GEMINI_API_KEY"
+      ]
+    },
+    {
+      "id": "gh-modify-pr",
+      "name": "gh-modify-pr",
+      "description": "Modify code based on GitHub PR review comments and create a local commit using gh + git. Use when the user asks to \"follow PR comments\", \"fix review comments\", \"update this PR\", or provides a PR URL and asks for edits/commit.",
+      "path": "skills/default/gh-modify-pr",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "gif-sticker-maker",
+      "name": "gif-sticker-maker",
+      "description": "Convert photos (people, pets, objects, logos) into 4 animated GIF stickers with captions. Use when: user wants to create cartoon stickers, GIF expressions, emoji packs, animated avatars, or convert photos to Funko Pop / Pop Mart blind box style animations....",
+      "path": "skills/default/gif-sticker-maker",
+      "tiers": [
+        "basic",
+        "extended",
+        "super"
+      ],
+      "groups": [
+        "minimax_official",
+        "default_sentinel"
+      ],
+      "source": "github:MiniMax-AI/skills",
+      "requires_api_keys": true,
+      "api_keys": [
+        "MINIMAX_API_KEY"
+      ]
+    },
+    {
+      "id": "gitclassic",
+      "name": "gitclassic",
+      "description": "Fast, no-JavaScript GitHub browser optimized for AI agents. Browse public repos, read files, view READMEs with sub-500ms load times. PRO adds private repo access via GitHub OAuth.",
+      "path": "skills/default/gitclassic",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "github",
+      "name": "github",
+      "description": "Interact with GitHub using the `gh` CLI. Use `gh issue`, `gh pr`, `gh run`, and `gh api` for issues, PRs, CI runs, and advanced queries.",
+      "path": "skills/default/github",
+      "tiers": [
+        "basic",
+        "extended",
+        "super"
+      ],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "github-actions-generator",
+      "name": "github-actions-generator",
+      "description": "生成 GitHub Actions 工作流，支持 CI/CD、测试、部署等多种场景。",
+      "path": "skills/default/github-actions-generator",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "google-trends",
+      "name": "google-trends",
+      "description": "Monitor Google Trends - get trending searches, compare keywords, and track interest over time. Use for market research, content planning, and trend analysis.",
+      "path": "skills/default/google-trends",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "grok-imagine-1.0-video",
+      "name": "grok-imagine-1.0-video",
+      "description": "使用 grok-imagine-1.0-video 模型生成视频。用于高档默认技能包。",
+      "path": "skills/default/grok-imagine-1.0-video",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": true,
+      "api_keys": [
+        "GROK_IMAGINE_API_KEY"
+      ]
+    },
+    {
+      "id": "high-agency",
+      "name": "high-agency",
+      "description": "Builds sustained high agency through internalized standards, identity anchoring, cross-session learning, and self-recovery — all delivered in corporate PUA rhetoric. This is PUA's evolution: same pressure culture, but with an inner engine that never burns o...",
+      "path": "skills/default/high-agency",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "himalaya",
+      "name": "himalaya",
+      "description": "CLI to manage emails via IMAP/SMTP. Use `himalaya` to list, read, write, reply, forward, search, and organize emails from the terminal. Supports multiple accounts and message composition with MML (MIME Meta Language).",
+      "path": "skills/default/himalaya",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "imagegen",
+      "name": "imagegen",
+      "description": "Use when the user asks to generate or edit images via the OpenAI Image API (for example: generate image, edit/inpaint/mask, background removal or replacement, transparent background, product shots, concept art, covers, or batch variants); run the bundled CL...",
+      "path": "skills/default/imagegen",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": true,
+      "api_keys": [
+        "OPENAI_API_KEY"
+      ]
+    },
+    {
+      "id": "inference-skills",
+      "name": "inference-skills",
+      "description": "Inference Skills Hub（上游: inference-sh/skills）- 用于索引与选择 inference-sh 的工具型技能。",
+      "path": "skills/default/inference-skills",
+      "tiers": [
+        "basic",
+        "extended",
+        "super"
+      ],
+      "groups": [
+        "default_sentinel"
+      ],
+      "source": "github:inference-sh/skills",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "infographic-pro",
+      "name": "infographic-pro",
+      "description": "Generates professional infographics with 21 layout types and 20 visual styles. Analyzes content, recommends layout×style combinations, and generates publication-ready infographics. Use when user asks to create \"infographic\", \"信息图\", \"visual summary\", \"可视化\",...",
+      "path": "skills/default/infographic-pro",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "internal-comms",
+      "name": "internal-comms",
+      "description": "A set of resources to help me write all kinds of internal communications, using the formats that my company likes to use. Claude should use this skill whenever asked to write some sort of internal communications (status reports, leadership updates, 3P updat...",
+      "path": "skills/default/internal-comms",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "ios-application-dev",
+      "name": "iosdev-cn",
+      "description": "通用 iOS App 开发、构建、签名、测试与 App Store 上架流程（中国区）指南。用于当用户询问 iOS 开发/上架/审核/签名/TestFlight/App Store Connect/隐私合规/订阅配置，或输入触发词 iosdev 时。",
+      "path": "skills/default/ios-application-dev",
+      "tiers": [
+        "basic",
+        "extended",
+        "super"
+      ],
+      "groups": [
+        "minimax_official",
+        "default_sentinel"
+      ],
+      "source": "github:MiniMax-AI/skills",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "jupyter-notebook",
+      "name": "jupyter-notebook",
+      "description": "Use when the user asks to create, scaffold, or edit Jupyter notebooks (`.ipynb`) for experiments, explorations, or tutorials; prefer the bundled templates and run the helper script `new_notebook.py` to generate a clean starting notebook.",
+      "path": "skills/default/jupyter-notebook",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "lark-calendar",
+      "name": "lark-calendar",
+      "description": "Create, update, and delete calendar events and tasks in Lark (Feishu). Includes employee directory for automatic name-to-user_id resolution.",
+      "path": "skills/default/lark-calendar",
+      "tiers": [
+        "basic",
+        "extended",
+        "super"
+      ],
+      "groups": [
+        "default_sentinel"
+      ],
+      "source": "local",
+      "requires_api_keys": true,
+      "api_keys": [
+        "FEISHU_APP_SECRET"
+      ]
+    },
+    {
+      "id": "larry",
+      "name": "larry",
+      "description": "Marketing growth playbook skill for short-video and social content workflows (TikTok/X/小红书), from idea to publish-ready assets.",
+      "path": "skills/default/larry",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "lb-motion-skill",
+      "name": "motion",
+      "description": "Complete Motion.dev documentation - modern animation library for React, JavaScript, and Vue (formerly Framer Motion)",
+      "path": "skills/default/lb-motion-skill",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "loading-state-patterns",
+      "name": "loading-state-patterns",
+      "description": "Patterns for skeleton loaders, shimmer effects, and loading states that match design system aesthetics. Covers skeleton components, shimmer animations, and progressive loading. Use when building polished loading experiences. Triggers on skeleton, loading st...",
+      "path": "skills/default/loading-state-patterns",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "logo-creator",
+      "name": "logo-creator",
+      "description": "Create logos using AI image generation. Discuss style/ratio, generate variations, iterate with user feedback, crop, remove background, and export as SVG. Use when user wants to create a logo, icon, favicon, brand mark, mascot, emblem, or design a logo.",
+      "path": "skills/default/logo-creator",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": true,
+      "api_keys": [
+        "GEMINI_API_KEY",
+        "RECRAFT_API_KEY",
+        "REMOVE_BG_API_KEY"
+      ]
+    },
+    {
+      "id": "marketing-psychology",
+      "name": "marketing-psychology",
+      "description": "When the user wants to apply psychological principles, mental models, or behavioral science to marketing. Also use when the user mentions 'psychology,' 'mental models,' 'cognitive bias,' 'persuasion,' 'behavioral science,' 'why people buy,' 'decision-making...",
+      "path": "skills/default/marketing-psychology",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "marketingskills",
+      "name": "marketingskills",
+      "description": "Marketing Skills Hub（上游: coreyhaines31/marketingskills）- 用于索引与选择营销类子技能（如 content-strategy、social-content）。",
+      "path": "skills/default/marketingskills",
+      "tiers": [
+        "basic",
+        "extended",
+        "super"
+      ],
+      "groups": [
+        "default_sentinel"
+      ],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "material-pack-builder",
+      "name": "material-pack-builder",
+      "description": "Material Pack 的 schema / reference 技能。用于设计、审查、优化素材包结构、字段、交付格式与证据缺口清单；适合做方法论和契约分析，不作为 dasheng 第三环节的默认执行入口。",
+      "path": "skills/default/material-pack-builder",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "mcp-builder",
+      "name": "mcp-builder",
+      "description": "Guide for creating high-quality MCP (Model Context Protocol) servers that enable LLMs to interact with external services through well-designed tools. Use when building MCP servers to integrate external APIs or services, whether in Python (FastMCP) or Node/T...",
+      "path": "skills/default/mcp-builder",
+      "tiers": [
+        "basic",
+        "extended",
+        "super"
+      ],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "media-downloader",
+      "name": "media-downloader",
+      "description": "智能媒体下载器。根据用户描述自动搜索和下载图片、视频片段，支持视频自动剪辑。 Smart media downloader. Automatically search and download images/video clips based on user description, with auto-trimming support. 触发方式 Triggers: \"下载图片\", \"找视频\", \"download media\", \"download images\", \"find video\", \"/media\"",
+      "path": "skills/default/media-downloader",
+      "tiers": [
+        "basic",
+        "extended",
+        "super"
+      ],
+      "groups": [
+        "default_sentinel"
+      ],
+      "source": "local",
+      "requires_api_keys": true,
+      "api_keys": [
+        "PEXELS_API_KEY"
+      ]
+    },
+    {
+      "id": "media-planner",
+      "name": "media-planner",
+      "description": "跨媒介规划 Skill。用于根据 Content Brief 和 Material Pack，为所有推荐媒介批量生成执行计划，如公众号文章大纲、视频脚本结构、图文拆页结构等。支持一鱼多吃的多媒介衍生。",
+      "path": "skills/default/media-planner",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "merge-pr",
+      "name": "merge-pr",
+      "description": "Script-first deterministic squash merge with strict required-check gating, head-SHA pinning, and reliable attribution/commenting.",
+      "path": "skills/default/merge-pr",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "minimax-docx",
+      "name": "minimax-docx",
+      "description": "Professional DOCX document creation, editing, and formatting using OpenXML SDK (.NET). Three pipelines: (A) create new documents from scratch, (B) fill/edit content in existing documents, (C) apply template formatting with XSD validation gate-check. MUST us...",
+      "path": "skills/default/minimax-docx",
+      "tiers": [
+        "basic",
+        "extended",
+        "super"
+      ],
+      "groups": [
+        "minimax_official",
+        "default_sentinel"
+      ],
+      "source": "github:MiniMax-AI/skills",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "minimax-image-understanding",
+      "name": "minimax-image-understanding",
+      "description": "Analyze images using AI with the understand_image tool (priority)",
+      "path": "skills/default/minimax-image-understanding",
+      "tiers": [
+        "basic",
+        "extended",
+        "super"
+      ],
+      "groups": [
+        "minimax_local_compat",
+        "default_sentinel"
+      ],
+      "source": "local",
+      "requires_api_keys": true,
+      "api_keys": [
+        "MINIMAX_API_KEY"
+      ]
+    },
+    {
+      "id": "minimax-multimodal-toolkit",
+      "name": "mmx-cli",
+      "description": "Use mmx to generate text, images, video, speech, and music via the MiniMax AI platform. Use when the user wants to create media content, chat with MiniMax models, perform web search, or manage MiniMax API resources from the terminal.",
+      "path": "skills/default/minimax-multimodal-toolkit",
+      "tiers": [
+        "basic",
+        "extended",
+        "super"
+      ],
+      "groups": [
+        "minimax_official",
+        "default_sentinel"
+      ],
+      "source": "github:MiniMax-AI/skills",
+      "requires_api_keys": true,
+      "api_keys": [
+        "MINIMAX_API_KEY"
+      ]
+    },
+    {
+      "id": "minimax-music-gen",
+      "name": "minimax-music-gen",
+      "description": "Use when user wants to generate music, songs, or audio tracks. Triggers on any request involving music creation, song writing, lyrics generation, audio production, or covers. Also triggers when user provides lyrics and wants them turned into a song, or desc...",
+      "path": "skills/default/minimax-music-gen",
+      "tiers": [
+        "basic",
+        "extended",
+        "super"
+      ],
+      "groups": [
+        "minimax_official",
+        "default_sentinel"
+      ],
+      "source": "github:MiniMax-AI/skills",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "minimax-music-playlist",
+      "name": "minimax-music-playlist",
+      "description": "Generate personalized music playlists by analyzing the user's music taste and generation feedback history. Triggers on any request involving playlist generation, music taste profiling, or personalized music recommendations. Supports multilingual triggers —...",
+      "path": "skills/default/minimax-music-playlist",
+      "tiers": [
+        "basic",
+        "extended",
+        "super"
+      ],
+      "groups": [
+        "minimax_official",
+        "default_sentinel"
+      ],
+      "source": "github:MiniMax-AI/skills",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "minimax-pdf",
+      "name": "minimax-pdf",
+      "description": "Use this skill when visual quality and design identity matter for a PDF. CREATE (generate from scratch): \"make a PDF\", \"generate a report\", \"write a proposal\", \"create a resume\", \"beautiful PDF\", \"professional document\", \"cover page\", \"polished PDF\", \"clien...",
+      "path": "skills/default/minimax-pdf",
+      "tiers": [
+        "basic",
+        "extended",
+        "super"
+      ],
+      "groups": [
+        "minimax_official",
+        "default_sentinel"
+      ],
+      "source": "github:MiniMax-AI/skills",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "minimax-web-search",
+      "name": "minimax-web-search",
+      "description": "使用 MiniMax MCP 进行网络搜索（优先）。触发条件：(1) 用户要求进行网络搜索、在线搜索、查找信息 (2) 需要查询最新资讯、新闻、资料 (3) 使用 MiniMax 的 web_search 功能",
+      "path": "skills/default/minimax-web-search",
+      "tiers": [
+        "basic",
+        "extended",
+        "super"
+      ],
+      "groups": [
+        "minimax_local_compat",
+        "default_sentinel"
+      ],
+      "source": "local",
+      "requires_api_keys": true,
+      "api_keys": [
+        "MINIMAX_API_KEY"
+      ]
+    },
+    {
+      "id": "minimax-xlsx",
+      "name": "minimax-xlsx",
+      "description": "Open, create, read, analyze, edit, or validate Excel/spreadsheet files (.xlsx, .xlsm, .csv, .tsv). Use when the user asks to create, build, modify, analyze, read, validate, or format any Excel spreadsheet, financial model, pivot table, or tabular data file....",
+      "path": "skills/default/minimax-xlsx",
+      "tiers": [
+        "basic",
+        "extended",
+        "super"
+      ],
+      "groups": [
+        "minimax_official",
+        "default_sentinel"
+      ],
+      "source": "github:MiniMax-AI/skills",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "mintlify",
+      "name": "mintlify",
+      "description": "Build and maintain documentation sites with Mintlify. Use when",
+      "path": "skills/default/mintlify",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "model-usage",
+      "name": "model-usage",
+      "description": "Use CodexBar CLI local cost usage to summarize per-model usage for Codex or Claude, including the current (most recent) model or a full model breakdown. Trigger when asked for model-level usage/cost data from codexbar, or when you need a scriptable per-mode...",
+      "path": "skills/default/model-usage",
+      "tiers": [
+        "basic",
+        "extended",
+        "super"
+      ],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "multi-search-engine",
+      "name": "multi-search-engine",
+      "description": "Multi search engine integration with 17 engines (8 CN + 9 Global). Supports advanced search operators, time filters, site search, privacy engines, and WolframAlpha knowledge queries. No API keys required.",
+      "path": "skills/default/multi-search-engine",
+      "tiers": [
+        "basic",
+        "extended",
+        "super"
+      ],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "nano-pdf",
+      "name": "nano-pdf",
+      "description": "Edit PDFs with natural-language instructions using the nano-pdf CLI.",
+      "path": "skills/default/nano-pdf",
+      "tiers": [
+        "basic",
+        "extended",
+        "super"
+      ],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "nanobanana",
+      "name": "nanobanana",
+      "description": "Generate and edit images using Google Gemini 3 Pro Image (Nano Banana Pro). Supports text-to-image, image editing, various aspect ratios, and high-resolution output (2K/4K). Use when user wants to generate images, create images, use Gemini image generation,...",
+      "path": "skills/default/nanobanana",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": true,
+      "api_keys": [
+        "GEMINI_API_KEY"
+      ]
+    },
+    {
+      "id": "news-radar",
+      "name": "news-radar",
+      "description": "Comprehensive news aggregation from TrendRadar MCP server with focus on high-frequency international data sources. Retrieve trending topics, breaking news, sentiment analysis, and source diversity metrics. Use when you need global news coverage, trend analy...",
+      "path": "skills/default/news-radar",
+      "tiers": [
+        "basic",
+        "extended",
+        "super"
+      ],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "notebooklm-skill",
+      "name": "notebooklm",
+      "description": "Use this skill to query your Google NotebookLM notebooks directly from Claude Code for source-grounded, citation-backed answers from Gemini. Browser automation, library management, persistent auth. Drastically reduced hallucinations through document-only re...",
+      "path": "skills/default/notebooklm-skill",
+      "tiers": [
+        "basic",
+        "extended",
+        "super"
+      ],
+      "groups": [
+        "default_sentinel"
+      ],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "openai-docs",
+      "name": "openai-docs",
+      "description": "Use when the user asks how to build with OpenAI products or APIs and needs up-to-date official documentation with citations, help choosing the latest model for a use case, or explicit GPT-5.4 upgrade and prompt-upgrade guidance; prioritize OpenAI docs MCP t...",
+      "path": "skills/default/openai-docs",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "openclaw-cron-setup",
+      "name": "cron-setup",
+      "description": "OpenClaw Gateway 内置定时任务调度器。用于创建一次性提醒、周期性任务、后台自动化。支持主会话系统事件和独立会话执行，可配置投递到聊天频道或 Webhook。",
+      "path": "skills/default/openclaw-cron-setup",
+      "tiers": [
+        "basic",
+        "extended",
+        "super"
+      ],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "openclaw-feeds",
+      "name": "openclaw-feeds",
+      "description": "RSS news aggregator. Fetches headlines from curated feeds across three categories: news, games, and finance. Use when the user asks about current news, headlines, what's happening, what's going on, or says \"what's up in news\", \"what's up in finance\", \"what'...",
+      "path": "skills/default/openclaw-feeds",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "openclaw-stock",
+      "name": "openclaw-stock",
+      "description": "自动化交易项目参考技能。内含短线/长线策略、风控、回测、API 配置和多数据源架构说明。适用于研究自动交易系统设计、策略编排、模拟盘部署和数据源接入方案，不建议直接无验证接入实盘。",
+      "path": "skills/default/openclaw-stock",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "openclaw-stock-analyzer",
+      "name": "stock-analyzer",
+      "description": "价值投资股票分析工具，融合巴菲特+段永平框架并自动生成五维分析、估值、建仓与期权建议。适用于美股/港股个股研究、财报后复盘、按年观察月度季节性、以及需要纳入中期选举周期/节假日效应并筛选下跌期防御股的场景。",
+      "path": "skills/default/openclaw-stock-analyzer",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "openclaw-stock-data-skill",
+      "name": "openclaw-stock-skill",
+      "description": "使用 data.diemeng.chat 提供的接口查询股票日线、分钟线、财务指标等数据，支持 A 股等市场。",
+      "path": "skills/default/openclaw-stock-data-skill",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": true,
+      "api_keys": [
+        "STOCK_API_KEY",
+        "YOUR_REAL_STOCK_API_KEY"
+      ]
+    },
+    {
+      "id": "openclaw-stock-kb",
+      "name": "openclaw-stock-kb",
+      "description": "开源股票研究知识库封装技能。内含量化策略、技术指标、社媒情绪分析、风控模板和回测工具文档。适用于让 Agent 在本地检索股票研究方法、设计分析框架、撰写策略说明、整理指标解释和风控规则时引用。",
+      "path": "skills/default/openclaw-stock-kb",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "oracle",
+      "name": "oracle",
+      "description": "Use the @steipete/oracle CLI to bundle a prompt plus the right files and get a second-model review (API or browser) for debugging, refactors, design checks, or cross-validation.",
+      "path": "skills/default/oracle",
+      "tiers": [
+        "extended",
+        "super"
+      ],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": true,
+      "api_keys": [
+        "OPENAI_API_KEY"
+      ]
+    },
+    {
+      "id": "paperless-docs",
+      "name": "paperless-ngx",
+      "description": "Manage documents in Paperless-ngx - search, upload, tag, and retrieve.",
+      "path": "skills/default/paperless-docs",
+      "tiers": [
+        "extended",
+        "super"
+      ],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": true,
+      "api_keys": [
+        "PAPERLESS_TOKEN"
+      ]
+    },
+    {
+      "id": "paperless-ngx-tools",
+      "name": "paperless-ngx",
+      "description": "Manage documents in Paperless-ngx - search, upload, tag, and retrieve.",
+      "path": "skills/default/paperless-ngx-tools",
+      "tiers": [
+        "extended",
+        "super"
+      ],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": true,
+      "api_keys": [
+        "PAPERLESS_TOKEN"
+      ]
+    },
+    {
+      "id": "pdf",
+      "name": "pdf",
+      "description": "Comprehensive PDF manipulation toolkit for extracting text and tables, creating new PDFs, merging/splitting documents, and handling forms. When Claude needs to fill in a PDF form or programmatically process, generate, or analyze PDF documents at scale.",
+      "path": "skills/default/pdf",
+      "tiers": [
+        "basic",
+        "extended",
+        "super"
+      ],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "planner-image-post",
+      "name": "planner-image-post",
+      "description": "图文卡片结构规划适配器。用于在 `target_media=image_post` 的前提下，基于已确认的 Content Brief、Material Pack 和 Media Plan，生成图文卡片的页面结构、内容分配、视觉指示和配图需求。",
+      "path": "skills/default/planner-image-post",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "planner-video-script",
+      "name": "planner-video-script",
+      "description": "视频脚本结构规划适配器。用于在 `target_media=video_script` 的前提下，基于已确认的 Content Brief、Material Pack 和 Media Plan，生成视频脚本的完整框架，包含开场钩子、核心论证段落、分镜建议、口播逻辑和结尾行动号召。",
+      "path": "skills/default/planner-video-script",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "planning-with-files",
+      "name": "planning-with-files",
+      "description": "Implements Manus-style file-based planning for complex tasks. Creates task_plan.md, findings.md, and progress.md. Use when starting complex multi-step tasks, research projects, or any task requiring >5 tool calls.",
+      "path": "skills/default/planning-with-files",
+      "tiers": [
+        "extended",
+        "super"
+      ],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "plugin-creator",
+      "name": "plugin-creator",
+      "description": "Create and scaffold plugin directories for Codex with a required `.codex-plugin/plugin.json`, optional plugin folders/files, and baseline placeholders you can edit before publishing or testing. Use when Codex needs to create a new local plugin, add optional...",
+      "path": "skills/default/plugin-creator",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "pptx",
+      "name": "pptx",
+      "description": "Presentation creation, editing, and analysis. When Claude needs to work with presentations (.pptx files) for: (1) Creating new presentations, (2) Modifying or editing content, (3) Working with layouts, (4) Adding comments or speaker notes, or any other pres...",
+      "path": "skills/default/pptx",
+      "tiers": [
+        "basic",
+        "extended",
+        "super"
+      ],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "pptx-generator",
+      "name": "pptx",
+      "description": "Presentation creation, editing, and analysis. When Claude needs to work with presentations (.pptx files) for: (1) Creating new presentations, (2) Modifying or editing content, (3) Working with layouts, (4) Adding comments or speaker notes, or any other pres...",
+      "path": "skills/default/pptx-generator",
+      "tiers": [
+        "basic",
+        "extended",
+        "super"
+      ],
+      "groups": [
+        "minimax_official",
+        "default_sentinel"
+      ],
+      "source": "github:MiniMax-AI/skills",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "preflight-checks",
+      "name": "preflight-checks",
+      "description": "Test-driven behavioral verification for AI agents. Catches silent degradation when agent loads memory but doesn't apply learned behaviors. Use when building agent with persistent memory, testing after updates, or ensuring behavioral consistency across sessi...",
+      "path": "skills/default/preflight-checks",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "prepare-pr",
+      "name": "prepare-pr",
+      "description": "Script-first PR preparation with structured findings resolution, deterministic push safety, and explicit gate execution.",
+      "path": "skills/default/prepare-pr",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "prisma-database-setup",
+      "name": "prisma-database-setup",
+      "description": "Guides for configuring Prisma with different database providers (PostgreSQL, MySQL, SQLite, MongoDB, etc.). Use when setting up a new project, changing databases, or troubleshooting connection issues. Triggers on \"configure postgres\", \"connect to mysql\", \"s...",
+      "path": "skills/default/prisma-database-setup",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "proactive-agent",
+      "name": "proactive-agent",
+      "description": "Transform AI agents from task-followers into proactive partners that anticipate needs and continuously improve. Now with WAL Protocol, Working Buffer, Autonomous Crons, and battle-tested patterns. Part of the Hal Stack 🦞",
+      "path": "skills/default/proactive-agent",
+      "tiers": [
+        "basic",
+        "extended",
+        "super"
+      ],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "producthunt",
+      "name": "producthunt",
+      "description": "Search and retrieve content from Product Hunt. Get posts, topics, users, and collections via the GraphQL API. Use when user mentions Product Hunt, PH, or product launches.",
+      "path": "skills/default/producthunt",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": true,
+      "api_keys": [
+        "PRODUCTHUNT_ACCESS_TOKEN"
+      ]
+    },
+    {
+      "id": "programmatic-seo",
+      "name": "programmatic-seo",
+      "description": "When the user wants to create SEO-driven pages at scale using templates and data. Also use when the user mentions \"programmatic SEO,\" \"template pages,\" \"pages at scale,\" \"directory pages,\" \"location pages,\" \"[keyword] + [city] pages,\" \"comparison pages,\" \"i...",
+      "path": "skills/default/programmatic-seo",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "pua",
+      "name": "pua",
+      "description": "让你的 AI 不敢摆烂。用大厂 PUA 话术穷尽一切方案。触发条件：(1) 任务失败 2+ 次或反复微调同一思路; (2) 即将说'我无法解决'、建议用户手动操作、未验证就归因环境; (3) 被动等待——不搜索、不读源码、只等指示; (4) 用户不满：'try harder'、'stop giving up'、'换个方法'、'为什么还不行'、'你再试试'、'你怎么又失败了'。适用于所有任务类型。首次失败或已知修复正在执行时不触发。",
+      "path": "skills/default/pua",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "publish-guard",
+      "name": "publish-guard",
+      "description": "PublishGuard — Post Verification & Platform Credential Manager",
+      "path": "skills/default/publish-guard",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "react-native-dev",
+      "name": "vercel-react-native-skills",
+      "description": "description:",
+      "path": "skills/default/react-native-dev",
+      "tiers": [
+        "basic",
+        "extended",
+        "super"
+      ],
+      "groups": [
+        "minimax_official",
+        "default_sentinel"
+      ],
+      "source": "github:MiniMax-AI/skills",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "receiving-code-review",
+      "name": "receiving-code-review",
+      "description": "Use when receiving code review feedback, before implementing suggestions, especially if feedback seems unclear or technically questionable - requires technical rigor and verification, not performative agreement or blind implementation",
+      "path": "skills/default/receiving-code-review",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "reddit",
+      "name": "reddit",
+      "description": "Search and retrieve content from Reddit. Get posts, comments, subreddit info, and user profiles via the public JSON API. Use when user mentions Reddit, a subreddit, or r/ links.",
+      "path": "skills/default/reddit",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "reflection",
+      "name": "Self Reflection",
+      "description": "Learns when to stop and review. Self-critiques before showing you, fewer revision rounds.",
+      "path": "skills/default/reflection",
+      "tiers": [
+        "basic",
+        "extended",
+        "super"
+      ],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "remotion",
+      "name": "remotion-best-practices",
+      "description": "Best practices for Remotion - Video creation in React",
+      "path": "skills/default/remotion",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "remotion-best-practices",
+      "name": "remotion-best-practices",
+      "description": "Best practices for Remotion - Video creation in React",
+      "path": "skills/default/remotion-best-practices",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "remotion-video",
+      "name": "remotion-video",
+      "description": "Remotion executable workflow for title-card videos and XHS-style dynamic chart videos. Merged with remotion-best-practices knowledge rules.",
+      "path": "skills/default/remotion-video",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "remotion-video-toolkit",
+      "name": "remotion-video-toolkit",
+      "description": "Complete toolkit for programmatic video creation with Remotion + React. Covers animations, timing, rendering (CLI/Node.js/Lambda/Cloud Run), captions, 3D, charts, text effects, transitions, and media handling. Use when writing Remotion code, building video...",
+      "path": "skills/default/remotion-video-toolkit",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "requesthunt",
+      "name": "requesthunt",
+      "description": "Generate user demand research reports from real user feedback. Scrape and analyze feature requests, complaints, and questions from Reddit, X, and GitHub. Use when user wants to do demand research, find feature requests, analyze user demand, or run RequestHu...",
+      "path": "skills/default/requesthunt",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": true,
+      "api_keys": [
+        "REQUESTHUNT_API_KEY"
+      ]
+    },
+    {
+      "id": "requesting-code-review",
+      "name": "requesting-code-review",
+      "description": "Use when completing tasks, implementing major features, or before merging to verify work meets requirements",
+      "path": "skills/default/requesting-code-review",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "reusable-footage-material",
+      "name": "reusable-footage-material",
+      "description": "聚焦视频素材质量的执行技能。用于单独验证或调优“资料片/纪录片/archive footage 优先、规避口播/访谈/大字幕”的视频检索策略；适合做单点质量测试或素材风格优化，不作为 dasheng 第三环节的默认统一入口。",
+      "path": "skills/default/reusable-footage-material",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "review-pr",
+      "name": "review-pr",
+      "description": "Script-first review-only GitHub pull request analysis. Use for deterministic PR review with structured findings handoff to /prepare-pr.",
+      "path": "skills/default/review-pr",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "self-improving-agent-cn",
+      "name": "self-improving-agent",
+      "description": "AI自我改进与记忆系统 - 解决'同类错误反复犯、用户纠正不长记性'的痛点。自动捕获错误、用户纠正、最佳实践，并转化为长期记忆。",
+      "path": "skills/default/self-improving-agent-cn",
+      "tiers": [
+        "basic",
+        "extended",
+        "super"
+      ],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "seo-geo",
+      "name": "seo-geo",
+      "description": "SEO & GEO (Generative Engine Optimization) for websites. Analyze keywords, generate schema markup, optimize for AI search engines (ChatGPT, Perplexity, Gemini, Copilot, Claude) and traditional search (Google, Bing). Use when user wants to improve search vis...",
+      "path": "skills/default/seo-geo",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "session-logs",
+      "name": "session-logs",
+      "description": "Search and analyze your own session logs (older/parent conversations) using jq.",
+      "path": "skills/default/session-logs",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "shader-dev",
+      "name": "shader-dev",
+      "description": "Comprehensive GLSL shader techniques for creating stunning visual effects — ray marching, SDF modeling, fluid simulation, particle systems, procedural generation, lighting, post-processing, and more.",
+      "path": "skills/default/shader-dev",
+      "tiers": [
+        "basic",
+        "extended",
+        "super"
+      ],
+      "groups": [
+        "minimax_official",
+        "default_sentinel"
+      ],
+      "source": "github:MiniMax-AI/skills",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "shell",
+      "name": "shell",
+      "description": "Use shell commands for file operations, scripts, process management, diagnostics, and automation.",
+      "path": "skills/default/shell",
+      "tiers": [
+        "basic",
+        "extended",
+        "super"
+      ],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "skill-creator",
+      "name": "skill-creator",
+      "description": "Guide for creating effective skills. This skill should be used when users want to create a new skill (or update an existing skill) that extends Claude's capabilities with specialized knowledge, workflows, or tool integrations.",
+      "path": "skills/default/skill-creator",
+      "tiers": [
+        "basic",
+        "extended",
+        "super"
+      ],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "skill-installer",
+      "name": "skill-installer",
+      "description": "Install Codex skills into $CODEX_HOME/skills from a curated list or a GitHub repo path. Use when a user asks to list installable skills, install a curated skill, or install a skill from another repo (including private repos).",
+      "path": "skills/default/skill-installer",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": true,
+      "api_keys": [
+        "GH_TOKEN",
+        "GITHUB_TOKEN"
+      ]
+    },
+    {
+      "id": "skill-security-auditor",
+      "name": "skill-security-auditor",
+      "description": "Command-line security analyzer for ClawHub skills. Run analyze-skill.sh to scan SKILL.md files for malicious patterns, credential leaks, and C2 infrastructure before installation. Includes threat intelligence database with 20+ detection patterns.",
+      "path": "skills/default/skill-security-auditor",
+      "tiers": [
+        "basic",
+        "extended",
+        "super"
+      ],
+      "groups": [
+        "default_sentinel"
+      ],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "slack-gif-creator",
+      "name": "slack-gif-creator",
+      "description": "Knowledge and utilities for creating animated GIFs optimized for Slack. Provides constraints, validation tools, and animation concepts. Use when users request animated GIFs for Slack like \"make me a GIF of X doing Y for Slack.",
+      "path": "skills/default/slack-gif-creator",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "social-content",
+      "name": "social-content",
+      "description": "When the user wants help creating, scheduling, or optimizing social media content for LinkedIn, Twitter/X, Instagram, TikTok, Facebook, or other platforms. Also use when the user mentions 'LinkedIn post,' 'Twitter thread,' 'social media,' 'content calendar,...",
+      "path": "skills/default/social-content",
+      "tiers": [
+        "basic",
+        "extended",
+        "super"
+      ],
+      "groups": [
+        "default_sentinel"
+      ],
+      "source": "github:coreyhaines31/marketingskills",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "stock-analysis",
+      "name": "stock-analysis",
+      "description": "Analyze stocks and cryptocurrencies using Yahoo Finance data. Supports portfolio management, watchlists with alerts, dividend analysis, 8-dimension stock scoring, viral trend detection (Hot Scanner), and rumor/early signal detection. Use for stock analysis,...",
+      "path": "skills/default/stock-analysis",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": true,
+      "api_keys": [
+        "AUTH_TOKEN"
+      ]
+    },
+    {
+      "id": "stock-daily-analysis-skill",
+      "name": "stock-daily-analysis",
+      "description": "LLM驱动的每日股票分析系统。支持A股/港股/美股自选股智能分析，生成决策仪表盘和大盘复盘报告。提供技术面分析（均线、MACD、RSI、乖离率）、趋势判断、买入信号评分。可与market-data skill集成获取更稳定的ETF数据。触发词：股票分析、分析股票、每日分析、技术面分析。",
+      "path": "skills/default/stock-daily-analysis-skill",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "stock-monitor-skill",
+      "name": "stock-monitor",
+      "description": "全功能智能股票监控预警系统。支持成本百分比、均线金叉死叉、RSI超买超卖、成交量异动、跳空缺口、动态止盈等7大预警规则。符合中国投资者习惯（红涨绿跌）。",
+      "path": "skills/default/stock-monitor-skill",
+      "tiers": [
+        "basic",
+        "extended",
+        "super"
+      ],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "stock_datasource",
+      "name": "stock_datasource",
+      "description": "A股数据平台项目封装技能。内含多 Agent 投研平台说明，以及 `stock-mcp-query`、`stock-rt-subscribe`、`tushare-plugin-builder`、`mcp-api-key-auth` 等子技能资料。适用于规划或部署本地股票数据底座、MCP 查询服务、实时订阅与插件生成流程。",
+      "path": "skills/default/stock_datasource",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "subagent-driven-development",
+      "name": "subagent-driven-development",
+      "description": "Use when executing implementation plans with independent tasks in the current session",
+      "path": "skills/default/subagent-driven-development",
+      "tiers": [
+        "basic",
+        "extended",
+        "super"
+      ],
+      "groups": [
+        "default_sentinel"
+      ],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "summarize",
+      "name": "summarize",
+      "description": "Summarize URLs or files with the summarize CLI (web, PDFs, images, audio, YouTube).",
+      "path": "skills/default/summarize",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": true,
+      "api_keys": [
+        "ANTHROPIC_API_KEY",
+        "APIFY_API_TOKEN",
+        "FIRECRAWL_API_KEY",
+        "GEMINI_API_KEY",
+        "GOOGLE_API_KEY",
+        "GOOGLE_GENERATIVE_AI_API_KEY",
+        "OPENAI_API_KEY",
+        "XAI_API_KEY"
+      ]
+    },
+    {
+      "id": "systematic-debugging",
+      "name": "systematic-debugging",
+      "description": "Use when encountering any bug, test failure, or unexpected behavior, before proposing fixes",
+      "path": "skills/default/systematic-debugging",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "tailwind",
+      "name": "tailwind",
+      "description": "Build scalable design systems with Tailwind CSS v4, design tokens, component libraries, and responsive patterns. Use when creating component libraries, implementing design systems, or standardizing UI patterns.",
+      "path": "skills/default/tailwind",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "tailwind-design-system",
+      "name": "tailwind-design-system",
+      "description": "Build scalable design systems with Tailwind CSS v4, design tokens, component libraries, and responsive patterns. Use when creating component libraries, implementing design systems, or standardizing UI patterns.",
+      "path": "skills/default/tailwind-design-system",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "task",
+      "name": "task",
+      "description": "Tasker docstore task management via tool-dispatch. Use for task lists, due today/overdue, week planning, add/move/complete, or explicit /task commands.",
+      "path": "skills/default/task",
+      "tiers": [
+        "basic",
+        "extended",
+        "super"
+      ],
+      "groups": [
+        "default_sentinel"
+      ],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "tavily-search",
+      "name": "tavily-search",
+      "description": "Search the web using Tavily's LLM-optimized search API. Returns relevant results with content snippets, scores, and metadata. Use when you need to find web content on any topic without writing code.",
+      "path": "skills/default/tavily-search",
+      "tiers": [
+        "basic",
+        "extended",
+        "super"
+      ],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": true,
+      "api_keys": [
+        "TAVILY_API_KEY"
+      ]
+    },
+    {
+      "id": "tdd",
+      "name": "test-driven-development",
+      "description": "Use when implementing any feature or bugfix, before writing implementation code",
+      "path": "skills/default/tdd",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "test-driven-development",
+      "name": "test-driven-development",
+      "description": "Use when implementing any feature or bugfix, before writing implementation code",
+      "path": "skills/default/test-driven-development",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "theme-factory",
+      "name": "theme-factory",
+      "description": "Toolkit for styling artifacts with a theme. These artifacts can be slides, docs, reportings, HTML landing pages, etc. There are 10 pre-set themes with colors/fonts that you can apply to any artifact that has been creating, or can generate a new theme on-the...",
+      "path": "skills/default/theme-factory",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "tmux",
+      "name": "tmux",
+      "description": "Remote-control tmux sessions for interactive CLIs by sending keystrokes and scraping pane output.",
+      "path": "skills/default/tmux",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "todo",
+      "name": "todo",
+      "description": "This skill provides instructions for interacting with Todoist using the td CLI tool. It covers CRUD operations for tasks/projects/sections/labels/comments, and requires confirmation before destructive actions. Use this skill when the user wants to read, cre...",
+      "path": "skills/default/todo",
+      "tiers": [
+        "basic",
+        "extended",
+        "super"
+      ],
+      "groups": [
+        "default_sentinel"
+      ],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "todoist-api",
+      "name": "todoist-api",
+      "description": "This skill provides instructions for interacting with Todoist using the td CLI tool. It covers CRUD operations for tasks/projects/sections/labels/comments, and requires confirmation before destructive actions. Use this skill when the user wants to read, cre...",
+      "path": "skills/default/todoist-api",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "tushare-openclaw-skill",
+      "name": "tushare-api",
+      "description": "Tushare Pro 金融数据 API 查询助手。用于帮助用户查询中国股票、基金、期货、债券等金融数据。当用户需要获取股票行情、财务数据、基础信息、宏观经济数据时使用此 skill。",
+      "path": "skills/default/tushare-openclaw-skill",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "twitter",
+      "name": "twitter",
+      "description": "Search and retrieve content from Twitter/X. Get user info, tweets, replies, followers, communities, spaces, and trends via twitterapi.io. Use when user mentions Twitter, X, or tweets.",
+      "path": "skills/default/twitter",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": true,
+      "api_keys": [
+        "TWITTERAPI_API_KEY"
+      ]
+    },
+    {
+      "id": "ui-ux-pro-max",
+      "name": "ui-ux-pro-max",
+      "description": "UI/UX design intelligence. 50 styles, 21 palettes, 50 font pairings, 20 charts, 8 stacks (React, Next.js, Vue, Svelte, SwiftUI, React Native, Flutter, Tailwind). Actions: plan, build, create, design, implement, review, fix, improve, optimize, enhance, refac...",
+      "path": "skills/default/ui-ux-pro-max",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "url-to-markdown",
+      "name": "url-to-markdown",
+      "description": "Fetch any URL and convert to markdown using Chrome CDP. Supports two modes - auto-capture on page load, or wait for user signal (for pages requiring login). Use when user wants to save a webpage as markdown.",
+      "path": "skills/default/url-to-markdown",
+      "tiers": [
+        "basic",
+        "extended",
+        "super"
+      ],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "using-git-worktrees",
+      "name": "using-git-worktrees",
+      "description": "Use when starting feature work that needs isolation from current workspace or before executing implementation plans - creates isolated git worktrees with smart directory selection and safety verification",
+      "path": "skills/default/using-git-worktrees",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "using-superpowers",
+      "name": "using-superpowers",
+      "description": "Use when starting any conversation - establishes how to find and use skills, requiring Skill tool invocation before ANY response including clarifying questions",
+      "path": "skills/default/using-superpowers",
+      "tiers": [
+        "basic",
+        "extended",
+        "super"
+      ],
+      "groups": [
+        "default_sentinel"
+      ],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "verification-before-completion",
+      "name": "verification-before-completion",
+      "description": "Use when about to claim work is complete, fixed, or passing, before committing or creating PRs - requires running verification commands and confirming output before making any success claims; evidence before assertions always",
+      "path": "skills/default/verification-before-completion",
+      "tiers": [
+        "basic",
+        "extended",
+        "super"
+      ],
+      "groups": [
+        "default_sentinel"
+      ],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "video-agent",
+      "name": "heygen",
+      "description": "HeyGen AI video creation API. Use when: (1) Using Video Agent for one-shot prompt-to-video generation, (2) Generating AI avatar videos with /v2/video/generate, (3) Working with HeyGen avatars, voices, backgrounds, or captions, (4) Creating transparent WebM...",
+      "path": "skills/default/video-agent",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": true,
+      "api_keys": [
+        "HEYGEN_API_KEY"
+      ]
+    },
+    {
+      "id": "video-download",
+      "name": "video-download",
+      "description": "Download videos from 1800+ websites and generate subtitles using Faster Whisper AI. Use when user wants to download videos from YouTube, Bilibili, Twitter, TikTok, Facebook, Vimeo, or any other supported video site, extract audio, or transcribe video conten...",
+      "path": "skills/default/video-download",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "video-frames",
+      "name": "video-frames",
+      "description": "Extract frames or short clips from videos using ffmpeg.",
+      "path": "skills/default/video-frames",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "video-subtitles",
+      "name": "video-subtitles",
+      "description": "Generate SRT subtitles from video/audio with translation support. Transcribes Hebrew (ivrit.ai) and English (whisper), translates between languages, burns subtitles into video. Use for creating captions, transcripts, or hardcoded subtitles for WhatsApp/soci...",
+      "path": "skills/default/video-subtitles",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "vision-analysis",
+      "name": "vision-analysis",
+      "description": "Analyze, describe, and extract information from images using the MiniMax vision MCP tool. Use when: user shares an image file path or URL (any message containing .jpg, .jpeg, .png, .gif, .webp, .bmp, or .svg file extension) or uses any of these words/phrase...",
+      "path": "skills/default/vision-analysis",
+      "tiers": [
+        "basic",
+        "extended",
+        "super"
+      ],
+      "groups": [
+        "minimax_official",
+        "default_sentinel"
+      ],
+      "source": "github:MiniMax-AI/skills",
+      "requires_api_keys": true,
+      "api_keys": [
+        "MINIMAX_API_KEY"
+      ]
+    },
+    {
+      "id": "weather",
+      "name": "weather",
+      "description": "Get current weather and forecasts (no API key required).",
+      "path": "skills/default/weather",
+      "tiers": [
+        "basic",
+        "extended",
+        "super"
+      ],
+      "groups": [
+        "default_sentinel"
+      ],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "web-animation-design",
+      "name": "web-animation-design",
+      "description": "Design and implement web animations that feel natural and purposeful. Use this skill proactively whenever the user asks questions about animations, motion, easing, timing, duration, springs, transitions, or animation performance. This includes questions abo...",
+      "path": "skills/default/web-animation-design",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "web-artifacts-builder",
+      "name": "web-artifacts-builder",
+      "description": "Suite of tools for creating elaborate, multi-component claude.ai HTML artifacts using modern frontend web technologies (React, Tailwind CSS, shadcn/ui). Use for complex artifacts requiring state management, routing, or shadcn/ui components - not for simple...",
+      "path": "skills/default/web-artifacts-builder",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "web-design",
+      "name": "web-design-guidelines",
+      "description": "Review UI code for Web Interface Guidelines compliance. Use when asked to \"review my UI\", \"check accessibility\", \"audit design\", \"review UX\", or \"check my site against best practices\".",
+      "path": "skills/default/web-design",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "web-design-guidelines",
+      "name": "web-design-guidelines",
+      "description": "Review UI code for Web Interface Guidelines compliance. Use when asked to \"review my UI\", \"check accessibility\", \"audit design\", \"review UX\", or \"check my site against best practices\".",
+      "path": "skills/default/web-design-guidelines",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "web-search",
+      "name": "web-search",
+      "description": "This skill should be used when users need to search the web for information, find current content, look up news articles, search for images, or find videos. It uses DuckDuckGo's search API to return results in clean, formatted output (text, markdown, or JSO...",
+      "path": "skills/default/web-search",
+      "tiers": [
+        "basic",
+        "extended",
+        "super"
+      ],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "webapp-testing",
+      "name": "webapp-testing",
+      "description": "Toolkit for interacting with and testing local web applications using Playwright. Supports verifying frontend functionality, debugging UI behavior, capturing browser screenshots, and viewing browser logs.",
+      "path": "skills/default/webapp-testing",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "wechat-article-extractor-skill",
+      "name": "wechat-article-extractor",
+      "description": "Extract metadata and content from WeChat Official Account articles. Use when user needs to parse WeChat article URLs (mp.weixin.qq.com), extract article info (title, author, content, publish time, cover image), or convert WeChat articles to structured data....",
+      "path": "skills/default/wechat-article-extractor-skill",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "wechat-draft-writer",
+      "name": "wechat-draft-writer",
+      "description": "公众号初稿写作适配器。用于在公众号文章结构已确认后，基于 Content Brief、Material Pack、确认版大纲和文风 DNA 生成一版高保真初稿。它不负责全局选题、大纲决策和标题决策。",
+      "path": "skills/default/wechat-draft-writer",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "wechat-multi-publisher",
+      "name": "wechat-mp-publisher",
+      "description": "Publish one or multiple Markdown articles to WeChat Official Account (公众号) draft box in a single API call. Supports multi-article combined drafts (main article + sub-articles), smart cover image selection with Unsplash auto-match + 12-image fallback rotatio...",
+      "path": "skills/default/wechat-multi-publisher",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": true,
+      "api_keys": [
+        "WECHAT_APP_SECRET"
+      ]
+    },
+    {
+      "id": "wechat-public-cli",
+      "name": "wechat-public-cli",
+      "description": "Publish and download WeChat Public Platform content and Baijiahao articles via a local CLI.",
+      "path": "skills/default/wechat-public-cli",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": true,
+      "api_keys": [
+        "BJH_TOKEN",
+        "WECHAT_ACCESS_TOKEN",
+        "WECHAT_SECRET",
+        "YOUR_APP_SECRET",
+        "YOUR_BJH_TOKEN"
+      ]
+    },
+    {
+      "id": "wechat-search",
+      "name": "wechat-search",
+      "description": "Search WeChat Official Account articles using OpenClaw's web search, Tavily API, and web fetch capabilities with compliance-focused design.",
+      "path": "skills/default/wechat-search",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "wechat-style-profiler",
+      "name": "wechat-style-profiler",
+      "description": "面向公众号作者的文风 DNA 梳理技能。用于从 3-10 篇参考文章中建立可复用的风格画像，输出 14 维分析、标点符号偏好、分块习惯、段落配方、叙述方法体系、内容推进方式和默认 DNA 文件，并通过用户校准确保画像可直接给写稿技能调用。",
+      "path": "skills/default/wechat-style-profiler",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "wechat-title-generator",
+      "name": "wechat-title-generator",
+      "description": "公众号标题生成适配器。用于基于已确认的 Content Brief、文章大纲或初稿、目标读者与文章目标，生成 8 个公众号标题候选并推荐最佳标题。它只负责标题层，不负责全局主题判断与正文生成。",
+      "path": "skills/default/wechat-title-generator",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "wechat-topic-outline-planner",
+      "name": "wechat-topic-outline-planner",
+      "description": "公众号文章结构规划适配器。用于在 `target_media=article_wechat` 的前提下，基于已确认的 Content Brief、Material Pack 和可选的 Media Plan，生成公众号文章的主大纲与备选大纲。它是 article adapter，而不是全局策划中枢。",
+      "path": "skills/default/wechat-topic-outline-planner",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "weibo-fresh-posts",
+      "name": "weibo-fresh-posts",
+      "description": "用于监控微博关注流，先切换到最新微博时间线，再按发帖时间抓取并去重写入每日 Markdown，减少关键微博漏看。",
+      "path": "skills/default/weibo-fresh-posts",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "weibo-manager",
+      "name": "weibo-manager",
+      "description": "weibo-manager",
+      "path": "skills/default/weibo-manager",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "writing-plans",
+      "name": "writing-plans",
+      "description": "Use when you have a spec or requirements for a multi-step task, before touching code",
+      "path": "skills/default/writing-plans",
+      "tiers": [
+        "extended",
+        "super"
+      ],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "writing-skills",
+      "name": "writing-skills",
+      "description": "Use when creating new skills, editing existing skills, or verifying skills work before deployment",
+      "path": "skills/default/writing-skills",
+      "tiers": [
+        "basic",
+        "extended",
+        "super"
+      ],
+      "groups": [
+        "default_sentinel"
+      ],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "xiaohongshu-auto",
+      "name": "xiaohongshu-auto",
+      "description": "小红书自动化技能，自动发布笔记和管理内容",
+      "path": "skills/default/xiaohongshu-auto",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "xiaohongshu-extract",
+      "name": "xiaohongshu-extract",
+      "description": "Extract metadata from Xiaohongshu (XHS) share or discovery URLs by parsing window.__INITIAL_STATE__ and returning note details. Use when asked to fetch XHS page content, note metadata, video info, or engagement stats from a public XHS link.",
+      "path": "skills/default/xiaohongshu-extract",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "xiaohongshu-ops",
+      "name": "xiaohongshu-ops",
+      "description": "End-to-end Xiaohongshu operations including positioning, topic research, content production, publish execution, and post-incident recovery. Reusable across verticals with templates and a concrete 陪你看剧 case preset.",
+      "path": "skills/default/xiaohongshu-ops",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "xiaohongshutools",
+      "name": "xiaohongshu",
+      "description": "XiaoHongShu (Little Red Book) data collection and interaction toolkit. Use when working with XiaoHongShu (小红书) platform for: (1) Searching and scraping notes/posts, (2) Getting user profiles and details, (3) Extracting comments and likes, (4) Following user...",
+      "path": "skills/default/xiaohongshutools",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "xlsx",
+      "name": "xlsx",
+      "description": "Comprehensive spreadsheet creation, editing, and analysis with support for formulas, formatting, data analysis, and visualization. When Claude needs to work with spreadsheets (.xlsx, .xlsm, .csv, .tsv, etc) for: (1) Creating new spreadsheets with formulas a...",
+      "path": "skills/default/xlsx",
+      "tiers": [
+        "basic",
+        "extended",
+        "super"
+      ],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "yoinkit",
+      "name": "yoinkit",
+      "description": "Search, analyze, and transcribe content across 13 social platforms — trending topics, video transcripts, post metadata, and multi-platform research workflows.",
+      "path": "skills/default/yoinkit",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": true,
+      "api_keys": [
+        "YOINKIT_API_TOKEN"
+      ]
+    },
+    {
+      "id": "zhihu-post",
+      "name": "zhihu-post",
+      "description": "在知乎发布内容（专栏文章、想法/动态）。使用 Chrome Browser Relay 控制用户的 Chrome 浏览器完成发布。触发词：知乎发帖、发知乎、知乎文章、知乎想法、zhihu post、发布到知乎、帮我发知乎。",
+      "path": "skills/default/zhihu-post",
+      "tiers": [],
+      "groups": [],
+      "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    }
+  ]
+}

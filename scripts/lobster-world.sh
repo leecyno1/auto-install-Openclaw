@@ -209,14 +209,43 @@ python_has_modules() {
   local py_bin="$1"
   "$py_bin" - <<'PY' >/dev/null 2>&1
 import importlib.util
-mods = ["flask", "PIL"]
+mods = ["flask"]
 raise SystemExit(0 if all(importlib.util.find_spec(m) for m in mods) else 1)
+PY
+}
+
+python_version_supported() {
+  local py_bin="$1"
+  "$py_bin" - <<'PY' >/dev/null 2>&1
+import sys
+raise SystemExit(0 if sys.version_info >= (3, 10) else 1)
 PY
 }
 
 python_has_pip() {
   local py_bin="$1"
   "$py_bin" -m pip --version >/dev/null 2>&1
+}
+
+pick_python_bin() {
+  local candidate
+  for candidate in \
+    "${OPENCLAW_PYTHON_BIN:-}" \
+    python3 \
+    python3.13 \
+    python3.12 \
+    python3.11 \
+    python3.10 \
+    /opt/anaconda3/bin/python3 \
+    /opt/anaconda3/bin/python3.11 \
+    /Library/Frameworks/Python.framework/Versions/3.12/bin/python3.12; do
+    [[ -n "$candidate" ]] || continue
+    if command -v "$candidate" >/dev/null 2>&1 && python_version_supported "$candidate"; then
+      echo "$candidate"
+      return 0
+    fi
+  done
+  return 1
 }
 
 repair_broken_venv() {
@@ -226,14 +255,15 @@ repair_broken_venv() {
 }
 
 install_requirements_with_system_pip() {
-  if ! python_has_pip python3; then
+  local py_bin="$1"
+  if ! python_has_pip "$py_bin"; then
     return 1
   fi
 
-  if python3 -m pip install --help 2>/dev/null | grep -q -- '--break-system-packages'; then
-    python3 -m pip install --user --break-system-packages -r "$REQUIREMENTS_FILE" >/dev/null
+  if "$py_bin" -m pip install --help 2>/dev/null | grep -q -- '--break-system-packages'; then
+    "$py_bin" -m pip install --user --break-system-packages -r "$REQUIREMENTS_FILE" >/dev/null
   else
-    python3 -m pip install --user -r "$REQUIREMENTS_FILE" >/dev/null
+    "$py_bin" -m pip install --user -r "$REQUIREMENTS_FILE" >/dev/null
   fi
 }
 
@@ -248,7 +278,10 @@ create_local_venv() {
 }
 
 ensure_python() {
-  if [[ -x "$VENV_DIR/bin/python" ]] && python_has_modules "$VENV_DIR/bin/python"; then
+  local system_py=""
+  system_py="$(pick_python_bin || true)"
+
+  if [[ -x "$VENV_DIR/bin/python" ]] && python_version_supported "$VENV_DIR/bin/python" && python_has_modules "$VENV_DIR/bin/python"; then
     echo "$VENV_DIR/bin/python"
     return 0
   fi
@@ -257,7 +290,7 @@ ensure_python() {
     repair_broken_venv "$VENV_DIR"
   fi
 
-  if [[ -x "$TMP_VENV/bin/python" ]] && python_has_modules "$TMP_VENV/bin/python"; then
+  if [[ -x "$TMP_VENV/bin/python" ]] && python_version_supported "$TMP_VENV/bin/python" && python_has_modules "$TMP_VENV/bin/python"; then
     echo "$TMP_VENV/bin/python"
     return 0
   fi
@@ -265,14 +298,14 @@ ensure_python() {
     repair_broken_venv "$TMP_VENV"
   fi
 
-  if python_has_modules python3; then
-    echo "python3"
+  if [[ -n "$system_py" ]] && python_has_modules "$system_py"; then
+    echo "$system_py"
     return 0
   fi
 
   echo "[INFO] Installing Lobster World Python dependencies with system pip..." >&2
-  if install_requirements_with_system_pip && python_has_modules python3; then
-    echo "python3"
+  if [[ -n "$system_py" ]] && install_requirements_with_system_pip "$system_py" && python_has_modules "$system_py"; then
+    echo "$system_py"
     return 0
   fi
 
@@ -282,8 +315,8 @@ ensure_python() {
   fi
 
   echo "[ERROR] Lobster World Python runtime is not ready." >&2
-  echo "[ERROR] Missing dependency path: python3-venv or usable python3 pip environment." >&2
-  echo "[ERROR] On Debian/Ubuntu run: apt install -y python3-venv python3-pip" >&2
+  echo "[ERROR] Missing dependency path: Python 3.10+ with pip/venv support." >&2
+  echo "[ERROR] On Debian/Ubuntu run: apt install -y python3.11 python3.11-venv python3-pip" >&2
   return 1
 }
 

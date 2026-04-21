@@ -1,6 +1,6 @@
 # inference.sh skills
 
-AI agent skills for 150+ models via [inference.sh](https://inference.sh) CLI. Generate images, videos, call LLMs, search the web, and more.
+AI agent skills for 250+ models via [inference.sh](https://inference.sh) CLI. Generate images, videos, call LLMs, search the web, and more.
 
 ![inference.sh](https://cloud.inference.sh/app/files/u/4mg21r6ta37mpaz6ktzwtt8krr/01kgvqa60jjrqa47j3g5s6ce6v.jpeg)
 

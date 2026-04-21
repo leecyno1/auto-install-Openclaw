@@ -1,0 +1,31 @@
+{
+  "name": "openclaw-world",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev:client": "vite --config client/vite.config.ts",
+    "dev:gateway": "tsx watch gateway/src/server.ts",
+    "dev:gateway:microverse": "OPENCLAW_WORLD_PUBLIC_DIR=../openclaw-microverse/build/web tsx watch gateway/src/server.ts",
+    "dev": "./scripts/dev.sh",
+    "build:client": "vite build --config client/vite.config.ts",
+    "build:microverse:web": "bash ../openclaw-microverse/scripts/export-web.sh ../openclaw-microverse/build/web",
+    "build:gateway": "tsc -p gateway/tsconfig.json",
+    "build": "npm run build:client && npm run build:gateway",
+    "start": "node dist/gateway/src/server.js",
+    "start:microverse": "OPENCLAW_WORLD_PUBLIC_DIR=../openclaw-microverse/build/web node dist/gateway/src/server.js",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "phaser": "^3.90.0",
+    "ws": "^8.18.3"
+  },
+  "devDependencies": {
+    "@types/node": "^24.5.2",
+    "@types/ws": "^8.18.1",
+    "typescript": "^5.9.2",
+    "tsx": "^4.20.5",
+    "vite": "^7.1.5",
+    "vitest": "^3.2.4"
+  }
+}

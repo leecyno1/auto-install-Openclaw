@@ -1,0 +1,23 @@
+{
+  "state": "idle",
+  "detail": "基地待命中",
+  "progress": 0,
+  "stationId": "role-altar",
+  "currentTaskId": null,
+  "currentPrompt": null,
+  "lastResult": "已完成: 验证 Microverse Home Base 闭环",
+  "source": "world-gateway",
+  "updatedAt": "2026-04-03T02:30:56.864Z",
+  "metrics": {
+    "tasksCreated": 2,
+    "tasksCompleted": 2,
+    "tasksSucceeded": 2,
+    "taskSuccessRate": 100,
+    "tokenConsumption": 376,
+    "skillUsageRate": 50,
+    "onlineMinutes": 1341,
+    "level": 1,
+    "xp": 304
+  },
+  "sessionStartedAt": "2026-04-02T15:14:07.070Z"
+}

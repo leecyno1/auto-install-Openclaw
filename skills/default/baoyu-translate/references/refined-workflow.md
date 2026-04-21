@@ -121,9 +121,16 @@ Implicit assumptions: [unstated premises]
 
 ## Step 2: Assemble Translation Prompt
 
-Main agent reads `01-analysis.md` and assembles a complete translation prompt using [references/subagent-prompt-template.md](subagent-prompt-template.md). Inline the resolved style preset (from `--style` flag, EXTEND.md `style` setting, or default `storytelling`), content background, merged glossary, and comprehension challenges into the prompt. Save to `02-prompt.md`.
+Main agent reads `01-analysis.md` and assembles a complete translation prompt using [references/subagent-prompt-template.md](subagent-prompt-template.md). Inline the following from analysis into the prompt:
 
-This prompt is used by the subagent (chunked) or by the main agent itself (non-chunked).
+- **Target style + Source voice**: Resolved style preset (from `--style` flag, EXTEND.md `style` setting, or default `storytelling`) AND the source voice assessment from analysis §1.5 (formal/conversational, humor, register, sentence rhythm)
+- **Content background**: Quick summary, core argument, author background, writing context, purpose, implicit assumptions (from §1.1–1.3)
+- **Glossary**: Merged glossary with analysis-extracted terms (from §1.4)
+- **Figurative Language Mapping**: Structured table from analysis §1.7 — each metaphor/idiom with intended meaning, approach (interpret/substitute/retain), and suggested rendering
+- **Comprehension Challenges**: Each challenge with reasoning (why it confuses readers) and proposed note (from §1.6)
+- **Translation Challenges**: Structural and creative challenges from analysis §1.8 — specific passages with suggested approaches
+
+Save to `02-prompt.md`. This prompt is used by the subagent (chunked) or by the main agent itself (non-chunked).
 
 ## Step 3: Initial Draft
 

@@ -15,9 +15,37 @@ pass "shell lint"
 bash install.sh --help >/dev/null 2>&1 || fail "install.sh --help smoke"
 pass "install help smoke"
 
-# 3) 行为级 smoke：配额核心单测
-python3 -m unittest tests/test_media_quota.py >/dev/null || fail "media quota unit tests"
+# 3) 行为级 smoke：配额核心单测 + 配置表面回归
+python3 -m unittest discover -s tests -p 'test_media_quota.py' >/dev/null || fail "media quota unit tests"
 pass "media quota tests"
+python3 -m unittest discover -s tests -p 'test_quota_enforcer_runtime.py' >/dev/null || fail "quota enforcer runtime tests"
+pass "quota enforcer runtime tests"
+python3 -m unittest discover -s tests -p 'test_health_server_runtime.py' >/dev/null || fail "health server runtime tests"
+pass "health server runtime tests"
+python3 -m unittest discover -s tests -p 'test_pixel_house_install_smoke.py' >/dev/null || fail "pixel house install smoke tests"
+pass "pixel house install smoke tests"
+python3 -m unittest discover -s tests -p 'test_install_entry_smoke.py' >/dev/null || fail "install entry smoke tests"
+pass "install entry smoke tests"
+python3 -m unittest discover -s tests -p 'test_lobster_setup_runtime.py' >/dev/null || fail "lobster setup runtime tests"
+pass "lobster setup runtime tests"
+python3 -m unittest discover -s tests -p 'test_lobster_world_runtime.py' >/dev/null || fail "lobster world runtime tests"
+pass "lobster world runtime tests"
+python3 -m unittest discover -s tests -p 'test_config_menu_shortcuts_runtime.py' >/dev/null || fail "config menu shortcuts runtime tests"
+pass "config menu shortcuts runtime tests"
+python3 -m unittest discover -s tests -p 'test_config_menu_deep_runtime.py' >/dev/null || fail "config menu deep runtime tests"
+pass "config menu deep runtime tests"
+python3 -m unittest discover -s tests -p 'test_config_surface.py' >/dev/null || fail "config surface unit tests"
+pass "config surface tests"
+python3 -m unittest discover -s tests -p 'test_skills_manifest.py' >/dev/null || fail "skills manifest unit tests"
+pass "skills manifest tests"
+python3 -m unittest discover -s tests -p 'test_backup_manager_behavior.py' >/dev/null || fail "backup manager behavior tests"
+pass "backup manager behavior tests"
+python3 -m unittest discover -s tests -p 'test_launcher_contract.py' >/dev/null || fail "launcher contract tests"
+pass "launcher contract tests"
+python3 -m unittest discover -s tests -p 'test_readme_launcher_alignment.py' >/dev/null || fail "readme launcher alignment tests"
+pass "readme launcher alignment tests"
+python3 -m unittest discover -s tests -p 'test_dual_engine_smoke.py' >/dev/null || fail "dual engine smoke tests"
+pass "dual engine smoke tests"
 
 # 4) 官方升级链路关键字检查
 grep -q "openclaw update --restart" config-menu.sh || fail "missing openclaw update --restart in config-menu.sh"
@@ -42,6 +70,7 @@ grep -q "openclaw update --restart" README.md || fail "README missing official u
 grep -q "openclaw plugins update --all" README.md || fail "README missing plugin update command"
 grep -q "raw.githubusercontent.com/leecyno1/auto-install-Openclaw/main/install.sh" README.md || fail "README missing new one-click url"
 grep -q "mirror.ghproxy.com/https://raw.githubusercontent.com/leecyno1/auto-install-Openclaw/main/install.sh" README.md || fail "README missing mirror one-click url"
+grep -q "lobster-setup config" README.md || fail "README missing lobster-setup primary entry"
 pass "README command markers"
 
 # 8) 独立仓库命名检查（不应再指向旧仓库）
@@ -65,5 +94,34 @@ grep -q '自动读取错误日志摘要' config-menu.sh || fail "missing log-dri
 grep -q 'run_auto_fix_provider_repair codex' config-menu.sh || fail "missing codex repair entry"
 grep -q 'run_auto_fix_provider_repair claudecode' config-menu.sh || fail "missing claudecode repair entry"
 pass "auto-fix menu markers"
+
+# 11) 双引擎安装与统一入口检查
+grep -q -- "--engine openclaw|hermes|both" install.sh || fail "install.sh missing engine flag"
+grep -q 'lobster-setup' install.sh || fail "install.sh missing lobster-setup entry"
+grep -q 'lobster-setup {install|config|repair|workbench|status|doctor|engine|migrate|backup|help}' install.sh || fail "install.sh missing lobster-setup help usage"
+grep -q 'install_hermes' install.sh || fail "install.sh missing Hermes install function"
+grep -q 'LOBSTER_DEFAULT_ENGINE' scripts/lib/openclaw-common.sh || fail "common lib missing lobster engine state"
+grep -q '引擎管理' config-menu.sh || fail "config-menu missing engine management entry"
+grep -q 'openclaw_sync_dual_engine_state' scripts/lib/openclaw-common.sh || fail "common lib missing dual-engine sync helper"
+grep -q 'openclaw_sync_hermes_role_profile' scripts/lib/openclaw-common.sh || fail "common lib missing Hermes role profile sync"
+grep -q 'lobster-profile.env' scripts/lib/openclaw-common.sh || fail "common lib missing Hermes profile artifact"
+grep -q 'sync_lobster_shared_state_install' install.sh || fail "install.sh missing shared-state sync hook"
+grep -q 'sync_lobster_shared_state_menu' config-menu.sh || fail "config-menu missing shared-state sync hook"
+pass "dual-engine markers"
+
+# 12) MiniMax 官方 skills + 自定义 Provider URL 原样保存检查
+for skill in \
+  android-native-dev buddy-sings flutter-dev frontend-dev fullstack-dev gif-sticker-maker \
+  ios-application-dev minimax-docx minimax-multimodal-toolkit minimax-music-gen \
+  minimax-music-playlist minimax-pdf minimax-xlsx pptx-generator react-native-dev \
+  shader-dev vision-analysis; do
+    [ -f "skills/default/$skill/SKILL.md" ] || fail "missing MiniMax official skill: $skill"
+done
+grep -q 'MINIMAX_OFFICIAL_SKILLS=' install.sh || fail "install.sh missing MiniMax official skill list"
+grep -q 'MINIMAX_OFFICIAL_SKILLS=' config-menu.sh || fail "config-menu missing MiniMax official skill list"
+grep -q '生图 API 配置（图片生成）' config-menu.sh || fail "advanced menu missing image API replacement"
+normalized_url="$(bash -c 'source scripts/lib/openclaw-common.sh; openclaw_normalize_minimax_provider_url "https://api.sfkey.cn"')"
+[ "$normalized_url" = "https://api.sfkey.cn" ] || fail "MiniMax custom provider URL was normalized unexpectedly: $normalized_url"
+pass "MiniMax skills and raw provider URL markers"
 
 echo "All preflight checks passed."

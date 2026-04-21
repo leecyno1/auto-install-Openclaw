@@ -1,0 +1,53 @@
+{
+  "roleId": "warrior",
+  "draftDirty": false,
+  "identity": {
+    "assistantName": "Clawd",
+    "userName": "主人",
+    "region": "中国大陆",
+    "timezone": "Asia/Shanghai",
+    "goal": "通用总管，覆盖日常助理、任务推进、沟通协作与结果回报。",
+    "personality": "严谨、务实、可协作",
+    "workStyle": "先分析再执行，阶段性回报"
+  },
+  "routing": {
+    "modelRoute": "balanced",
+    "tokenRule": "low",
+    "skillPack": "low",
+    "advancedModel": "claude-main"
+  },
+  "skills": {
+    "installed": [
+      "reflection",
+      "agentmail",
+      "content-strategy",
+      "minimax-web-search"
+    ],
+    "disabled": [],
+    "reserve": []
+  },
+  "equipment": {
+    "slots": {
+      "chest": "minimax-2-7",
+      "head": "focus-crown",
+      "belt": "cron-orb",
+      "amulet": "memo-ring"
+    },
+    "inventory": [
+      "ops-harness",
+      "search-array",
+      "sheet-engine",
+      "document-forge",
+      "github-mcp",
+      "agentmail-suite",
+      "shell-runner",
+      "image-studio",
+      "claude-main",
+      "codex-core",
+      "gemini-vision",
+      "campaign-belt",
+      "field-boots"
+    ]
+  },
+  "updatedAt": "2026-04-03T02:30:54.259Z"
+}

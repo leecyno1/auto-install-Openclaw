@@ -57,17 +57,19 @@
 来源优先级（与 `skills/default/DEFAULT_SKILLS.md` 一致）：
 
 1. `~/.openclaw/skills/<name>`
-2. `/Users/lichengyin/.codex/skills/<name>`（回退来源）
+2. `~/.codex/skills/<name>`（回退来源）
+3. `~/.agents/skills/<name>`（第三方/扩展技能源）
 
 | Skill | 本地目录 | 上游更新地址 |
 |---|---|---|
-| agent-browser | `skills/default/agent-browser` | /Users/lichengyin/.codex/skills/agent-browser |
+| agent-browser | `skills/default/agent-browser` | ~/.codex/skills/agent-browser |
 | agentmail | `skills/default/agentmail` | https://github.com/agentmail-to/agentmail-skills |
 | agentmail-cli | `skills/default/agentmail-cli` | https://github.com/agentmail-to/agentmail-skills |
 | agentmail-mcp | `skills/default/agentmail-mcp` | https://github.com/agentmail-to/agentmail-skills |
 | agentmail-toolkit | `skills/default/agentmail-toolkit` | https://github.com/agentmail-to/agentmail-skills |
-| akshare-stock | `skills/default/akshare-stock` | /Users/lichengyin/.codex/skills/akshare-stock |
+| akshare-stock | `skills/default/akshare-stock` | ~/.codex/skills/akshare-stock |
 | ai-image-generation | `skills/default/ai-image-generation` | https://github.com/inference-sh/skills/tree/main/tools/image/ai-image-generation |
+| android-native-dev | `skills/default/android-native-dev` | https://github.com/MiniMax-AI/skills/tree/main/skills/android-native-dev |
 | baoyu-skills | `skills/default/baoyu-skills` | https://github.com/JimLiu/baoyu-skills |
 | baoyu-article-illustrator | `skills/default/baoyu-article-illustrator` | https://github.com/JimLiu/baoyu-skills/tree/main/skills/baoyu-article-illustrator |
 | baoyu-comic | `skills/default/baoyu-comic` | https://github.com/JimLiu/baoyu-skills/tree/main/skills/baoyu-comic |
@@ -88,43 +90,59 @@
 | baoyu-xhs-images | `skills/default/baoyu-xhs-images` | https://github.com/JimLiu/baoyu-skills/tree/main/skills/baoyu-xhs-images |
 | baoyu-youtube-transcript | `skills/default/baoyu-youtube-transcript` | https://github.com/JimLiu/baoyu-skills/tree/main/skills/baoyu-youtube-transcript |
 | blogwatcher | `skills/default/blogwatcher` | https://github.com/Hyaxia/blogwatcher |
-| brainstorming | `skills/default/brainstorming` | /Users/lichengyin/.codex/skills/brainstorming |
-| capability-evolver | `skills/default/capability-evolver` | /Users/lichengyin/.codex/skills/capability-evolver |
+| brainstorming | `skills/default/brainstorming` | ~/.codex/skills/brainstorming |
+| buddy-sings | `skills/default/buddy-sings` | https://github.com/MiniMax-AI/skills/tree/main/skills/buddy-sings |
+| capability-evolver | `skills/default/capability-evolver` | ~/.codex/skills/capability-evolver |
 | chrome-devtools-mcp | `skills/default/chrome-devtools-mcp` | https://github.com/ChromeDevTools/chrome-devtools-mcp |
 | content-strategy | `skills/default/content-strategy` | https://github.com/coreyhaines31/marketingskills/tree/main/skills/content-strategy |
-| docx | `skills/default/docx` | /Users/lichengyin/.codex/skills/docx |
-| find-skills | `skills/default/find-skills` | /Users/lichengyin/.codex/skills/find-skills |
-| frontend-design | `skills/default/frontend-design` | /Users/lichengyin/.codex/skills/frontend-design |
-| gemini-image-service | `skills/default/gemini-image-service` | /Users/lichengyin/.codex/skills/gemini-image-service |
-| github | `skills/default/github` | /Users/lichengyin/.codex/skills/github |
-| grok-imagine-1.0-video | `skills/default/grok-imagine-1.0-video` | /Users/lichengyin/.codex/skills/grok-imagine-1.0-video |
+| docx | `skills/default/docx` | ~/.codex/skills/docx |
+| find-skills | `skills/default/find-skills` | ~/.codex/skills/find-skills |
+| flutter-dev | `skills/default/flutter-dev` | https://github.com/MiniMax-AI/skills/tree/main/skills/flutter-dev |
+| frontend-design | `skills/default/frontend-design` | ~/.codex/skills/frontend-design |
+| frontend-dev | `skills/default/frontend-dev` | https://github.com/MiniMax-AI/skills/tree/main/skills/frontend-dev |
+| fullstack-dev | `skills/default/fullstack-dev` | https://github.com/MiniMax-AI/skills/tree/main/skills/fullstack-dev |
+| gemini-image-service | `skills/default/gemini-image-service` | ~/.codex/skills/gemini-image-service |
+| gif-sticker-maker | `skills/default/gif-sticker-maker` | https://github.com/MiniMax-AI/skills/tree/main/skills/gif-sticker-maker |
+| github | `skills/default/github` | ~/.codex/skills/github |
+| grok-imagine-1.0-video | `skills/default/grok-imagine-1.0-video` | ~/.codex/skills/grok-imagine-1.0-video |
 | inference-skills | `skills/default/inference-skills` | https://github.com/inference-sh/skills |
+| ios-application-dev | `skills/default/ios-application-dev` | https://github.com/MiniMax-AI/skills/tree/main/skills/ios-application-dev |
 | marketingskills | `skills/default/marketingskills` | https://github.com/coreyhaines31/marketingskills |
-| mcp-builder | `skills/default/mcp-builder` | /Users/lichengyin/.codex/skills/mcp-builder |
-| minimax-image-understanding | `skills/default/minimax-image-understanding` | /Users/lichengyin/.codex/skills/minimax-image-understanding |
-| minimax-web-search | `skills/default/minimax-web-search` | /Users/lichengyin/.codex/skills/minimax-web-search |
-| model-usage | `skills/default/model-usage` | /Users/lichengyin/.codex/skills/model-usage |
-| multi-search-engine | `skills/default/multi-search-engine` | /Users/lichengyin/.codex/skills/multi-search-engine |
-| nano-banana-service | `skills/default/nano-banana-service` | /Users/lichengyin/.codex/skills/nano-banana-service |
+| mcp-builder | `skills/default/mcp-builder` | ~/.codex/skills/mcp-builder |
+| minimax-image-understanding | `skills/default/minimax-image-understanding` | ~/.codex/skills/minimax-image-understanding |
+| minimax-docx | `skills/default/minimax-docx` | https://github.com/MiniMax-AI/skills/tree/main/skills/minimax-docx |
+| minimax-multimodal-toolkit | `skills/default/minimax-multimodal-toolkit` | https://github.com/MiniMax-AI/skills/tree/main/skills/minimax-multimodal-toolkit |
+| minimax-music-gen | `skills/default/minimax-music-gen` | https://github.com/MiniMax-AI/skills/tree/main/skills/minimax-music-gen |
+| minimax-music-playlist | `skills/default/minimax-music-playlist` | https://github.com/MiniMax-AI/skills/tree/main/skills/minimax-music-playlist |
+| minimax-pdf | `skills/default/minimax-pdf` | https://github.com/MiniMax-AI/skills/tree/main/skills/minimax-pdf |
+| minimax-web-search | `skills/default/minimax-web-search` | ~/.codex/skills/minimax-web-search |
+| minimax-xlsx | `skills/default/minimax-xlsx` | https://github.com/MiniMax-AI/skills/tree/main/skills/minimax-xlsx |
+| model-usage | `skills/default/model-usage` | ~/.codex/skills/model-usage |
+| multi-search-engine | `skills/default/multi-search-engine` | ~/.codex/skills/multi-search-engine |
+| nano-banana-service | `skills/default/nano-banana-service` | ~/.codex/skills/nano-banana-service |
 | nano-pdf | `skills/default/nano-pdf` | https://pypi.org/project/nano-pdf/ |
-| news-radar | `skills/default/news-radar` | /Users/lichengyin/.codex/skills/news-radar |
+| news-radar | `skills/default/news-radar` | ~/.codex/skills/news-radar |
 | notebooklm-skill | `skills/default/notebooklm-skill` | https://github.com/PleasePrompto/notebooklm-skill |
-| openclaw-cron-setup | `skills/default/openclaw-cron-setup` | /Users/lichengyin/.codex/skills/openclaw-cron-setup |
-| pdf | `skills/default/pdf` | /Users/lichengyin/.codex/skills/pdf |
-| pptx | `skills/default/pptx` | /Users/lichengyin/.codex/skills/pptx |
-| proactive-agent | `skills/default/proactive-agent` | /Users/lichengyin/.codex/skills/proactive-agent |
+| openclaw-cron-setup | `skills/default/openclaw-cron-setup` | ~/.codex/skills/openclaw-cron-setup |
+| pdf | `skills/default/pdf` | ~/.codex/skills/pdf |
+| pptx | `skills/default/pptx` | ~/.codex/skills/pptx |
+| pptx-generator | `skills/default/pptx-generator` | https://github.com/MiniMax-AI/skills/tree/main/skills/pptx-generator |
+| proactive-agent | `skills/default/proactive-agent` | ~/.codex/skills/proactive-agent |
+| react-native-dev | `skills/default/react-native-dev` | https://github.com/MiniMax-AI/skills/tree/main/skills/react-native-dev |
 | reflection | `skills/default/reflection` | https://clawic.com/skills/reflection |
-| self-improving-agent-cn | `skills/default/self-improving-agent-cn` | /Users/lichengyin/.codex/skills/self-improving-agent-cn |
-| shell | `skills/default/shell` | /Users/lichengyin/.codex/skills/shell |
-| skill-creator | `skills/default/skill-creator` | /Users/lichengyin/.codex/skills/skill-creator |
+| self-improving-agent-cn | `skills/default/self-improving-agent-cn` | ~/.codex/skills/self-improving-agent-cn |
+| shader-dev | `skills/default/shader-dev` | https://github.com/MiniMax-AI/skills/tree/main/skills/shader-dev |
+| shell | `skills/default/shell` | ~/.codex/skills/shell |
+| skill-creator | `skills/default/skill-creator` | ~/.codex/skills/skill-creator |
 | social-content | `skills/default/social-content` | https://github.com/coreyhaines31/marketingskills/tree/main/skills/social-content |
-| stock-monitor-skill | `skills/default/stock-monitor-skill` | /Users/lichengyin/.codex/skills/stock-monitor-skill |
+| stock-monitor-skill | `skills/default/stock-monitor-skill` | ~/.codex/skills/stock-monitor-skill |
 | summarize | `skills/default/summarize` | https://summarize.sh |
-| tavily-search | `skills/default/tavily-search` | /Users/lichengyin/.codex/skills/tavily-search |
-| url-to-markdown | `skills/default/url-to-markdown` | /Users/lichengyin/.codex/skills/url-to-markdown |
-| web-design | `skills/default/web-design` | /Users/lichengyin/.codex/skills/web-design |
-| web-search | `skills/default/web-search` | /Users/lichengyin/.codex/skills/web-search |
-| xlsx | `skills/default/xlsx` | /Users/lichengyin/.codex/skills/xlsx |
+| tavily-search | `skills/default/tavily-search` | ~/.codex/skills/tavily-search |
+| url-to-markdown | `skills/default/url-to-markdown` | ~/.codex/skills/url-to-markdown |
+| vision-analysis | `skills/default/vision-analysis` | https://github.com/MiniMax-AI/skills/tree/main/skills/vision-analysis |
+| web-design | `skills/default/web-design` | ~/.agents/skills/vercel-agent-skills/skills/web-design-guidelines |
+| web-search | `skills/default/web-search` | ~/.codex/skills/web-search |
+| xlsx | `skills/default/xlsx` | ~/.codex/skills/xlsx |
 
 ### Skills 更新建议流程
 

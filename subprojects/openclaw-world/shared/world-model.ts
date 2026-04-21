@@ -1,0 +1,436 @@
+export const ROLE_IDS = [
+  'druid',
+  'assassin',
+  'mage',
+  'summoner',
+  'warrior',
+  'paladin',
+  'designer',
+] as const;
+
+export type RoleId = (typeof ROLE_IDS)[number];
+export type RuntimeStateId = 'idle' | 'researching' | 'executing' | 'syncing' | 'error';
+export type HomeStationId =
+  | 'role-altar'
+  | 'skill-shelf'
+  | 'equipment-forge'
+  | 'task-desk'
+  | 'status-mirror'
+  | 'world-portal';
+export type EquipmentSlotId = 'head' | 'amulet' | 'mainhand' | 'offhand' | 'chest' | 'belt' | 'boots';
+export type RarityId = 'common' | 'magic' | 'rare' | 'epic' | 'legendary';
+export type ItemTypeId = 'model' | 'api' | 'mcp' | 'tool' | 'app';
+
+export interface RoleProfile {
+  id: RoleId;
+  title: string;
+  className: string;
+  emoji: string;
+  description: string;
+  focus: string[];
+  recommendedModelRoute: string;
+  starterSkills: string[];
+  starterEquipment: Partial<Record<EquipmentSlotId, string>>;
+}
+
+export interface SkillCard {
+  id: string;
+  name: string;
+  description: string;
+  branch: string;
+  source: 'installed' | 'reserve';
+}
+
+export interface EquipmentItem {
+  id: string;
+  name: string;
+  description: string;
+  type: ItemTypeId;
+  rarity: RarityId;
+  slot: EquipmentSlotId;
+}
+
+export interface IdentityProfile {
+  assistantName: string;
+  userName: string;
+  region: string;
+  timezone: string;
+  goal: string;
+  personality: string;
+  workStyle: string;
+}
+
+export interface BuildState {
+  roleId: RoleId;
+  draftDirty: boolean;
+  identity: IdentityProfile;
+  routing: {
+    modelRoute: string;
+    tokenRule: 'low' | 'medium' | 'high';
+    skillPack: 'low' | 'medium' | 'high';
+    advancedModel: string;
+  };
+  skills: {
+    installed: string[];
+    disabled: string[];
+    reserve: string[];
+  };
+  equipment: {
+    slots: Partial<Record<EquipmentSlotId, string>>;
+    inventory: string[];
+  };
+  updatedAt: string;
+}
+
+export interface RuntimeMetrics {
+  tasksCreated: number;
+  tasksCompleted: number;
+  tasksSucceeded: number;
+  taskSuccessRate: number;
+  tokenConsumption: number;
+  skillUsageRate: number;
+  onlineMinutes: number;
+  level: number;
+  xp: number;
+}
+
+export interface RuntimeState {
+  state: RuntimeStateId;
+  detail: string;
+  progress: number;
+  stationId: HomeStationId;
+  currentTaskId: string | null;
+  currentPrompt: string | null;
+  lastResult: string;
+  source: 'world-gateway' | 'openclaw-status';
+  updatedAt: string;
+  sessionStartedAt: string;
+  metrics: RuntimeMetrics;
+}
+
+export interface TaskStep {
+  state: RuntimeStateId;
+  stationId: HomeStationId;
+  progress: number;
+  detail: string;
+  delayMs: number;
+}
+
+export interface TaskPlan {
+  id: string;
+  prompt: string;
+  stationId: HomeStationId;
+  createdAt: string;
+  steps: TaskStep[];
+}
+
+export interface WorldState {
+  scene: 'home-base' | 'shared-world';
+  personaPanelStation: HomeStationId;
+  connection: {
+    openclawReachable: boolean;
+    wsClients: number;
+  };
+  sharedWorld: {
+    shellReady: boolean;
+    message: string;
+  };
+}
+
+export const ROLE_PROFILES: Record<RoleId, RoleProfile> = {
+  druid: {
+    id: 'druid',
+    title: '万金油 · 德鲁伊',
+    className: '综合助理（通用）',
+    emoji: '🦞',
+    description: '通用总管，覆盖日常助理、任务推进、沟通协作与结果回报。',
+    focus: ['任务推进', '沟通协作', '综合事务'],
+    recommendedModelRoute: 'balanced',
+    starterSkills: ['reflection', 'agentmail', 'content-strategy', 'minimax-web-search'],
+    starterEquipment: {
+      chest: 'minimax-2-7',
+      head: 'focus-crown',
+      belt: 'cron-orb',
+      amulet: 'memo-ring',
+    },
+  },
+  assassin: {
+    id: 'assassin',
+    title: '分析员 · 刺客',
+    className: '分析研究（投资）',
+    emoji: '🗡️',
+    description: '数据采集、价值挖掘与投资机会研究。',
+    focus: ['情报检索', '投资分析', '风险判断'],
+    recommendedModelRoute: 'analysis',
+    starterSkills: ['akshare-stock', 'news-radar', 'tavily-search', 'xlsx'],
+    starterEquipment: {
+      chest: 'claude-main',
+      mainhand: 'search-array',
+      offhand: 'sheet-engine',
+      belt: 'field-boots',
+    },
+  },
+  mage: {
+    id: 'mage',
+    title: '研究者 · 大法师',
+    className: '学术研究',
+    emoji: '🧙',
+    description: '论文、科研、读书与结构化笔记。',
+    focus: ['论文写作', '材料整理', '知识沉淀'],
+    recommendedModelRoute: 'research',
+    starterSkills: ['pdf', 'nano-pdf', 'notebooklm-skill', 'summarize'],
+    starterEquipment: {
+      chest: 'claude-main',
+      head: 'notebook-vault',
+      amulet: 'memo-ring',
+      offhand: 'document-forge',
+    },
+  },
+  summoner: {
+    id: 'summoner',
+    title: '管理者 · 召唤师',
+    className: '团队管理',
+    emoji: '🪄',
+    description: '招聘、人力、流程、组织协同与团队激励。',
+    focus: ['组织管理', '流程设计', '团队协作'],
+    recommendedModelRoute: 'balanced',
+    starterSkills: ['agentmail', 'lark-calendar', 'docx', 'reflection'],
+    starterEquipment: {
+      chest: 'claude-main',
+      head: 'ops-harness',
+      belt: 'cron-orb',
+      offhand: 'agentmail-suite',
+    },
+  },
+  warrior: {
+    id: 'warrior',
+    title: '技术员 · 战士',
+    className: '工程开发',
+    emoji: '⚔️',
+    description: '编码实现、测试排障、稳定性与上线。',
+    focus: ['工程交付', '调试验证', '自动化'],
+    recommendedModelRoute: 'codex',
+    starterSkills: ['shell', 'github', 'agent-browser', 'mcp-builder'],
+    starterEquipment: {
+      chest: 'codex-core',
+      mainhand: 'shell-runner',
+      offhand: 'github-mcp',
+      head: 'ops-harness',
+    },
+  },
+  paladin: {
+    id: 'paladin',
+    title: '营销者 · 圣骑士',
+    className: '市场增长',
+    emoji: '🛡️',
+    description: '市场运营、内容增长、渠道分发与客户关系。',
+    focus: ['内容策略', '渠道分发', '增长运营'],
+    recommendedModelRoute: 'growth',
+    starterSkills: ['content-strategy', 'social-content', 'agentmail', 'news-radar'],
+    starterEquipment: {
+      chest: 'claude-main',
+      offhand: 'agentmail-suite',
+      belt: 'campaign-belt',
+      mainhand: 'search-array',
+    },
+  },
+  designer: {
+    id: 'designer',
+    title: '设计师 · 弓箭手',
+    className: '设计创作',
+    emoji: '🏹',
+    description: '前端设计、视觉创作、图文内容与多场景设计。',
+    focus: ['视觉创作', '界面设计', '内容表现'],
+    recommendedModelRoute: 'creative',
+    starterSkills: ['frontend-design', 'ai-image-generation', 'pptx', 'summarize'],
+    starterEquipment: {
+      chest: 'gemini-vision',
+      mainhand: 'image-studio',
+      offhand: 'document-forge',
+      head: 'focus-crown',
+    },
+  },
+};
+
+export const EQUIPMENT_CATALOG: EquipmentItem[] = [
+  {
+    id: 'focus-crown',
+    name: 'Focus Crown',
+    description: '保持上下文与任务聚焦。',
+    type: 'app',
+    rarity: 'magic',
+    slot: 'head',
+  },
+  {
+    id: 'ops-harness',
+    name: 'Ops Harness',
+    description: '稳定任务分派与组织调度。',
+    type: 'tool',
+    rarity: 'rare',
+    slot: 'head',
+  },
+  {
+    id: 'notebook-vault',
+    name: 'Notebook Vault',
+    description: '学术知识库与笔记入口。',
+    type: 'app',
+    rarity: 'rare',
+    slot: 'head',
+  },
+  {
+    id: 'memo-ring',
+    name: 'Memo Ring',
+    description: '记忆、注释和上下文收纳。',
+    type: 'app',
+    rarity: 'magic',
+    slot: 'amulet',
+  },
+  {
+    id: 'search-array',
+    name: 'Search Array',
+    description: '搜索 API 聚合阵列。',
+    type: 'api',
+    rarity: 'rare',
+    slot: 'mainhand',
+  },
+  {
+    id: 'sheet-engine',
+    name: 'Sheet Engine',
+    description: 'XLSX 分析与表格建模。',
+    type: 'tool',
+    rarity: 'magic',
+    slot: 'offhand',
+  },
+  {
+    id: 'document-forge',
+    name: 'Document Forge',
+    description: '文档与演示稿输出工具链。',
+    type: 'tool',
+    rarity: 'magic',
+    slot: 'offhand',
+  },
+  {
+    id: 'github-mcp',
+    name: 'GitHub MCP',
+    description: '仓库读写与协同。',
+    type: 'mcp',
+    rarity: 'rare',
+    slot: 'offhand',
+  },
+  {
+    id: 'agentmail-suite',
+    name: 'AgentMail Suite',
+    description: '邮件往来与客户沟通。',
+    type: 'app',
+    rarity: 'magic',
+    slot: 'offhand',
+  },
+  {
+    id: 'shell-runner',
+    name: 'Shell Runner',
+    description: '命令行、脚本和文件操作。',
+    type: 'tool',
+    rarity: 'common',
+    slot: 'mainhand',
+  },
+  {
+    id: 'image-studio',
+    name: 'Image Studio',
+    description: '图像生成与视觉迭代。',
+    type: 'tool',
+    rarity: 'rare',
+    slot: 'mainhand',
+  },
+  {
+    id: 'minimax-2-7',
+    name: 'MiniMax 2.7',
+    description: '默认主力模型，平衡速度与质量。',
+    type: 'model',
+    rarity: 'epic',
+    slot: 'chest',
+  },
+  {
+    id: 'claude-main',
+    name: 'Claude Main',
+    description: '长文本与复杂推理。',
+    type: 'model',
+    rarity: 'legendary',
+    slot: 'chest',
+  },
+  {
+    id: 'codex-core',
+    name: 'Codex Core',
+    description: '工程实现与调试核心。',
+    type: 'model',
+    rarity: 'legendary',
+    slot: 'chest',
+  },
+  {
+    id: 'gemini-vision',
+    name: 'Gemini Vision',
+    description: '多模态理解与图像任务。',
+    type: 'model',
+    rarity: 'legendary',
+    slot: 'chest',
+  },
+  {
+    id: 'cron-orb',
+    name: 'Cron Orb',
+    description: '定时任务与后台巡检。',
+    type: 'tool',
+    rarity: 'rare',
+    slot: 'belt',
+  },
+  {
+    id: 'campaign-belt',
+    name: 'Campaign Belt',
+    description: '营销节奏和分发配置。',
+    type: 'app',
+    rarity: 'magic',
+    slot: 'belt',
+  },
+  {
+    id: 'field-boots',
+    name: 'Field Boots',
+    description: '提高情报巡航和执行节奏。',
+    type: 'tool',
+    rarity: 'common',
+    slot: 'boots',
+  },
+];
+
+export const HOME_STATIONS: Record<
+  HomeStationId,
+  { id: HomeStationId; label: string; description: string }
+> = {
+  'role-altar': {
+    id: 'role-altar',
+    label: '职业台',
+    description: '查看并切换七个职业。',
+  },
+  'skill-shelf': {
+    id: 'skill-shelf',
+    label: '技能书架',
+    description: '管理已装技能与备选技能。',
+  },
+  'equipment-forge': {
+    id: 'equipment-forge',
+    label: '装备工坊',
+    description: '配置模型、API、MCP 与工具。',
+  },
+  'task-desk': {
+    id: 'task-desk',
+    label: '任务桌',
+    description: '派发任务并追踪执行状态。',
+  },
+  'status-mirror': {
+    id: 'status-mirror',
+    label: '状态镜',
+    description: '查看成长与运行指标。',
+  },
+  'world-portal': {
+    id: 'world-portal',
+    label: '世界传送门',
+    description: '进入未来的公共世界入口。',
+  },
+};
