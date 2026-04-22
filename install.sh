@@ -1731,6 +1731,8 @@ apply_profile_skill_policy() {
         return 0
     fi
 
+    local total_skills=$(echo $skills_list | wc -w)
+    local current=0
     local skill_name src dst
     for skill_name in $skills_list; do
         src="$bundle_dir/$skill_name"
@@ -1742,12 +1744,15 @@ apply_profile_skill_policy() {
         fi
         if [ -d "$dst" ] && [ "$force_update" != "1" ]; then
             skipped=$((skipped + 1))
+            current=$((current + 1))
             continue
         fi
         rm -rf "$dst" 2>/dev/null || true
         if cp -a "$src" "$dst" 2>/dev/null; then
             copied=$((copied + 1))
         fi
+        current=$((current + 1))
+        [ $((current % 10)) -eq 0 ] && log_info "技能同步进度: ${current}/${total_skills}"
     done
     log_info "档位技能同步完成：新增/更新 ${copied}，保留 ${skipped}，缺失 ${missing}"
 }
@@ -7023,7 +7028,7 @@ converge_gateway_single_instance() {
     fi
 
     restart_output="$(openclaw gateway restart 2>&1)" || true
-    sleep 2
+    sleep 0.5
 
     local gateway_pid
     gateway_pid="$(get_gateway_pid)"
@@ -7032,14 +7037,14 @@ converge_gateway_single_instance() {
             log_warn "检测到历史 Feishu 配置与当前 schema 不兼容，正在自动迁移并重试 Gateway..."
             migrate_legacy_feishu_schema_in_json_install || true
             restart_output="$(openclaw gateway restart 2>&1)" || true
-            sleep 2
+            sleep 0.5
             gateway_pid="$(get_gateway_pid)"
         fi
     fi
 
     if [ -z "$gateway_pid" ]; then
         restart_output="$(openclaw gateway start 2>&1)" || true
-        sleep 2
+        sleep 0.5
         gateway_pid="$(get_gateway_pid)"
     fi
 
@@ -7137,7 +7142,7 @@ start_openclaw_service() {
         echo ""
         if confirm "是否重启服务？" "y"; then
             openclaw gateway stop 2>/dev/null || true
-            sleep 2
+            sleep 0.5
         else
             return 0
         fi
@@ -7146,7 +7151,7 @@ start_openclaw_service() {
     if [ "${GATEWAY_CONVERGED_ONCE:-0}" = "1" ] || [ -f "$GATEWAY_CONVERGE_MARKER" ]; then
         log_info "已在本次安装中完成 Gateway 单实例收敛，跳过重复收敛。"
         openclaw gateway restart >/dev/null 2>&1 || openclaw gateway start >/dev/null 2>&1 || true
-        sleep 2
+        sleep 0.5
     else
         if ! converge_gateway_single_instance "restart"; then
             log_error "Gateway 启动失败，请先执行: openclaw doctor --fix"

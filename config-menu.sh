@@ -3410,7 +3410,7 @@ converge_gateway_single_instance_menu() {
     enforce_gateway_service_precedence_menu
 
     restart_output="$(openclaw gateway restart 2>&1)" || true
-    sleep 2
+    sleep 0.5
 
     local gateway_pid
     gateway_pid="$(get_port_pid "$gateway_port")"
@@ -3419,13 +3419,13 @@ converge_gateway_single_instance_menu() {
             log_warn "检测到历史 Feishu 配置与当前 schema 不兼容，正在自动迁移并重试 Gateway..."
             migrate_legacy_feishu_schema_in_json_menu || true
             restart_output="$(openclaw gateway restart 2>&1)" || true
-            sleep 2
+            sleep 0.5
             gateway_pid="$(get_port_pid "$gateway_port")"
         fi
     fi
     if [ -z "$gateway_pid" ]; then
         restart_output="$(openclaw gateway start 2>&1)" || true
-        sleep 2
+        sleep 0.5
         gateway_pid="$(get_port_pid "$gateway_port")"
     fi
 
