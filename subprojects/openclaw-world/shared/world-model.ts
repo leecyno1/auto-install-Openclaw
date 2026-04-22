@@ -146,9 +146,9 @@ export const ROLE_PROFILES: Record<RoleId, RoleProfile> = {
     description: '通用总管，覆盖日常助理、任务推进、沟通协作与结果回报。',
     focus: ['任务推进', '沟通协作', '综合事务'],
     recommendedModelRoute: 'balanced',
-    starterSkills: ['reflection', 'agentmail', 'content-strategy', 'minimax-web-search'],
+    starterSkills: ['reflection', 'agentmail', 'content-strategy', 'web-search'],
     starterEquipment: {
-      chest: 'minimax-2-7',
+      chest: 'claude-main',
       head: 'focus-crown',
       belt: 'cron-orb',
       amulet: 'memo-ring',

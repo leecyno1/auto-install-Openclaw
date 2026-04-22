@@ -1,22 +1,24 @@
 #!/usr/bin/env python3
-import subprocess
-import json
-import sys
 import os
+import json
+import subprocess
+import sys
+
+
+def load_config():
+    config_path = os.path.expanduser('~/.openclaw/config/minimax.json')
+    try:
+        with open(config_path, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+            return data if isinstance(data, dict) else {}
+    except (FileNotFoundError, json.JSONDecodeError):
+        return {}
 
 def load_api_key():
-    config_path = os.path.expanduser('~/.openclaw/config/minimax.json')
-    
     api_key = os.environ.get('MINIMAX_API_KEY')
     if api_key:
         return api_key
-    
-    try:
-        with open(config_path, 'r') as f:
-            config = json.load(f)
-            return config.get('api_key')
-    except (FileNotFoundError, json.JSONDecodeError):
-        return None
+    return load_config().get('api_key')
 
 def call_mcp(query):
     api_key = load_api_key()
@@ -24,10 +26,23 @@ def call_mcp(query):
         print("Error: API Key not found.", file=sys.stderr)
         sys.exit(1)
 
+    config = load_config()
+    output_path = (
+        os.environ.get('MINIMAX_MCP_BASE_PATH')
+        or os.environ.get('MINIMAX_MULTIMODAL_OUTPUT_PATH')
+        or config.get('mcp_base_path')
+        or config.get('output_path')
+        or '~/.openclaw/workspace/minimax-output'
+    )
+    api_host = (
+        os.environ.get('MINIMAX_API_HOST')
+        or config.get('api_host')
+        or 'https://api.minimaxi.com'
+    )
     env = {
         'MINIMAX_API_KEY': api_key,
-        'MINIMAX_MCP_BASE_PATH': os.path.expanduser('~/.openclaw/workspace/minimax-output'),
-        'MINIMAX_API_HOST': 'https://api.minimaxi.com'
+        'MINIMAX_MCP_BASE_PATH': os.path.expanduser(output_path),
+        'MINIMAX_API_HOST': api_host,
     }
 
     # MCP protocol: send initialize + tool call in one go

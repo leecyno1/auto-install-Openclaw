@@ -300,13 +300,17 @@ apply_skill_manifest_defaults_menu
 MINIMAX_API_HOST_CN_DEFAULT="${MINIMAX_API_HOST_CN:-https://api.minimaxi.com}"
 MINIMAX_API_HOST_GLOBAL_DEFAULT="${MINIMAX_API_HOST_GLOBAL:-https://api.minimax.io}"
 MINIMAX_MULTIMODAL_OUTPUT_PATH_DEFAULT="${MINIMAX_MULTIMODAL_OUTPUT_PATH:-~/.openclaw/workspace/minimax-output}"
+MINIMAX_MCP_BASE_PATH_DEFAULT="${MINIMAX_MCP_BASE_PATH:-$MINIMAX_MULTIMODAL_OUTPUT_PATH_DEFAULT}"
+MINIMAX_API_RESOURCE_MODE_DEFAULT="${MINIMAX_API_RESOURCE_MODE:-local}"
+MINIMAX_IMAGE_MODEL_DEFAULT="${MINIMAX_IMAGE_MODEL:-image-01}"
+MINIMAX_IMAGE_ENDPOINT_DEFAULT="${MINIMAX_IMAGE_ENDPOINT:-/v1/image_generation}"
 MINIMAX_TTS_MODEL_DEFAULT="${MINIMAX_TTS_MODEL:-speech-2.8-hd}"
 MINIMAX_TTS_ENDPOINT_DEFAULT="${MINIMAX_TTS_ENDPOINT:-/v1/t2a_v2}"
 MINIMAX_VIDEO_MODEL_DEFAULT="${MINIMAX_VIDEO_MODEL:-MiniMax-Hailuo-2.3}"
 MINIMAX_VIDEO_ENDPOINT_DEFAULT="${MINIMAX_VIDEO_ENDPOINT:-/v1/video_generation}"
 MINIMAX_VIDEO_QUERY_ENDPOINT_DEFAULT="${MINIMAX_VIDEO_QUERY_ENDPOINT:-/v1/query/video_generation}"
 MINIMAX_FILES_RETRIEVE_ENDPOINT_DEFAULT="${MINIMAX_FILES_RETRIEVE_ENDPOINT:-/v1/files/retrieve}"
-MINIMAX_MUSIC_MODEL_DEFAULT="${MINIMAX_MUSIC_MODEL:-music-2.5}"
+MINIMAX_MUSIC_MODEL_DEFAULT="${MINIMAX_MUSIC_MODEL:-music-2.6}"
 MINIMAX_MUSIC_ENDPOINT_DEFAULT="${MINIMAX_MUSIC_ENDPOINT:-/v1/music_generation}"
 WELCOME_DOC_URL_GITEE="https://gitee.com/leecyno1/auto-install-openclaw/blob/main/docs/channels-configuration-guide.md"
 WELCOME_DOC_URL_GITHUB="https://github.com/leecyno1/auto-install-Openclaw/blob/main/docs/channels-configuration-guide.md"
@@ -4217,7 +4221,7 @@ config_ai_model() {
         clear_screen
         print_header
 
-        echo -e "${WHITE}🤖 模型配置（AI）${NC}"
+        echo -e "${WHITE}🤖 Provider / 模型配置${NC}"
         print_divider
         echo ""
         print_equipment_slots_menu
@@ -4225,12 +4229,13 @@ config_ai_model() {
         print_divider
         echo ""
         print_menu_item "1" "启动官方模型配置向导（openclaw onboard）" "🚀"
-        print_menu_item "2" "刷新模型与工具状态" "🔄"
-        print_menu_item "3" "MiniMax 自定义 Provider 地址" "🌐"
-        print_menu_item "4" "生图接口配置（ViviAI）" "🖼️"
+        print_menu_item "2" "官方 Provider 预设配置" "🏛️"
+        print_menu_item "3" "自定义 Provider 高级配置" "🌐"
+        print_menu_item "4" "生图 Provider 配置" "🖼️"
+        print_menu_item "5" "刷新模型与工具状态" "🔄"
         print_menu_item "0" "返回主菜单" "↩️"
         echo ""
-        read_input "${YELLOW}请选择 [0-4]: ${NC}" choice
+        read_input "${YELLOW}请选择 [0-5]: ${NC}" choice
 
         case "$choice" in
             1)
@@ -4246,16 +4251,19 @@ config_ai_model() {
                 press_enter
                 ;;
             2)
+                config_provider_presets_menu
+                ;;
+            3)
+                config_custom_provider_menu
+                ;;
+            4)
+                config_image_provider_viviai
+                ;;
+            5)
                 echo ""
                 refresh_game_progress_profile_menu >/dev/null 2>&1 || true
                 log_info "模型与工具状态已刷新"
                 press_enter
-                ;;
-            3)
-                config_minimax
-                ;;
-            4)
-                config_image_provider_viviai
                 ;;
             0)
                 return
@@ -4268,19 +4276,150 @@ config_ai_model() {
     done
 }
 
+config_provider_presets_menu() {
+    while true; do
+        clear_screen
+        print_header
+
+        echo -e "${WHITE}🏛️ 官方 Provider 预设配置${NC}"
+        print_divider
+        echo ""
+        print_menu_item "1" "Anthropic Claude" "🟣"
+        print_menu_item "2" "OpenAI" "🟢"
+        print_menu_item "3" "智谱 GLM" "🇨🇳"
+        print_menu_item "4" "MiniMax" "🤖"
+        print_menu_item "5" "Gemini" "✨"
+        print_menu_item "6" "DeepSeek" "🧠"
+        print_menu_item "7" "OpenRouter" "🌉"
+        print_menu_item "8" "Groq" "⚡"
+        print_menu_item "9" "Mistral" "🌪️"
+        print_menu_item "10" "Ollama" "🦙"
+        print_menu_item "11" "xAI / Grok" "🚀"
+        print_menu_item "0" "返回上一级" "↩️"
+        echo ""
+        read_input "${YELLOW}请选择 [0-11]: ${NC}" choice
+
+        case "$choice" in
+            1) config_anthropic ;;
+            2) config_openai ;;
+            3) config_zai ;;
+            4) config_minimax ;;
+            5) config_google_gemini ;;
+            6) config_deepseek ;;
+            7) config_openrouter ;;
+            8) config_groq ;;
+            9) config_mistral ;;
+            10) config_ollama ;;
+            11) config_xai ;;
+            0) return ;;
+            *)
+                log_error "无效选择"
+                press_enter
+                ;;
+        esac
+    done
+}
+
+config_custom_provider_menu() {
+    clear_screen
+    print_header
+
+    echo -e "${WHITE}🌐 自定义 Provider 高级配置${NC}"
+    print_divider
+    echo ""
+
+    local current_id current_name current_url current_model current_api_type current_key
+    local provider_id display_name base_url model api_type api_key
+
+    current_id="$(trim_value_menu "$(get_env_value "OPENCLAW_CUSTOM_PROVIDER_ID")")"
+    current_name="$(trim_value_menu "$(get_env_value "OPENCLAW_CUSTOM_PROVIDER_NAME")")"
+    current_url="$(trim_value_menu "$(get_env_value "OPENCLAW_CUSTOM_PROVIDER_BASE_URL")")"
+    current_model="$(trim_value_menu "$(get_env_value "OPENCLAW_CUSTOM_PROVIDER_MODEL")")"
+    current_api_type="$(trim_value_menu "$(get_env_value "OPENCLAW_CUSTOM_PROVIDER_API_TYPE")")"
+    current_key="$(trim_value_menu "$(get_env_value "OPENCLAW_CUSTOM_PROVIDER_API_KEY")")"
+
+    [ -n "$current_id" ] || current_id="custom-provider"
+    [ -n "$current_name" ] || current_name="自定义 Provider"
+    [ -n "$current_api_type" ] || current_api_type="openai-responses"
+
+    echo -e "${CYAN}当前配置:${NC}"
+    echo -e "  标识: ${WHITE}${current_id}${NC}"
+    echo -e "  名称: ${WHITE}${current_name}${NC}"
+    echo -e "  Base URL: ${WHITE}${current_url:-（未配置）}${NC}"
+    echo -e "  Model: ${WHITE}${current_model:-（未配置）}${NC}"
+    echo -e "  兼容格式: ${WHITE}${current_api_type}${NC}"
+    if [ -n "$current_key" ]; then
+        echo -e "  API Key: ${WHITE}${current_key:0:8}...${current_key: -4}${NC}"
+    else
+        echo -e "  API Key: ${GRAY}(未配置)${NC}"
+    fi
+    echo ""
+
+    read_input "${YELLOW}输入 Provider 标识（英文/中划线，留空保持当前）: ${NC}" provider_id
+    provider_id="$(trim_value_menu "$provider_id")"
+    [ -n "$provider_id" ] || provider_id="$current_id"
+    provider_id="$(printf "%s" "$provider_id" | tr '[:upper:] ' '[:lower:]-' | tr -cd 'a-z0-9._-')"
+    [ -n "$provider_id" ] || provider_id="custom-provider"
+
+    read_input "${YELLOW}输入显示名称（留空保持当前）: ${NC}" display_name
+    display_name="$(trim_value_menu "$display_name")"
+    [ -n "$display_name" ] || display_name="$current_name"
+
+    read_input "${YELLOW}输入 Base URL（留空保持当前）: ${NC}" base_url
+    base_url="$(trim_value_menu "$base_url")"
+    [ -n "$base_url" ] || base_url="$current_url"
+
+    read_input "${YELLOW}输入模型名（留空保持当前）: ${NC}" model
+    model="$(trim_value_menu "$model")"
+    [ -n "$model" ] || model="$current_model"
+
+    echo ""
+    echo -e "${CYAN}选择 API 兼容格式:${NC}"
+    print_menu_item "1" "anthropic-messages" "🟣"
+    print_menu_item "2" "openai-responses" "🟢"
+    print_menu_item "3" "openai-completions" "📦"
+    echo ""
+    read_input "${YELLOW}请选择 [1-3]（留空保持当前: ${current_api_type}）: ${NC}" api_type_choice
+    case "${api_type_choice:-}" in
+        1) api_type="anthropic-messages" ;;
+        2) api_type="openai-responses" ;;
+        3) api_type="openai-completions" ;;
+        "") api_type="$current_api_type" ;;
+        *)
+            log_warn "未识别的选项，保持当前 API 兼容格式"
+            api_type="$current_api_type"
+            ;;
+    esac
+
+    read_secret_input "${YELLOW}输入 API Key（留空保持当前）: ${NC}" api_key
+    [ -n "$api_key" ] || api_key="$current_key"
+
+    if [ -z "$base_url" ] || [ -z "$model" ] || [ -z "$api_key" ]; then
+        log_error "自定义 Provider 需要完整的 URL、模型名和 API Key"
+        press_enter
+        return
+    fi
+
+    save_custom_provider_config "$provider_id" "$display_name" "$base_url" "$model" "$api_type" "$api_key"
+    press_enter
+}
+
 config_image_provider_viviai() {
     clear_screen
     print_header
 
-    echo -e "${WHITE}🖼️ 生图接口配置（ViviAI）${NC}"
+    echo -e "${WHITE}🖼️ 生图 Provider 配置${NC}"
     print_divider
     echo ""
 
     local current_url current_model current_key
     local input_url input_model input_key
+    local default_provider_id="custom-image"
     local default_url="https://api.viviai.cc/v1/chat/completions"
     local default_model="gemini-3.1-flash-image-preview"
+    local current_provider_id
 
+    current_provider_id="$(trim_value_menu "${OPENCLAW_IMAGE_PROVIDER_ID:-$default_provider_id}")"
     current_url="$(trim_value_menu "${OPENCLAW_IMAGE_API_URL:-${QIHANG_IMAGE_BASE_URL:-$default_url}}")"
     [ -n "$current_url" ] || current_url="$default_url"
     current_model="$(trim_value_menu "${OPENCLAW_IMAGE_MODEL:-${QIHANG_IMAGE_MODEL_GEMINI:-$default_model}}")"
@@ -4288,6 +4427,7 @@ config_image_provider_viviai() {
     current_key="${OPENCLAW_IMAGE_API_KEY:-${QIHANG_IMAGE_API_KEY:-$QIHANG_IMAGE_API_KEY_DEFAULT}}"
 
     echo -e "${CYAN}当前配置:${NC}"
+    echo -e "  Provider: ${WHITE}${current_provider_id}${NC}"
     echo -e "  接口 URL: ${WHITE}${current_url}${NC}"
     echo -e "  模型: ${WHITE}${current_model}${NC}"
     if [ -n "$current_key" ]; then
@@ -4317,6 +4457,7 @@ config_image_provider_viviai() {
     OPENCLAW_IMAGE_MODEL="$input_model"
     OPENCLAW_IMAGE_API_KEY="$input_key"
 
+    upsert_env_export "OPENCLAW_IMAGE_PROVIDER_ID" "$current_provider_id"
     upsert_env_export "OPENCLAW_IMAGE_API_URL" "$OPENCLAW_IMAGE_API_URL"
     upsert_env_export "OPENCLAW_IMAGE_MODEL" "$OPENCLAW_IMAGE_MODEL"
     upsert_env_export "OPENCLAW_IMAGE_API_KEY" "$OPENCLAW_IMAGE_API_KEY"
@@ -4328,6 +4469,49 @@ config_image_provider_viviai() {
     log_info "接口 URL: $OPENCLAW_IMAGE_API_URL"
     log_info "模型: $OPENCLAW_IMAGE_MODEL"
     press_enter
+}
+
+save_custom_provider_config() {
+    local provider_id="$1"
+    local display_name="$2"
+    local base_url="$3"
+    local model="$4"
+    local api_type="$5"
+    local api_key="$6"
+    local config_file="$OPENCLAW_JSON"
+
+    ensure_openclaw_init
+
+    upsert_env_export "OPENCLAW_ACTIVE_PROVIDER_PRESET" "custom"
+    upsert_env_export "OPENCLAW_ACTIVE_PROVIDER_MODEL" "$model"
+    upsert_env_export "OPENCLAW_ACTIVE_PROVIDER_BASE_URL" "$base_url"
+    upsert_env_export "OPENCLAW_ACTIVE_PROVIDER_API_TYPE" "$api_type"
+    upsert_env_export "OPENCLAW_CUSTOM_PROVIDER_ID" "$provider_id"
+    upsert_env_export "OPENCLAW_CUSTOM_PROVIDER_NAME" "$display_name"
+    upsert_env_export "OPENCLAW_CUSTOM_PROVIDER_BASE_URL" "$base_url"
+    upsert_env_export "OPENCLAW_CUSTOM_PROVIDER_MODEL" "$model"
+    upsert_env_export "OPENCLAW_CUSTOM_PROVIDER_API_TYPE" "$api_type"
+    upsert_env_export "OPENCLAW_CUSTOM_PROVIDER_API_KEY" "$api_key"
+    remove_env_export "OPENCLAW_MINIMAX_PROVIDER_URL"
+
+    configure_custom_provider "$provider_id" "$api_key" "$model" "$base_url" "$config_file" "$api_type"
+
+    local openclaw_model="${provider_id}-custom/$model"
+    if check_openclaw_installed; then
+        if openclaw models set "$openclaw_model" >/dev/null 2>&1; then
+            log_info "OpenClaw 默认模型已设置为: $openclaw_model"
+        else
+            openclaw config set agents.defaults.model.primary "$openclaw_model" >/dev/null 2>&1 || true
+            openclaw config set models.default "$openclaw_model" >/dev/null 2>&1 || true
+            log_warn "openclaw models set 未完全成功，已回退写入配置。"
+        fi
+    fi
+
+    sync_lobster_shared_state_menu
+    log_info "自定义 Provider 配置已保存。"
+    log_info "Provider: $display_name ($provider_id)"
+    log_info "Base URL: $base_url"
+    log_info "Model: $model"
 }
 
 config_anthropic() {
@@ -5517,6 +5701,7 @@ config_zai() {
     
     # 获取当前配置
     local current_key=$(get_env_value "ZAI_API_KEY")
+    local current_url=$(get_env_value "ZAI_BASE_URL")
     local official_url="https://open.bigmodel.cn/api/paas/v4"
     
     # 显示当前配置
@@ -5528,6 +5713,11 @@ config_zai() {
         echo -e "  API Key: ${WHITE}$masked_key${NC}"
     else
         echo -e "  API Key: ${GRAY}(未配置)${NC}"
+    fi
+    if [ -n "$current_url" ]; then
+        echo -e "  Base URL: ${WHITE}$current_url${NC}"
+    else
+        echo -e "  Base URL: ${GRAY}(官方默认)${NC}"
     fi
     echo ""
     
@@ -5546,6 +5736,7 @@ config_zai() {
     config_mode=${config_mode:-1}
     
     local api_key="$current_key"
+    local base_url="$current_url"
     
     if [ "$config_mode" = "2" ]; then
         echo ""
@@ -5553,11 +5744,25 @@ config_zai() {
             local masked_key="${current_key:0:8}...${current_key: -4}"
             echo -e "当前 API Key: ${GRAY}$masked_key${NC}"
         fi
+        [ -n "$current_url" ] && echo -e "当前 Base URL: ${WHITE}$current_url${NC}" || echo -e "当前 Base URL: ${GRAY}(官方默认)${NC}"
         
         read_secret_input "${YELLOW}输入 API Key (留空保持不变): ${NC}" input_key
         
         if [ -n "$input_key" ]; then
             api_key="$input_key"
+        fi
+
+        read_input "${YELLOW}输入 Base URL（留空保持当前，输入 official 使用官方）: ${NC}" input_url
+        input_url="$(trim_value_menu "$input_url")"
+        if [ -n "$input_url" ]; then
+            case "$(echo "$input_url" | tr '[:upper:]' '[:lower:]')" in
+                official|default|none|off)
+                    base_url=""
+                    ;;
+                *)
+                    base_url="$input_url"
+                    ;;
+            esac
         fi
     fi
     
@@ -5591,16 +5796,17 @@ config_zai() {
     esac
     
     # 保存到 OpenClaw 环境变量配置
-    save_openclaw_ai_config "zai" "$api_key" "$model" ""
+    save_openclaw_ai_config "zai" "$api_key" "$model" "$base_url" "openai-responses"
     
     echo ""
     log_info "智谱 GLM 配置完成！"
     log_info "模型: $model"
+    [ -n "$base_url" ] && log_info "Base URL: $base_url" || log_info "Base URL: $official_url"
     
     # 询问是否测试
     echo ""
     if confirm "是否测试 API 连接？" "y"; then
-        test_ai_connection "zai" "$api_key" "$model" ""
+        test_ai_connection "zai" "$api_key" "$model" "${base_url:-$official_url}"
     fi
     
     press_enter
@@ -5619,8 +5825,8 @@ config_minimax() {
     local current_provider_url=$(get_env_value "OPENCLAW_MINIMAX_PROVIDER_URL")
     
     # 显示当前配置
-    echo -e "${CYAN}MiniMax 是中国领先的 AI 公司，提供大语言模型服务${NC}"
-    echo -e "${GREEN}✓ 同一把 MiniMax API Key 可用于文本、图片、语音、视频、音乐能力${NC}"
+    echo -e "${CYAN}MiniMax 官方渠道支持统一多模态套餐${NC}"
+    echo -e "${GREEN}✓ 同一把 MiniMax API Key 可用于文本、图片、语音、视频、音乐、搜索、识图能力${NC}"
     echo ""
     echo -e "${CYAN}当前配置:${NC}"
     if [ -n "$current_key" ]; then
@@ -10844,35 +11050,29 @@ const file = '$config_file';
 const provider = '$provider';
 const model = '$model';
 const baseUrl = '$base_url';
+const otherProvider = provider === 'minimax' ? 'minimax-cn' : 'minimax';
 let cfg = {};
 try { cfg = JSON.parse(fs.readFileSync(file, 'utf8')); } catch {}
 cfg.models ||= {};
 cfg.models.mode ||= 'merge';
 cfg.models.providers ||= {};
-const p = cfg.models.providers[provider] || {};
-const models = Array.isArray(p.models) ? p.models : [];
 const catalog = {
   'MiniMax-M2.7': { name: 'MiniMax M2.7' },
   'MiniMax-M2.7-highspeed': { name: 'MiniMax M2.7 Highspeed' },
   'MiniMax-M2.5': { name: 'MiniMax M2.5' },
   'MiniMax-M2.5-highspeed': { name: 'MiniMax M2.5 Highspeed' },
 };
-const modelIds = new Set(models.map(m => m.id));
-for (const id of ['MiniMax-M2.7', 'MiniMax-M2.7-highspeed', 'MiniMax-M2.5', 'MiniMax-M2.5-highspeed']) {
-  if (!modelIds.has(id)) {
-    models.push({
-      id,
-      name: (catalog[id] && catalog[id].name) || id,
-      reasoning: true,
-      input: ['text'],
-      cost: { input: 0.3, output: 1.2, cacheRead: 0.03, cacheWrite: 0.12 },
-      contextWindow: 200000,
-      maxTokens: 8192
-    });
-  }
-}
+delete cfg.models.providers[otherProvider];
+const models = ['MiniMax-M2.7', 'MiniMax-M2.7-highspeed', 'MiniMax-M2.5', 'MiniMax-M2.5-highspeed'].map((id) => ({
+  id,
+  name: (catalog[id] && catalog[id].name) || id,
+  reasoning: true,
+  input: ['text'],
+  cost: { input: 0.3, output: 1.2, cacheRead: 0.03, cacheWrite: 0.12 },
+  contextWindow: 200000,
+  maxTokens: 8192
+}));
 cfg.models.providers[provider] = {
-  ...p,
   baseUrl,
   api: 'anthropic-messages',
   authHeader: true,
@@ -10881,6 +11081,9 @@ cfg.models.providers[provider] = {
 cfg.agents ||= {};
 cfg.agents.defaults ||= {};
 cfg.agents.defaults.models ||= {};
+for (const key of Object.keys(cfg.agents.defaults.models)) {
+  if (key.startsWith('minimax/') || key.startsWith('minimax-cn/')) delete cfg.agents.defaults.models[key];
+}
 const ref = provider + '/' + model;
 cfg.agents.defaults.models[ref] = { ...(cfg.agents.defaults.models[ref] || {}), alias: 'Minimax' };
 fs.writeFileSync(file, JSON.stringify(cfg, null, 2));
@@ -10892,6 +11095,7 @@ file = os.path.expanduser("$config_file")
 provider = "$provider"
 model = "$model"
 base_url = "$base_url"
+other_provider = "minimax-cn" if provider == "minimax" else "minimax"
 try:
     with open(file, "r") as f:
         cfg = json.load(f)
@@ -10900,30 +11104,30 @@ except Exception:
 cfg.setdefault("models", {})
 cfg["models"].setdefault("mode", "merge")
 cfg["models"].setdefault("providers", {})
-p = cfg["models"]["providers"].get(provider, {})
-models = p.get("models", []) if isinstance(p.get("models"), list) else []
 catalog = {
     "MiniMax-M2.7": "MiniMax M2.7",
     "MiniMax-M2.7-highspeed": "MiniMax M2.7 Highspeed",
     "MiniMax-M2.5": "MiniMax M2.5",
     "MiniMax-M2.5-highspeed": "MiniMax M2.5 Highspeed",
 }
-existing = {m.get("id") for m in models if isinstance(m, dict)}
+cfg["models"]["providers"].pop(other_provider, None)
+models = []
 for mid in ("MiniMax-M2.7", "MiniMax-M2.7-highspeed", "MiniMax-M2.5", "MiniMax-M2.5-highspeed"):
-    if mid not in existing:
-        models.append({
-            "id": mid, "name": catalog.get(mid, mid), "reasoning": True, "input": ["text"],
-            "cost": {"input": 0.3, "output": 1.2, "cacheRead": 0.03, "cacheWrite": 0.12},
-            "contextWindow": 200000, "maxTokens": 8192
-        })
+    models.append({
+        "id": mid, "name": catalog.get(mid, mid), "reasoning": True, "input": ["text"],
+        "cost": {"input": 0.3, "output": 1.2, "cacheRead": 0.03, "cacheWrite": 0.12},
+        "contextWindow": 200000, "maxTokens": 8192
+    })
 cfg["models"]["providers"][provider] = {
-    **(p if isinstance(p, dict) else {}),
     "baseUrl": base_url,
     "api": "anthropic-messages",
     "authHeader": True,
     "models": models
 }
 cfg.setdefault("agents", {}).setdefault("defaults", {}).setdefault("models", {})
+for key in list(cfg["agents"]["defaults"]["models"].keys()):
+    if str(key).startswith("minimax/") or str(key).startswith("minimax-cn/"):
+        cfg["agents"]["defaults"]["models"].pop(key, None)
 cfg["agents"]["defaults"]["models"][f"{provider}/{model}"] = {"alias": "Minimax"}
 with open(file, "w") as f:
     json.dump(cfg, f, indent=2)
@@ -10936,16 +11140,58 @@ configure_minimax_multimodal_vendor_menu() {
     check_openclaw_installed || return 0
 
     openclaw config set "vendor.media.minimax.apiHost" "$api_host" >/dev/null 2>&1 || true
-    openclaw config set "vendor.media.minimax.image.model" "${MINIMAX_IMAGE_MODEL:-image-01}" >/dev/null 2>&1 || true
-    openclaw config set "vendor.media.minimax.image.endpoint" "${MINIMAX_IMAGE_ENDPOINT:-/v1/image_generation}" >/dev/null 2>&1 || true
-    openclaw config set "vendor.media.minimax.tts.model" "${MINIMAX_TTS_MODEL:-speech-2.8-hd}" >/dev/null 2>&1 || true
-    openclaw config set "vendor.media.minimax.tts.endpoint" "${MINIMAX_TTS_ENDPOINT:-/v1/t2a_v2}" >/dev/null 2>&1 || true
-    openclaw config set "vendor.media.minimax.video.model" "${MINIMAX_VIDEO_MODEL:-MiniMax-Hailuo-2.3}" >/dev/null 2>&1 || true
-    openclaw config set "vendor.media.minimax.video.endpoint" "${MINIMAX_VIDEO_ENDPOINT:-/v1/video_generation}" >/dev/null 2>&1 || true
-    openclaw config set "vendor.media.minimax.video.queryEndpoint" "${MINIMAX_VIDEO_QUERY_ENDPOINT:-/v1/query/video_generation}" >/dev/null 2>&1 || true
-    openclaw config set "vendor.media.minimax.video.retrieveEndpoint" "${MINIMAX_FILES_RETRIEVE_ENDPOINT:-/v1/files/retrieve}" >/dev/null 2>&1 || true
-    openclaw config set "vendor.media.minimax.music.model" "${MINIMAX_MUSIC_MODEL:-music-2.5}" >/dev/null 2>&1 || true
-    openclaw config set "vendor.media.minimax.music.endpoint" "${MINIMAX_MUSIC_ENDPOINT:-/v1/music_generation}" >/dev/null 2>&1 || true
+    openclaw config set "vendor.media.minimax.outputPath" "${MINIMAX_MULTIMODAL_OUTPUT_PATH:-$MINIMAX_MULTIMODAL_OUTPUT_PATH_DEFAULT}" >/dev/null 2>&1 || true
+    openclaw config set "vendor.media.minimax.mcpBasePath" "${MINIMAX_MCP_BASE_PATH:-${MINIMAX_MULTIMODAL_OUTPUT_PATH:-$MINIMAX_MULTIMODAL_OUTPUT_PATH_DEFAULT}}" >/dev/null 2>&1 || true
+    openclaw config set "vendor.media.minimax.resourceMode" "${MINIMAX_API_RESOURCE_MODE:-$MINIMAX_API_RESOURCE_MODE_DEFAULT}" >/dev/null 2>&1 || true
+    openclaw config set "vendor.media.minimax.image.model" "${MINIMAX_IMAGE_MODEL:-$MINIMAX_IMAGE_MODEL_DEFAULT}" >/dev/null 2>&1 || true
+    openclaw config set "vendor.media.minimax.image.endpoint" "${MINIMAX_IMAGE_ENDPOINT:-$MINIMAX_IMAGE_ENDPOINT_DEFAULT}" >/dev/null 2>&1 || true
+    openclaw config set "vendor.media.minimax.tts.model" "${MINIMAX_TTS_MODEL:-$MINIMAX_TTS_MODEL_DEFAULT}" >/dev/null 2>&1 || true
+    openclaw config set "vendor.media.minimax.tts.endpoint" "${MINIMAX_TTS_ENDPOINT:-$MINIMAX_TTS_ENDPOINT_DEFAULT}" >/dev/null 2>&1 || true
+    openclaw config set "vendor.media.minimax.video.model" "${MINIMAX_VIDEO_MODEL:-$MINIMAX_VIDEO_MODEL_DEFAULT}" >/dev/null 2>&1 || true
+    openclaw config set "vendor.media.minimax.video.endpoint" "${MINIMAX_VIDEO_ENDPOINT:-$MINIMAX_VIDEO_ENDPOINT_DEFAULT}" >/dev/null 2>&1 || true
+    openclaw config set "vendor.media.minimax.video.queryEndpoint" "${MINIMAX_VIDEO_QUERY_ENDPOINT:-$MINIMAX_VIDEO_QUERY_ENDPOINT_DEFAULT}" >/dev/null 2>&1 || true
+    openclaw config set "vendor.media.minimax.video.retrieveEndpoint" "${MINIMAX_FILES_RETRIEVE_ENDPOINT:-$MINIMAX_FILES_RETRIEVE_ENDPOINT_DEFAULT}" >/dev/null 2>&1 || true
+    openclaw config set "vendor.media.minimax.music.model" "${MINIMAX_MUSIC_MODEL:-$MINIMAX_MUSIC_MODEL_DEFAULT}" >/dev/null 2>&1 || true
+    openclaw config set "vendor.media.minimax.music.endpoint" "${MINIMAX_MUSIC_ENDPOINT:-$MINIMAX_MUSIC_ENDPOINT_DEFAULT}" >/dev/null 2>&1 || true
+}
+
+upsert_minimax_multimodal_env_defaults_menu() {
+    local api_host="$1"
+    local output_path="${MINIMAX_MULTIMODAL_OUTPUT_PATH:-$MINIMAX_MULTIMODAL_OUTPUT_PATH_DEFAULT}"
+    local mcp_base_path="${MINIMAX_MCP_BASE_PATH:-$output_path}"
+
+    upsert_env_export "MINIMAX_API_HOST" "$api_host"
+    upsert_env_export "MINIMAX_MULTIMODAL_OUTPUT_PATH" "$output_path"
+    upsert_env_export "MINIMAX_MCP_BASE_PATH" "$mcp_base_path"
+    upsert_env_export "MINIMAX_API_RESOURCE_MODE" "${MINIMAX_API_RESOURCE_MODE:-$MINIMAX_API_RESOURCE_MODE_DEFAULT}"
+    upsert_env_export "MINIMAX_IMAGE_MODEL" "${MINIMAX_IMAGE_MODEL:-$MINIMAX_IMAGE_MODEL_DEFAULT}"
+    upsert_env_export "MINIMAX_IMAGE_ENDPOINT" "${MINIMAX_IMAGE_ENDPOINT:-$MINIMAX_IMAGE_ENDPOINT_DEFAULT}"
+    upsert_env_export "MINIMAX_TTS_MODEL" "${MINIMAX_TTS_MODEL:-$MINIMAX_TTS_MODEL_DEFAULT}"
+    upsert_env_export "MINIMAX_TTS_ENDPOINT" "${MINIMAX_TTS_ENDPOINT:-$MINIMAX_TTS_ENDPOINT_DEFAULT}"
+    upsert_env_export "MINIMAX_VIDEO_MODEL" "${MINIMAX_VIDEO_MODEL:-$MINIMAX_VIDEO_MODEL_DEFAULT}"
+    upsert_env_export "MINIMAX_VIDEO_ENDPOINT" "${MINIMAX_VIDEO_ENDPOINT:-$MINIMAX_VIDEO_ENDPOINT_DEFAULT}"
+    upsert_env_export "MINIMAX_VIDEO_QUERY_ENDPOINT" "${MINIMAX_VIDEO_QUERY_ENDPOINT:-$MINIMAX_VIDEO_QUERY_ENDPOINT_DEFAULT}"
+    upsert_env_export "MINIMAX_FILES_RETRIEVE_ENDPOINT" "${MINIMAX_FILES_RETRIEVE_ENDPOINT:-$MINIMAX_FILES_RETRIEVE_ENDPOINT_DEFAULT}"
+    upsert_env_export "MINIMAX_MUSIC_MODEL" "${MINIMAX_MUSIC_MODEL:-$MINIMAX_MUSIC_MODEL_DEFAULT}"
+    upsert_env_export "MINIMAX_MUSIC_ENDPOINT" "${MINIMAX_MUSIC_ENDPOINT:-$MINIMAX_MUSIC_ENDPOINT_DEFAULT}"
+}
+
+sync_minimax_image_provider_menu() {
+    local api_key="$1"
+    local api_host="$2"
+    local current_provider_id current_base_url
+    current_provider_id="$(get_env_value "OPENCLAW_IMAGE_PROVIDER_ID")"
+    current_base_url="$(get_env_value "OPENCLAW_IMAGE_API_URL")"
+
+    if [ -n "$current_provider_id" ] && [[ "$current_provider_id" != minimax* ]] && [ -n "$current_base_url" ] && [ "$current_base_url" != "https://api.viviai.cc/v1/chat/completions" ]; then
+        return 0
+    fi
+
+    upsert_env_export "OPENCLAW_IMAGE_PROVIDER_ID" "minimax-image"
+    upsert_env_export "OPENCLAW_IMAGE_PROVIDER_NAME" "MiniMax 官方生图"
+    upsert_env_export "OPENCLAW_IMAGE_API_URL" "${api_host}${MINIMAX_IMAGE_ENDPOINT:-$MINIMAX_IMAGE_ENDPOINT_DEFAULT}"
+    upsert_env_export "OPENCLAW_IMAGE_MODEL" "${MINIMAX_IMAGE_MODEL:-$MINIMAX_IMAGE_MODEL_DEFAULT}"
+    [ -n "$api_key" ] && upsert_env_export "OPENCLAW_IMAGE_API_KEY" "$api_key"
 }
 
 write_minimax_skill_config_menu() {
@@ -10966,24 +11212,31 @@ cfg_file = os.path.expanduser("$cfg_file")
 payload = {
     "api_key": "$api_key",
     "api_host": "$api_host",
-    "output_path": "${MINIMAX_MULTIMODAL_OUTPUT_PATH:-~/.openclaw/workspace/minimax-output}",
+    "provider_base_url": "${OPENCLAW_MINIMAX_PROVIDER_URL:-}",
+    "text_model": "$(get_env_value "OPENCLAW_ACTIVE_PROVIDER_MODEL")",
+    "output_path": "${MINIMAX_MULTIMODAL_OUTPUT_PATH:-$MINIMAX_MULTIMODAL_OUTPUT_PATH_DEFAULT}",
+    "mcp_base_path": "${MINIMAX_MCP_BASE_PATH:-${MINIMAX_MULTIMODAL_OUTPUT_PATH:-$MINIMAX_MULTIMODAL_OUTPUT_PATH_DEFAULT}}",
+    "resource_mode": "${MINIMAX_API_RESOURCE_MODE:-$MINIMAX_API_RESOURCE_MODE_DEFAULT}",
     "image": {
-        "model": "${MINIMAX_IMAGE_MODEL:-image-01}",
-        "endpoint": "${MINIMAX_IMAGE_ENDPOINT:-/v1/image_generation}"
+        "model": "${MINIMAX_IMAGE_MODEL:-$MINIMAX_IMAGE_MODEL_DEFAULT}",
+        "endpoint": "${MINIMAX_IMAGE_ENDPOINT:-$MINIMAX_IMAGE_ENDPOINT_DEFAULT}"
     },
     "tts": {
-        "model": "${MINIMAX_TTS_MODEL:-speech-2.8-hd}",
-        "endpoint": "${MINIMAX_TTS_ENDPOINT:-/v1/t2a_v2}"
+        "model": "${MINIMAX_TTS_MODEL:-$MINIMAX_TTS_MODEL_DEFAULT}",
+        "endpoint": "${MINIMAX_TTS_ENDPOINT:-$MINIMAX_TTS_ENDPOINT_DEFAULT}"
     },
     "video": {
-        "model": "${MINIMAX_VIDEO_MODEL:-MiniMax-Hailuo-2.3}",
-        "endpoint": "${MINIMAX_VIDEO_ENDPOINT:-/v1/video_generation}",
-        "query_endpoint": "${MINIMAX_VIDEO_QUERY_ENDPOINT:-/v1/query/video_generation}",
-        "retrieve_endpoint": "${MINIMAX_FILES_RETRIEVE_ENDPOINT:-/v1/files/retrieve}"
+        "model": "${MINIMAX_VIDEO_MODEL:-$MINIMAX_VIDEO_MODEL_DEFAULT}",
+        "endpoint": "${MINIMAX_VIDEO_ENDPOINT:-$MINIMAX_VIDEO_ENDPOINT_DEFAULT}",
+        "query_endpoint": "${MINIMAX_VIDEO_QUERY_ENDPOINT:-$MINIMAX_VIDEO_QUERY_ENDPOINT_DEFAULT}",
+        "retrieve_endpoint": "${MINIMAX_FILES_RETRIEVE_ENDPOINT:-$MINIMAX_FILES_RETRIEVE_ENDPOINT_DEFAULT}"
     },
     "music": {
-        "model": "${MINIMAX_MUSIC_MODEL:-music-2.5}",
-        "endpoint": "${MINIMAX_MUSIC_ENDPOINT:-/v1/music_generation}"
+        "model": "${MINIMAX_MUSIC_MODEL:-$MINIMAX_MUSIC_MODEL_DEFAULT}",
+        "endpoint": "${MINIMAX_MUSIC_ENDPOINT:-$MINIMAX_MUSIC_ENDPOINT_DEFAULT}"
+    },
+    "mcp": {
+        "tools": ["web_search", "understand_image"]
     }
 }
 os.makedirs(os.path.dirname(cfg_file), exist_ok=True)
@@ -10995,24 +11248,31 @@ PYEOF
 {
   "api_key": "$api_key",
   "api_host": "$api_host",
-  "output_path": "${MINIMAX_MULTIMODAL_OUTPUT_PATH:-~/.openclaw/workspace/minimax-output}",
+  "provider_base_url": "${OPENCLAW_MINIMAX_PROVIDER_URL:-}",
+  "text_model": "$(get_env_value "OPENCLAW_ACTIVE_PROVIDER_MODEL")",
+  "output_path": "${MINIMAX_MULTIMODAL_OUTPUT_PATH:-$MINIMAX_MULTIMODAL_OUTPUT_PATH_DEFAULT}",
+  "mcp_base_path": "${MINIMAX_MCP_BASE_PATH:-${MINIMAX_MULTIMODAL_OUTPUT_PATH:-$MINIMAX_MULTIMODAL_OUTPUT_PATH_DEFAULT}}",
+  "resource_mode": "${MINIMAX_API_RESOURCE_MODE:-$MINIMAX_API_RESOURCE_MODE_DEFAULT}",
   "image": {
-    "model": "${MINIMAX_IMAGE_MODEL:-image-01}",
-    "endpoint": "${MINIMAX_IMAGE_ENDPOINT:-/v1/image_generation}"
+    "model": "${MINIMAX_IMAGE_MODEL:-$MINIMAX_IMAGE_MODEL_DEFAULT}",
+    "endpoint": "${MINIMAX_IMAGE_ENDPOINT:-$MINIMAX_IMAGE_ENDPOINT_DEFAULT}"
   },
   "tts": {
-    "model": "${MINIMAX_TTS_MODEL:-speech-2.8-hd}",
-    "endpoint": "${MINIMAX_TTS_ENDPOINT:-/v1/t2a_v2}"
+    "model": "${MINIMAX_TTS_MODEL:-$MINIMAX_TTS_MODEL_DEFAULT}",
+    "endpoint": "${MINIMAX_TTS_ENDPOINT:-$MINIMAX_TTS_ENDPOINT_DEFAULT}"
   },
   "video": {
-    "model": "${MINIMAX_VIDEO_MODEL:-MiniMax-Hailuo-2.3}",
-    "endpoint": "${MINIMAX_VIDEO_ENDPOINT:-/v1/video_generation}",
-    "query_endpoint": "${MINIMAX_VIDEO_QUERY_ENDPOINT:-/v1/query/video_generation}",
-    "retrieve_endpoint": "${MINIMAX_FILES_RETRIEVE_ENDPOINT:-/v1/files/retrieve}"
+    "model": "${MINIMAX_VIDEO_MODEL:-$MINIMAX_VIDEO_MODEL_DEFAULT}",
+    "endpoint": "${MINIMAX_VIDEO_ENDPOINT:-$MINIMAX_VIDEO_ENDPOINT_DEFAULT}",
+    "query_endpoint": "${MINIMAX_VIDEO_QUERY_ENDPOINT:-$MINIMAX_VIDEO_QUERY_ENDPOINT_DEFAULT}",
+    "retrieve_endpoint": "${MINIMAX_FILES_RETRIEVE_ENDPOINT:-$MINIMAX_FILES_RETRIEVE_ENDPOINT_DEFAULT}"
   },
   "music": {
-    "model": "${MINIMAX_MUSIC_MODEL:-music-2.5}",
-    "endpoint": "${MINIMAX_MUSIC_ENDPOINT:-/v1/music_generation}"
+    "model": "${MINIMAX_MUSIC_MODEL:-$MINIMAX_MUSIC_MODEL_DEFAULT}",
+    "endpoint": "${MINIMAX_MUSIC_ENDPOINT:-$MINIMAX_MUSIC_ENDPOINT_DEFAULT}"
+  },
+  "mcp": {
+    "tools": ["web_search", "understand_image"]
   }
 }
 EOF
@@ -11033,17 +11293,9 @@ repair_minimax_multimodal_defaults_menu() {
         [ -n "$api_host" ] || api_host="$MINIMAX_API_HOST_CN_DEFAULT"
     fi
 
-    upsert_env_export "MINIMAX_API_HOST" "$api_host"
     [ -n "$custom_provider_url" ] && upsert_env_export "OPENCLAW_MINIMAX_PROVIDER_URL" "$custom_provider_url"
-    upsert_env_export "MINIMAX_MULTIMODAL_OUTPUT_PATH" "${MINIMAX_MULTIMODAL_OUTPUT_PATH:-$MINIMAX_MULTIMODAL_OUTPUT_PATH_DEFAULT}"
-    upsert_env_export "MINIMAX_TTS_MODEL" "${MINIMAX_TTS_MODEL:-$MINIMAX_TTS_MODEL_DEFAULT}"
-    upsert_env_export "MINIMAX_TTS_ENDPOINT" "${MINIMAX_TTS_ENDPOINT:-$MINIMAX_TTS_ENDPOINT_DEFAULT}"
-    upsert_env_export "MINIMAX_VIDEO_MODEL" "${MINIMAX_VIDEO_MODEL:-$MINIMAX_VIDEO_MODEL_DEFAULT}"
-    upsert_env_export "MINIMAX_VIDEO_ENDPOINT" "${MINIMAX_VIDEO_ENDPOINT:-$MINIMAX_VIDEO_ENDPOINT_DEFAULT}"
-    upsert_env_export "MINIMAX_VIDEO_QUERY_ENDPOINT" "${MINIMAX_VIDEO_QUERY_ENDPOINT:-$MINIMAX_VIDEO_QUERY_ENDPOINT_DEFAULT}"
-    upsert_env_export "MINIMAX_FILES_RETRIEVE_ENDPOINT" "${MINIMAX_FILES_RETRIEVE_ENDPOINT:-$MINIMAX_FILES_RETRIEVE_ENDPOINT_DEFAULT}"
-    upsert_env_export "MINIMAX_MUSIC_MODEL" "${MINIMAX_MUSIC_MODEL:-$MINIMAX_MUSIC_MODEL_DEFAULT}"
-    upsert_env_export "MINIMAX_MUSIC_ENDPOINT" "${MINIMAX_MUSIC_ENDPOINT:-$MINIMAX_MUSIC_ENDPOINT_DEFAULT}"
+    upsert_minimax_multimodal_env_defaults_menu "$api_host"
+    sync_minimax_image_provider_menu "$api_key" "$api_host"
 
     write_minimax_skill_config_menu "$api_key" "$api_host"
     configure_minimax_multimodal_vendor_menu "$api_host"
@@ -11080,6 +11332,11 @@ save_openclaw_ai_config() {
 # 由配置菜单自动生成: $(date '+%Y-%m-%d %H:%M:%S')
 EOF
     fi
+
+    upsert_env_export "OPENCLAW_ACTIVE_PROVIDER_PRESET" "$provider"
+    upsert_env_export "OPENCLAW_ACTIVE_PROVIDER_MODEL" "$model"
+    [ -n "$base_url" ] && upsert_env_export "OPENCLAW_ACTIVE_PROVIDER_BASE_URL" "$base_url" || remove_env_export "OPENCLAW_ACTIVE_PROVIDER_BASE_URL"
+    [ -n "$api_type" ] && upsert_env_export "OPENCLAW_ACTIVE_PROVIDER_API_TYPE" "$api_type" || remove_env_export "OPENCLAW_ACTIVE_PROVIDER_API_TYPE"
 
     # 根据 provider 设置对应的环境变量
     case "$provider" in
@@ -11123,6 +11380,7 @@ EOF
             ;;
         zai)
             upsert_env_export "ZAI_API_KEY" "$api_key"
+            [ -n "$base_url" ] && upsert_env_export "ZAI_BASE_URL" "$base_url" || remove_env_export "ZAI_BASE_URL"
             ;;
         minimax|minimax-cn)
             local minimax_api_host=""
@@ -11143,17 +11401,12 @@ EOF
             fi
             MINIMAX_API_HOST="$minimax_api_host"
             OPENCLAW_MINIMAX_PROVIDER_URL="$minimax_provider_url"
-            upsert_env_export "MINIMAX_API_HOST" "$minimax_api_host"
-            upsert_env_export "MINIMAX_MULTIMODAL_OUTPUT_PATH" "${MINIMAX_MULTIMODAL_OUTPUT_PATH:-$MINIMAX_MULTIMODAL_OUTPUT_PATH_DEFAULT}"
-            upsert_env_export "MINIMAX_TTS_MODEL" "${MINIMAX_TTS_MODEL:-$MINIMAX_TTS_MODEL_DEFAULT}"
-            upsert_env_export "MINIMAX_TTS_ENDPOINT" "${MINIMAX_TTS_ENDPOINT:-$MINIMAX_TTS_ENDPOINT_DEFAULT}"
-            upsert_env_export "MINIMAX_VIDEO_MODEL" "${MINIMAX_VIDEO_MODEL:-$MINIMAX_VIDEO_MODEL_DEFAULT}"
-            upsert_env_export "MINIMAX_VIDEO_ENDPOINT" "${MINIMAX_VIDEO_ENDPOINT:-$MINIMAX_VIDEO_ENDPOINT_DEFAULT}"
-            upsert_env_export "MINIMAX_VIDEO_QUERY_ENDPOINT" "${MINIMAX_VIDEO_QUERY_ENDPOINT:-$MINIMAX_VIDEO_QUERY_ENDPOINT_DEFAULT}"
-            upsert_env_export "MINIMAX_FILES_RETRIEVE_ENDPOINT" "${MINIMAX_FILES_RETRIEVE_ENDPOINT:-$MINIMAX_FILES_RETRIEVE_ENDPOINT_DEFAULT}"
-            upsert_env_export "MINIMAX_MUSIC_MODEL" "${MINIMAX_MUSIC_MODEL:-$MINIMAX_MUSIC_MODEL_DEFAULT}"
-            upsert_env_export "MINIMAX_MUSIC_ENDPOINT" "${MINIMAX_MUSIC_ENDPOINT:-$MINIMAX_MUSIC_ENDPOINT_DEFAULT}"
+            upsert_minimax_multimodal_env_defaults_menu "$minimax_api_host"
+            sync_minimax_image_provider_menu "$api_key" "$minimax_api_host"
             write_minimax_skill_config_menu "$api_key" "$minimax_api_host"
+            ;;
+        custom)
+            upsert_env_export "OPENCLAW_CUSTOM_PROVIDER_API_KEY" "$api_key"
             ;;
         opencode|opencode-go)
             upsert_env_export "OPENCODE_API_KEY" "$api_key"
@@ -11183,7 +11436,20 @@ EOF
         local use_custom_provider=false
         
         # 如果使用自定义 BASE_URL，需要配置自定义 provider
-        if [ -n "$base_url" ] && [ "$provider" = "anthropic" ]; then
+        if [ "$provider" = "custom" ]; then
+            local custom_provider_id custom_provider_name
+            custom_provider_id="$(trim_value_menu "$(get_env_value "OPENCLAW_CUSTOM_PROVIDER_ID")")"
+            custom_provider_name="$(trim_value_menu "$(get_env_value "OPENCLAW_CUSTOM_PROVIDER_NAME")")"
+            [ -n "$custom_provider_id" ] || custom_provider_id="custom-provider"
+            [ -n "$custom_provider_name" ] || custom_provider_name="自定义 Provider"
+            configure_custom_provider "$custom_provider_id" "$api_key" "$model" "$base_url" "$config_file" "$api_type"
+            openclaw_model="${custom_provider_id}-custom/$model"
+            upsert_env_export "OPENCLAW_CUSTOM_PROVIDER_ID" "$custom_provider_id"
+            upsert_env_export "OPENCLAW_CUSTOM_PROVIDER_NAME" "$custom_provider_name"
+            upsert_env_export "OPENCLAW_CUSTOM_PROVIDER_BASE_URL" "$base_url"
+            upsert_env_export "OPENCLAW_CUSTOM_PROVIDER_MODEL" "$model"
+            upsert_env_export "OPENCLAW_CUSTOM_PROVIDER_API_TYPE" "$api_type"
+        elif [ -n "$base_url" ] && [ "$provider" = "anthropic" ]; then
             use_custom_provider=true
             configure_custom_provider "$provider" "$api_key" "$model" "$base_url" "$config_file"
             openclaw_model="anthropic-custom/$model"
@@ -11225,7 +11491,12 @@ EOF
                     openclaw_model="xai/$model"
                     ;;
                 zai)
-                    openclaw_model="zai/$model"
+                    if [ -n "$base_url" ]; then
+                        configure_custom_provider "$provider" "$api_key" "$model" "$base_url" "$config_file" "${api_type:-openai-responses}"
+                        openclaw_model="zai-custom/$model"
+                    else
+                        openclaw_model="zai/$model"
+                    fi
                     ;;
                 minimax)
                     openclaw_model="minimax/$model"
@@ -11326,15 +11597,18 @@ configure_custom_provider() {
     else
         api_type="openai-responses"
     fi
-    local provider_id="${provider}-custom"
+    local provider_id="$provider"
+    case "$provider_id" in
+        *-custom) ;;
+        *) provider_id="${provider_id}-custom" ;;
+    esac
     
     # 先检查是否存在旧的自定义配置，并询问是否清理
     local do_cleanup="false"
     if [ -f "$config_file" ]; then
         # 检查是否有旧的自定义 provider 配置
         local has_old_config="false"
-        if grep -q '"anthropic-custom"' "$config_file" 2>/dev/null || \
-           grep -q '"openai-custom"' "$config_file" 2>/dev/null; then
+        if grep -Eq '"[^"]+-custom"' "$config_file" 2>/dev/null; then
             has_old_config="true"
         fi
         
@@ -11406,8 +11680,9 @@ if (!config.models.providers) config.models.providers = {};
 
 // 根据用户选择决定是否清理旧配置
 if (vars.do_cleanup === 'true') {
-    delete config.models.providers['anthropic-custom'];
-    delete config.models.providers['openai-custom'];
+    for (const key of Object.keys(config.models.providers || {})) {
+        if (key.endsWith('-custom')) delete config.models.providers[key];
+    }
     if (config.models.configured) {
         config.models.configured = config.models.configured.filter(m => {
             if (m.startsWith('openai/claude')) return false;
@@ -13241,7 +13516,7 @@ manage_engine_menu() {
         echo -e "  已安装引擎: ${WHITE}${installed_engines}${NC}"
         echo -e "  OpenClaw: ${openclaw_status}"
         echo -e "  Hermes: ${hermes_status}"
-        echo -e "  像素小屋: ${WHITE}仅支持 OpenClaw${NC}"
+        echo -e "  像素小屋: ${WHITE}共享前端框架（运行态按引擎降级）${NC}"
         echo -e "  Hermes 派生档案: ${WHITE}${HERMES_HOME}/lobster-profile.env${NC}"
         echo ""
 
@@ -13276,10 +13551,10 @@ manage_engine_menu() {
                 log_info "默认引擎已切换为 Hermes"
                 ;;
             3)
-                log_info "请使用统一入口重新执行安装器补装 OpenClaw: lobster-setup install --engine openclaw"
+                log_info "请使用统一入口重新执行安装器补装 OpenClaw: lobster-setup install openclaw"
                 ;;
             4)
-                install_hermes_menu
+                log_info "请使用统一入口重新执行安装器补装 Hermes: lobster-setup install hermes"
                 ;;
             5)
                 run_hermes_status_menu

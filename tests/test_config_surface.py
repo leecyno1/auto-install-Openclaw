@@ -1,5 +1,10 @@
 import subprocess
+import importlib.util
 import unittest
+import json
+import os
+import sys
+import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -8,6 +13,8 @@ INSTALL = ROOT / 'install.sh'
 COMMON = ROOT / 'scripts' / 'lib' / 'openclaw-common.sh'
 SKILLS_LIB = ROOT / 'scripts' / 'lib' / 'skills.sh'
 README = ROOT / 'README.md'
+BACKEND_APP = ROOT / 'subprojects' / 'lobster-sanctum-ui' / 'vendor' / 'star-office-ui' / 'backend' / 'app.py'
+BACKEND_DIR = BACKEND_APP.parent
 
 MINIMAX_OFFICIAL_SKILLS = [
     'android-native-dev', 'buddy-sings', 'flutter-dev', 'frontend-dev', 'fullstack-dev',
@@ -59,6 +66,25 @@ class ConfigSurfaceTests(unittest.TestCase):
         text = README.read_text(encoding='utf-8')
         self.assertIn('lobster-setup config', text)
         self.assertIn('lobster-setup install', text)
+        self.assertIn('install-openclaw.sh', text)
+        self.assertIn('install-hermes.sh', text)
+
+    def test_provider_menu_is_generic_and_supports_custom_provider(self):
+        text = CONFIG_MENU.read_text(encoding='utf-8')
+        self.assertIn('官方 Provider 预设配置', text)
+        self.assertIn('自定义 Provider 高级配置', text)
+        self.assertIn('生图 Provider 配置', text)
+        self.assertNotIn('MiniMax 自定义 Provider 地址', text)
+        self.assertIn('config_provider_presets_menu()', text)
+        self.assertIn('config_custom_provider_menu()', text)
+        self.assertIn('save_custom_provider_config()', text)
+        self.assertIn('OPENCLAW_CUSTOM_PROVIDER_ID', text)
+        self.assertIn('OPENCLAW_ACTIVE_PROVIDER_PRESET', text)
+
+    def test_glm_configuration_supports_custom_base_url(self):
+        text = CONFIG_MENU.read_text(encoding='utf-8')
+        self.assertIn('ZAI_BASE_URL', text)
+        self.assertIn('输入 Base URL', text)
 
     def test_advanced_settings_has_single_advanced_model_and_image_api_entry(self):
         text = CONFIG_MENU.read_text(encoding='utf-8')
@@ -91,6 +117,66 @@ class ConfigSurfaceTests(unittest.TestCase):
             run_common('openclaw_resolve_minimax_provider_base_url minimax-cn ""'),
             'https://api.minimaxi.com/anthropic',
         )
+        backend_text = BACKEND_APP.read_text(encoding='utf-8')
+        web_text = (ROOT / 'subprojects' / 'lobster-sanctum-ui' / 'web' / 'configure.js').read_text(encoding='utf-8')
+        self.assertIn('"minimax": str(env_data.get("OPENCLAW_MINIMAX_PROVIDER_URL") or "https://api.minimax.io/anthropic")', backend_text)
+        self.assertIn('{ id: "minimax", label: "MiniMax", apiType: "anthropic-messages", baseUrl: "https://api.minimax.io/anthropic"', web_text)
+
+    def test_minimax_bundle_defaults_cover_multimodal_and_latest_music_model(self):
+        install_text = INSTALL.read_text(encoding='utf-8')
+        menu_text = CONFIG_MENU.read_text(encoding='utf-8')
+        self.assertIn('MINIMAX_IMAGE_MODEL_DEFAULT="${MINIMAX_IMAGE_MODEL:-image-01}"', install_text)
+        self.assertIn('MINIMAX_MCP_BASE_PATH_DEFAULT="${MINIMAX_MCP_BASE_PATH:-$MINIMAX_MULTIMODAL_OUTPUT_PATH_DEFAULT}"', install_text)
+        self.assertIn('MINIMAX_MUSIC_MODEL_DEFAULT="${MINIMAX_MUSIC_MODEL:-music-2.6}"', install_text)
+        self.assertIn('upsert_minimax_multimodal_env_defaults_install()', install_text)
+        self.assertIn('sync_minimax_image_provider_install()', install_text)
+        self.assertIn("delete cfg.models.providers[otherProvider];", install_text)
+        self.assertIn('MINIMAX_MUSIC_MODEL_DEFAULT="${MINIMAX_MUSIC_MODEL:-music-2.6}"', menu_text)
+        self.assertIn('upsert_minimax_multimodal_env_defaults_menu()', menu_text)
+        self.assertIn('sync_minimax_image_provider_menu()', menu_text)
+        self.assertIn("delete cfg.models.providers[otherProvider];", menu_text)
+
+    def test_minimax_scripts_read_configured_host_and_output_path(self):
+        web_search = (ROOT / 'skills' / 'default' / 'minimax-web-search' / 'scripts' / 'web_search.py').read_text(encoding='utf-8')
+        vision = (ROOT / 'skills' / 'default' / 'minimax-image-understanding' / 'scripts' / 'understand_image.py').read_text(encoding='utf-8')
+        self.assertIn("config.get('mcp_base_path')", web_search)
+        self.assertIn("config.get('api_host')", web_search)
+        self.assertIn("cfg.get('mcp_base_path')", vision)
+        self.assertIn("cfg.get('resource_mode')", vision)
+
+    def test_backend_minimax_apply_replaces_stale_provider_entries_instead_of_accumulating(self):
+        with tempfile.TemporaryDirectory() as td:
+            home = Path(td) / '.openclaw'
+            (home / 'profile').mkdir(parents=True)
+            (home / 'env').write_text('', encoding='utf-8')
+            (home / 'openclaw.json').write_text(json.dumps({
+                'models': {'mode': 'merge', 'providers': {
+                    'minimax': {'baseUrl': 'https://old.example/anthropic', 'models': [{'id': 'legacy', 'name': 'legacy'}]},
+                    'minimax-cn': {'baseUrl': 'https://api.minimaxi.com/anthropic', 'models': [{'id': 'MiniMax-M2.7', 'name': 'MiniMax'}]},
+                }},
+                'agents': {'defaults': {'models': {
+                    'minimax/MiniMax-M2.7': {'alias': 'bad'},
+                    'minimax-cn/MiniMax-M2.7-highspeed': {'alias': 'old'},
+                }}},
+            }, ensure_ascii=False, indent=2), encoding='utf-8')
+            sys.path.insert(0, str(BACKEND_DIR))
+            os.environ['OPENCLAW_HOME'] = str(home)
+            spec = importlib.util.spec_from_file_location('star_office_backend_test', BACKEND_APP)
+            backend = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(backend)
+            backend._apply_provider_config({
+                'preset': 'minimax-cn',
+                'providerId': 'minimax-cn',
+                'displayName': 'MiniMax',
+                'baseUrl': 'https://api.sfkey.cn',
+                'model': 'MiniMax-M2.7-highspeed',
+                'apiType': 'anthropic-messages',
+                'apiKey': 'sk-test',
+                'keepExistingKey': True,
+            }, {})
+            data = json.loads((home / 'openclaw.json').read_text(encoding='utf-8'))
+            self.assertEqual(list(data['models']['providers'].keys()), ['minimax-cn'])
+            self.assertEqual(list(data['agents']['defaults']['models'].keys()), ['minimax-cn/MiniMax-M2.7-highspeed'])
 
     def test_image_api_url_split_supports_root_and_full_endpoint(self):
         self.assertEqual(

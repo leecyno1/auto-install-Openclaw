@@ -30,19 +30,19 @@
 #### macOS / Linux 用户
 
 ```bash
-curl -fsSL --proto '=https' --tlsv1.2 --connect-timeout 8 --max-time 25 https://gitee.com/leecyno1/auto-install-openclaw/raw/main/install.sh | bash
+curl -fsSL --proto '=https' --tlsv1.2 --connect-timeout 8 --max-time 25 https://gitee.com/leecyno1/auto-install-openclaw/raw/main/install-openclaw.sh | bash
 ```
 
 按引擎区分：
 
 ```bash
-# 安装 OpenClaw（默认）
-curl -fsSL --proto '=https' --tlsv1.2 --connect-timeout 8 --max-time 25 https://gitee.com/leecyno1/auto-install-openclaw/raw/main/install.sh | bash -s -- --engine openclaw
+# 安装 OpenClaw（正式入口）
+curl -fsSL --proto '=https' --tlsv1.2 --connect-timeout 8 --max-time 25 https://gitee.com/leecyno1/auto-install-openclaw/raw/main/install-openclaw.sh | bash
 
-# 安装 Hermes
-curl -fsSL --proto '=https' --tlsv1.2 --connect-timeout 8 --max-time 25 https://gitee.com/leecyno1/auto-install-openclaw/raw/main/install.sh | bash -s -- --engine hermes
+# 安装 Hermes（正式入口）
+curl -fsSL --proto '=https' --tlsv1.2 --connect-timeout 8 --max-time 25 https://gitee.com/leecyno1/auto-install-openclaw/raw/main/install-hermes.sh | bash
 
-# 同时安装 OpenClaw + Hermes
+# 同时安装 OpenClaw + Hermes（兼容高级入口）
 curl -fsSL --proto '=https' --tlsv1.2 --connect-timeout 8 --max-time 25 https://gitee.com/leecyno1/auto-install-openclaw/raw/main/install.sh | bash -s -- --engine both
 ```
 
@@ -67,21 +67,30 @@ powershell -ExecutionPolicy Bypass -Command ".\install.ps1"
 ### 1.1 GitHub 直连与镜像源
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/leecyno1/auto-install-Openclaw/main/install.sh | bash
-curl -fsSL https://mirror.ghproxy.com/https://raw.githubusercontent.com/leecyno1/auto-install-Openclaw/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/leecyno1/auto-install-Openclaw/main/install-openclaw.sh | bash
+curl -fsSL https://mirror.ghproxy.com/https://raw.githubusercontent.com/leecyno1/auto-install-Openclaw/main/install-openclaw.sh | bash
 ```
 
 ### 2. 全自动安装
 
 ```bash
-# 全自动安装 OpenClaw（默认）
-curl -fsSL --proto '=https' --tlsv1.2 --connect-timeout 8 --max-time 25 https://gitee.com/leecyno1/auto-install-openclaw/raw/main/install.sh | bash -s -- --auto-confirm-all --engine openclaw
+# 全自动安装 OpenClaw（正式入口）
+curl -fsSL --proto '=https' --tlsv1.2 --connect-timeout 8 --max-time 25 https://gitee.com/leecyno1/auto-install-openclaw/raw/main/install-openclaw.sh | bash -s -- --auto-confirm-all
 
-# 全自动安装 Hermes
-curl -fsSL --proto '=https' --tlsv1.2 --connect-timeout 8 --max-time 25 https://gitee.com/leecyno1/auto-install-openclaw/raw/main/install.sh | bash -s -- --auto-confirm-all --engine hermes
+# 全自动安装 Hermes（正式入口）
+curl -fsSL --proto '=https' --tlsv1.2 --connect-timeout 8 --max-time 25 https://gitee.com/leecyno1/auto-install-openclaw/raw/main/install-hermes.sh | bash -s -- --auto-confirm-all
 
 # 全自动双引擎安装
 curl -fsSL --proto '=https' --tlsv1.2 --connect-timeout 8 --max-time 25 https://gitee.com/leecyno1/auto-install-openclaw/raw/main/install.sh | bash -s -- --auto-confirm-all --engine both
+```
+
+兼容高级入口：
+
+```bash
+curl -fsSL --proto '=https' --tlsv1.2 --connect-timeout 8 --max-time 25 https://gitee.com/leecyno1/auto-install-openclaw/raw/main/install.sh | bash -s -- --engine openclaw
+curl -fsSL --proto '=https' --tlsv1.2 --connect-timeout 8 --max-time 25 https://gitee.com/leecyno1/auto-install-openclaw/raw/main/install.sh | bash -s -- --engine hermes
+curl -fsSL --proto '=https' --tlsv1.2 --connect-timeout 8 --max-time 25 https://gitee.com/leecyno1/auto-install-openclaw/raw/main/install.sh | bash -s -- --auto-confirm-all --engine openclaw
+curl -fsSL --proto '=https' --tlsv1.2 --connect-timeout 8 --max-time 25 https://gitee.com/leecyno1/auto-install-openclaw/raw/main/install.sh | bash -s -- --auto-confirm-all --engine hermes
 ```
 
 常用附加参数：
@@ -95,7 +104,9 @@ curl -fsSL --proto '=https' --tlsv1.2 --connect-timeout 8 --max-time 25 https://
 ### 3. 统一入口（推荐）
 
 ```bash
-lobster-setup install       # 等同于 bash install.sh
+lobster-setup install openclaw   # 安装或修复 OpenClaw
+lobster-setup install hermes     # 安装或修复 Hermes
+lobster-setup install both       # 安装双引擎
 lobster-setup config        # 等同于 bash ~/.openclaw/config-menu.sh
 lobster-setup repair        # 修复历史错误配置（保留记忆/对话）
 lobster-setup workbench     # 启动像素小屋工作台
@@ -247,7 +258,9 @@ bash ~/.openclaw/config-menu.sh --install-pixel-house
 
 ```text
 .
-├── install.sh                          # 主安装脚本
+├── install-openclaw.sh                 # OpenClaw 正式安装入口
+├── install-hermes.sh                   # Hermes 正式安装入口
+├── install.sh                          # 兼容/高级安装入口
 ├── config-menu.sh                      # 配置中心
 ├── docs/                               # 配套文档
 ├── skills/default/                     # 本地默认技能仓
@@ -261,7 +274,9 @@ bash ~/.openclaw/config-menu.sh --install-pixel-house
 ### lobster-setup 统一入口（推荐）
 
 ```bash
-lobster-setup install       # 等同于 bash install.sh
+lobster-setup install openclaw
+lobster-setup install hermes
+lobster-setup install both
 lobster-setup config        # 等同于 bash ~/.openclaw/config-menu.sh
 lobster-setup repair        # 修复历史错误配置（保留记忆/对话）
 lobster-setup workbench     # 启动像素小屋工作台

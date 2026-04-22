@@ -72,6 +72,7 @@ ASSET_DEFAULTS_FILE = os.path.join(ROOT_DIR, "asset-defaults.json")
 RUNTIME_CONFIG_FILE = os.path.join(ROOT_DIR, "runtime-config.json")
 OPENCLAW_HOME = os.environ.get("OPENCLAW_HOME") or os.path.join(os.path.expanduser("~"), ".openclaw")
 OPENCLAW_ENV_FILE = os.path.join(OPENCLAW_HOME, "env")
+OPENCLAW_JSON_FILE = os.path.join(OPENCLAW_HOME, "openclaw.json")
 OPENCLAW_PROFILE_DIR = os.path.join(OPENCLAW_HOME, "profile")
 OPENCLAW_WEB_PROFILE_JSON = os.path.join(OPENCLAW_PROFILE_DIR, "web-config-profile.json")
 OPENCLAW_WEB_LOADOUT_JSON = os.path.join(OPENCLAW_PROFILE_DIR, "web-config-loadout.json")
@@ -1525,6 +1526,551 @@ def _upsert_env_export(key: str, value: str):
         f.writelines(lines)
 
 
+def _remove_env_export(key: str):
+    if not os.path.exists(OPENCLAW_ENV_FILE):
+        return
+    target_prefix = f"export {key}="
+    with open(OPENCLAW_ENV_FILE, "r", encoding="utf-8") as f:
+        lines = [raw for raw in f.readlines() if not raw.startswith(target_prefix)]
+    with open(OPENCLAW_ENV_FILE, "w", encoding="utf-8") as f:
+        f.writelines(lines)
+
+
+def _env_export_value(value) -> str:
+    if isinstance(value, (dict, list)):
+        return "'" + json.dumps(value, ensure_ascii=False) + "'"
+    return json.dumps("" if value is None else str(value), ensure_ascii=False)
+
+
+MINIMAX_MULTIMODAL_DEFAULTS = {
+    "output_path": "~/.openclaw/workspace/minimax-output",
+    "resource_mode": "local",
+    "image_model": "image-01",
+    "image_endpoint": "/v1/image_generation",
+    "tts_model": "speech-2.8-hd",
+    "tts_endpoint": "/v1/t2a_v2",
+    "video_model": "MiniMax-Hailuo-2.3",
+    "video_endpoint": "/v1/video_generation",
+    "video_query_endpoint": "/v1/query/video_generation",
+    "video_retrieve_endpoint": "/v1/files/retrieve",
+    "music_model": "music-2.6",
+    "music_endpoint": "/v1/music_generation",
+}
+
+
+def _minimax_api_host_from_base_url(base_url: str | None, env_data: dict | None = None) -> str:
+    env_data = env_data or {}
+    raw = str(base_url or "").strip()
+    if raw:
+        return re.sub(r"/anthropic/?$", "", raw)
+    saved = str(env_data.get("MINIMAX_API_HOST") or "").strip()
+    if saved:
+        return saved
+    provider_base = str(env_data.get("OPENCLAW_MINIMAX_PROVIDER_URL") or "").strip()
+    if provider_base:
+        return re.sub(r"/anthropic/?$", "", provider_base)
+    return "https://api.minimaxi.com"
+
+
+def _minimax_bundle_config(env_data: dict | None = None, base_url: str | None = None) -> dict:
+    env_data = env_data or {}
+    api_host = _minimax_api_host_from_base_url(base_url, env_data)
+    output_path = str(env_data.get("MINIMAX_MULTIMODAL_OUTPUT_PATH") or MINIMAX_MULTIMODAL_DEFAULTS["output_path"]).strip()
+    return {
+        "api_host": api_host,
+        "provider_base_url": str(base_url or env_data.get("OPENCLAW_MINIMAX_PROVIDER_URL") or "").strip(),
+        "output_path": output_path,
+        "mcp_base_path": str(env_data.get("MINIMAX_MCP_BASE_PATH") or output_path).strip(),
+        "resource_mode": str(env_data.get("MINIMAX_API_RESOURCE_MODE") or MINIMAX_MULTIMODAL_DEFAULTS["resource_mode"]).strip(),
+        "image_model": str(env_data.get("MINIMAX_IMAGE_MODEL") or MINIMAX_MULTIMODAL_DEFAULTS["image_model"]).strip(),
+        "image_endpoint": str(env_data.get("MINIMAX_IMAGE_ENDPOINT") or MINIMAX_MULTIMODAL_DEFAULTS["image_endpoint"]).strip(),
+        "tts_model": str(env_data.get("MINIMAX_TTS_MODEL") or MINIMAX_MULTIMODAL_DEFAULTS["tts_model"]).strip(),
+        "tts_endpoint": str(env_data.get("MINIMAX_TTS_ENDPOINT") or MINIMAX_MULTIMODAL_DEFAULTS["tts_endpoint"]).strip(),
+        "video_model": str(env_data.get("MINIMAX_VIDEO_MODEL") or MINIMAX_MULTIMODAL_DEFAULTS["video_model"]).strip(),
+        "video_endpoint": str(env_data.get("MINIMAX_VIDEO_ENDPOINT") or MINIMAX_MULTIMODAL_DEFAULTS["video_endpoint"]).strip(),
+        "video_query_endpoint": str(env_data.get("MINIMAX_VIDEO_QUERY_ENDPOINT") or MINIMAX_MULTIMODAL_DEFAULTS["video_query_endpoint"]).strip(),
+        "video_retrieve_endpoint": str(env_data.get("MINIMAX_FILES_RETRIEVE_ENDPOINT") or MINIMAX_MULTIMODAL_DEFAULTS["video_retrieve_endpoint"]).strip(),
+        "music_model": str(env_data.get("MINIMAX_MUSIC_MODEL") or MINIMAX_MULTIMODAL_DEFAULTS["music_model"]).strip(),
+        "music_endpoint": str(env_data.get("MINIMAX_MUSIC_ENDPOINT") or MINIMAX_MULTIMODAL_DEFAULTS["music_endpoint"]).strip(),
+    }
+
+
+def _should_autowire_minimax_image_provider(env_data: dict | None = None) -> bool:
+    env_data = env_data or {}
+    provider_id = str(env_data.get("OPENCLAW_IMAGE_PROVIDER_ID") or "").strip().lower()
+    base_url = str(env_data.get("OPENCLAW_IMAGE_API_URL") or "").strip()
+    if not provider_id and not base_url:
+        return True
+    if provider_id.startswith("minimax"):
+        return True
+    if provider_id in {"", "custom-image"} and base_url in {"", "https://api.viviai.cc/v1/chat/completions"}:
+        return True
+    return False
+
+
+def _write_minimax_skill_config(api_key: str, bundle: dict, text_model: str = ""):
+    if not api_key:
+        return
+    cfg_path = os.path.join(OPENCLAW_HOME, "config", "minimax.json")
+    os.makedirs(os.path.dirname(cfg_path), exist_ok=True)
+    payload = {
+        "api_key": api_key,
+        "api_host": bundle.get("api_host", ""),
+        "provider_base_url": bundle.get("provider_base_url", ""),
+        "text_model": text_model,
+        "output_path": bundle.get("output_path", MINIMAX_MULTIMODAL_DEFAULTS["output_path"]),
+        "mcp_base_path": bundle.get("mcp_base_path", bundle.get("output_path", MINIMAX_MULTIMODAL_DEFAULTS["output_path"])),
+        "resource_mode": bundle.get("resource_mode", MINIMAX_MULTIMODAL_DEFAULTS["resource_mode"]),
+        "image": {
+            "model": bundle.get("image_model", MINIMAX_MULTIMODAL_DEFAULTS["image_model"]),
+            "endpoint": bundle.get("image_endpoint", MINIMAX_MULTIMODAL_DEFAULTS["image_endpoint"]),
+        },
+        "tts": {
+            "model": bundle.get("tts_model", MINIMAX_MULTIMODAL_DEFAULTS["tts_model"]),
+            "endpoint": bundle.get("tts_endpoint", MINIMAX_MULTIMODAL_DEFAULTS["tts_endpoint"]),
+        },
+        "video": {
+            "model": bundle.get("video_model", MINIMAX_MULTIMODAL_DEFAULTS["video_model"]),
+            "endpoint": bundle.get("video_endpoint", MINIMAX_MULTIMODAL_DEFAULTS["video_endpoint"]),
+            "query_endpoint": bundle.get("video_query_endpoint", MINIMAX_MULTIMODAL_DEFAULTS["video_query_endpoint"]),
+            "retrieve_endpoint": bundle.get("video_retrieve_endpoint", MINIMAX_MULTIMODAL_DEFAULTS["video_retrieve_endpoint"]),
+        },
+        "music": {
+            "model": bundle.get("music_model", MINIMAX_MULTIMODAL_DEFAULTS["music_model"]),
+            "endpoint": bundle.get("music_endpoint", MINIMAX_MULTIMODAL_DEFAULTS["music_endpoint"]),
+        },
+        "mcp": {
+            "tools": ["web_search", "understand_image"],
+        },
+    }
+    _json_write(cfg_path, payload)
+    try:
+        os.chmod(cfg_path, 0o600)
+    except OSError:
+        pass
+
+
+def _normalize_provider_config(data: dict | None, env_data: dict | None = None) -> dict:
+    env_data = env_data or {}
+    payload = data if isinstance(data, dict) else {}
+    preset_labels = {
+        "anthropic": "Anthropic",
+        "openai": "OpenAI",
+        "zai": "GLM",
+        "minimax": "MiniMax",
+        "minimax-cn": "MiniMax",
+        "deepseek": "DeepSeek",
+        "google": "Gemini",
+        "openrouter": "OpenRouter",
+        "custom": "自定义 Provider",
+    }
+    preset = str(payload.get("preset") or env_data.get("OPENCLAW_ACTIVE_PROVIDER_PRESET") or "").strip().lower()
+    if not preset:
+        if env_data.get("OPENCLAW_CUSTOM_PROVIDER_ID") or env_data.get("OPENCLAW_CUSTOM_PROVIDER_BASE_URL"):
+            preset = "custom"
+        elif env_data.get("OPENCLAW_MINIMAX_PROVIDER_URL") or env_data.get("MINIMAX_API_KEY"):
+            preset = "minimax"
+        elif env_data.get("ZAI_API_KEY"):
+            preset = "zai"
+        elif env_data.get("OPENAI_API_KEY"):
+            preset = "openai"
+        elif env_data.get("ANTHROPIC_API_KEY"):
+            preset = "anthropic"
+        elif env_data.get("GOOGLE_API_KEY"):
+            preset = "google"
+        elif env_data.get("DEEPSEEK_API_KEY"):
+            preset = "deepseek"
+        else:
+            preset = "anthropic"
+    provider_id = str(payload.get("providerId") or env_data.get("OPENCLAW_CUSTOM_PROVIDER_ID") or preset or "anthropic").strip()
+    display_name = str(payload.get("displayName") or env_data.get("OPENCLAW_CUSTOM_PROVIDER_NAME") or preset_labels.get(preset) or provider_id).strip()
+    base_url = str(payload.get("baseUrl") or "").strip()
+    model = str(payload.get("model") or "").strip()
+    api_type = str(payload.get("apiType") or env_data.get("OPENCLAW_ACTIVE_PROVIDER_API_TYPE") or "").strip()
+    api_key = str(payload.get("apiKey") or "").strip()
+    keep_existing_key = bool(payload.get("keepExistingKey", True))
+    if not api_type:
+        api_type = "anthropic-messages" if preset in {"anthropic", "minimax", "minimax-cn"} else "openai-responses"
+    if not base_url:
+        defaults = {
+            "anthropic": str(env_data.get("ANTHROPIC_BASE_URL") or "https://api.anthropic.com"),
+            "openai": str(env_data.get("OPENAI_BASE_URL") or "https://api.openai.com/v1"),
+            "zai": str(env_data.get("ZAI_BASE_URL") or "https://open.bigmodel.cn/api/paas/v4"),
+            "minimax": str(env_data.get("OPENCLAW_MINIMAX_PROVIDER_URL") or "https://api.minimax.io/anthropic"),
+            "minimax-cn": str(env_data.get("OPENCLAW_MINIMAX_PROVIDER_URL") or "https://api.minimaxi.com/anthropic"),
+            "deepseek": str(env_data.get("DEEPSEEK_BASE_URL") or "https://api.deepseek.com"),
+            "openrouter": str(env_data.get("OPENROUTER_BASE_URL") or "https://openrouter.ai/api/v1"),
+            "google": str(env_data.get("GOOGLE_BASE_URL") or ""),
+        }
+        base_url = defaults.get(preset, "")
+    if not model:
+        defaults = {
+            "anthropic": "claude-sonnet-4-20250514",
+            "openai": "gpt-5.1",
+            "zai": "glm-5",
+            "minimax": "MiniMax-M2.7-highspeed",
+            "minimax-cn": "MiniMax-M2.7-highspeed",
+            "deepseek": "deepseek-chat",
+            "openrouter": "anthropic/claude-3.7-sonnet",
+            "google": "gemini-2.5-pro",
+            "custom": str(env_data.get("OPENCLAW_CUSTOM_PROVIDER_MODEL") or ""),
+        }
+        model = defaults.get(preset, "")
+    if preset == "custom":
+        provider_id = provider_id or "custom-provider"
+        display_name = display_name or "自定义 Provider"
+    else:
+        provider_id = provider_id or preset
+        display_name = display_name or preset_labels.get(preset) or preset
+    return {
+        "preset": preset,
+        "providerId": provider_id,
+        "displayName": display_name,
+        "baseUrl": base_url,
+        "model": model,
+        "apiType": api_type,
+        "apiKey": api_key,
+        "keepExistingKey": keep_existing_key,
+    }
+
+
+def _normalize_image_provider_config(data: dict | None, env_data: dict | None = None) -> dict:
+    env_data = env_data or {}
+    payload = data if isinstance(data, dict) else {}
+    provider_id = str(payload.get("providerId") or env_data.get("OPENCLAW_IMAGE_PROVIDER_ID") or "custom-image").strip()
+    display_name = str(payload.get("displayName") or env_data.get("OPENCLAW_IMAGE_PROVIDER_NAME") or "生图 Provider").strip()
+    base_url = str(payload.get("baseUrl") or env_data.get("OPENCLAW_IMAGE_API_URL") or "").strip()
+    model = str(payload.get("model") or env_data.get("OPENCLAW_IMAGE_MODEL") or "").strip()
+    if (not base_url or not model or provider_id in {"", "custom-image"}) and str(env_data.get("OPENCLAW_ACTIVE_PROVIDER_PRESET") or "").strip().lower() in {"minimax", "minimax-cn"}:
+        bundle = _minimax_bundle_config(env_data, env_data.get("OPENCLAW_ACTIVE_PROVIDER_BASE_URL"))
+        provider_id = provider_id or "minimax-image"
+        display_name = display_name if display_name not in {"", "生图 Provider"} else "MiniMax 官方生图"
+        base_url = base_url or f'{bundle["api_host"]}{bundle["image_endpoint"]}'
+        model = model or bundle["image_model"]
+    if not base_url:
+        base_url = "https://api.viviai.cc/v1/chat/completions"
+    if not model:
+        model = "gemini-3.1-flash-image-preview"
+    if not provider_id:
+        provider_id = "custom-image"
+    if not display_name:
+        display_name = "生图 Provider"
+    api_key = str(payload.get("apiKey") or "").strip()
+    keep_existing_key = bool(payload.get("keepExistingKey", True))
+    return {
+        "providerId": provider_id,
+        "displayName": display_name,
+        "baseUrl": base_url,
+        "model": model,
+        "apiKey": api_key,
+        "keepExistingKey": keep_existing_key,
+    }
+
+
+def _openclaw_model_ref_for_provider(provider_config: dict) -> str:
+    preset = str(provider_config.get("preset") or "anthropic").strip().lower()
+    model = str(provider_config.get("model") or "").strip()
+    if not model:
+        return ""
+    if preset == "custom":
+        provider_id = str(provider_config.get("providerId") or "custom-provider").strip()
+        return f"{provider_id}-custom/{model}"
+    custom_base = str(provider_config.get("baseUrl") or "").strip()
+    if custom_base and preset in {"anthropic", "openai", "zai"}:
+        return f"{preset}-custom/{model}"
+    return f"{preset}/{model}"
+
+
+def _set_openclaw_default_model(model_ref: str):
+    if not model_ref:
+        return
+    if shutil.which("openclaw"):
+        try:
+            result = subprocess.run(
+                ["openclaw", "models", "set", model_ref],
+                check=False,
+                capture_output=True,
+                text=True,
+                timeout=10,
+            )
+            if result.returncode == 0:
+                return
+        except Exception:
+            pass
+    _run_openclaw_config_set("agents.defaults.model.primary", model_ref)
+    _run_openclaw_config_set("models.default", model_ref)
+
+
+def _upsert_custom_provider_json(provider_id: str, base_url: str, api_key: str, model: str, api_type: str):
+    provider_id = str(provider_id or "").strip()
+    base_url = str(base_url or "").strip()
+    api_key = str(api_key or "").strip()
+    model = str(model or "").strip()
+    api_type = str(api_type or "openai-responses").strip()
+    if not provider_id or not base_url or not api_key or not model:
+        return
+    payload = _json_read(OPENCLAW_JSON_FILE, {})
+    if not isinstance(payload, dict):
+        payload = {}
+    models_cfg = payload.setdefault("models", {})
+    providers_cfg = models_cfg.setdefault("providers", {})
+    for key in list(providers_cfg.keys()):
+        if str(key).endswith("-custom"):
+            providers_cfg.pop(key, None)
+    custom_id = provider_id if provider_id.endswith("-custom") else f"{provider_id}-custom"
+    providers_cfg[custom_id] = {
+        "baseUrl": base_url,
+        "apiKey": api_key,
+        "models": [
+            {
+                "id": model,
+                "name": model,
+                "api": api_type,
+                "input": ["text", "image"],
+                "contextWindow": 200000,
+                "maxTokens": 8192,
+            }
+        ],
+    }
+    _json_write(OPENCLAW_JSON_FILE, payload)
+
+
+def _ensure_minimax_provider_json(provider: str, model: str, base_url: str):
+    payload = _json_read(OPENCLAW_JSON_FILE, {})
+    if not isinstance(payload, dict):
+        payload = {}
+    models_cfg = payload.setdefault("models", {})
+    models_cfg.setdefault("mode", "merge")
+    providers_cfg = models_cfg.setdefault("providers", {})
+    other_provider = "minimax-cn" if provider == "minimax" else "minimax"
+    providers_cfg.pop(other_provider, None)
+    catalog = {
+        "MiniMax-M2.7": "MiniMax M2.7",
+        "MiniMax-M2.7-highspeed": "MiniMax M2.7 Highspeed",
+        "MiniMax-M2.5": "MiniMax M2.5",
+        "MiniMax-M2.5-highspeed": "MiniMax M2.5 Highspeed",
+    }
+    providers_cfg[provider] = {
+        "baseUrl": base_url,
+        "api": "anthropic-messages",
+        "authHeader": True,
+        "models": [
+            {
+                "id": model_id,
+                "name": label,
+                "reasoning": True,
+                "input": ["text"],
+                "cost": {"input": 0.3, "output": 1.2, "cacheRead": 0.03, "cacheWrite": 0.12},
+                "contextWindow": 200000,
+                "maxTokens": 8192,
+            }
+            for model_id, label in catalog.items()
+        ],
+    }
+    defaults_models = payload.setdefault("agents", {}).setdefault("defaults", {}).setdefault("models", {})
+    for key in list(defaults_models.keys()):
+        if str(key).startswith("minimax/") or str(key).startswith("minimax-cn/"):
+            defaults_models.pop(key, None)
+    defaults_models[f"{provider}/{model}"] = {"alias": "Minimax"}
+    _json_write(OPENCLAW_JSON_FILE, payload)
+
+
+def _apply_provider_config(provider_config: dict, env_data: dict | None = None):
+    env_data = env_data or _read_env_exports()
+    cfg = _normalize_provider_config(provider_config, env_data)
+    preset = cfg["preset"]
+    base_url = cfg["baseUrl"]
+    api_key = cfg["apiKey"] or ""
+    if cfg.get("keepExistingKey") and not api_key:
+        env_key_map = {
+            "anthropic": "ANTHROPIC_API_KEY",
+            "openai": "OPENAI_API_KEY",
+            "zai": "ZAI_API_KEY",
+            "minimax": "MINIMAX_API_KEY",
+            "minimax-cn": "MINIMAX_API_KEY",
+            "deepseek": "DEEPSEEK_API_KEY",
+            "google": "GOOGLE_API_KEY",
+            "openrouter": "OPENROUTER_API_KEY",
+            "custom": "OPENCLAW_CUSTOM_PROVIDER_API_KEY",
+        }
+        api_key = str(env_data.get(env_key_map.get(preset, ""), "")).strip()
+
+    _upsert_env_export("OPENCLAW_ACTIVE_PROVIDER_PRESET", _env_export_value(preset))
+    _upsert_env_export("OPENCLAW_ACTIVE_PROVIDER_MODEL", _env_export_value(cfg["model"]))
+    _upsert_env_export("OPENCLAW_ACTIVE_PROVIDER_API_TYPE", _env_export_value(cfg["apiType"]))
+    if base_url:
+        _upsert_env_export("OPENCLAW_ACTIVE_PROVIDER_BASE_URL", _env_export_value(base_url))
+    else:
+        _remove_env_export("OPENCLAW_ACTIVE_PROVIDER_BASE_URL")
+
+    if preset == "anthropic":
+        if api_key:
+            _upsert_env_export("ANTHROPIC_API_KEY", _env_export_value(api_key))
+        if base_url:
+            _upsert_env_export("ANTHROPIC_BASE_URL", _env_export_value(base_url))
+        else:
+            _remove_env_export("ANTHROPIC_BASE_URL")
+    elif preset == "openai":
+        if api_key:
+            _upsert_env_export("OPENAI_API_KEY", _env_export_value(api_key))
+        if base_url:
+            _upsert_env_export("OPENAI_BASE_URL", _env_export_value(base_url))
+        else:
+            _remove_env_export("OPENAI_BASE_URL")
+    elif preset == "zai":
+        if api_key:
+            _upsert_env_export("ZAI_API_KEY", _env_export_value(api_key))
+        if base_url:
+            _upsert_env_export("ZAI_BASE_URL", _env_export_value(base_url))
+        else:
+            _remove_env_export("ZAI_BASE_URL")
+    elif preset in {"minimax", "minimax-cn"}:
+        bundle = _minimax_bundle_config(env_data, base_url)
+        if api_key:
+            _upsert_env_export("MINIMAX_API_KEY", _env_export_value(api_key))
+        if base_url:
+            _upsert_env_export("OPENCLAW_MINIMAX_PROVIDER_URL", _env_export_value(base_url))
+        else:
+            _remove_env_export("OPENCLAW_MINIMAX_PROVIDER_URL")
+        _upsert_env_export("MINIMAX_API_HOST", _env_export_value(bundle["api_host"]))
+        _upsert_env_export("MINIMAX_MULTIMODAL_OUTPUT_PATH", _env_export_value(bundle["output_path"]))
+        _upsert_env_export("MINIMAX_MCP_BASE_PATH", _env_export_value(bundle["mcp_base_path"]))
+        _upsert_env_export("MINIMAX_API_RESOURCE_MODE", _env_export_value(bundle["resource_mode"]))
+        _upsert_env_export("MINIMAX_IMAGE_MODEL", _env_export_value(bundle["image_model"]))
+        _upsert_env_export("MINIMAX_IMAGE_ENDPOINT", _env_export_value(bundle["image_endpoint"]))
+        _upsert_env_export("MINIMAX_TTS_MODEL", _env_export_value(bundle["tts_model"]))
+        _upsert_env_export("MINIMAX_TTS_ENDPOINT", _env_export_value(bundle["tts_endpoint"]))
+        _upsert_env_export("MINIMAX_VIDEO_MODEL", _env_export_value(bundle["video_model"]))
+        _upsert_env_export("MINIMAX_VIDEO_ENDPOINT", _env_export_value(bundle["video_endpoint"]))
+        _upsert_env_export("MINIMAX_VIDEO_QUERY_ENDPOINT", _env_export_value(bundle["video_query_endpoint"]))
+        _upsert_env_export("MINIMAX_FILES_RETRIEVE_ENDPOINT", _env_export_value(bundle["video_retrieve_endpoint"]))
+        _upsert_env_export("MINIMAX_MUSIC_MODEL", _env_export_value(bundle["music_model"]))
+        _upsert_env_export("MINIMAX_MUSIC_ENDPOINT", _env_export_value(bundle["music_endpoint"]))
+        _write_minimax_skill_config(api_key, bundle, cfg["model"])
+        if _should_autowire_minimax_image_provider(env_data):
+            _upsert_env_export("OPENCLAW_IMAGE_PROVIDER_ID", _env_export_value("minimax-image"))
+            _upsert_env_export("OPENCLAW_IMAGE_PROVIDER_NAME", _env_export_value("MiniMax 官方生图"))
+            _upsert_env_export("OPENCLAW_IMAGE_API_URL", _env_export_value(f'{bundle["api_host"]}{bundle["image_endpoint"]}'))
+            _upsert_env_export("OPENCLAW_IMAGE_MODEL", _env_export_value(bundle["image_model"]))
+            if api_key:
+                _upsert_env_export("OPENCLAW_IMAGE_API_KEY", _env_export_value(api_key))
+        _run_openclaw_config_set("vendor.media.minimax.apiHost", bundle["api_host"])
+        _run_openclaw_config_set("vendor.media.minimax.outputPath", bundle["output_path"])
+        _run_openclaw_config_set("vendor.media.minimax.mcpBasePath", bundle["mcp_base_path"])
+        _run_openclaw_config_set("vendor.media.minimax.resourceMode", bundle["resource_mode"])
+        _run_openclaw_config_set("vendor.media.minimax.image.model", bundle["image_model"])
+        _run_openclaw_config_set("vendor.media.minimax.image.endpoint", bundle["image_endpoint"])
+        _run_openclaw_config_set("vendor.media.minimax.tts.model", bundle["tts_model"])
+        _run_openclaw_config_set("vendor.media.minimax.tts.endpoint", bundle["tts_endpoint"])
+        _run_openclaw_config_set("vendor.media.minimax.video.model", bundle["video_model"])
+        _run_openclaw_config_set("vendor.media.minimax.video.endpoint", bundle["video_endpoint"])
+        _run_openclaw_config_set("vendor.media.minimax.video.queryEndpoint", bundle["video_query_endpoint"])
+        _run_openclaw_config_set("vendor.media.minimax.video.retrieveEndpoint", bundle["video_retrieve_endpoint"])
+        _run_openclaw_config_set("vendor.media.minimax.music.model", bundle["music_model"])
+        _run_openclaw_config_set("vendor.media.minimax.music.endpoint", bundle["music_endpoint"])
+        _ensure_minimax_provider_json(preset, cfg["model"], base_url or f'{bundle["api_host"]}/anthropic')
+    elif preset == "deepseek":
+        if api_key:
+            _upsert_env_export("DEEPSEEK_API_KEY", _env_export_value(api_key))
+        _upsert_env_export("DEEPSEEK_BASE_URL", _env_export_value(base_url or "https://api.deepseek.com"))
+    elif preset == "google":
+        if api_key:
+            _upsert_env_export("GOOGLE_API_KEY", _env_export_value(api_key))
+        if base_url:
+            _upsert_env_export("GOOGLE_BASE_URL", _env_export_value(base_url))
+        else:
+            _remove_env_export("GOOGLE_BASE_URL")
+    elif preset == "openrouter":
+        if api_key:
+            _upsert_env_export("OPENROUTER_API_KEY", _env_export_value(api_key))
+        _upsert_env_export("OPENROUTER_BASE_URL", _env_export_value(base_url or "https://openrouter.ai/api/v1"))
+
+    if preset == "custom":
+        _upsert_env_export("OPENCLAW_CUSTOM_PROVIDER_ID", _env_export_value(cfg["providerId"]))
+        _upsert_env_export("OPENCLAW_CUSTOM_PROVIDER_NAME", _env_export_value(cfg["displayName"]))
+        _upsert_env_export("OPENCLAW_CUSTOM_PROVIDER_BASE_URL", _env_export_value(base_url))
+        _upsert_env_export("OPENCLAW_CUSTOM_PROVIDER_MODEL", _env_export_value(cfg["model"]))
+        _upsert_env_export("OPENCLAW_CUSTOM_PROVIDER_API_TYPE", _env_export_value(cfg["apiType"]))
+        if api_key:
+            _upsert_env_export("OPENCLAW_CUSTOM_PROVIDER_API_KEY", _env_export_value(api_key))
+        _upsert_custom_provider_json(cfg["providerId"], base_url, api_key, cfg["model"], cfg["apiType"])
+    elif base_url and preset in {"anthropic", "openai", "zai"} and api_key:
+        _upsert_custom_provider_json(preset, base_url, api_key, cfg["model"], cfg["apiType"])
+
+    _set_openclaw_default_model(_openclaw_model_ref_for_provider(cfg))
+    return {
+        "preset": cfg["preset"],
+        "providerId": cfg["providerId"],
+        "displayName": cfg["displayName"],
+        "baseUrl": cfg["baseUrl"],
+        "model": cfg["model"],
+        "apiType": cfg["apiType"],
+        "hasApiKey": bool(api_key),
+    }
+
+
+def _apply_image_provider_config(image_provider_config: dict, env_data: dict | None = None):
+    env_data = env_data or _read_env_exports()
+    cfg = _normalize_image_provider_config(image_provider_config, env_data)
+    api_key = cfg["apiKey"] or ""
+    if cfg.get("keepExistingKey") and not api_key:
+        api_key = str(env_data.get("OPENCLAW_IMAGE_API_KEY") or "").strip()
+        if not api_key and str(cfg.get("providerId") or "").strip().lower().startswith("minimax"):
+            api_key = str(env_data.get("MINIMAX_API_KEY") or "").strip()
+    _upsert_env_export("OPENCLAW_IMAGE_PROVIDER_ID", _env_export_value(cfg["providerId"]))
+    _upsert_env_export("OPENCLAW_IMAGE_PROVIDER_NAME", _env_export_value(cfg["displayName"]))
+    _upsert_env_export("OPENCLAW_IMAGE_API_URL", _env_export_value(cfg["baseUrl"]))
+    _upsert_env_export("OPENCLAW_IMAGE_MODEL", _env_export_value(cfg["model"]))
+    if api_key:
+        _upsert_env_export("OPENCLAW_IMAGE_API_KEY", _env_export_value(api_key))
+    return {
+        "providerId": cfg["providerId"],
+        "displayName": cfg["displayName"],
+        "baseUrl": cfg["baseUrl"],
+        "model": cfg["model"],
+        "hasApiKey": bool(api_key),
+    }
+
+
+def _provider_config_summary(env_data: dict, profile_payload: dict | None = None) -> dict:
+    profile_payload = profile_payload if isinstance(profile_payload, dict) else {}
+    data = profile_payload.get("providerConfig") if isinstance(profile_payload.get("providerConfig"), dict) else {}
+    cfg = _normalize_provider_config(data, env_data)
+    env_key_map = {
+        "anthropic": "ANTHROPIC_API_KEY",
+        "openai": "OPENAI_API_KEY",
+        "zai": "ZAI_API_KEY",
+        "minimax": "MINIMAX_API_KEY",
+        "minimax-cn": "MINIMAX_API_KEY",
+        "deepseek": "DEEPSEEK_API_KEY",
+        "google": "GOOGLE_API_KEY",
+        "openrouter": "OPENROUTER_API_KEY",
+        "custom": "OPENCLAW_CUSTOM_PROVIDER_API_KEY",
+    }
+    has_key = bool(str(env_data.get(env_key_map.get(cfg["preset"], ""), "")).strip())
+    return {
+        "preset": cfg["preset"],
+        "providerId": cfg["providerId"],
+        "displayName": cfg["displayName"],
+        "baseUrl": cfg["baseUrl"],
+        "model": cfg["model"],
+        "apiType": cfg["apiType"],
+        "hasApiKey": has_key,
+    }
+
+
+def _image_provider_config_summary(env_data: dict, profile_payload: dict | None = None) -> dict:
+    profile_payload = profile_payload if isinstance(profile_payload, dict) else {}
+    data = profile_payload.get("imageProviderConfig") if isinstance(profile_payload.get("imageProviderConfig"), dict) else {}
+    cfg = _normalize_image_provider_config(data, env_data)
+    return {
+        "providerId": cfg["providerId"],
+        "displayName": cfg["displayName"],
+        "baseUrl": cfg["baseUrl"],
+        "model": cfg["model"],
+        "hasApiKey": bool(str(env_data.get("OPENCLAW_IMAGE_API_KEY") or "").strip()),
+    }
+
 def _run_openclaw_config_set(key: str, value: str):
     if not shutil.which("openclaw"):
         return
@@ -1791,6 +2337,7 @@ def _extract_runtime_from_state(state_obj: dict):
 
 def _build_openclaw_status_summary():
     progress = _json_read(OPENCLAW_GAME_PROGRESS_JSON, {})
+    profile_payload = _json_read(OPENCLAW_WEB_PROFILE_JSON, {})
     hero = progress.get("hero") or {}
     stats = progress.get("stats") or {}
     gear = progress.get("gear") or {}
@@ -1798,6 +2345,8 @@ def _build_openclaw_status_summary():
     security = gear.get("security") or {}
     policy = gear.get("policy") or {}
     env_data = _read_env_exports()
+    provider_summary = _provider_config_summary(env_data, profile_payload)
+    image_provider_summary = _image_provider_config_summary(env_data, profile_payload)
     runtime = _collect_runtime_signals_cached()
     skill_catalog = _collect_skill_catalog()
     role_id = _normalize_persona_role(hero.get("classId") or env_data.get("OPENCLAW_PERSONA_ROLE") or "druid")
@@ -1866,6 +2415,7 @@ def _build_openclaw_status_summary():
 
     main_model = (
         str(gear.get("mainModel") or "").strip()
+        or str(provider_summary.get("model") or "").strip()
         or str(env_data.get("OPENCLAW_UNOFFICIAL_ADVANCED_MODEL") or "").strip()
         or str(env_data.get("OPENAI_MODEL") or "").strip()
         or str(env_data.get("OPENCLAW_GEMINI_IMAGE_MODEL") or "").strip()
@@ -1940,6 +2490,8 @@ def _build_openclaw_status_summary():
             "personality": _sanitize_identity_field(identity.get("personality"), "严谨、务实、可协作", 200),
             "workStyle": _sanitize_identity_field(identity.get("workStyle"), "先分析再执行，阶段性回报", 200),
         },
+        "providerConfig": provider_summary,
+        "imageProviderConfig": image_provider_summary,
         "signalsSource": str(runtime.get("signalsSource") or stats.get("signalsSource") or "runtime+cached"),
     }
 
@@ -2612,6 +3164,8 @@ def openclaw_config_apply():
         env_data = _read_env_exports()
         identity_defaults = _collect_identity_profile_from_env(env_data, role_id)
         identity_input = data.get("identity") if isinstance(data.get("identity"), dict) else {}
+        provider_input = data.get("providerConfig") if isinstance(data.get("providerConfig"), dict) else {}
+        image_provider_input = data.get("imageProviderConfig") if isinstance(data.get("imageProviderConfig"), dict) else {}
         identity_profile = {
             "assistantName": _sanitize_identity_field(identity_input.get("assistantName"), identity_defaults["assistantName"], 80),
             "userName": _sanitize_identity_field(identity_input.get("userName"), identity_defaults["userName"], 64),
@@ -2632,6 +3186,10 @@ def openclaw_config_apply():
         disabled_skills = _safe_skill_id_list(role_state.get("disabledSkills") or [])
         inventory = _safe_skill_id_list(role_state.get("inventory") or [])
         equipped = role_state.get("equipped") if isinstance(role_state.get("equipped"), dict) else {}
+        normalized_provider_config = _normalize_provider_config(provider_input, env_data)
+        normalized_image_provider_config = _normalize_image_provider_config(image_provider_input, env_data)
+        stored_provider_config = {**normalized_provider_config, "apiKey": ""}
+        stored_image_provider_config = {**normalized_image_provider_config, "apiKey": ""}
 
         equipped_tool_ids = []
         for slot_val in equipped.values():
@@ -2667,6 +3225,8 @@ def openclaw_config_apply():
                 "selectedSkillId": str(role_state.get("selectedSkillId") or ""),
                 "selectedToolId": str(role_state.get("selectedToolId") or ""),
             },
+            "providerConfig": stored_provider_config,
+            "imageProviderConfig": stored_image_provider_config,
         }
 
         _json_write(OPENCLAW_WEB_PROFILE_JSON, profile_payload)
@@ -2696,6 +3256,8 @@ def openclaw_config_apply():
         _upsert_env_export("OPENCLAW_WEB_INVENTORY", "'" + json.dumps(inventory, ensure_ascii=False) + "'")
         _upsert_env_export("OPENCLAW_WEB_EQUIPPED", "'" + json.dumps(equipped, ensure_ascii=False) + "'")
         _upsert_env_export("OPENCLAW_WEB_DISABLED_SKILLS", "'" + json.dumps(disabled_skills, ensure_ascii=False) + "'")
+        applied_provider_summary = _apply_provider_config(normalized_provider_config, env_data)
+        applied_image_provider_summary = _apply_image_provider_config(normalized_image_provider_config, env_data)
 
         for env_key in sorted({k for m in TOOL_TO_ENV_BINDINGS.values() for k in m.keys()}):
             _upsert_env_export(env_key, "0")
@@ -2737,6 +3299,8 @@ def openclaw_config_apply():
             )
 
         summary = _build_openclaw_status_summary()
+        summary["providerConfig"] = applied_provider_summary
+        summary["imageProviderConfig"] = applied_image_provider_summary
         return jsonify({
             "ok": True,
             "scope": scope,

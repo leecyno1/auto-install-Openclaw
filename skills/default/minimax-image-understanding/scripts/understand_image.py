@@ -5,17 +5,21 @@ import subprocess
 import sys
 
 
-def load_api_key():
+def load_config():
     cfg_path = os.path.expanduser('~/.openclaw/config/minimax.json')
+    try:
+        with open(cfg_path, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+            return data if isinstance(data, dict) else {}
+    except (FileNotFoundError, json.JSONDecodeError):
+        return {}
+
+
+def load_api_key():
     key = os.environ.get('MINIMAX_API_KEY')
     if key:
         return key
-    try:
-        with open(cfg_path, 'r') as f:
-            cfg = json.load(f)
-            return cfg.get('api_key')
-    except (FileNotFoundError, json.JSONDecodeError):
-        return None
+    return load_config().get('api_key')
 
 
 def call_mcp(prompt: str, image_source: str) -> int:
@@ -24,11 +28,19 @@ def call_mcp(prompt: str, image_source: str) -> int:
         print('Error: API Key not found.', file=sys.stderr)
         return 1
 
+    cfg = load_config()
+    output_path = (
+        os.environ.get('MINIMAX_MCP_BASE_PATH')
+        or os.environ.get('MINIMAX_MULTIMODAL_OUTPUT_PATH')
+        or cfg.get('mcp_base_path')
+        or cfg.get('output_path')
+        or '~/.openclaw/workspace/minimax-output'
+    )
     env = {
         'MINIMAX_API_KEY': api_key,
-        'MINIMAX_API_HOST': os.environ.get('MINIMAX_API_HOST', 'https://api.minimaxi.com'),
-        'MINIMAX_MCP_BASE_PATH': os.path.expanduser('~/.openclaw/workspace/minimax-output'),
-        'MINIMAX_API_RESOURCE_MODE': os.environ.get('MINIMAX_API_RESOURCE_MODE', 'local'),
+        'MINIMAX_API_HOST': os.environ.get('MINIMAX_API_HOST') or cfg.get('api_host') or 'https://api.minimaxi.com',
+        'MINIMAX_MCP_BASE_PATH': os.path.expanduser(output_path),
+        'MINIMAX_API_RESOURCE_MODE': os.environ.get('MINIMAX_API_RESOURCE_MODE') or cfg.get('resource_mode') or 'local',
     }
 
     requests = [

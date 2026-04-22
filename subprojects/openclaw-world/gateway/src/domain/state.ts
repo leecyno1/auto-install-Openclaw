@@ -28,7 +28,7 @@ export function normalizeRoleId(input: string | null | undefined): RoleId {
 function defaultEquipmentSlots(roleId: RoleId): Partial<Record<EquipmentSlotId, string>> {
   const slots = { ...ROLE_PROFILES[roleId].starterEquipment };
   if (!slots.chest) {
-    slots.chest = 'minimax-2-7';
+    slots.chest = roleId === 'warrior' ? 'codex-core' : 'claude-main';
   }
   return slots;
 }

@@ -39,9 +39,13 @@ class ReadmeLauncherAlignmentTests(unittest.TestCase):
 
     def test_readme_lists_dual_engine_install_and_auto_install_commands(self):
         readme_text = README.read_text(encoding='utf-8')
+        self.assertIn('install-openclaw.sh', readme_text)
+        self.assertIn('install-hermes.sh', readme_text)
         self.assertIn('--engine openclaw', readme_text)
         self.assertIn('--engine hermes', readme_text)
         self.assertIn('--engine both', readme_text)
+        self.assertIn('install-openclaw.sh | bash -s -- --auto-confirm-all', readme_text)
+        self.assertIn('install-hermes.sh | bash -s -- --auto-confirm-all', readme_text)
         self.assertIn('--auto-confirm-all --engine openclaw', readme_text)
         self.assertIn('--auto-confirm-all --engine hermes', readme_text)
         self.assertIn('--auto-confirm-all --engine both', readme_text)
