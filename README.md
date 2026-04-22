@@ -109,6 +109,7 @@ lobster-setup install hermes     # 安装或修复 Hermes
 lobster-setup install both       # 安装双引擎
 lobster-setup config        # 等同于 bash ~/.openclaw/config-menu.sh
 lobster-setup repair        # 修复历史错误配置（保留记忆/对话）
+lobster-setup repair minimax # 仅修复 MiniMax Provider / 多模态配置
 lobster-setup workbench     # 启动像素小屋工作台
 lobster-setup status        # 查看所有服务状态
 lobster-setup doctor        # 健康检查并自动修复
@@ -135,6 +136,7 @@ lobster-setup config --model-only
 lobster-setup config --official-channels-only
 lobster-setup config --engine-menu
 lobster-setup repair
+lobster-setup repair minimax
 lobster-setup workbench
 ```
 
@@ -144,6 +146,14 @@ lobster-setup workbench
 lobster-setup repair
 # 或
 bash ~/.openclaw/config-menu.sh --repair-config
+```
+
+仅修复 MiniMax Provider 去重、多模态参数和代理 URL 替换：
+
+```bash
+lobster-setup repair minimax
+# 或
+bash ~/.openclaw/config-menu.sh --repair-minimax
 ```
 
 ### 6. 补装或修复像素小屋工作台
@@ -252,6 +262,7 @@ bash ~/.openclaw/config-menu.sh --install-pixel-house
 1. 先运行安装脚本，完成 OpenClaw 与依赖初始化。
 2. 安装后执行 `lobster-setup config`，走一次模型配置与服务检查。
 3. 对历史服务器执行 `lobster-setup repair`，刷新本地技能缓存并修复旧配置。
+   如果只是 MiniMax provider 重复、官方 URL 与代理 URL 替换未覆盖原生条目，执行 `lobster-setup repair minimax`。
 4. 需要可视化界面时执行 `lobster-setup workbench`，然后访问 `http://127.0.0.1:19000/`。
 
 ## 仓库结构
@@ -279,6 +290,7 @@ lobster-setup install hermes
 lobster-setup install both
 lobster-setup config        # 等同于 bash ~/.openclaw/config-menu.sh
 lobster-setup repair        # 修复历史错误配置（保留记忆/对话）
+lobster-setup repair minimax # 仅修复 MiniMax Provider / 多模态配置
 lobster-setup workbench     # 启动像素小屋工作台
 lobster-setup status        # 查看所有服务状态
 lobster-setup doctor        # 健康检查并自动修复
@@ -295,12 +307,14 @@ lobster-setup config --model-only
 lobster-setup config --official-channels-only
 lobster-setup config --engine-menu
 lobster-setup repair
+lobster-setup repair minimax
 
 bash ~/.openclaw/config-menu.sh
 bash ~/.openclaw/config-menu.sh --model-only
 bash ~/.openclaw/config-menu.sh --official-channels-only
 bash ~/.openclaw/config-menu.sh --engine-menu
 bash ~/.openclaw/config-menu.sh --repair-config
+bash ~/.openclaw/config-menu.sh --repair-minimax
 bash ~/.openclaw/config-menu.sh --repair-pairing
 bash ~/.openclaw/config-menu.sh --install-pixel-house
 ```

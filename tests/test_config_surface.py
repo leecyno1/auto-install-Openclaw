@@ -41,12 +41,13 @@ class ConfigSurfaceTests(unittest.TestCase):
         self.assertIn('--engine-menu', output)
         self.assertIn('--model-only', output)
         self.assertIn('--official-channels-only', output)
+        self.assertIn('--repair-minimax', output)
 
     def test_config_menu_noninteractive_shortcuts_are_whitelisted_and_routed(self):
         text = CONFIG_MENU.read_text(encoding='utf-8')
         self.assertIn('allow_noninteractive_shortcut_menu()', text)
         self.assertIn(
-            '--help|-h|--repair-config|--repair-pairing|--install-pixel-house|--engine-menu|--model-only|--official-channels-only',
+            '--help|-h|--repair-config|--repair-minimax|--repair-pairing|--install-pixel-house|--engine-menu|--model-only|--official-channels-only',
             text,
         )
         self.assertIn('--model-only)', text)
@@ -55,6 +56,8 @@ class ConfigSurfaceTests(unittest.TestCase):
         self.assertIn('config_channels_official', text)
         self.assertIn('--repair-config)', text)
         self.assertIn('repair_runtime_config_preserve_data', text)
+        self.assertIn('--repair-minimax)', text)
+        self.assertIn('repair_minimax_provider_only_menu', text)
         self.assertIn('--repair-pairing)', text)
         self.assertIn('repair_dashboard_pairing_only_menu', text)
         self.assertIn('--install-pixel-house)', text)

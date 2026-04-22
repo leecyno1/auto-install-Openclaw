@@ -331,6 +331,7 @@ print_lobster_setup_quick_commands() {
     echo "  lobster-setup install both       # 安装双引擎"
     echo "  lobster-setup config       # 打开配置菜单"
     echo "  lobster-setup repair       # 修复历史错误配置（保留记忆）"
+    echo "  lobster-setup repair minimax # 仅修复 MiniMax Provider / 多模态配置"
     echo "  lobster-setup workbench    # 启动像素小屋工作台"
     echo "  lobster-setup status       # 查看已安装引擎状态"
     echo "  lobster-setup doctor       # 执行引擎健康检查"
@@ -3834,7 +3835,7 @@ print_lobster_setup_help() {
   echo ""
   echo "  install      安装引擎: openclaw | hermes | both"
   echo "  config       打开配置菜单"
-  echo "  repair       修复历史错误配置（保留记忆）"
+  echo "  repair       修复历史错误配置（默认）或执行窄口修复"
   echo "  workbench    启动或查看像素小屋工作台"
   echo "  status       查看已安装引擎状态"
   echo "  doctor       执行引擎健康检查"
@@ -3846,6 +3847,8 @@ print_lobster_setup_help() {
   echo "  示例         lobster-setup install openclaw"
   echo "               lobster-setup install hermes --auto-confirm-all"
   echo "               lobster-setup install both"
+  echo "               lobster-setup repair"
+  echo "               lobster-setup repair minimax"
   echo ""
   echo "  说明         像素小屋补装/修复后会同步接线并启动 13146 健康检查 与 13147 配额强制"
 }
@@ -3876,7 +3879,20 @@ case "\$cmd" in
     bash "\$config_menu" "\$@"
     ;;
   repair)
-    bash "\$config_menu" --repair-config "\$@"
+    sub="\${1:-}"
+    case "\$sub" in
+      minimax)
+        shift || true
+        bash "\$config_menu" --repair-minimax "\$@"
+        ;;
+      ""|all|full)
+        [ -n "\$sub" ] && shift || true
+        bash "\$config_menu" --repair-config "\$@"
+        ;;
+      *)
+        bash "\$config_menu" --repair-config "\$sub" "\$@"
+        ;;
+    esac
     ;;
   workbench)
     bash "\$workbench" "\${1:-status}"

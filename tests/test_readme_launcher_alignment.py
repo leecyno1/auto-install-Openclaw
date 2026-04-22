@@ -24,17 +24,21 @@ class ReadmeLauncherAlignmentTests(unittest.TestCase):
             '用法: lobster-setup {install|config|repair|workbench|status|doctor|engine|migrate|backup|help}',
             install_text,
         )
+        self.assertIn('lobster-setup repair minimax', install_text)
+        self.assertIn('bash "\\$config_menu" --repair-minimax', install_text)
         self.assertIn('local launcher="$LOBSTER_BIN_DIR/lobster-setup"', install_text)
         self.assertIn('local compat_launcher="$LOBSTER_BIN_DIR/openclaw-setup"', install_text)
         self.assertIn('openclaw-setup ...         # 兼容旧命令，等价转发到 lobster-setup', install_text)
 
         for command in ('config', 'repair', 'workbench', 'status', 'doctor', 'engine', 'backup'):
             self.assertIn(f'lobster-setup {command}', readme_text)
+        self.assertIn('lobster-setup repair minimax', readme_text)
 
     def test_readme_guided_flow_prefers_lobster_setup_over_raw_config_commands(self):
         readme_text = README.read_text(encoding='utf-8')
         self.assertIn('安装后执行 `lobster-setup config`', readme_text)
         self.assertIn('对历史服务器执行 `lobster-setup repair`', readme_text)
+        self.assertIn('`lobster-setup repair minimax`', readme_text)
         self.assertIn('需要可视化界面时执行 `lobster-setup workbench`', readme_text)
 
     def test_readme_lists_dual_engine_install_and_auto_install_commands(self):
@@ -70,6 +74,7 @@ class ReadmeLauncherAlignmentTests(unittest.TestCase):
         self.assertIn('bash ~/.openclaw/config-menu.sh --official-channels-only', readme_text)
         self.assertIn('bash ~/.openclaw/config-menu.sh --engine-menu', readme_text)
         self.assertIn('bash ~/.openclaw/config-menu.sh --repair-config', readme_text)
+        self.assertIn('bash ~/.openclaw/config-menu.sh --repair-minimax', readme_text)
         self.assertIn('bash ~/.openclaw/config-menu.sh --repair-pairing', readme_text)
         self.assertIn('bash ~/.openclaw/config-menu.sh --install-pixel-house', readme_text)
 
@@ -80,6 +85,7 @@ class ReadmeLauncherAlignmentTests(unittest.TestCase):
             '--model-only',
             '--official-channels-only',
             '--repair-config',
+            '--repair-minimax',
             '--repair-pairing',
             '--install-pixel-house',
             '--engine-menu',
@@ -91,6 +97,7 @@ class ReadmeLauncherAlignmentTests(unittest.TestCase):
         self.assertIn('lobster-setup config --official-channels-only', config_menu_text)
         self.assertIn('lobster-setup config --engine-menu', config_menu_text)
         self.assertIn('lobster-setup repair', config_menu_text)
+        self.assertIn('lobster-setup repair minimax', readme_text)
 
     def test_config_menu_mentions_health_and_quota_helpers_under_pixel_house(self):
         config_menu_text = (ROOT / 'config-menu.sh').read_text(encoding='utf-8')

@@ -22,6 +22,7 @@ OpenClaw 配置菜单
   --model-only               直接进入模型配置
   --official-channels-only   直接进入官方渠道插件配置
   --repair-config            修复运行时配置（保留数据）
+  --repair-minimax           仅修复 MiniMax Provider / 多模态配置
   --repair-pairing           修复 Dashboard / 配置页配对
   --install-pixel-house      补装像素小屋
   --engine-menu              直接进入引擎管理
@@ -32,6 +33,7 @@ OpenClaw 配置菜单
   lobster-setup config --official-channels-only
   lobster-setup config --engine-menu
   lobster-setup repair
+  lobster-setup repair minimax
   bash ~/.openclaw/config-menu.sh
 EOF
 }
@@ -71,7 +73,7 @@ resolve_onboard_term_menu() {
 
 allow_noninteractive_shortcut_menu() {
     case "${1:-}" in
-        --help|-h|--repair-config|--repair-pairing|--install-pixel-house|--engine-menu|--model-only|--official-channels-only) return 0 ;;
+        --help|-h|--repair-config|--repair-minimax|--repair-pairing|--install-pixel-house|--engine-menu|--model-only|--official-channels-only) return 0 ;;
         *) return 1 ;;
     esac
 }
@@ -11281,16 +11283,22 @@ EOF
 }
 
 repair_minimax_multimodal_defaults_menu() {
-    local api_key api_host model_ref provider model custom_provider_url
+    local api_key api_host model_ref provider model custom_provider_url active_provider
     api_key="$(get_env_value "MINIMAX_API_KEY")"
-    [ -n "$api_key" ] || return 0
+    active_provider="$(trim_value_menu "$(get_env_value "OPENCLAW_ACTIVE_PROVIDER_PRESET")")"
 
     custom_provider_url="$(normalize_minimax_provider_url_menu "$(get_env_value "OPENCLAW_MINIMAX_PROVIDER_URL")")"
     if [ -n "$custom_provider_url" ]; then
         api_host="$(minimax_api_host_from_provider_url_menu "$custom_provider_url")"
     else
         api_host="$(get_env_value "MINIMAX_API_HOST")"
-        [ -n "$api_host" ] || api_host="$MINIMAX_API_HOST_CN_DEFAULT"
+        if [ -z "$api_host" ]; then
+            if [ "$active_provider" = "minimax" ]; then
+                api_host="$MINIMAX_API_HOST_GLOBAL_DEFAULT"
+            else
+                api_host="$MINIMAX_API_HOST_CN_DEFAULT"
+            fi
+        fi
     fi
 
     [ -n "$custom_provider_url" ] && upsert_env_export "OPENCLAW_MINIMAX_PROVIDER_URL" "$custom_provider_url"
@@ -11303,12 +11311,36 @@ repair_minimax_multimodal_defaults_menu() {
     model_ref="$(get_current_model_ref || true)"
     provider="${model_ref%%/*}"
     model="${model_ref#*/}"
+    if [ "$provider" != "minimax" ] && [ "$provider" != "minimax-cn" ]; then
+        provider="$active_provider"
+        [ "$provider" = "minimax" ] || provider="minimax-cn"
+    fi
+    if [ -z "$model" ] || [ "$model" = "$model_ref" ]; then
+        model="$(trim_value_menu "$(get_env_value "OPENCLAW_ACTIVE_PROVIDER_MODEL")")"
+    fi
+    [ -n "$model" ] || model="MiniMax-M2.7-highspeed"
+
     if [ "$provider" = "minimax" ] || [ "$provider" = "minimax-cn" ]; then
         ensure_minimax_provider_config "$provider" "$model" "$OPENCLAW_JSON" "$custom_provider_url"
     fi
 
     log_info "MiniMax 多模态接口配置已修复"
     return 0
+}
+
+repair_minimax_provider_only_menu() {
+    if ! check_openclaw_installed; then
+        log_error "OpenClaw 未安装"
+        return 1
+    fi
+
+    ensure_openclaw_init || true
+    if repair_minimax_multimodal_defaults_menu; then
+        log_info "MiniMax Provider 去重与多模态配置修复完成"
+        return 0
+    fi
+    log_error "MiniMax 配置修复失败"
+    return 1
 }
 
 # 保存 AI 配置到 OpenClaw 环境变量
@@ -13631,6 +13663,12 @@ main() {
             repair_runtime_config_preserve_data
             echo ""
             echo -e "${CYAN}配置修复流程结束。${NC}"
+            exit 0
+            ;;
+        --repair-minimax)
+            repair_minimax_provider_only_menu
+            echo ""
+            echo -e "${CYAN}MiniMax 配置修复流程结束。${NC}"
             exit 0
             ;;
         --repair-pairing)
