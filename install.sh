@@ -3362,6 +3362,57 @@ refresh_cached_installer_repo() {
     return 0
 }
 
+runtime_repo_snapshot_root_install() {
+    echo "$CONFIG_DIR/runtime/installer-repo"
+}
+
+sync_runtime_repo_snapshot_install() {
+    local script_dir target_root tmp_root
+    local path
+    script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    target_root="$(runtime_repo_snapshot_root_install)"
+
+    [ -f "$script_dir/config-menu.sh" ] || return 1
+    [ -f "$script_dir/scripts/lobster-world.sh" ] || return 1
+    [ -f "$script_dir/subprojects/lobster-sanctum-ui/web/configure.js" ] || return 1
+
+    tmp_root="${target_root}.tmp.$$"
+    rm -rf "$tmp_root" >/dev/null 2>&1 || true
+    mkdir -p "$tmp_root" >/dev/null 2>&1 || return 1
+
+    for path in \
+        config-menu.sh \
+        install.sh \
+        install-openclaw.sh \
+        install-hermes.sh \
+        scripts \
+        skills \
+        plugins \
+        subprojects/lobster-sanctum-ui; do
+        [ -e "$script_dir/$path" ] || continue
+        mkdir -p "$tmp_root/$(dirname "$path")" >/dev/null 2>&1 || true
+        if command -v rsync >/dev/null 2>&1; then
+            rsync -a \
+                --delete-excluded \
+                --exclude '.git' \
+                --exclude '.github' \
+                --exclude '.venv' \
+                --exclude 'node_modules' \
+                --exclude '__pycache__' \
+                --exclude '.pytest_cache' \
+                --exclude '*.pyc' \
+                "$script_dir/$path" "$tmp_root/$(dirname "$path")/" >/dev/null 2>&1 || return 1
+        else
+            cp -R "$script_dir/$path" "$tmp_root/$(dirname "$path")/" >/dev/null 2>&1 || return 1
+        fi
+    done
+
+    mkdir -p "$(dirname "$target_root")" >/dev/null 2>&1 || return 1
+    rm -rf "$target_root" >/dev/null 2>&1 || true
+    mv "$tmp_root" "$target_root" >/dev/null 2>&1 || return 1
+    return 0
+}
+
 count_missing_default_skill_sentinels_install() {
     local check_dir="$1"
     local missing=0
@@ -3456,6 +3507,7 @@ resolve_repo_file_install() {
     local script_dir
     local cache_root
     local cache_repo
+    local runtime_repo
     local bundle_dir
     local repo_root
     local candidate
@@ -3463,9 +3515,11 @@ resolve_repo_file_install() {
     script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
     cache_root="$CONFIG_DIR/.cache"
     cache_repo="$cache_root/auto-install-openclaw-repo"
+    runtime_repo="$(runtime_repo_snapshot_root_install)"
 
     for candidate in \
         "$script_dir/$relative_path" \
+        "$runtime_repo/$relative_path" \
         "$cache_repo/$relative_path" \
         "$CONFIG_DIR/workspace/auto-install-openclaw/$relative_path" \
         "$CONFIG_DIR/workspace/auto-install-Openclaw/$relative_path"; do
@@ -3785,19 +3839,16 @@ verify_pixel_house_ready_install() {
 
 install_config_menu_launcher() {
     local launcher="$CONFIG_DIR/config-menu.sh"
-    local local_repo_root
-    local config_menu_script
-    local cache_repo
-
-    local_repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-    cache_repo="$CONFIG_DIR/.cache/auto-install-openclaw-repo"
-    config_menu_script="$local_repo_root/config-menu.sh"
+    local runtime_repo config_menu_script
+    runtime_repo="$(runtime_repo_snapshot_root_install)"
+    config_menu_script="$(resolve_repo_file_install "config-menu.sh" || true)"
 
     cat > "$launcher" <<EOF
 #!/usr/bin/env bash
 set -euo pipefail
 
 candidates=(
+  "$runtime_repo/config-menu.sh"
   "$config_menu_script"
   "\$HOME/.openclaw/.cache/auto-install-openclaw-repo/config-menu.sh"
   "\$HOME/.openclaw/workspace/auto-install-openclaw/config-menu.sh"
@@ -3822,7 +3873,12 @@ install_lobster_setup_launcher() {
     local launcher="$LOBSTER_BIN_DIR/lobster-setup"
     local compat_launcher="$LOBSTER_BIN_DIR/openclaw-setup"
     local install_script
-    install_script="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/install.sh"
+    local runtime_repo
+    runtime_repo="$(runtime_repo_snapshot_root_install)"
+    install_script="$runtime_repo/install.sh"
+    if [ ! -f "$install_script" ]; then
+        install_script="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/install.sh"
+    fi
 
     mkdir -p "$LOBSTER_BIN_DIR" 2>/dev/null || true
 
@@ -3970,6 +4026,7 @@ setup_lobster_world_defaults_install() {
     upsert_env_export_install "OPENCLAW_STATUS_URL" "http://127.0.0.1:${GATEWAY_PORT}/status"
     upsert_env_export_install "PROJECTION_API_INGEST_URL" "http://${PROJECTION_API_HOST_DEFAULT}:${PROJECTION_API_PORT_DEFAULT}/runtime/ingest"
 
+    sync_runtime_repo_snapshot_install >/dev/null 2>&1 || true
     install_config_menu_launcher
     install_pixel_house_launchers_install
 

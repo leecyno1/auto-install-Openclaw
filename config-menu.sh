@@ -177,6 +177,9 @@ DEFAULT_PROJECTION_API_PORT="${PROJECTION_API_PORT:-19100}"
 LOBSTER_WORLD_SERVICE_NAME="lobster-world.service"
 LOBSTER_PROJECTION_SERVICE_NAME="lobster-projection-api.service"
 LOBSTER_BRIDGE_SERVICE_NAME="lobster-openclaw-bridge.service"
+RUNTIME_REPO_DIR_MENU="$HOME/.openclaw/runtime/installer-repo"
+CONFIG_MENU_CACHE_FILE="${TMPDIR:-/tmp}/openclaw-config-menu-cache-$$.tsv"
+CONFIG_MENU_MODEL_REF_CACHE=""
 
 # 飞书插件策略（仅官方插件，支持版本 pin）
 FEISHU_PLUGIN_OFFICIAL="@openclaw/feishu"
@@ -1499,10 +1502,24 @@ resolve_minimax_provider_base_url_menu() {
 config_get_value_menu() {
     local key="$1"
     local value=""
+    if [ -f "$CONFIG_MENU_CACHE_FILE" ]; then
+        if value="$(awk -F '\t' -v k="$key" '$1 == k { print substr($0, index($0, FS) + 1); found=1; exit } END { if (!found) exit 1 }' "$CONFIG_MENU_CACHE_FILE" 2>/dev/null)"; then
+            printf '%s' "$value"
+            return 0
+        fi
+    fi
     if check_openclaw_installed; then
         value="$(openclaw config get "$key" 2>/dev/null || true)"
     fi
-    sanitize_config_value_menu "$value"
+    value="$(sanitize_config_value_menu "$value")"
+    mkdir -p "$(dirname "$CONFIG_MENU_CACHE_FILE")" >/dev/null 2>&1 || true
+    printf '%s\t%s\n' "$key" "$(printf '%s' "$value" | tr '\r\n\t' '   ')" >>"$CONFIG_MENU_CACHE_FILE" 2>/dev/null || true
+    printf '%s' "$value"
+}
+
+invalidate_runtime_cache_menu() {
+    CONFIG_MENU_MODEL_REF_CACHE=""
+    rm -f "$CONFIG_MENU_CACHE_FILE" >/dev/null 2>&1 || true
 }
 
 get_current_rule_profile_menu() {
@@ -3485,6 +3502,11 @@ check_gateway_running() {
 
 # 从 openclaw models status --json 读取当前默认模型
 get_current_model_ref() {
+    if [ -n "$CONFIG_MENU_MODEL_REF_CACHE" ]; then
+        printf '%s' "$CONFIG_MENU_MODEL_REF_CACHE"
+        return 0
+    fi
+
     if ! check_openclaw_installed; then
         return 1
     fi
@@ -3517,7 +3539,10 @@ except Exception:
         fi
     fi
 
-    [ -n "$model_ref" ] && [ "$model_ref" != "undefined" ] && echo "$model_ref"
+    if [ -n "$model_ref" ] && [ "$model_ref" != "undefined" ]; then
+        CONFIG_MENU_MODEL_REF_CACHE="$model_ref"
+        printf '%s' "$model_ref"
+    fi
 }
 
 # 测试 AI API 连接
@@ -4465,6 +4490,7 @@ config_image_provider_viviai() {
     upsert_env_export "OPENCLAW_IMAGE_API_KEY" "$OPENCLAW_IMAGE_API_KEY"
     apply_generative_service_settings_menu
     sync_lobster_shared_state_menu
+    invalidate_runtime_cache_menu
 
     echo ""
     log_info "生图接口配置已保存并应用。"
@@ -4510,6 +4536,7 @@ save_custom_provider_config() {
     fi
 
     sync_lobster_shared_state_menu
+    invalidate_runtime_cache_menu
     log_info "自定义 Provider 配置已保存。"
     log_info "Provider: $display_name ($provider_id)"
     log_info "Base URL: $base_url"
@@ -11583,6 +11610,7 @@ EOF
     fi
     
     sync_lobster_shared_state_menu
+    invalidate_runtime_cache_menu
     log_info "环境变量已保存到: $env_file"
 }
 
@@ -11884,6 +11912,7 @@ resolve_pixel_house_repo_file_menu() {
     script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
     local candidates=(
         "$script_dir/$relative_path"
+        "$RUNTIME_REPO_DIR_MENU/$relative_path"
         "$HOME/.openclaw/.cache/auto-install-openclaw-repo/$relative_path"
         "$HOME/.openclaw/workspace/auto-install-openclaw/$relative_path"
         "$HOME/.openclaw/workspace/auto-install-Openclaw/$relative_path"
@@ -11903,6 +11932,7 @@ resolve_lobster_world_script_menu() {
     script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
     local candidates=(
         "$HOME/.openclaw/lobster-world.sh"
+        "$RUNTIME_REPO_DIR_MENU/scripts/lobster-world.sh"
         "$script_dir/scripts/lobster-world.sh"
         "$HOME/.openclaw/.cache/auto-install-openclaw-repo/scripts/lobster-world.sh"
         "$HOME/.openclaw/workspace/auto-install-openclaw/scripts/lobster-world.sh"

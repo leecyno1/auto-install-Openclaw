@@ -84,6 +84,24 @@ class ConfigSurfaceTests(unittest.TestCase):
         self.assertIn('OPENCLAW_CUSTOM_PROVIDER_ID', text)
         self.assertIn('OPENCLAW_ACTIVE_PROVIDER_PRESET', text)
 
+    def test_config_menu_has_runtime_cache_and_runtime_snapshot_resolution(self):
+        text = CONFIG_MENU.read_text(encoding='utf-8')
+        self.assertIn('CONFIG_MENU_CACHE_FILE=', text)
+        self.assertIn('invalidate_runtime_cache_menu()', text)
+        self.assertIn('CONFIG_MENU_MODEL_REF_CACHE=', text)
+        self.assertIn('RUNTIME_REPO_DIR_MENU="$HOME/.openclaw/runtime/installer-repo"', text)
+        self.assertIn('"$RUNTIME_REPO_DIR_MENU/$relative_path"', text)
+        self.assertIn('"$RUNTIME_REPO_DIR_MENU/scripts/lobster-world.sh"', text)
+
+    def test_install_launchers_prefer_runtime_snapshot_repo(self):
+        text = INSTALL.read_text(encoding='utf-8')
+        self.assertIn('runtime_repo_snapshot_root_install()', text)
+        self.assertIn('sync_runtime_repo_snapshot_install()', text)
+        self.assertIn('"$runtime_repo/$relative_path"', text)
+        self.assertIn('"$runtime_repo/config-menu.sh"', text)
+        self.assertIn('install_script="$runtime_repo/install.sh"', text)
+        self.assertIn('sync_runtime_repo_snapshot_install >/dev/null 2>&1 || true', text)
+
     def test_glm_configuration_supports_custom_base_url(self):
         text = CONFIG_MENU.read_text(encoding='utf-8')
         self.assertIn('ZAI_BASE_URL', text)
