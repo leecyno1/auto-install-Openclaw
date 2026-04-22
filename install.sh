@@ -352,6 +352,8 @@ print_post_install_config_hint() {
     echo ""
     echo -e "${WHITE}💡 下次可以直接运行配置菜单:${NC}"
     echo -e "   ${CYAN}lobster-setup config${NC}"
+    echo -e "${WHITE}💡 如果只是 MiniMax Provider 重复或代理 URL 替换未生效:${NC}"
+    echo -e "   ${CYAN}lobster-setup repair minimax${NC}"
     echo ""
 
     case "$mode" in
@@ -360,11 +362,13 @@ print_post_install_config_hint() {
             ;;
         auto)
             log_info "全自动模式：已跳过配置菜单，请按需手动执行: lobster-setup config"
+            log_info "如需仅修复 MiniMax Provider / 多模态配置，可执行: lobster-setup repair minimax"
             ;;
         later)
             echo ""
             echo -e "${CYAN}稍后可以通过以下命令打开配置菜单:${NC}"
             echo "  lobster-setup config"
+            echo "  lobster-setup repair minimax"
             echo ""
             ;;
     esac
@@ -386,6 +390,7 @@ print_exit_hint() {
     echo "  source ~/.openclaw/env && openclaw doctor"
     echo "  source ~/.openclaw/env && openclaw models status --probe --check"
     echo "  lobster-setup config"
+    echo "  lobster-setup repair minimax"
     echo "  ~/.openclaw/lobster-world.sh start"
     echo ""
 }
@@ -7035,6 +7040,7 @@ print_success() {
     echo -e "${CYAN}配置菜单:${NC}"
     echo "  bash ~/.openclaw/config-menu.sh                   # 打开统一配置菜单"
     echo "  bash ~/.openclaw/config-menu.sh --repair-config  # 修复/迁移配置"
+    echo "  bash ~/.openclaw/config-menu.sh --repair-minimax # 仅修复 MiniMax Provider / 多模态配置"
     echo "  bash ~/.openclaw/config-menu.sh --install-pixel-house  # 补装像素小屋"
     echo ""
     echo -e "${CYAN}像素小屋工作台:${NC}"

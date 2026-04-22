@@ -26,6 +26,7 @@ class ReadmeLauncherAlignmentTests(unittest.TestCase):
         )
         self.assertIn('lobster-setup repair minimax', install_text)
         self.assertIn('bash "\\$config_menu" --repair-minimax', install_text)
+        self.assertIn('如果只是 MiniMax Provider 重复或代理 URL 替换未生效', install_text)
         self.assertIn('local launcher="$LOBSTER_BIN_DIR/lobster-setup"', install_text)
         self.assertIn('local compat_launcher="$LOBSTER_BIN_DIR/openclaw-setup"', install_text)
         self.assertIn('openclaw-setup ...         # 兼容旧命令，等价转发到 lobster-setup', install_text)
