@@ -187,8 +187,9 @@ SKILL_PIP_PACKAGES="${OPENCLAW_SKILL_PIP_PACKAGES:-$SKILL_PIP_PACKAGES_DEFAULT}"
 SKILL_PIP_PACKAGES_FILE_REL="skills/requirements-runtime.txt"
 # AUTO_FIX_ATTEMPTED 变量已移除（精简代码）
 GATEWAY_CONVERGED_ONCE=0
-# 默认官方消息渠道插件（仅保留通用官方渠道；微信/企业微信/钉钉/QQ 改为用户手动安装）
-DEFAULT_OFFICIAL_PLUGINS="@openclaw/feishu @openclaw/discord @openclaw/whatsapp"
+# 默认官方插件已关闭自动安装，用户可通过 openclaw plugins install 按需安装
+# 示例: openclaw plugins install @openclaw/feishu
+DEFAULT_OFFICIAL_PLUGINS=""
 DEFAULT_BUILTIN_CHANNEL_PLUGINS="telegram imessage"
 RULE_PROFILE_DEFAULT="${OPENCLAW_RULE_PROFILE:-medium}"
 RULE_PROFILE_SELECTED="$(echo "${RULE_PROFILE_DEFAULT}" | tr '[:upper:]' '[:lower:]')"
@@ -7113,8 +7114,19 @@ start_openclaw_service() {
         sleep 0.5
     else
         if ! converge_gateway_single_instance "restart"; then
-            log_error "Gateway 启动失败，请先执行: openclaw doctor --fix"
-            return 1
+            # Gateway 启动失败时自动运行 doctor 修复
+            log_warn "Gateway 启动失败，尝试自动修复..."
+            openclaw doctor --fix >/dev/null 2>&1 || true
+            openclaw gateway start >/dev/null 2>&1 || true
+            sleep 1
+            local auto_gateway_pid
+            auto_gateway_pid=$(get_gateway_pid)
+            if [ -n "$auto_gateway_pid" ]; then
+                log_info "Gateway 自动修复成功 (PID: $auto_gateway_pid)"
+            else
+                log_error "Gateway 启动失败，请先执行: openclaw doctor --fix"
+                return 1
+            fi
         fi
     fi
 
