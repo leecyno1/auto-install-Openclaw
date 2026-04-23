@@ -185,7 +185,7 @@ INSTALL_SKILL_DEPS="${OPENCLAW_INSTALL_SKILL_DEPS:-1}"
 SKILL_PIP_PACKAGES_DEFAULT="duckduckgo-search akshare requests pyyaml pypdf pillow openpyxl python-pptx python-docx lxml defusedxml pdf2image"
 SKILL_PIP_PACKAGES="${OPENCLAW_SKILL_PIP_PACKAGES:-$SKILL_PIP_PACKAGES_DEFAULT}"
 SKILL_PIP_PACKAGES_FILE_REL="skills/requirements-runtime.txt"
-AUTO_FIX_ATTEMPTED=0
+# AUTO_FIX_ATTEMPTED 变量已移除（精简代码）
 GATEWAY_CONVERGED_ONCE=0
 # 默认官方消息渠道插件（仅保留通用官方渠道；微信/企业微信/钉钉/QQ 改为用户手动安装）
 DEFAULT_OFFICIAL_PLUGINS="@openclaw/feishu @openclaw/discord @openclaw/whatsapp"
@@ -524,55 +524,6 @@ show_persona_role_cards_install() {
     echo ""
 }
 
-run_auto_fix_once() {
-    if [ "$AUTO_FIX_ATTEMPTED" -ge 1 ]; then
-        log_warn "自动修复已执行过一次，跳过再次修复。"
-        return 1
-    fi
-
-    AUTO_FIX_ATTEMPTED=1
-    log_warn "检测到异常，尝试执行一次自动修复..."
-
-    if check_command openclaw; then
-        local repair_log
-        repair_log="$(mktemp /tmp/openclaw-auto-fix.XXXXXX.log)"
-        if openclaw doctor --help 2>/dev/null | grep -q -- "--non-interactive"; then
-            set +e
-            openclaw doctor --non-interactive >"$repair_log" 2>&1
-            local repair_exit=$?
-            set -e
-            if [ $repair_exit -eq 0 ]; then
-                log_info "自动修复成功（openclaw doctor --non-interactive）"
-                return 0
-            fi
-        fi
-
-        set +e
-        yes | openclaw doctor --fix >"$repair_log" 2>&1
-        local repair_exit=$?
-        set -e
-        if [ $repair_exit -eq 0 ]; then
-            log_info "自动修复成功（openclaw doctor --fix）"
-            return 0
-        fi
-        tail -n 30 "$repair_log" 2>/dev/null || true
-    fi
-
-    if check_command npm; then
-        set +e
-        npm cache verify >/tmp/openclaw-npm-cache-verify.log 2>&1
-        local cache_exit=$?
-        set -e
-        if [ $cache_exit -eq 0 ]; then
-            log_info "已执行 npm cache verify，准备重试失败步骤。"
-            return 0
-        fi
-    fi
-
-    log_warn "自动修复未生效。"
-    return 1
-}
-
 run_step_with_auto_fix() {
     local step_name="$1"
     shift
@@ -581,21 +532,9 @@ run_step_with_auto_fix() {
     "$@"
     local step_exit=$?
     set -e
-    if [ $step_exit -eq 0 ]; then
-        return 0
-    fi
 
-    log_warn "${step_name} 失败（exit=${step_exit}），将执行一次自动修复并重试。"
-    if run_auto_fix_once; then
-        set +e
-        "$@"
-        step_exit=$?
-        set -e
-        if [ $step_exit -eq 0 ]; then
-            log_info "${step_name} 重试成功。"
-            return 0
-        fi
-        log_error "${step_name} 重试后仍失败（exit=${step_exit}）。"
+    if [ $step_exit -ne 0 ]; then
+        log_error "${step_name} 失败（exit=${step_exit}）"
     fi
 
     return $step_exit
