@@ -73,7 +73,7 @@ resolve_onboard_term_menu() {
 
 allow_noninteractive_shortcut_menu() {
     case "${1:-}" in
-        --help|-h|--repair-config|--repair-minimax|--repair-pairing|--install-pixel-house|--engine-menu|--model-only|--official-channels-only) return 0 ;;
+        --help|-h|--repair-config|--repair-minimax|--repair-pairing|--install-pixel-house|--engine-menu|--model-only|--official-channels-only|--skills-only|--image-api-only|--status-detailed|--advanced-model-only) return 0 ;;
         *) return 1 ;;
     esac
 }
@@ -81,6 +81,22 @@ allow_noninteractive_shortcut_menu() {
 case "${1:-}" in
     --help|-h)
         print_usage
+        exit 0
+        ;;
+    --status-detailed)
+        show_status_detailed
+        exit 0
+        ;;
+    --skills-only)
+        manage_basic_skills
+        exit 0
+        ;;
+    --image-api-only)
+        config_image_api_menu
+        exit 0
+        ;;
+    --advanced-model-only)
+        configure_expert_model_menu
         exit 0
         ;;
 esac
@@ -180,6 +196,35 @@ LOBSTER_BRIDGE_SERVICE_NAME="lobster-openclaw-bridge.service"
 RUNTIME_REPO_DIR_MENU="$HOME/.openclaw/runtime/installer-repo"
 CONFIG_MENU_CACHE_FILE="${TMPDIR:-/tmp}/openclaw-config-menu-cache-$$.tsv"
 CONFIG_MENU_MODEL_REF_CACHE=""
+
+# Config caching layer for performance
+declare -A CONFIG_CACHE
+CONFIG_CACHE_TTL=60
+CONFIG_CACHE_TIMESTAMP=0
+
+invalidate_config_cache_menu() {
+    CONFIG_CACHE=()
+    CONFIG_CACHE_TIMESTAMP=0
+}
+
+get_cached_config_menu() {
+    local key="$1"
+    local now
+    now=$(date +%s)
+    if [ $((now - CONFIG_CACHE_TIMESTAMP)) -gt $CONFIG_CACHE_TTL ]; then
+        return 1
+    fi
+    local val="${CONFIG_CACHE[$key]}"
+    [ -n "$val" ] && echo "$val"
+    return 0
+}
+
+set_cached_config_menu() {
+    local key="$1"
+    local val="$2"
+    CONFIG_CACHE["$key"]="$val"
+    CONFIG_CACHE_TIMESTAMP=$(date +%s)
+}
 
 # 飞书插件策略（仅官方插件，支持版本 pin）
 FEISHU_PLUGIN_OFFICIAL="@openclaw/feishu"
@@ -917,6 +962,9 @@ is_valid_port() {
 }
 
 get_gateway_port() {
+    local cached
+    cached=$(get_cached_config_menu "gateway.port") && echo "$cached" && return 0
+
     local port="$DEFAULT_GATEWAY_PORT"
 
     if [ -f "$OPENCLAW_ENV" ]; then
@@ -937,10 +985,14 @@ get_gateway_port() {
         fi
     fi
 
+    set_cached_config_menu "gateway.port" "$port"
     echo "$port"
 }
 
 get_gateway_bind() {
+    local cached
+    cached=$(get_cached_config_menu "gateway.bind") && echo "$cached" && return 0
+
     local bind="$DEFAULT_GATEWAY_BIND"
     local legacy_host=""
 
@@ -969,10 +1021,16 @@ get_gateway_bind() {
         fi
     fi
 
-    normalize_gateway_bind_mode "$bind" "$legacy_host"
+    local result
+    result=$(normalize_gateway_bind_mode "$bind" "$legacy_host")
+    set_cached_config_menu "gateway.bind" "$result"
+    echo "$result"
 }
 
 get_gateway_custom_bind_host() {
+    local cached
+    cached=$(get_cached_config_menu "gateway.custom_bind_host") && echo "$cached" && return 0
+
     local custom_host="$DEFAULT_GATEWAY_CUSTOM_BIND_HOST"
     if [ -f "$OPENCLAW_ENV" ]; then
         local env_host
@@ -1000,6 +1058,7 @@ get_gateway_custom_bind_host() {
         fi
     fi
 
+    set_cached_config_menu "gateway.custom_bind_host" "$custom_host"
     echo "$custom_host"
 }
 
@@ -4145,6 +4204,75 @@ run_official_model_onboard() {
 
 # ================================ 状态显示 ================================
 
+show_status_detailed() {
+    echo "=== OpenClaw Services Detailed Status ==="
+    echo ""
+
+    # Gateway
+    echo "Gateway (port 13145):"
+    local gateway_pid gateway_port gateway_bind
+    gateway_pid="$(get_gateway_pid)"
+    gateway_port="$(get_gateway_port)"
+    gateway_bind="$(get_gateway_bind)"
+    if [ -n "$gateway_pid" ]; then
+        echo "  Status: Running"
+        echo "  PID: $gateway_pid"
+        echo "  Bind: $gateway_bind"
+        echo "  Port: $gateway_port"
+        openclaw gateway status 2>/dev/null | head -5 | sed 's/^/  /' || true
+    else
+        echo "  Status: Stopped"
+    fi
+    echo ""
+
+    # Health Check (port 13146)
+    echo "Health Check (port 13146):"
+    if command -v curl >/dev/null 2>&1 && curl -sf "http://127.0.0.1:13146/health" >/dev/null 2>&1; then
+        echo "  Status: Running"
+        curl -s "http://127.0.0.1:13146/health" | sed 's/^/  /' || true
+    else
+        echo "  Status: Stopped"
+    fi
+    echo ""
+
+    # Quota Enforcer (port 13147)
+    echo "Quota Enforcer (port 13147):"
+    if command -v curl >/dev/null 2>&1 && curl -sf "http://127.0.0.1:13147/quota/status" >/dev/null 2>&1; then
+        echo "  Status: Running"
+        curl -s "http://127.0.0.1:13147/quota/status" | sed 's/^/  /' || true
+    else
+        echo "  Status: Stopped"
+    fi
+    echo ""
+
+    # Lobster World (port 19000)
+    echo "Lobster World (port 19000):"
+    if command -v curl >/dev/null 2>&1 && curl -sf "http://127.0.0.1:19000/health" >/dev/null 2>&1; then
+        echo "  Status: Running"
+        echo "  URL: http://127.0.0.1:19000"
+    else
+        echo "  Status: Stopped"
+    fi
+    echo ""
+
+    # Skills status
+    echo "Skills:"
+    local basic_count ext_count super_count
+    basic_count="$(count_installed_skills_from_list_menu "$PROFILE_BASIC_SKILLS" 2>/dev/null || echo '?')"
+    ext_count="$(count_installed_skills_from_list_menu "$PROFILE_EXTENDED_SKILLS" 2>/dev/null || echo '?')"
+    super_count="$(count_installed_skills_from_list_menu "$PROFILE_SUPER_SKILLS" 2>/dev/null || echo '?')"
+    echo "  Basic: $basic_count"
+    echo "  Extended: $ext_count"
+    echo "  Super: $super_count"
+    echo ""
+
+    # Config paths
+    echo "Config Files:"
+    [ -d "$CONFIG_DIR" ] && echo "  Config Dir: $CONFIG_DIR ✓" || echo "  Config Dir: $CONFIG_DIR ✗"
+    [ -f "$OPENCLAW_ENV" ] && echo "  Env File: $OPENCLAW_ENV ✓" || echo "  Env File: $OPENCLAW_ENV ✗"
+    [ -f "$OPENCLAW_JSON" ] && echo "  Config JSON: $OPENCLAW_JSON ✓" || echo "  Config JSON: $OPENCLAW_JSON ✗"
+}
+
 show_status() {
     while true; do
         clear_screen
@@ -4301,6 +4429,81 @@ config_ai_model() {
                 ;;
         esac
     done
+}
+
+config_image_api_menu() {
+    config_image_provider_viviai
+}
+
+configure_expert_model_menu() {
+    clear_screen
+    print_header
+
+    echo -e "${WHITE}🔧 专家模型配置${NC}"
+    print_divider
+    echo ""
+
+    # Show current model configuration
+    echo -e "${CYAN}当前模型配置:${NC}"
+    local main_model
+    main_model="$(get_current_model_ref 2>/dev/null || echo '未配置')"
+    echo -e "  主模型: ${WHITE}${main_model}${NC}"
+
+    local main_provider
+    main_provider="$(get_current_provider_ref 2>/dev/null || echo '未配置')"
+    echo -e "  Provider: ${WHITE}${main_provider}${NC}"
+    echo ""
+
+    print_menu_item "1" "配置 OpenAI 模型 (GPT-5.4)" "🟢"
+    print_menu_item "2" "配置 Anthropic 模型 (Claude Opus 4.6)" "🟣"
+    print_menu_item "3" "配置智谱 GLM 模型" "🇨🇳"
+    print_menu_item "4" "配置火山引擎模型" "🔥"
+    print_menu_item "5" "查看当前所有模型" "📋"
+    print_menu_item "0" "返回" "↩️"
+    echo ""
+
+    read_input "${YELLOW}请选择 [0-5]: ${NC}" choice
+
+    case "$choice" in
+        1)
+            echo ""
+            log_info "OpenAI 模型配置请使用官方向导"
+            echo -e "${CYAN}运行: openclaw onboard${NC}"
+            press_enter
+            ;;
+        2)
+            echo ""
+            log_info "Anthropic 模型配置请使用官方向导"
+            echo -e "${CYAN}运行: openclaw onboard${NC}"
+            press_enter
+            ;;
+        3)
+            echo ""
+            log_info "智谱模型配置请使用官方向导"
+            echo -e "${CYAN}运行: openclaw onboard${NC}"
+            press_enter
+            ;;
+        4)
+            echo ""
+            log_info "火山引擎模型配置请使用官方向导"
+            echo -e "${CYAN}运行: openclaw onboard${NC}"
+            press_enter
+            ;;
+        5)
+            echo ""
+            openclaw models list 2>/dev/null || echo "无法列出模型"
+            press_enter
+            ;;
+        0)
+            return
+            ;;
+        *)
+            log_error "无效选择"
+            press_enter
+            ;;
+    esac
+
+    configure_expert_model_menu
 }
 
 config_provider_presets_menu() {
@@ -8562,6 +8765,9 @@ openclaw_config_set_if_changed_menu() {
     else
         openclaw config set "$key" "$value" >/dev/null 2>&1 || true
     fi
+    # Invalidate cache after config change
+    CONFIG_CACHE["$key"]="$value"
+    CONFIG_CACHE_TIMESTAMP=$(date +%s)
 }
 
 apply_dashboard_pairing_bypass_menu() {
