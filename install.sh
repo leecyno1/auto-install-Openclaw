@@ -4308,7 +4308,8 @@ PY
     fi
 }
 
-migrate_legacy_feishu_schema_in_json_install() {
+# 删除飞书 channel 配置，避免捆绑的飞书扩展因缺少 @larksuiteoapi/node-sdk 依赖而报错
+remove_feishu_channel_if_present() {
     local cfg="$CONFIG_DIR/openclaw.json"
     if check_command openclaw; then
         local active_cfg
@@ -4327,15 +4328,7 @@ migrate_legacy_feishu_schema_in_json_install() {
         tmp="$(mktemp)"
         if jq '
             .channels = (.channels // {})
-            | if ((.channels.feishu // null) | type) == "object" then
-                .channels.feishu.accounts = (.channels.feishu.accounts // {})
-                | .channels.feishu.accounts.main = (.channels.feishu.accounts.main // {})
-                | if (.channels.feishu.appId // null) != null and ((.channels.feishu.accounts.main.appId // null) == null) then .channels.feishu.accounts.main.appId = .channels.feishu.appId else . end
-                | if (.channels.feishu.appSecret // null) != null and ((.channels.feishu.accounts.main.appSecret // null) == null) then .channels.feishu.accounts.main.appSecret = .channels.feishu.appSecret else . end
-                | if (.channels.feishu.webhookMode // null) != null and ((.channels.feishu.connectionMode // null) == null) then .channels.feishu.connectionMode = .channels.feishu.webhookMode else . end
-                | del(.channels.feishu.appId, .channels.feishu.appSecret, .channels.feishu.webhookMode, .channels.feishu.footer, .channels.feishu.tools)
-              else .
-              end
+            | del(.channels.feishu)
         ' "$cfg" > "$tmp" 2>/dev/null && [ -s "$tmp" ]; then
             mv "$tmp" "$cfg"
             return 0
@@ -4353,26 +4346,8 @@ try:
     channels = data.get("channels") or {}
     if not isinstance(channels, dict):
         channels = {}
-    feishu = channels.get("feishu")
-    if isinstance(feishu, dict):
-        accounts = feishu.get("accounts") or {}
-        if not isinstance(accounts, dict):
-            accounts = {}
-        main = accounts.get("main") or {}
-        if not isinstance(main, dict):
-            main = {}
-        if feishu.get("appId") and not main.get("appId"):
-            main["appId"] = feishu.get("appId")
-        if feishu.get("appSecret") and not main.get("appSecret"):
-            main["appSecret"] = feishu.get("appSecret")
-        if feishu.get("webhookMode") and not feishu.get("connectionMode"):
-            feishu["connectionMode"] = feishu.get("webhookMode")
-        accounts["main"] = main
-        feishu["accounts"] = accounts
-        for k in ("appId", "appSecret", "webhookMode", "footer", "tools"):
-            if k in feishu:
-                feishu.pop(k, None)
-        channels["feishu"] = feishu
+    if "feishu" in channels:
+        del channels["feishu"]
     data["channels"] = channels
     with open(path, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
@@ -4957,9 +4932,9 @@ init_openclaw_config() {
     # 修复权限
     chmod 700 "$OPENCLAW_DIR" 2>/dev/null || true
 
-    # 预先修正 dashboard 配置并迁移历史 Feishu 字段，避免后续出现 config invalid。
+    # 删除 feishu channel 配置，避免插件依赖问题
     normalize_channel_policy_in_json_install || true
-    migrate_legacy_feishu_schema_in_json_install || true
+    remove_feishu_channel_if_present || true
     
     # 设置 gateway.mode 为 local
     if check_command openclaw; then
@@ -6964,7 +6939,7 @@ converge_gateway_single_instance() {
     log_step "收敛 Gateway 为单实例（bind=${GATEWAY_BIND}, port=${GATEWAY_PORT}）..."
     cleanup_legacy_gateway_runtime
     normalize_channel_policy_in_json_install || true
-    migrate_legacy_feishu_schema_in_json_install || true
+    remove_feishu_channel_if_present || true
 
     openclaw_config_set_if_changed_install "gateway.mode" "local"
     openclaw_config_set_if_changed_install "gateway.bind" "$GATEWAY_BIND"
@@ -6992,17 +6967,15 @@ converge_gateway_single_instance() {
 
     local gateway_pid
     gateway_pid="$(get_gateway_pid)"
-    if [ -z "$gateway_pid" ]; then
-        if echo "$restart_output" | grep -q "channels.feishu: invalid config: must NOT have additional properties"; then
-            log_warn "检测到历史 Feishu 配置与当前 schema 不兼容，正在自动迁移并重试 Gateway..."
-            migrate_legacy_feishu_schema_in_json_install || true
-            restart_output="$(openclaw gateway restart 2>&1)" || true
-            sleep 0.5
-            gateway_pid="$(get_gateway_pid)"
-        fi
-    fi
 
+    # Gateway 启动失败时，尝试删除飞书配置并重试
     if [ -z "$gateway_pid" ]; then
+        if echo "$restart_output" | grep -q "feishu\|@larksuiteoapi"; then
+            log_warn "检测到飞书配置问题，正在清理并重试..."
+        else
+            log_warn "Gateway 启动失败，尝试清理后重试..."
+        fi
+        remove_feishu_channel_if_present || true
         restart_output="$(openclaw gateway start 2>&1)" || true
         sleep 0.5
         gateway_pid="$(get_gateway_pid)"
