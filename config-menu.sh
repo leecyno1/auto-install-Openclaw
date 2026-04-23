@@ -3594,16 +3594,8 @@ try {
   if (v) process.stdout.write(v);
 } catch {}
 ' 2>/dev/null || true)
-    elif command -v python3 &> /dev/null; then
-        model_ref=$(openclaw models status --json 2>/dev/null | python3 -c '
-import json,sys
-try:
-    d=json.load(sys.stdin)
-    v=(d.get("resolvedDefault") or d.get("defaultModel") or "").strip()
-    if v: print(v,end="")
-except Exception:
-    pass
-' 2>/dev/null || true)
+    elif command -v jq &> /dev/null; then
+        model_ref=$(openclaw models status --json 2>/dev/null | jq -r 'if .resolvedDefault != null then .resolvedDefault elif .defaultModel != null then .defaultModel else empty end')
     else
         model_ref=$(openclaw config get agents.defaults.model.primary 2>/dev/null || true)
         if [ -z "$model_ref" ] || [ "$model_ref" = "undefined" ]; then
@@ -3713,8 +3705,8 @@ test_telegram_bot() {
     local bot_info=$(curl -s "https://api.telegram.org/bot${token}/getMe" 2>/dev/null)
     
     if echo "$bot_info" | grep -q '"ok":true'; then
-        local bot_name=$(echo "$bot_info" | python3 -c "import sys,json; print(json.load(sys.stdin)['result']['first_name'])" 2>/dev/null)
-        local bot_username=$(echo "$bot_info" | python3 -c "import sys,json; print(json.load(sys.stdin)['result']['username'])" 2>/dev/null)
+        local bot_name=$(echo "$bot_info" | jq -r '.result.first_name // empty' 2>/dev/null)
+        local bot_username=$(echo "$bot_info" | jq -r '.result.username // empty' 2>/dev/null)
         log_info "Bot 验证成功: $bot_name (@$bot_username)"
     else
         log_error "Bot Token 无效"
@@ -3744,7 +3736,7 @@ test_telegram_bot() {
         log_info "测试消息发送成功！请检查你的 Telegram"
         return 0
     else
-        local error=$(echo "$send_result" | python3 -c "import sys,json; print(json.load(sys.stdin).get('description', '未知错误'))" 2>/dev/null)
+        local error=$(echo "$send_result" | jq -r '.description // "未知错误"' 2>/dev/null)
         log_error "消息发送失败: $error"
         echo ""
         echo -e "${YELLOW}提示: 请确保你已经先向机器人发送过消息${NC}"
@@ -3767,8 +3759,8 @@ test_discord_bot() {
         -H "Authorization: Bot $token" 2>/dev/null)
     
     if echo "$bot_info" | grep -q '"id"'; then
-        local bot_name=$(echo "$bot_info" | python3 -c "import sys,json; print(json.load(sys.stdin).get('username', 'Unknown'))" 2>/dev/null)
-        local bot_id=$(echo "$bot_info" | python3 -c "import sys,json; print(json.load(sys.stdin).get('id', ''))" 2>/dev/null)
+        local bot_name=$(echo "$bot_info" | jq -r '.username // "Unknown"' 2>/dev/null)
+        local bot_id=$(echo "$bot_info" | jq -r '.id // empty' 2>/dev/null)
         log_info "Bot 验证成功: $bot_name (ID: $bot_id)"
     else
         log_error "Bot Token 无效"
@@ -3781,7 +3773,7 @@ test_discord_bot() {
     local guilds=$(curl -s "https://discord.com/api/v10/users/@me/guilds" \
         -H "Authorization: Bot $token" 2>/dev/null)
     
-    local guild_count=$(echo "$guilds" | python3 -c "import sys,json; print(len(json.load(sys.stdin)))" 2>/dev/null)
+    local guild_count=$(echo "$guilds" | jq 'length' 2>/dev/null)
     if [ "$guild_count" = "0" ] || [ -z "$guild_count" ]; then
         log_error "机器人尚未加入任何服务器！"
         echo ""
@@ -3797,14 +3789,11 @@ test_discord_bot() {
     else
         log_info "机器人已加入 $guild_count 个服务器"
         # 显示服务器列表
-        echo "$guilds" | python3 -c "
-import sys, json
-guilds = json.load(sys.stdin)
-for g in guilds[:5]:
-    print(f\"    • {g['name']} (ID: {g['id']})\")
-if len(guilds) > 5:
-    print(f'    ... 还有 {len(guilds)-5} 个服务器')
-" 2>/dev/null
+        echo "$guilds" | jq -r '.[0:5] | .[] | "    • \(.name) (ID: \(.id))"' 2>/dev/null
+        local total_guilds=$(echo "$guilds" | jq 'length' 2>/dev/null)
+        if [ "$total_guilds" -gt 5 ] 2>/dev/null; then
+            echo "    ... 还有 $((total_guilds - 5)) 个服务器"
+        fi
     fi
     
     # 3. 检查频道访问权限
@@ -3814,11 +3803,11 @@ if len(guilds) > 5:
         -H "Authorization: Bot $token" 2>/dev/null)
     
     if echo "$channel_info" | grep -q '"id"'; then
-        local channel_name=$(echo "$channel_info" | python3 -c "import sys,json; print(json.load(sys.stdin).get('name', 'Unknown'))" 2>/dev/null)
-        local guild_id=$(echo "$channel_info" | python3 -c "import sys,json; print(json.load(sys.stdin).get('guild_id', ''))" 2>/dev/null)
+        local channel_name=$(echo "$channel_info" | jq -r '.name // "Unknown"' 2>/dev/null)
+        local guild_id=$(echo "$channel_info" | jq -r '.guild_id // empty' 2>/dev/null)
         log_info "频道访问正常: #$channel_name (服务器ID: $guild_id)"
     else
-        local error=$(echo "$channel_info" | python3 -c "import sys,json; print(json.load(sys.stdin).get('message', '未知错误'))" 2>/dev/null)
+        local error=$(echo "$channel_info" | jq -r '.message // "未知错误"' 2>/dev/null)
         log_error "无法访问频道: $error"
         echo ""
         if echo "$error" | grep -qi "Unknown Channel"; then
@@ -3840,10 +3829,9 @@ if len(guilds) > 5:
     
     # 使用 python 正确编码 JSON
     local json_payload
-    if command -v python3 &> /dev/null; then
-        json_payload=$(python3 -c "import json; print(json.dumps({'content': '$message'}))" 2>/dev/null)
+    if command -v jq &> /dev/null; then
+        json_payload=$(printf '%s' "$message" | jq -Rs '{content: .}' 2>/dev/null)
     else
-        # 备用方案：简单消息
         json_payload="{\"content\": \"$message\"}"
     fi
     
@@ -3856,8 +3844,8 @@ if len(guilds) > 5:
         log_info "测试消息发送成功！请检查 Discord 频道"
         return 0
     else
-        local error=$(echo "$send_result" | python3 -c "import sys,json; print(json.load(sys.stdin).get('message', '未知错误'))" 2>/dev/null)
-        local error_code=$(echo "$send_result" | python3 -c "import sys,json; print(json.load(sys.stdin).get('code', 0))" 2>/dev/null)
+        local error=$(echo "$send_result" | jq -r '.message // "未知错误"' 2>/dev/null)
+        local error_code=$(echo "$send_result" | jq -r '.code // 0' 2>/dev/null)
         log_error "消息发送失败: $error"
         echo ""
         
@@ -3909,12 +3897,12 @@ test_slack_bot() {
         -H "Authorization: Bearer $bot_token" 2>/dev/null)
     
     if echo "$auth_result" | grep -q '"ok":true'; then
-        local team=$(echo "$auth_result" | python3 -c "import sys,json; print(json.load(sys.stdin).get('team', 'Unknown'))" 2>/dev/null)
-        local user=$(echo "$auth_result" | python3 -c "import sys,json; print(json.load(sys.stdin).get('user', 'Unknown'))" 2>/dev/null)
+        local team=$(echo "$auth_result" | jq -r '.team // "Unknown"' 2>/dev/null)
+        local user=$(echo "$auth_result" | jq -r '.user // "Unknown"' 2>/dev/null)
         log_info "Slack 验证成功: $user @ $team"
         return 0
     else
-        local error=$(echo "$auth_result" | python3 -c "import sys,json; print(json.load(sys.stdin).get('error', '未知错误'))" 2>/dev/null)
+        local error=$(echo "$auth_result" | jq -r '.error // "未知错误"' 2>/dev/null)
         log_error "验证失败: $error"
         return 1
     fi
@@ -3939,10 +3927,10 @@ test_feishu_bot() {
             \"app_secret\": \"$app_secret\"
         }" 2>/dev/null)
     
-    local code=$(echo "$token_result" | python3 -c "import sys,json; print(json.load(sys.stdin).get('code', -1))" 2>/dev/null)
-    
+    local code=$(echo "$token_result" | jq -r '.code // -1' 2>/dev/null)
+
     if [ "$code" != "0" ]; then
-        local msg=$(echo "$token_result" | python3 -c "import sys,json; print(json.load(sys.stdin).get('msg', '未知错误'))" 2>/dev/null)
+        local msg=$(echo "$token_result" | jq -r '.msg // "未知错误"' 2>/dev/null)
         log_error "获取 Token 失败: $msg"
         echo ""
         echo -e "${YELLOW}请检查:${NC}"
@@ -3951,7 +3939,7 @@ test_feishu_bot() {
         return 1
     fi
     
-    local access_token=$(echo "$token_result" | python3 -c "import sys,json; print(json.load(sys.stdin).get('tenant_access_token', ''))" 2>/dev/null)
+    local access_token=$(echo "$token_result" | jq -r '.tenant_access_token // empty' 2>/dev/null)
     log_info "Token 获取成功！"
     
     # 2. 获取机器人信息
@@ -3960,9 +3948,9 @@ test_feishu_bot() {
     local bot_info=$(curl -s "https://open.feishu.cn/open-apis/bot/v3/info" \
         -H "Authorization: Bearer $access_token" 2>/dev/null)
     
-    local bot_code=$(echo "$bot_info" | python3 -c "import sys,json; print(json.load(sys.stdin).get('code', -1))" 2>/dev/null)
+    local bot_code=$(echo "$bot_info" | jq -r '.code // -1' 2>/dev/null)
     if [ "$bot_code" = "0" ]; then
-        local bot_name=$(echo "$bot_info" | python3 -c "import sys,json; print(json.load(sys.stdin).get('bot', {}).get('app_name', 'Unknown'))" 2>/dev/null)
+        local bot_name=$(echo "$bot_info" | jq -r '.bot.app_name // "Unknown"' 2>/dev/null)
         log_info "机器人: $bot_name"
     else
         log_warn "无法获取机器人信息（可能需要添加机器人能力）"
@@ -3974,29 +3962,28 @@ test_feishu_bot() {
         echo -e "${YELLOW}3. 发送测试消息...${NC}"
         
         local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
-        
-        # 使用 Python 正确构建 JSON，确保 content 是字符串化的 JSON
-        local request_body=$(python3 -c "
-import json
-
-message = '''🦞 OpenClaw 测试消息
+        local msg_text="🦞 OpenClaw 测试消息
 
 这是一条来自配置工具的测试消息。
 如果你收到这条消息，说明飞书机器人配置成功！
 
-时间: $timestamp'''
-
-# content 必须是一个 JSON 字符串（字符串化的 JSON 对象）
-content_obj = {'text': message}
-content_str = json.dumps(content_obj, ensure_ascii=False)
-
-body = {
-    'receive_id': '$chat_id',
-    'msg_type': 'text',
-    'content': content_str
-}
-print(json.dumps(body, ensure_ascii=False))
-" 2>/dev/null)
+时间: $timestamp"
+        local content_str
+        if command -v jq &> /dev/null; then
+            content_str=$(printf '%s' "$msg_text" | jq -Rs '{text: .}' 2>/dev/null)
+        else
+            content_str="{\"text\": \"$msg_text\"}"
+        fi
+        local request_body
+        if command -v jq &> /dev/null; then
+            request_body=$(jq -n --arg id "$chat_id" --argjson content "$content_str" '{
+                receive_id: $id,
+                msg_type: "text",
+                content: $content | tostring
+            }' 2>/dev/null)
+        else
+            request_body="{\"receive_id\":\"$chat_id\",\"msg_type\":\"text\",\"content\":$content_str}"
+        fi
         
         echo -e "${GRAY}请求体: $request_body${NC}"
         
@@ -4008,11 +3995,11 @@ print(json.dumps(body, ensure_ascii=False))
         echo -e "${GRAY}响应: $send_result${NC}"
         echo ""
         
-        local send_code=$(echo "$send_result" | python3 -c "import sys,json; print(json.load(sys.stdin).get('code', -1))" 2>/dev/null)
+        local send_code=$(echo "$send_result" | jq -r '.code // -1' 2>/dev/null)
         if [ "$send_code" = "0" ]; then
             log_info "测试消息发送成功！请检查飞书群组"
         else
-            local send_msg=$(echo "$send_result" | python3 -c "import sys,json; print(json.load(sys.stdin).get('msg', '未知错误'))" 2>/dev/null)
+            local send_msg=$(echo "$send_result" | jq -r '.msg // "未知错误"' 2>/dev/null)
             log_error "消息发送失败: $send_msg (code: $send_code)"
             echo ""
             echo -e "${YELLOW}提示:${NC}"
@@ -13565,25 +13552,9 @@ try {
     console.log(config.channels?.feishu?.accounts?.main?.appSecret || config.channels?.feishu?.appSecret || '');
 } catch (e) { console.log(''); }
 " 2>/dev/null)
-        elif command -v python3 &> /dev/null; then
-            app_id=$(python3 -c "
-import json
-try:
-    with open('$OPENCLAW_JSON', 'r') as f:
-        config = json.load(f)
-    feishu = config.get('channels', {}).get('feishu', {})
-    print(feishu.get('accounts', {}).get('main', {}).get('appId', feishu.get('appId', '')))
-except: print('')
-" 2>/dev/null)
-            app_secret=$(python3 -c "
-import json
-try:
-    with open('$OPENCLAW_JSON', 'r') as f:
-        config = json.load(f)
-    feishu = config.get('channels', {}).get('feishu', {})
-    print(feishu.get('accounts', {}).get('main', {}).get('appSecret', feishu.get('appSecret', '')))
-except: print('')
-" 2>/dev/null)
+        elif command -v jq &> /dev/null; then
+            app_id=$(jq -r '.channels.feishu.accounts.main.appId // .channels.feishu.appId // empty' "$OPENCLAW_JSON" 2>/dev/null)
+            app_secret=$(jq -r '.channels.feishu.accounts.main.appSecret // .channels.feishu.appSecret // empty' "$OPENCLAW_JSON" 2>/dev/null)
         fi
     fi
     
