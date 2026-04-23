@@ -7368,11 +7368,31 @@ main() {
     install_backup_manager_script
     install_lobster_setup_launcher
     if [ "$LOBSTER_ENGINE" != "hermes" ]; then
-        install_channel_assets
+        # 并行执行：渠道资源安装 + OpenClaw 安装
+        local chan_tmp chan_status
+        chan_tmp="$(mktemp /tmp/openclaw-chan.XXXXXX)"
+        chan_status=0
+
+        install_channel_assets >"$chan_tmp" 2>&1 && echo "[OK] install_channel_assets" >> "$chan_tmp" || {
+            chan_status=$?
+            echo "[FAIL:$chan_status] install_channel_assets" >> "$chan_tmp"
+        } &
+        local openclaw_pid=$!
+
         if ! run_step_with_auto_fix "安装 OpenClaw" install_openclaw; then
             log_error "OpenClaw 安装失败"
+            kill "$openclaw_pid" 2>/dev/null || true
+            wait "$openclaw_pid" 2>/dev/null || true
+            rm -f "$chan_tmp"
             exit 1
         fi
+
+        # 等待渠道资源安装完成并输出结果
+        wait "$openclaw_pid" 2>/dev/null || true
+        if [ -s "$chan_tmp" ]; then
+            grep -q "\[OK\]" "$chan_tmp" 2>/dev/null || log_warn "渠道资源安装部分失败，可稍后手动运行: bash ~/.openclaw/config-menu.sh --install-channel-assets"
+        fi
+        rm -f "$chan_tmp"
         cleanup_stale_plugin_state
         log_info "默认消息渠道插件自动安装已关闭（改为手动安装，避免安装阶段耗时与失败重试）。"
         if [ "$NO_ONBOARD" = "1" ]; then
