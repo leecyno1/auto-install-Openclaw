@@ -21,12 +21,28 @@ curl -fsSL https://gitee.com/leecyno1/auto-install-openclaw/raw/main/install.sh 
 
 # Open configuration center
 bash ~/.openclaw/config-menu.sh
+# or
+lobster-setup config
 
 # Repair legacy configurations (preserves memory/sessions)
+lobster-setup repair
 bash ~/.openclaw/config-menu.sh --repair-config
 
 # Install/repair Pixel House workbench
-bash ~/.openclaw/config-menu.sh --install-pixel-house
+lobster-setup workbench
+```
+
+### Configuration Shortcuts
+
+```bash
+lobster-setup config --model-only          # Model configuration
+lobster-setup config --skills-only         # Skills management
+lobster-setup config --image-api-only     # Image API configuration
+lobster-setup config --status-detailed    # Detailed service status
+lobster-setup config --advanced-model-only # Expert model config
+lobster-setup config --official-channels-only # Official channels
+lobster-setup config --engine-menu        # Engine management
+lobster-setup repair minimax              # Repair MiniMax config
 ```
 
 ### OpenClaw Gateway Management
@@ -191,6 +207,8 @@ skill-name/
 ## Default Ports
 
 - OpenClaw Gateway: `127.0.0.1:13145` (localhost-only for security)
+- Health Check Server: `127.0.0.1:13146` (monitors gateway and workbench)
+- Quota Enforcer: `127.0.0.1:13147` (media generation quota enforcement)
 - Pixel House Workbench: `127.0.0.1:19000` (configurable via `STAR_BACKEND_PORT`)
 
 ## Documentation

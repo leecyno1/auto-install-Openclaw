@@ -205,14 +205,14 @@ RUNTIME_REPO_DIR_MENU="$HOME/.openclaw/runtime/installer-repo"
 CONFIG_MENU_CACHE_FILE="${TMPDIR:-/tmp}/openclaw-config-menu-cache-$$.tsv"
 CONFIG_MENU_MODEL_REF_CACHE=""
 
-# Config caching layer for performance
-declare -A CONFIG_CACHE
+# Config caching layer for performance (file-based for bash 3.x compatibility)
 CONFIG_CACHE_TTL=60
 CONFIG_CACHE_TIMESTAMP=0
+CONFIG_CACHE_FILE="${TMPDIR:-/tmp}/openclaw-config-cache-$$.tsv"
 
 invalidate_config_cache_menu() {
-    CONFIG_CACHE=()
     CONFIG_CACHE_TIMESTAMP=0
+    rm -f "$CONFIG_CACHE_FILE" 2>/dev/null || true
 }
 
 get_cached_config_menu() {
@@ -222,7 +222,9 @@ get_cached_config_menu() {
     if [ $((now - CONFIG_CACHE_TIMESTAMP)) -gt $CONFIG_CACHE_TTL ]; then
         return 1
     fi
-    local val="${CONFIG_CACHE[$key]}"
+    [ -f "$CONFIG_CACHE_FILE" ] || return 1
+    local val
+    val=$(grep "^${key}	" "$CONFIG_CACHE_FILE" 2>/dev/null | tail -1 | cut -f2)
     [ -n "$val" ] && echo "$val"
     return 0
 }
@@ -230,8 +232,11 @@ get_cached_config_menu() {
 set_cached_config_menu() {
     local key="$1"
     local val="$2"
-    CONFIG_CACHE["$key"]="$val"
     CONFIG_CACHE_TIMESTAMP=$(date +%s)
+    touch "$CONFIG_CACHE_FILE"
+    grep -v "^${key}	" "$CONFIG_CACHE_FILE" > "${CONFIG_CACHE_FILE}.tmp" 2>/dev/null || true
+    echo "${key}	${val}	${CONFIG_CACHE_TIMESTAMP}" >> "${CONFIG_CACHE_FILE}.tmp" 2>/dev/null || true
+    mv "${CONFIG_CACHE_FILE}.tmp" "$CONFIG_CACHE_FILE" 2>/dev/null || true
 }
 
 # 飞书插件策略（仅官方插件，支持版本 pin）
