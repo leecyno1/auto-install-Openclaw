@@ -2430,7 +2430,8 @@ install_git() {
                 brew install git
                 ;;
             ubuntu|debian)
-                sudo apt-get update && sudo apt-get install -y git
+                # apt-get update 已由 install_dependencies 统一处理，此处只安装
+                sudo apt-get install -y git
                 ;;
             centos|rhel|fedora)
                 sudo yum install -y git
@@ -2445,11 +2446,11 @@ install_git() {
 
 install_dependencies() {
     log_step "检查并安装依赖..."
-    
-    # 安装基础依赖
+
+    # 安装基础依赖（apt-get update 只在此处统一执行一次）
     case "$OS" in
         ubuntu|debian)
-            sudo apt-get update
+            sudo apt-get update -qq
             sudo apt-get install -y curl wget jq python3 python3-pip python3-venv poppler-utils ffmpeg vim-common bc
             ;;
         centos|rhel|fedora)
@@ -2462,10 +2463,29 @@ install_dependencies() {
             brew install curl wget jq python poppler ffmpeg
             ;;
     esac
-    
-    install_git
-    install_nodejs
-    ensure_uvx_for_minimax_skills || true
+
+    # 并行安装可选依赖：git、nodejs、uvx
+    local tmp_dir pid
+    tmp_dir="$(mktemp -d /tmp/openclaw-deps-parallel.XXXXXX)"
+    > "$tmp_dir/status"  # 初始化状态文件
+
+    (
+        install_git && echo "git:0" >> "$tmp_dir/status" || echo "git:$?" >> "$tmp_dir/status"
+    ) &
+    (
+        install_nodejs && echo "nodejs:0" >> "$tmp_dir/status" || echo "nodejs:$?" >> "$tmp_dir/status"
+    ) &
+    (
+        ensure_uvx_for_minimax_skills && echo "uvx:0" >> "$tmp_dir/status" || echo "uvx:$?" >> "$tmp_dir/status"
+    ) &
+
+    # 等待所有并行任务完成
+    wait
+
+    # 清理临时目录
+    rm -rf "$tmp_dir"
+
+    # skill Python 依赖需要 python3 已安装，放在并行任务之后顺序执行
     install_skill_runtime_python_deps || true
 }
 
