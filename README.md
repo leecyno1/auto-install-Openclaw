@@ -132,9 +132,16 @@ bash ~/.openclaw/config-menu.sh
 常用配置快捷命令：
 
 ```bash
-lobster-setup config --model-only
-lobster-setup config --official-channels-only
-lobster-setup config --engine-menu
+# 快捷入口
+lobster-setup config --model-only          # 模型配置
+lobster-setup config --skills-only         # 技能管理
+lobster-setup config --image-api-only     # 生图 API 配置
+lobster-setup config --status-detailed    # 详细服务状态
+lobster-setup config --advanced-model-only # 专家模型配置
+lobster-setup config --official-channels-only # 官方渠道配置
+lobster-setup config --engine-menu        # 引擎管理
+
+# 修复命令
 lobster-setup repair
 lobster-setup repair minimax
 lobster-setup workbench

@@ -26,12 +26,20 @@ OpenClaw 配置菜单
   --repair-pairing           修复 Dashboard / 配置页配对
   --install-pixel-house      补装像素小屋
   --engine-menu              直接进入引擎管理
+  --skills-only              直接进入技能管理
+  --image-api-only           直接进入生图 API 配置
+  --status-detailed          显示详细服务状态
+  --advanced-model-only      进入专家模型配置
 
 常用入口:
   lobster-setup config
   lobster-setup config --model-only
   lobster-setup config --official-channels-only
   lobster-setup config --engine-menu
+  lobster-setup config --skills-only
+  lobster-setup config --image-api-only
+  lobster-setup config --status-detailed
+  lobster-setup config --advanced-model-only
   lobster-setup repair
   lobster-setup repair minimax
   bash ~/.openclaw/config-menu.sh
