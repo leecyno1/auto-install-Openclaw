@@ -27,9 +27,10 @@ config_image_provider_viviai() { echo "MODEL:VIVIAI"; }
 press_enter() { :; }
 log_info() { printf '%s\n' "$*"; }
 log_error() { printf '%s\n' "$*"; }
+openclaw_skill_fallback_init() { :; }
 '''
-            marker = '# 启动阶段只做本地 JSON 快速修复，避免旧服务器在进入菜单前卡死。'
-            text = text.replace(marker, stub_block + '\n' + marker, 1)
+            # 将 stub 插入到脚本开头，确保在任何函数调用之前定义
+            text = stub_block + '\n' + text
             script_copy.write_text(text, encoding='utf-8')
             script_copy.chmod(0o755)
 
@@ -78,9 +79,10 @@ config_line() { echo "CHANNEL:LINE"; }
 config_nextcloud_talk() { echo "CHANNEL:NEXTCLOUD"; }
 config_more_official_channels() { echo "CHANNEL:MORE"; }
 log_error() { printf '%s\n' "$*"; }
+openclaw_skill_fallback_init() { :; }
 '''
-            marker = '# 启动阶段只做本地 JSON 快速修复，避免旧服务器在进入菜单前卡死。'
-            text = text.replace(marker, stub_block + '\n' + marker, 1)
+            # 将 stub 插入到脚本开头，确保在任何函数调用之前定义
+            text = stub_block + '\n' + text
             script_copy.write_text(text, encoding='utf-8')
             script_copy.chmod(0o755)
 
