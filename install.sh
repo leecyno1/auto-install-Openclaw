@@ -185,11 +185,10 @@ INSTALL_SKILL_DEPS="${OPENCLAW_INSTALL_SKILL_DEPS:-1}"
 SKILL_PIP_PACKAGES_DEFAULT="duckduckgo-search akshare requests pyyaml pypdf pillow openpyxl python-pptx python-docx lxml defusedxml pdf2image"
 SKILL_PIP_PACKAGES="${OPENCLAW_SKILL_PIP_PACKAGES:-$SKILL_PIP_PACKAGES_DEFAULT}"
 SKILL_PIP_PACKAGES_FILE_REL="skills/requirements-runtime.txt"
-# AUTO_FIX_ATTEMPTED 变量已移除（精简代码）
+AUTO_FIX_ATTEMPTED=0
 GATEWAY_CONVERGED_ONCE=0
-# 默认官方插件已关闭自动安装，用户可通过 openclaw plugins install 按需安装
-# 示例: openclaw plugins install @openclaw/feishu
-DEFAULT_OFFICIAL_PLUGINS=""
+# 默认官方消息渠道插件（仅保留通用官方渠道；微信/企业微信/钉钉/QQ 改为用户手动安装）
+DEFAULT_OFFICIAL_PLUGINS="@openclaw/feishu @openclaw/discord @openclaw/whatsapp"
 DEFAULT_BUILTIN_CHANNEL_PLUGINS="telegram imessage"
 RULE_PROFILE_DEFAULT="${OPENCLAW_RULE_PROFILE:-medium}"
 RULE_PROFILE_SELECTED="$(echo "${RULE_PROFILE_DEFAULT}" | tr '[:upper:]' '[:lower:]')"
@@ -525,6 +524,55 @@ show_persona_role_cards_install() {
     echo ""
 }
 
+run_auto_fix_once() {
+    if [ "$AUTO_FIX_ATTEMPTED" -ge 1 ]; then
+        log_warn "自动修复已执行过一次，跳过再次修复。"
+        return 1
+    fi
+
+    AUTO_FIX_ATTEMPTED=1
+    log_warn "检测到异常，尝试执行一次自动修复..."
+
+    if check_command openclaw; then
+        local repair_log
+        repair_log="$(mktemp /tmp/openclaw-auto-fix.XXXXXX.log)"
+        if openclaw doctor --help 2>/dev/null | grep -q -- "--non-interactive"; then
+            set +e
+            openclaw doctor --non-interactive >"$repair_log" 2>&1
+            local repair_exit=$?
+            set -e
+            if [ $repair_exit -eq 0 ]; then
+                log_info "自动修复成功（openclaw doctor --non-interactive）"
+                return 0
+            fi
+        fi
+
+        set +e
+        yes | openclaw doctor --fix >"$repair_log" 2>&1
+        local repair_exit=$?
+        set -e
+        if [ $repair_exit -eq 0 ]; then
+            log_info "自动修复成功（openclaw doctor --fix）"
+            return 0
+        fi
+        tail -n 30 "$repair_log" 2>/dev/null || true
+    fi
+
+    if check_command npm; then
+        set +e
+        npm cache verify >/tmp/openclaw-npm-cache-verify.log 2>&1
+        local cache_exit=$?
+        set -e
+        if [ $cache_exit -eq 0 ]; then
+            log_info "已执行 npm cache verify，准备重试失败步骤。"
+            return 0
+        fi
+    fi
+
+    log_warn "自动修复未生效。"
+    return 1
+}
+
 run_step_with_auto_fix() {
     local step_name="$1"
     shift
@@ -533,9 +581,21 @@ run_step_with_auto_fix() {
     "$@"
     local step_exit=$?
     set -e
+    if [ $step_exit -eq 0 ]; then
+        return 0
+    fi
 
-    if [ $step_exit -ne 0 ]; then
-        log_error "${step_name} 失败（exit=${step_exit}）"
+    log_warn "${step_name} 失败（exit=${step_exit}），将执行一次自动修复并重试。"
+    if run_auto_fix_once; then
+        set +e
+        "$@"
+        step_exit=$?
+        set -e
+        if [ $step_exit -eq 0 ]; then
+            log_info "${step_name} 重试成功。"
+            return 0
+        fi
+        log_error "${step_name} 重试后仍失败（exit=${step_exit}）。"
     fi
 
     return $step_exit
@@ -4308,8 +4368,7 @@ PY
     fi
 }
 
-# 删除飞书 channel 配置，避免捆绑的飞书扩展因缺少 @larksuiteoapi/node-sdk 依赖而报错
-remove_feishu_channel_if_present() {
+migrate_legacy_feishu_schema_in_json_install() {
     local cfg="$CONFIG_DIR/openclaw.json"
     if check_command openclaw; then
         local active_cfg
@@ -4328,7 +4387,15 @@ remove_feishu_channel_if_present() {
         tmp="$(mktemp)"
         if jq '
             .channels = (.channels // {})
-            | del(.channels.feishu)
+            | if ((.channels.feishu // null) | type) == "object" then
+                .channels.feishu.accounts = (.channels.feishu.accounts // {})
+                | .channels.feishu.accounts.main = (.channels.feishu.accounts.main // {})
+                | if (.channels.feishu.appId // null) != null and ((.channels.feishu.accounts.main.appId // null) == null) then .channels.feishu.accounts.main.appId = .channels.feishu.appId else . end
+                | if (.channels.feishu.appSecret // null) != null and ((.channels.feishu.accounts.main.appSecret // null) == null) then .channels.feishu.accounts.main.appSecret = .channels.feishu.appSecret else . end
+                | if (.channels.feishu.webhookMode // null) != null and ((.channels.feishu.connectionMode // null) == null) then .channels.feishu.connectionMode = .channels.feishu.webhookMode else . end
+                | del(.channels.feishu.appId, .channels.feishu.appSecret, .channels.feishu.webhookMode, .channels.feishu.footer, .channels.feishu.tools)
+              else .
+              end
         ' "$cfg" > "$tmp" 2>/dev/null && [ -s "$tmp" ]; then
             mv "$tmp" "$cfg"
             return 0
@@ -4346,8 +4413,26 @@ try:
     channels = data.get("channels") or {}
     if not isinstance(channels, dict):
         channels = {}
-    if "feishu" in channels:
-        del channels["feishu"]
+    feishu = channels.get("feishu")
+    if isinstance(feishu, dict):
+        accounts = feishu.get("accounts") or {}
+        if not isinstance(accounts, dict):
+            accounts = {}
+        main = accounts.get("main") or {}
+        if not isinstance(main, dict):
+            main = {}
+        if feishu.get("appId") and not main.get("appId"):
+            main["appId"] = feishu.get("appId")
+        if feishu.get("appSecret") and not main.get("appSecret"):
+            main["appSecret"] = feishu.get("appSecret")
+        if feishu.get("webhookMode") and not feishu.get("connectionMode"):
+            feishu["connectionMode"] = feishu.get("webhookMode")
+        accounts["main"] = main
+        feishu["accounts"] = accounts
+        for k in ("appId", "appSecret", "webhookMode", "footer", "tools"):
+            if k in feishu:
+                feishu.pop(k, None)
+        channels["feishu"] = feishu
     data["channels"] = channels
     with open(path, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
@@ -4932,9 +5017,9 @@ init_openclaw_config() {
     # 修复权限
     chmod 700 "$OPENCLAW_DIR" 2>/dev/null || true
 
-    # 删除 feishu channel 配置，避免插件依赖问题
+    # 预先修正 dashboard 配置并迁移历史 Feishu 字段，避免后续出现 config invalid。
     normalize_channel_policy_in_json_install || true
-    remove_feishu_channel_if_present || true
+    migrate_legacy_feishu_schema_in_json_install || true
     
     # 设置 gateway.mode 为 local
     if check_command openclaw; then
@@ -5904,14 +5989,53 @@ add_env_to_shell() {
 
 # create_default_config 已移除 - OpenClaw 使用 openclaw.json 和环境变量
 
+# 补丁：删除飞书 channel 配置，避免 @larksuiteoapi/node-sdk 依赖缺失导致 Gateway 启动失败
+apply_feishu_cleanup_patch() {
+    local cfg="$HOME/.openclaw/openclaw.json"
+    [ -f "$cfg" ] || return 0
+
+    if check_command jq; then
+        local tmp
+        tmp="$(mktemp)"
+        if jq 'del(.channels.feishu)' "$cfg" > "$tmp" 2>/dev/null && [ -s "$tmp" ]; then
+            mv "$tmp" "$cfg"
+            log_info "飞书配置已清理（补丁已应用）"
+            return 0
+        fi
+        rm -f "$tmp" 2>/dev/null || true
+    fi
+
+    if check_command python3; then
+        python3 - "$cfg" <<'PY' 2>/dev/null || true
+import json, sys
+path = sys.argv[1]
+try:
+    with open(path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+    channels = data.get("channels") or {}
+    if "feishu" in channels:
+        del channels["feishu"]
+        data["channels"] = channels
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(data, f, ensure_ascii=False, indent=2)
+except Exception:
+    pass
+PY
+        log_info "飞书配置已清理（补丁已应用）"
+    fi
+}
+
 run_onboard_wizard() {
     log_step "运行配置向导..."
-    
+
     echo ""
     echo -e "${PURPLE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
     echo -e "${WHITE}           🧙 OpenClaw 核心配置向导${NC}"
     echo -e "${PURPLE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
     echo ""
+
+    # 应用飞书清理补丁，避免飞书扩展依赖缺失导致配置失败
+    apply_feishu_cleanup_patch || true
 
     if confirm "使用官方配置向导 openclaw onboard（推荐，模型列表与官方同步）？" "y"; then
         if run_step_with_auto_fix "官方配置向导" run_official_onboard; then
@@ -6939,7 +7063,7 @@ converge_gateway_single_instance() {
     log_step "收敛 Gateway 为单实例（bind=${GATEWAY_BIND}, port=${GATEWAY_PORT}）..."
     cleanup_legacy_gateway_runtime
     normalize_channel_policy_in_json_install || true
-    remove_feishu_channel_if_present || true
+    migrate_legacy_feishu_schema_in_json_install || true
 
     openclaw_config_set_if_changed_install "gateway.mode" "local"
     openclaw_config_set_if_changed_install "gateway.bind" "$GATEWAY_BIND"
@@ -6967,15 +7091,17 @@ converge_gateway_single_instance() {
 
     local gateway_pid
     gateway_pid="$(get_gateway_pid)"
-
-    # Gateway 启动失败时，尝试删除飞书配置并重试
     if [ -z "$gateway_pid" ]; then
-        if echo "$restart_output" | grep -q "feishu\|@larksuiteoapi"; then
-            log_warn "检测到飞书配置问题，正在清理并重试..."
-        else
-            log_warn "Gateway 启动失败，尝试清理后重试..."
+        if echo "$restart_output" | grep -q "channels.feishu: invalid config: must NOT have additional properties"; then
+            log_warn "检测到历史 Feishu 配置与当前 schema 不兼容，正在自动迁移并重试 Gateway..."
+            migrate_legacy_feishu_schema_in_json_install || true
+            restart_output="$(openclaw gateway restart 2>&1)" || true
+            sleep 0.5
+            gateway_pid="$(get_gateway_pid)"
         fi
-        remove_feishu_channel_if_present || true
+    fi
+
+    if [ -z "$gateway_pid" ]; then
         restart_output="$(openclaw gateway start 2>&1)" || true
         sleep 0.5
         gateway_pid="$(get_gateway_pid)"
@@ -7087,19 +7213,8 @@ start_openclaw_service() {
         sleep 0.5
     else
         if ! converge_gateway_single_instance "restart"; then
-            # Gateway 启动失败时自动运行 doctor 修复
-            log_warn "Gateway 启动失败，尝试自动修复..."
-            openclaw doctor --fix >/dev/null 2>&1 || true
-            openclaw gateway start >/dev/null 2>&1 || true
-            sleep 1
-            local auto_gateway_pid
-            auto_gateway_pid=$(get_gateway_pid)
-            if [ -n "$auto_gateway_pid" ]; then
-                log_info "Gateway 自动修复成功 (PID: $auto_gateway_pid)"
-            else
-                log_error "Gateway 启动失败，请先执行: openclaw doctor --fix"
-                return 1
-            fi
+            log_error "Gateway 启动失败，请先执行: openclaw doctor --fix"
+            return 1
         fi
     fi
 
