@@ -810,13 +810,61 @@ sync_skills() {
     [ "$level" = "none" ] && return 0
 
     local skills_dir="$SCRIPT_DIR/skills/default"
+
+    # 本地不存在时，从仓库 ZIP 下载并提取
     if [ ! -d "$skills_dir" ]; then
-        log_info "本地技能包目录不存在，将使用 OpenClaw 官方技能库。"
-        log_info "如需使用自定义技能包，请手动下载项目后运行："
-        log_info "  ./install.sh --rule-profile ${level}"
+        log_step "从仓库下载技能包 (档位: ${level}) ..."
+
+        local tmp_dir extract_dir target_dir skill_list downloaded failed
+        tmp_dir="$(mktemp -d)"
+        extract_dir="$tmp_dir/extract"
+        target_dir="$CONFIG_DIR/skills"
+        mkdir -p "$target_dir"
+        downloaded=0; failed=0
+
+        # 下载仓库 ZIP
+        local zip_url="https://github.com/leecyno1/auto-install-openclaw/archive/refs/heads/main.zip"
+        local zip_file="$tmp_dir/repo.zip"
+
+        log_info "正在下载仓库..."
+        if ! curl -fsSL --connect-timeout 15 --max-time 120 \
+            -o "$zip_file" "$zip_url" 2>/dev/null; then
+            log_warn "技能包下载失败，将跳过技能同步"
+            rm -rf "$tmp_dir"
+            return 0
+        fi
+
+        # 解压并提取 skills/default
+        log_info "正在解压技能包..."
+        if unzip -q "$zip_file" -d "$extract_dir" 2>/dev/null; then
+            local src_dir="$extract_dir/auto-install-openclaw-main/skills/default"
+            if [ -d "$src_dir" ]; then
+                skill_list="$(get_profile_skill_list "$level")"
+                for skill_name in $skill_list; do
+                    if [ -d "$target_dir/$skill_name" ]; then
+                        continue
+                    fi
+                    if [ -d "$src_dir/$skill_name" ]; then
+                        cp -a "$src_dir/$skill_name" "$target_dir/" && \
+                            downloaded=$((downloaded + 1)) || \
+                            failed=$((failed + 1))
+                    else
+                        failed=$((failed + 1))
+                    fi
+                done
+            else
+                log_warn "skills/default 目录在仓库中不存在"
+            fi
+        else
+            log_warn "ZIP 解压失败"
+        fi
+
+        rm -rf "$tmp_dir"
+        log_info "技能下载完成: 成功 ${downloaded}, 失败 ${failed}"
         return 0
     fi
 
+    # 本地存在时，直接复制
     log_step "同步技能包 (档位: ${level}) ..."
 
     local skill_list target_dir copied skipped missing
