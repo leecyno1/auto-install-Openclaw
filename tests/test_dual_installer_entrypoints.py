@@ -15,10 +15,10 @@ class DualInstallerEntrypointTests(unittest.TestCase):
         hermes_help = subprocess.check_output([str(HERMES_INSTALLER), "--help"], text=True, cwd=ROOT)
         self.assertIn("OpenClaw 独立安装入口", openclaw_help)
         self.assertIn("install-openclaw.sh", openclaw_help)
-        self.assertIn("lobster-setup install openclaw", openclaw_help)
+        self.assertIn("openclaw-setup install openclaw", openclaw_help)
         self.assertIn("Hermes 独立安装入口", hermes_help)
         self.assertIn("install-hermes.sh", hermes_help)
-        self.assertIn("lobster-setup install hermes", hermes_help)
+        self.assertIn("openclaw-setup install hermes", hermes_help)
 
     def test_wrapper_scripts_exist_and_lock_engine_selection(self):
         self.assertTrue(OPENCLAW_INSTALLER.is_file())
@@ -57,12 +57,12 @@ class DualInstallerEntrypointTests(unittest.TestCase):
                     capture_output=True,
                     check=True,
                 )
-                launcher = bin_dir / "lobster-setup"
+                launcher = bin_dir / "openclaw-setup"
                 text = launcher.read_text(encoding="utf-8")
                 self.assertIn('bash "$install_script" --engine "$sub" "$@"', text)
-                self.assertIn('lobster-setup install openclaw', text)
-                self.assertIn('lobster-setup install hermes', text)
-                self.assertIn('lobster-setup install both', text)
+                self.assertIn('openclaw-setup install openclaw', text)
+                self.assertIn('openclaw-setup install hermes', text)
+                self.assertIn('openclaw-setup install both', text)
             finally:
                 partial.unlink(missing_ok=True)
 

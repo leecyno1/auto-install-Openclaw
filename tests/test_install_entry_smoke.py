@@ -108,8 +108,8 @@ main "$@"
                 self.assertTrue((openclaw_home / 'health-server.sh').is_file())
                 self.assertTrue((openclaw_home / 'scripts' / 'gateway-quota-enforcer.py').is_file())
                 self.assertTrue((openclaw_home / 'scripts' / 'media_quota.py').is_file())
-                self.assertTrue((bin_dir / 'lobster-setup').is_file())
                 self.assertTrue((bin_dir / 'openclaw-setup').is_file())
+                self.assertTrue((bin_dir / 'lobster-setup').is_file())
                 self.assertTrue((bin_dir / 'openclaw').is_file())
 
                 env_file = openclaw_home / 'env'

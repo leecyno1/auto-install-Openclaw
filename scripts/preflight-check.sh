@@ -70,7 +70,7 @@ grep -q "openclaw update --restart" README.md || fail "README missing official u
 grep -q "openclaw plugins update --all" README.md || fail "README missing plugin update command"
 grep -q "raw.githubusercontent.com/leecyno1/auto-install-Openclaw/main/install.sh" README.md || fail "README missing new one-click url"
 grep -q "mirror.ghproxy.com/https://raw.githubusercontent.com/leecyno1/auto-install-Openclaw/main/install.sh" README.md || fail "README missing mirror one-click url"
-grep -q "lobster-setup config" README.md || fail "README missing lobster-setup primary entry"
+grep -q "openclaw-setup config" README.md || fail "README missing openclaw-setup primary entry"
 pass "README command markers"
 
 # 8) 独立仓库命名检查（不应再指向旧仓库）
@@ -97,8 +97,8 @@ pass "auto-fix menu markers"
 
 # 11) 双引擎安装与统一入口检查
 grep -q -- "--engine openclaw|hermes|both" install.sh || fail "install.sh missing engine flag"
-grep -q 'lobster-setup' install.sh || fail "install.sh missing lobster-setup entry"
-grep -q 'lobster-setup {install|config|repair|workbench|status|doctor|engine|migrate|backup|help}' install.sh || fail "install.sh missing lobster-setup help usage"
+grep -q 'openclaw-setup' install.sh || fail "install.sh missing openclaw-setup entry"
+grep -q 'openclaw-setup {install|config|repair|workbench|status|doctor|engine|migrate|backup|help}' install.sh || fail "install.sh missing openclaw-setup help usage"
 grep -q 'install_hermes' install.sh || fail "install.sh missing Hermes install function"
 grep -q 'LOBSTER_DEFAULT_ENGINE' scripts/lib/openclaw-common.sh || fail "common lib missing lobster engine state"
 grep -q '引擎管理' config-menu.sh || fail "config-menu missing engine management entry"

@@ -285,6 +285,8 @@ def local_candidate_names(skill_name: str) -> list[str]:
 
 
 def find_local_source(skill_name: str) -> tuple[str, Path | None]:
+    # Portability guard: local matches are reported as local sources by find_source.
+    # return display_path(root), candidate, 'local'
     for root in LOCAL_SOURCE_ROOTS:
         candidate_names = local_candidate_names(skill_name)
         for candidate_name in candidate_names:

@@ -66,8 +66,8 @@ class LobsterSetupRuntimeTests(unittest.TestCase):
                         f"install_lobster_setup_launcher failed\nSTDOUT:\n{install_result.stdout}\nSTDERR:\n{install_result.stderr}"
                     )
 
-                launcher = bin_dir / 'lobster-setup'
-                compat_launcher = bin_dir / 'openclaw-setup'
+                launcher = bin_dir / 'openclaw-setup'
+                compat_launcher = bin_dir / 'lobster-setup'
                 self.assertTrue(launcher.is_file())
                 self.assertTrue(compat_launcher.is_file())
 
@@ -75,7 +75,7 @@ class LobsterSetupRuntimeTests(unittest.TestCase):
 
                 help_result = subprocess.run([str(launcher), 'help'], cwd=ROOT, text=True, capture_output=True, env=env)
                 self.assertEqual(help_result.returncode, 0, help_result.stderr)
-                self.assertIn('用法: lobster-setup', help_result.stdout)
+                self.assertIn('用法: openclaw-setup', help_result.stdout)
                 self.assertIn('13146 健康检查', help_result.stdout)
                 self.assertIn('13147 配额强制', help_result.stdout)
 
@@ -110,7 +110,7 @@ class LobsterSetupRuntimeTests(unittest.TestCase):
                 self.assertIn('BACKUP:list', backup_result.stdout)
 
                 compat_cases = [
-                    (['help'], '用法: lobster-setup'),
+                    (['help'], '用法: openclaw-setup'),
                     (['config', '--official-channels-only'], 'CONFIG:--official-channels-only'),
                     (['repair'], 'CONFIG:--repair-config'),
                     (['workbench', 'status'], 'WORKBENCH:status'),

@@ -36,7 +36,7 @@ class ConfigSurfaceTests(unittest.TestCase):
             text=True,
             cwd=ROOT,
         )
-        self.assertIn('OpenClaw 配置菜单', output)
+        self.assertIn('大圣之怒配置中心', output)
         self.assertIn('--install-pixel-house', output)
         self.assertIn('--engine-menu', output)
         self.assertIn('--model-only', output)
@@ -65,10 +65,11 @@ class ConfigSurfaceTests(unittest.TestCase):
         self.assertIn('--engine-menu)', text)
         self.assertIn('manage_engine_menu', text)
 
-    def test_readme_uses_lobster_setup_as_primary_entry(self):
+    def test_readme_uses_openclaw_setup_as_primary_entry(self):
         text = README.read_text(encoding='utf-8')
-        self.assertIn('lobster-setup config', text)
-        self.assertIn('lobster-setup install', text)
+        self.assertIn('openclaw-setup config', text)
+        self.assertIn('openclaw-setup install', text)
+        self.assertIn('lobster-setup', text)
         self.assertIn('install-openclaw.sh', text)
         self.assertIn('install-hermes.sh', text)
 

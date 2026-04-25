@@ -13,7 +13,7 @@ class ReadmeLauncherAlignmentTests(unittest.TestCase):
         readme_text = README.read_text(encoding='utf-8')
         install_text = INSTALL.read_text(encoding='utf-8')
 
-        documented = set(re.findall(r'lobster-setup (install|config|repair|workbench|status|doctor|engine|backup|help)\b', readme_text))
+        documented = set(re.findall(r'openclaw-setup (install|config|repair|workbench|status|doctor|engine|backup|help)\b', readme_text))
         self.assertEqual(
             documented,
             {'install', 'config', 'repair', 'workbench', 'status', 'doctor', 'engine', 'backup', 'help'},
@@ -21,26 +21,26 @@ class ReadmeLauncherAlignmentTests(unittest.TestCase):
 
         self.assertIn('print_lobster_setup_help()', install_text)
         self.assertIn(
-            '用法: lobster-setup {install|config|repair|workbench|status|doctor|engine|migrate|backup|help}',
+            '用法: openclaw-setup {install|config|repair|workbench|status|doctor|engine|migrate|backup|help}',
             install_text,
         )
-        self.assertIn('lobster-setup repair minimax', install_text)
+        self.assertIn('openclaw-setup repair minimax', install_text)
         self.assertIn('bash "\\$config_menu" --repair-minimax', install_text)
         self.assertIn('如果只是 MiniMax Provider 重复或代理 URL 替换未生效', install_text)
-        self.assertIn('local launcher="$LOBSTER_BIN_DIR/lobster-setup"', install_text)
-        self.assertIn('local compat_launcher="$LOBSTER_BIN_DIR/openclaw-setup"', install_text)
-        self.assertIn('openclaw-setup ...         # 兼容旧命令，等价转发到 lobster-setup', install_text)
+        self.assertIn('local launcher="$LOBSTER_BIN_DIR/openclaw-setup"', install_text)
+        self.assertIn('local compat_launcher="$LOBSTER_BIN_DIR/lobster-setup"', install_text)
+        self.assertIn('lobster-setup ...          # 兼容旧命令，等价转发到 openclaw-setup', install_text)
 
         for command in ('config', 'repair', 'workbench', 'status', 'doctor', 'engine', 'backup'):
-            self.assertIn(f'lobster-setup {command}', readme_text)
-        self.assertIn('lobster-setup repair minimax', readme_text)
+            self.assertIn(f'openclaw-setup {command}', readme_text)
+        self.assertIn('openclaw-setup repair minimax', readme_text)
 
-    def test_readme_guided_flow_prefers_lobster_setup_over_raw_config_commands(self):
+    def test_readme_guided_flow_prefers_openclaw_setup_over_raw_config_commands(self):
         readme_text = README.read_text(encoding='utf-8')
-        self.assertIn('安装后执行 `lobster-setup config`', readme_text)
-        self.assertIn('对历史服务器执行 `lobster-setup repair`', readme_text)
-        self.assertIn('`lobster-setup repair minimax`', readme_text)
-        self.assertIn('需要可视化界面时执行 `lobster-setup workbench`', readme_text)
+        self.assertIn('安装后执行 `openclaw-setup config`', readme_text)
+        self.assertIn('对历史服务器执行 `openclaw-setup repair`', readme_text)
+        self.assertIn('`openclaw-setup repair minimax`', readme_text)
+        self.assertIn('需要可视化界面时执行 `openclaw-setup workbench`', readme_text)
 
     def test_readme_lists_dual_engine_install_and_auto_install_commands(self):
         readme_text = README.read_text(encoding='utf-8')
@@ -94,11 +94,11 @@ class ReadmeLauncherAlignmentTests(unittest.TestCase):
         for shortcut in expected_shortcuts:
             self.assertIn(shortcut, config_menu_text)
             self.assertIn(f'bash ~/.openclaw/config-menu.sh {shortcut}', readme_text)
-        self.assertIn('lobster-setup config --model-only', config_menu_text)
-        self.assertIn('lobster-setup config --official-channels-only', config_menu_text)
-        self.assertIn('lobster-setup config --engine-menu', config_menu_text)
-        self.assertIn('lobster-setup repair', config_menu_text)
-        self.assertIn('lobster-setup repair minimax', readme_text)
+        self.assertIn('openclaw-setup config --model-only', config_menu_text)
+        self.assertIn('openclaw-setup config --official-channels-only', config_menu_text)
+        self.assertIn('openclaw-setup config --engine-menu', config_menu_text)
+        self.assertIn('openclaw-setup repair', config_menu_text)
+        self.assertIn('openclaw-setup repair minimax', readme_text)
 
     def test_config_menu_mentions_health_and_quota_helpers_under_pixel_house(self):
         config_menu_text = (ROOT / 'config-menu.sh').read_text(encoding='utf-8')

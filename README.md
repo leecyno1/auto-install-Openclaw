@@ -1,12 +1,12 @@
-# auto-install-Openclaw
+# 大圣之怒 OpenClaw / Hermes 安装器
 
 <p align="center">
   <img src="photo/openclaw-installer-logo.svg" alt="auto-install-Openclaw Logo" width="820" />
 </p>
 
 <p align="center">
-  <strong>OpenClaw 模块化安装与配置方案</strong><br />
-  极简安装 + 独立配置模块 + 本地 Skills 仓 + 像素小屋工作台
+  <strong>OpenClaw / Hermes 双轨全功能安装与配置方案</strong><br />
+  官方优先安装 + 自定义 Provider 补丁 + 本地 Skills 仓 + 像素小屋 + 网站联动
 </p>
 
 <p align="center">
@@ -20,28 +20,58 @@
 </p>
 
 > [!IMPORTANT]
-> **v2.0 模块化架构**：安装与配置完全解耦，移除与官方 CLI 重复的功能，保留自定义特性。
-> - **极简安装**：只负责环境铺垫 + 官方安装
-> - **独立配置**：Skills、三档规则、像素小屋、API 配置各自独立
-> - **灵活替换**：支持替换 Skills 中硬编码的第三方服务地址
+> **大圣之怒全功能安装器**：默认优先走官方 OpenClaw / Hermes 安装链路，自定义 URL、Key、模型、路由、生图和像素小屋只作为补丁层写入，避免重复 Provider 和历史脏配置。
+> - **双轨入口**：`install-openclaw.sh` 安装 OpenClaw，`install-hermes.sh` 安装 Hermes，`install.sh --engine both` 作为高级兼容入口。
+> - **统一命令**：主入口是 `openclaw-setup`，`lobster-setup` 仅作为兼容别名。
+> - **批量部署**：支持 `--auto-confirm-all`、`--provider`、`--model`、`--api-key`、`--base-url`、`--image-model`、`--image-api-key`、`--image-base-url`、`--enable-advanced-routing` 等全自动参数。
+> - **网站联动**：同步 `19000` 像素小屋、`13145` Gateway Control、终端 bootstrap 和 allowed origins。
 
 ## 快速入口
 
-### 1. 一键安装（极简模式）
+### 1. 一键安装（推荐双入口）
 
 ```bash
-# Gitee 镜像（推荐）
-curl -fsSL https://gitee.com/leecyno1/auto-install-openclaw/raw/main/install.sh | bash
+# OpenClaw
+curl -fsSL https://gitee.com/leecyno1/auto-install-openclaw/raw/main/install-openclaw.sh | bash
 
-# GitHub 直连
+# Hermes
+curl -fsSL https://gitee.com/leecyno1/auto-install-openclaw/raw/main/install-hermes.sh | bash
+
+# 双引擎
+curl -fsSL https://gitee.com/leecyno1/auto-install-openclaw/raw/main/install.sh | bash -s -- --engine both
+
+# 兼容总入口
+curl -fsSL https://gitee.com/leecyno1/auto-install-openclaw/raw/main/install.sh | bash -s -- --engine openclaw
+curl -fsSL https://gitee.com/leecyno1/auto-install-openclaw/raw/main/install.sh | bash -s -- --engine hermes
 curl -fsSL https://raw.githubusercontent.com/leecyno1/auto-install-Openclaw/main/install.sh | bash
+curl -fsSL https://mirror.ghproxy.com/https://raw.githubusercontent.com/leecyno1/auto-install-Openclaw/main/install.sh | bash
 ```
 
-安装脚本只负责：
-- 环境检测（OS、Node.js 22.12+、必需命令）
-- 调用官方安装脚本
-- 基础补丁（Feishu 清理）
-- 显示后续配置步骤
+全自动示例：
+
+```bash
+curl -fsSL https://gitee.com/leecyno1/auto-install-openclaw/raw/main/install-openclaw.sh | bash -s -- \
+  --auto-confirm-all \
+  --provider minimax \
+  --model MiniMax-M2.7-highspeed \
+  --api-key "$MINIMAX_API_KEY" \
+  --base-url https://api.minimaxi.com/anthropic \
+  --image-model gemini-3.1-flash-image-preview \
+  --image-api-key "$IMAGE_API_KEY" \
+  --image-base-url https://api.viviai.cc/v1/chat/completions \
+  --rule-profile medium \
+  --install-skills extended \
+  --install-pixel-house \
+  --enable-advanced-routing
+```
+
+```bash
+curl -fsSL https://gitee.com/leecyno1/auto-install-openclaw/raw/main/install-openclaw.sh | bash -s -- --auto-confirm-all
+curl -fsSL https://gitee.com/leecyno1/auto-install-openclaw/raw/main/install-hermes.sh | bash -s -- --auto-confirm-all
+curl -fsSL https://gitee.com/leecyno1/auto-install-openclaw/raw/main/install.sh | bash -s -- --auto-confirm-all --engine openclaw
+curl -fsSL https://gitee.com/leecyno1/auto-install-openclaw/raw/main/install.sh | bash -s -- --auto-confirm-all --engine hermes
+curl -fsSL https://gitee.com/leecyno1/auto-install-openclaw/raw/main/install.sh | bash -s -- --auto-confirm-all --engine both
+```
 
 ### 2. 配置模块（独立使用）
 
@@ -67,10 +97,11 @@ openclaw-setup config pixel-house --install
 openclaw-setup config pixel-house --start
 openclaw-setup config pixel-house --status
 
-# API 配置（替换 Skills 中的硬编码地址）
-openclaw-setup config api --show
-openclaw-setup config api --replace-service nanobanana --with https://my-service.com/api
-openclaw-setup config api --replace-service gemini --with https://my-gemini-proxy.com/v1
+# Provider / 模型 / 生图 / 路由
+openclaw-setup config model
+openclaw-setup config image
+openclaw-setup config routing
+openclaw-setup config website --sync
 
 # Dashboard 配对修复（修复 "pairing required" 错误）
 openclaw-setup config dashboard-pairing --fix
@@ -90,6 +121,28 @@ openclaw-setup config migrate
 - 应用到新模块
 - 保留用户数据（memory、sessions、API keys）
 - 创建备份以便回滚
+
+推荐运维流程：
+- 安装后执行 `openclaw-setup config` 完成模型、Skills、规则、像素小屋与网站联动配置。
+- 对历史服务器执行 `openclaw-setup repair` 清理重复 Provider 和旧配置。
+- MiniMax 官方/中转切换异常时执行 `openclaw-setup repair minimax`。
+- 需要可视化界面时执行 `openclaw-setup workbench`。
+
+底层快捷脚本仍可直接调用：
+
+```bash
+bash ~/.openclaw/config-menu.sh
+bash ~/.openclaw/config-menu.sh --model-only
+bash ~/.openclaw/config-menu.sh --official-channels-only
+bash ~/.openclaw/config-menu.sh --engine-menu
+bash ~/.openclaw/config-menu.sh --repair-config
+bash ~/.openclaw/config-menu.sh --repair-minimax
+bash ~/.openclaw/config-menu.sh --repair-pairing
+bash ~/.openclaw/config-menu.sh --install-pixel-house
+~/.openclaw/lobster-world.sh start
+~/.openclaw/health-server.sh status
+python3 ~/.openclaw/scripts/gateway-quota-enforcer.py status
+```
 
 ## 这套东西解决什么问题
 
@@ -272,6 +325,9 @@ openclaw-setup config migrate
 ```bash
 # 安装
 bash install.sh                          # 极简安装
+openclaw-setup install openclaw          # 安装/修复 OpenClaw
+openclaw-setup install hermes            # 安装/修复 Hermes
+openclaw-setup install both              # 安装双引擎
 
 # 配置模块
 openclaw-setup config                    # 交互式菜单
@@ -287,6 +343,21 @@ openclaw-setup config tier-rules --level high --with-monitoring
 openclaw-setup config pixel-house --install
 openclaw-setup config pixel-house --start
 openclaw-setup config api --replace-service nanobanana --with https://my.com/api
+openclaw-setup repair                    # 修复历史配置
+openclaw-setup repair minimax            # 修复 MiniMax Provider
+openclaw-setup workbench                 # 启动像素小屋
+openclaw-setup status                    # 查看状态
+openclaw-setup doctor                    # 健康检查
+openclaw-setup engine                    # 引擎管理
+openclaw-setup backup                    # 备份管理
+openclaw-setup help                      # 帮助
+```
+
+### 官方升级
+
+```bash
+openclaw update --restart
+openclaw plugins update --all
 ```
 
 ### Skills 管理

@@ -10,13 +10,13 @@ class LauncherContractTests(unittest.TestCase):
         install_text = (ROOT / 'install.sh').read_text(encoding='utf-8')
         self.assertIn('print_lobster_setup_quick_commands()', install_text)
         self.assertIn('print_post_install_config_hint()', install_text)
-        self.assertIn('local launcher="$LOBSTER_BIN_DIR/lobster-setup"', install_text)
-        self.assertIn('local compat_launcher="$LOBSTER_BIN_DIR/openclaw-setup"', install_text)
+        self.assertIn('local launcher="$LOBSTER_BIN_DIR/openclaw-setup"', install_text)
+        self.assertIn('local compat_launcher="$LOBSTER_BIN_DIR/lobster-setup"', install_text)
         self.assertIn('print_lobster_setup_help()', install_text)
         self.assertIn('cmd="\\${1:-config}"', install_text)
         self.assertIn('help|-h|--help)', install_text)
         self.assertIn(
-            '用法: lobster-setup {install|config|repair|workbench|status|doctor|engine|migrate|backup|help}',
+            '用法: openclaw-setup {install|config|repair|workbench|status|doctor|engine|migrate|backup|help}',
             install_text,
         )
         self.assertIn('像素小屋补装/修复后会同步接线并启动 13146 健康检查 与 13147 配额强制', install_text)
@@ -98,9 +98,9 @@ class LauncherContractTests(unittest.TestCase):
         self.assertIn('print_post_install_config_hint "prompt"', install_text)
         self.assertIn('print_post_install_config_hint "auto"', install_text)
         self.assertIn('print_post_install_config_hint "later"', install_text)
-        self.assertIn('lobster-setup config', install_text)
-        self.assertIn('lobster-setup engine', install_text)
-        self.assertIn('openclaw-setup ...         # 兼容旧命令，等价转发到 lobster-setup', install_text)
+        self.assertIn('openclaw-setup config', install_text)
+        self.assertIn('openclaw-setup engine', install_text)
+        self.assertIn('lobster-setup ...          # 兼容旧命令，等价转发到 openclaw-setup', install_text)
         self.assertIn('像素小屋补装/修复后会自动接线并启动以下辅助服务', install_text)
 
 

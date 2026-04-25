@@ -19,7 +19,7 @@ OpenClaw 独立安装入口
 常用示例:
   ./install-openclaw.sh --auto-confirm-all
   ./install-openclaw.sh --install-method git --rule-profile medium
-  lobster-setup install openclaw
+  openclaw-setup install openclaw
 EOF
 }
 

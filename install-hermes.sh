@@ -19,7 +19,7 @@ Hermes 独立安装入口
 常用示例:
   ./install-hermes.sh --auto-confirm-all
   ./install-hermes.sh --install-method git
-  lobster-setup install hermes
+  openclaw-setup install hermes
 EOF
 }
 

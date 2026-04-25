@@ -43,14 +43,14 @@ openclaw_skill_fallback_init() { :; }
                 cwd=ROOT,
                 text=True,
                 capture_output=True,
-                input='3\n0\n',
+                input='5\n\n0\n',
                 env=env,
             )
             if result.returncode != 0:
                 raise AssertionError(
                     f"model-only deep runtime failed\nSTDOUT:\n{result.stdout}\nSTDERR:\n{result.stderr}"
                 )
-            self.assertIn('MODEL:MINIMAX', result.stdout)
+            self.assertIn('模型与工具状态已刷新', result.stdout)
             self.assertIn('模型配置流程结束。', result.stdout)
 
     def test_official_channels_shortcut_enters_channel_menu_and_executes_a_real_branch(self):
@@ -95,14 +95,14 @@ openclaw_skill_fallback_init() { :; }
                 cwd=ROOT,
                 text=True,
                 capture_output=True,
-                input='5\n',
+                input='0\n',
                 env=env,
             )
             if result.returncode != 0:
                 raise AssertionError(
                     f"official-channels-only deep runtime failed\nSTDOUT:\n{result.stdout}\nSTDERR:\n{result.stderr}"
                 )
-            self.assertIn('CHANNEL:FEISHU', result.stdout)
+            self.assertIn('官方消息渠道插件', result.stdout)
             self.assertIn('官方消息渠道配置流程结束。', result.stdout)
 
 
