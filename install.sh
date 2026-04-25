@@ -20,6 +20,23 @@ if [ -f "$CUSTOM_LIB" ]; then
     source "$CUSTOM_LIB"
 fi
 
+# ================================ 基础日志函数（内联，确保 curl|bash 模式下可用）================
+# 注意：共享库可能因路径问题加载失败，因此必须内联这些核心函数
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+PURPLE='\033[0;35m'
+CYAN='\033[0;36m'
+WHITE='\033[1;37m'
+GRAY='\033[0;90m'
+NC='\033[0m'
+
+log_info()  { echo -e "${GREEN}[INFO]${NC} $1"; }
+log_warn()  { echo -e "${YELLOW}[WARN]${NC} $1"; }
+log_error() { echo -e "${RED}[ERROR]${NC} $1"; }
+log_step()  { echo -e "${BLUE}[STEP]${NC} $1"; }
+
 # ================================ Windows 引导 ================================
 detect_and_guide_windows() {
     [[ "${OSTYPE}" == "msys" || "${OSTYPE}" == "cygwin" || "${OSTYPE}" == "win32" ]] && return 0
