@@ -71,6 +71,10 @@ openclaw-setup config pixel-house --status
 openclaw-setup config api --show
 openclaw-setup config api --replace-service nanobanana --with https://my-service.com/api
 openclaw-setup config api --replace-service gemini --with https://my-gemini-proxy.com/v1
+
+# Dashboard 配对修复（修复 "pairing required" 错误）
+openclaw-setup config dashboard-pairing --fix
+openclaw-setup config dashboard-pairing --show
 ```
 
 ### 3. 从旧版迁移

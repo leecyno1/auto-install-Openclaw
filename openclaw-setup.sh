@@ -129,6 +129,13 @@ route_config_module() {
             }
             bash "$MODULES_DIR/api-config.sh" "$@"
             ;;
+        dashboard-pairing|dashboard|pairing)
+            [ ! -f "$MODULES_DIR/dashboard-pairing.sh" ] && {
+                echo -e "${RED}❌ Dashboard Pairing 模块未找到${NC}"
+                exit 1
+            }
+            bash "$MODULES_DIR/dashboard-pairing.sh" "$@"
+            ;;
         migrate)
             echo -e "${CYAN}🔄 启动迁移向导...${NC}"
             bash "$INSTALLER_DIR/scripts/migrate-to-modular.sh" "$@"
@@ -156,24 +163,27 @@ ${CYAN}OpenClaw 配置模块${NC}
 ${GREEN}用法:${NC} openclaw-setup config [模块] [选项]
 
 ${GREEN}模块:${NC}
-  skills        Skills 管理（安装/列表）
-  tier-rules    三档注入规则配置
-  pixel-house   像素小屋工作台
-  api           API 配置和替换
-  migrate       迁移到模块化架构
+  skills            Skills 管理（安装/列表）
+  tier-rules        三档注入规则配置
+  pixel-house       像素小屋工作台
+  api               API 配置和替换
+  dashboard-pairing Dashboard 配对修复
+  migrate           迁移到模块化架构
 
 ${GREEN}示例:${NC}
-  openclaw-setup config              # 交互式菜单
-  openclaw-setup config skills       # Skills 管理
-  openclaw-setup config tier-rules   # 三档规则
-  openclaw-setup config pixel-house  # 像素小屋
-  openclaw-setup config api          # API 配置
-  openclaw-setup config migrate      # 迁移向导
+  openclaw-setup config                      # 交互式菜单
+  openclaw-setup config skills               # Skills 管理
+  openclaw-setup config tier-rules           # 三档规则
+  openclaw-setup config pixel-house          # 像素小屋
+  openclaw-setup config api                  # API 配置
+  openclaw-setup config dashboard-pairing    # Dashboard 配对修复
+  openclaw-setup config migrate              # 迁移向导
 
   # 指定选项
   openclaw-setup config skills --tier extended
   openclaw-setup config tier-rules --level high --with-monitoring
   openclaw-setup config api --replace-service nanobanana --with https://my.com/api
+  openclaw-setup config dashboard-pairing --fix
 
 EOF
 }
@@ -190,12 +200,13 @@ show_config_menu() {
     echo "  2) 三档规则配置       - 流量控制和配额设置"
     echo "  3) 像素小屋           - 安装/启动工作台"
     echo "  4) API 配置           - 配置第三方 API"
-    echo "  5) 迁移向导           - 从旧版迁移"
+    echo "  5) Dashboard 配对修复 - 修复配对问题"
+    echo "  6) 迁移向导           - 从旧版迁移"
     echo ""
     echo "  0) 退出"
     echo ""
 
-    read -p "请选择 [0-5]: " choice
+    read -p "请选择 [0-6]: " choice
 
     case "$choice" in
         1)
@@ -219,6 +230,11 @@ show_config_menu() {
             bash "$MODULES_DIR/api-config.sh" --show
             ;;
         5)
+            echo ""
+            echo -e "${BLUE}→ 启动 Dashboard 配对修复...${NC}"
+            bash "$MODULES_DIR/dashboard-pairing.sh" --fix
+            ;;
+        6)
             echo ""
             echo -e "${BLUE}→ 启动迁移向导...${NC}"
             bash "$INSTALLER_DIR/scripts/migrate-to-modular.sh"

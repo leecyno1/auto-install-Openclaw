@@ -47,6 +47,10 @@ openclaw-setup config api --show
 openclaw-setup config api --replace-service nanobanana --with https://my-service.com/api
 openclaw-setup config api --replace-service gemini --with https://my-gemini-proxy.com/v1
 
+# Dashboard pairing fix (fix "pairing required" errors)
+openclaw-setup config dashboard-pairing --fix
+openclaw-setup config dashboard-pairing --show
+
 # Migration from old version
 openclaw-setup config migrate
 ```
@@ -160,6 +164,13 @@ python3 -m unittest tests/test_media_quota.py
 - Provides interactive configuration menu
 - Backward compatibility with old command patterns
 - CLI: `openclaw-setup config [module] [options]`
+
+**8. Dashboard Pairing Fix Module (`scripts/modules/dashboard-pairing.sh`)**
+- Fixes "pairing required" errors in Dashboard
+- Configures gateway.controlUi.allowedOrigins
+- Disables device authentication for embedded/proxy scenarios
+- Automatically restarts Gateway to apply changes
+- CLI: `openclaw-setup config dashboard-pairing --fix`
 
 ## Tier Rules Configuration
 
