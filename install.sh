@@ -811,7 +811,9 @@ sync_skills() {
 
     local skills_dir="$SCRIPT_DIR/skills/default"
     if [ ! -d "$skills_dir" ]; then
-        log_warn "本地技能包目录不存在，跳过技能同步。"
+        log_info "本地技能包目录不存在，将使用 OpenClaw 官方技能库。"
+        log_info "如需使用自定义技能包，请手动下载项目后运行："
+        log_info "  ./install.sh --rule-profile ${level}"
         return 0
     fi
 
