@@ -145,7 +145,7 @@ python3 -m unittest tests/test_media_quota.py
 - Supports: NanoBanana, Gemini, OpenAI, MiniMax, Replicate
 - Scans multiple file types (.py, .js, .sh, .ts, .tsx, .jsx)
 - Uses `~/.openclaw/api-overrides.json` for service mappings
-- Automatic backup before modification, supports rollback
+- Smart backup: creates one backup per hour (not per file) to avoid slowdown
 - CLI: `openclaw-setup config api --replace-service <name> --with <url>`
 
 **6. Migration Tool (`scripts/migrate-to-modular.sh`)**
@@ -248,7 +248,7 @@ skill-name/
 **Security**:
 - Never commit API keys, tokens, or credentials
 - Installer must validate all external downloads (checksums when available)
-- All configuration modifications create backups before changes
+- Smart backup strategy: one backup per hour instead of per-file to avoid slowdown
 - Migration tool preserves user data (memory, sessions, API keys)
 
 **Compatibility**:

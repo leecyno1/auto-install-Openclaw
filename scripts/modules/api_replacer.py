@@ -62,11 +62,45 @@ def get_backup_dir() -> str:
     return backup_dir
 
 
-def backup_file(filepath: str) -> str:
-    """备份文件到备份目录"""
+def create_backup_once(skills_dir: str) -> str:
+    """
+    创建一次性备份（整个 skills 目录）
+    只在首次替换时创建，避免每个文件都备份
+    """
     backup_dir = get_backup_dir()
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    filename = os.path.basename(filepath)
+    backup_path = os.path.join(backup_dir, f"skills_backup_{timestamp}")
+
+    # 检查是否已有最近的备份（1小时内）
+    if os.path.exists(backup_dir):
+        recent_backups = sorted([
+            d for d in os.listdir(backup_dir)
+            if d.startswith("skills_backup_")
+        ], reverse=True)
+
+        if recent_backups:
+            latest = recent_backups[0]
+            latest_time = datetime.strptime(latest.split("_")[-2] + "_" + latest.split("_")[-1], "%Y%m%d_%H%M%S")
+            time_diff = (datetime.now() - latest_time).total_seconds()
+
+            # 如果1小时内已有备份，跳过
+            if time_diff < 3600:
+                print(f"Using recent backup: {latest} (created {int(time_diff/60)} minutes ago)")
+                return os.path.join(backup_dir, latest)
+
+    # 创建新备份
+    print(f"Creating backup: {backup_path}")
+    shutil.copytree(skills_dir, backup_path, ignore=shutil.ignore_patterns(
+        "node_modules", ".venv", "__pycache__", "*.pyc", ".git"
+    ))
+    print(f"Backup created: {backup_path}")
+    return backup_path
+
+
+def backup_file(filepath: str) -> str:
+    """备份单个文件（已废弃，保留接口兼容性）"""
+    # 不再创建单文件备份，依赖 create_backup_once
+    return ""
     backup_path = os.path.join(backup_dir, f"{filename}.{timestamp}.bak")
 
     shutil.copy2(filepath, backup_path)
@@ -127,10 +161,7 @@ def replace_in_file(filepath: str, overrides: dict, dry_run: bool = False) -> li
                             modified_services.append(service)
 
     if content != original_content and not dry_run:
-        # 备份原文件
-        backup_path = backup_file(filepath)
-        print(f"  Backup: {backup_path}")
-
+        # 不再创建单文件备份，依赖整体备份
         with open(filepath, "w", encoding="utf-8") as f:
             f.write(content)
 
@@ -162,6 +193,12 @@ def scan_and_replace(skills_dir: str, overrides_file: str, dry_run: bool = False
     if not overrides:
         print(f"No overrides configured in {overrides_file}")
         return {}
+
+    # 创建一次性备份（只在首次运行或1小时后创建）
+    if not dry_run:
+        backup_path = create_backup_once(skills_dir)
+        print(f"Rollback command: cp -r {backup_path}/* {skills_dir}/")
+        print()
 
     results = {}
     skills_path = Path(skills_dir)
