@@ -1030,12 +1030,60 @@ main() {
         log_info "已跳过自定义增强层"
     fi
 
-    # 完成
+    # 完成 - 交互引导
     echo ""
     echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
     echo -e "${WHITE}  OpenClaw 安装完成！${NC}"
     echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
     echo ""
+
+    # 非全自动模式下，提供交互引导
+    if [ "$AUTO_CONFIRM_ALL" != "1" ] && [ "$NO_PROMPT" != "1" ]; then
+        echo -e "${CYAN}接下来要做什么？${NC}"
+        echo ""
+        echo "  [1] 打开 Web Dashboard  (http://127.0.0.1:${GATEWAY_PORT})"
+        echo "  [2] 运行配置菜单（模型/插件/技能/工作档案）"
+        echo "  [3] 启动像素小屋工作台  (http://127.0.0.1:19000)"
+        echo "  [4] 仅显示常用命令，稍后手动配置"
+        echo ""
+
+        local choice
+        read_input "请选择 [1-4] (默认 1): " choice
+        choice="${choice:-1}"
+
+        case "$choice" in
+            1)
+                log_info "正在打开 Web Dashboard..."
+                openclaw dashboard 2>/dev/null || {
+                    log_warn "openclaw dashboard 命令失败，请手动访问:"
+                    echo -e "  ${CYAN}http://127.0.0.1:${GATEWAY_PORT}${NC}"
+                }
+                ;;
+            2)
+                log_info "正在打开配置菜单..."
+                openclaw-setup config 2>/dev/null || {
+                    log_warn "openclaw-setup 未找到，请手动运行:"
+                    echo -e "  ${CYAN}openclaw onboard${NC}"
+                }
+                ;;
+            3)
+                log_info "正在启动像素小屋工作台..."
+                openclaw-setup workbench start 2>/dev/null || {
+                    log_warn "启动失败，请检查:"
+                    echo -e "  ${CYAN}openclaw-setup workbench status${NC}"
+                }
+                ;;
+            4)
+                # 跳到下面的常用命令打印
+                ;;
+            *)
+                log_info "无效选择，显示常用命令列表"
+                ;;
+        esac
+        echo ""
+    fi
+
+    # 显示常用命令
     echo -e "${WHITE}常用命令:${NC}"
     echo "  openclaw onboard                  配置模型与渠道"
     echo "  openclaw gateway start            启动 Gateway"
