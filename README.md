@@ -1,285 +1,249 @@
-# auto-install-Openclaw
+# auto-install-openclaw
 
 <p align="center">
-  <img src="photo/openclaw-installer-logo.svg" alt="auto-install-Openclaw Logo" width="820" />
+  <strong>OpenClaw 一键部署 - 官方优先 + 自定义可选 + 低内存优化 + 批量部署</strong><br />
+  把 OpenClaw 官方安装、自定义增强层、配置管理、像素小屋工作台收敛到一个仓库。
 </p>
 
 <p align="center">
-  <strong>OpenClaw 自动安装、配置修复与像素化工作台整合方案</strong><br />
-  把命令行部署、官方模型接入、插件治理、技能包同步、配置修复、像素小屋工作台收敛到一个仓库里。
-</p>
-
-<p align="center">
-  <img src="https://img.shields.io/badge/version-v1.1.0-1f6feb?style=for-the-badge" alt="Version" />
+  <img src="https://img.shields.io/badge/version-v2.0.0-1f6feb?style=for-the-badge" alt="Version" />
   <img src="https://img.shields.io/badge/platform-macOS%20%7C%20Linux-0f766e?style=for-the-badge" alt="Platform" />
-  <img src="https://img.shields.io/badge/node-22.12%2B-15803d?style=for-the-badge" alt="Node" />
-  <img src="https://img.shields.io/badge/gateway-13145-7c3aed?style=for-the-badge" alt="Gateway Port" />
-  <img src="https://img.shields.io/badge/pixel%20house-19000-b91c1c?style=for-the-badge" alt="Pixel House Port" />
-  <img src="https://img.shields.io/badge/health%20check-13146-7c3aed?style=for-the-badge" alt="Health Port" />
-  <img src="https://img.shields.io/badge/quota%20enforcer-13147-7c3aed?style=for-the-badge" alt="Quota Enforcer Port" />
+  <img src="https://img.shields.io/badge/node-22.14%2B-15803d?style=for-the-badge" alt="Node" />
+  <img src="https://img.shields.io/badge/代码量-1763行-7c3aed?style=for-the-badge" alt="Lines of Code" />
+  <img src="https://img.shields.io/badge/压缩率-91%25-b91c1c?style=for-the-badge" alt="Compression" />
 </p>
 
 > [!IMPORTANT]
-> 这个仓库现在不是单纯的安装脚本，而是一个完整的 OpenClaw 落地方案：
-> `安装器 + 配置菜单 + 配置修复 + 本地 Skills 仓 + 像素小屋工作台 + 角色化配置入口`。
+> v2.0.0 重构版：**官方优先**，以 `npm install -g openclaw@latest` + `openclaw onboard` 为核心安装流程，自定义配置（角色档案、Token 档位、技能包）全部作为**可选增强层**。代码量从 20,086 行缩减到 1,763 行（-91%）。
 
-## 快速入口
+---
 
-### 1. 一键安装（含龙虾小屋）
+## 快速开始
 
-#### macOS / Linux 用户
-
-```bash
-curl -fsSL --proto '=https' --tlsv1.2 --connect-timeout 8 --max-time 25 https://gitee.com/leecyno1/auto-install-openclaw/raw/main/install.sh | bash
-```
-
-#### Windows 用户 - 自动检测与安装
-
-以**管理员身份**运行 PowerShell，然后执行：
-
-```powershell
-powershell -ExecutionPolicy Bypass -Command "Invoke-WebRequest -Uri 'https://gitee.com/leecyno1/auto-install-openclaw/raw/main/install.ps1' -OutFile 'install.ps1'; .\install.ps1"
-```
-
-或本地下载后运行：
-
-```powershell
-powershell -ExecutionPolicy Bypass -Command ".\install.ps1"
-```
-
-该脚本会自动检测并安装以下任一环境：
-- **WSL2 + Ubuntu**（推荐，完整 Linux 环境）
-- **Git Bash**（轻量级，快速配置）
-
-### 1.1 GitHub 直连与镜像源
+### 一键安装（交互式）
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/leecyno1/auto-install-Openclaw/main/install.sh | bash
-curl -fsSL https://mirror.ghproxy.com/https://raw.githubusercontent.com/leecyno1/auto-install-Openclaw/main/install.sh | bash
+curl -fsSL https://gitee.com/leecyno1/auto-install-openclaw/raw/main/install.sh | bash
 ```
 
-### 2. 全自动安装
+### 全自动安装（批量部署）
 
 ```bash
-curl -fsSL --proto '=https' --tlsv1.2 --connect-timeout 8 --max-time 25 https://gitee.com/leecyno1/auto-install-openclaw/raw/main/install.sh | bash -s -- --auto-confirm-all
+curl -fsSL https://gitee.com/leecyno1/auto-install-openclaw/raw/main/install.sh | bash -s -- --auto-confirm-all
 ```
 
-### 3. 统一入口（推荐）
+### 仅安装官方版本
 
 ```bash
-openclaw-setup install       # 等同于 bash install.sh
-openclaw-setup config        # 等同于 bash ~/.openclaw/config-menu.sh
-openclaw-setup repair       # 修复历史错误配置（保留记忆/对话）
-openclaw-setup workbench    # 启动像素小屋工作台
-openclaw-setup status       # 查看所有服务状态
-openclaw-setup doctor       # 健康检查并自动修复
-openclaw-setup backup       # 一键备份配置
-openclaw-setup help         # 显示帮助
+curl -fsSL https://gitee.com/leecyno1/auto-install-openclaw/raw/main/install.sh | bash -s -- --no-custom
 ```
 
-### 4. 安装后打开配置中心
+---
+
+## 架构设计
+
+```
+Phase 1: 环境准备          Phase 2: 官方安装          Phase 3: 自定义增强层（可选）
+├── OS 检测                ├── npm install -g         ├── A. 工作档案（Persona）
+├── Node.js 检查/安装      │   openclaw@latest        ├── B. Token 档位策略
+├── 系统依赖安装           ├── openclaw onboard       ├── C. 技能包同步
+└── 低内存 Swap 优化       └── openclaw gateway       └── D. Python 技能依赖
+```
+
+### 核心原则
+
+| 原则 | 说明 |
+|------|------|
+| **官方优先** | 核心安装直接使用 `npm install` + `openclaw onboard` |
+| **自定义可选** | 角色、档位、技能包全部可选，可跳过 |
+| **共享库** | 颜色、Persona、技能定义提取为 `scripts/lib/openclaw-custom.sh` |
+| **低内存优化** | 云端服务器内存不足时自动创建 Swap，防止 OOM |
+| **批量部署** | `--auto-confirm-all` 支持上百台服务器无人值守安装 |
+
+---
+
+## 安装选项
+
+### 核心选项
+
+| 选项 | 说明 | 默认 |
+|------|------|------|
+| `--auto-confirm-all` | 全自动模式（批量部署专用） | 关闭 |
+| `--no-custom` | 跳过自定义层，仅安装官方版本 | 关闭 |
+| `--no-onboard` | 跳过官方 onboarding | 关闭 |
+| `--version <ver>` | 指定 OpenClaw 版本 | latest |
+| `--dry-run` | 仅打印计划，不执行 | 关闭 |
+
+### 自定义层选项
+
+| 选项 | 说明 | 默认 |
+|------|------|------|
+| `--persona <role>` | 工作档案 | druid |
+| `--rule-profile <level>` | Token 档位 | medium |
+| `--assistant-name <name>` | 机器人名称 | 龙虾小助理 |
+| `--user-goal <text>` | 用户主要目标 | - |
+
+### 低内存选项
+
+| 选项 | 说明 | 默认 |
+|------|------|------|
+| `--no-swap` | 不自动创建 Swap | 关闭 |
+| `--swap-size <MB>` | 手动指定 Swap 大小 | 自动计算 |
+| `--swap-file <path>` | Swap 文件路径 | /swapfile.openclaw |
+
+---
+
+## 批量部署示例
 
 ```bash
-openclaw-setup config
-# 或
-bash ~/.openclaw/config-menu.sh
+# 100 台云服务器全自动安装
+for host in server-{1..100}; do
+  ssh $host "curl -fsSL https://gitee.com/leecyno1/auto-install-openclaw/raw/main/install.sh | bash -s -- --auto-confirm-all" &
+done
+wait
+
+# 指定工作档案和档位
+curl -fsSL <url>/install.sh | bash -s -- \
+  --auto \
+  --persona warrior \
+  --rule-profile high
+
+# 仅安装官方，自定义配置后续通过 openclaw-setup 完成
+curl -fsSL <url>/install.sh | bash -s -- --auto --no-custom
 ```
 
-### 5. 修复历史错误配置并保留记忆/对话
+---
+
+## 统一入口
+
+安装后可使用 `openclaw-setup` 管理所有功能：
 
 ```bash
-openclaw-setup repair
-# 或
-bash ~/.openclaw/config-menu.sh --repair-config
+openclaw-setup install                    # 安装
+openclaw-setup install --auto             # 全自动
+openclaw-setup config                     # 配置菜单
+openclaw-setup repair                     # 修复配置
+openclaw-setup doctor --fix               # 健康检查并修复
+openclaw-setup workbench start            # 启动工作台
+openclaw-setup skills medium              # 同步技能包
+openclaw-setup status                     # 查看服务状态
+openclaw-setup backup                     # 备份配置
+openclaw-setup persona                    # 设置工作档案
 ```
 
-### 6. 补装或修复像素小屋工作台
+---
 
-```bash
-openclaw-setup workbench
-# 或
-bash ~/.openclaw/config-menu.sh --install-pixel-house
+## 配置中心
+
+运行 `openclaw-setup config` 或 `bash ~/.openclaw/config-menu.sh` 打开配置菜单：
+
+```
+  ╔═══════════════════════════════════════════╗
+  ║   🦞 OpenClaw 配置中心                     ║
+  ╚═══════════════════════════════════════════╝
+
+  [1] 模型配置      → 运行官方 onboard 向导
+  [2] 插件管理      → 安装/卸载消息渠道插件
+  [3] 技能管理      → 同步本地技能包
+  [4] 工作档案      → 初始化 AI 助手角色
+  [5] Token 档位    → 设置请求限与安全规则
+  [6] 服务管理      → Gateway 控制
+  [7] 配置修复      → 清理错误配置
+  [8] 像素小屋工作台 → 可视化管理界面
+  [0] 退出
 ```
 
-## 这套东西解决什么问题
+---
 
-- 把 OpenClaw 首次部署压缩成一条可重复执行的流程，减少环境差异、版本漂移和手工误配。
-- 保留官方模型配置流程，不再用脚本硬接管 `openclaw onboard`，但会在进入前自动修复已知坏配置。
-- 自动清理历史残留插件项，避免 `pairing required`、`plugin not found`、`unknown channel id` 这类老问题反复出现。
-- 默认内置本地 Skills 仓，尽量避免安装时依赖外网动态拉取，降低大规模部署的不确定性。
-- 提供像素小屋工作台，把角色、技能、装备、状态、任务和 OpenClaw 后端配置映射到可视化页面。
-- 支持专家模型路由（OpenAI / Anthropic 规范），复杂任务自动路由到子 Agent 处理。
-- Gateway 层配额强制执行，超额自动拦截并返回 429。
+## 工作档案（7 选 1）
 
-## 视觉预览
+| 编号 | 角色 | 适用场景 |
+|------|------|---------|
+| 1 | 🦞 综合助理（通用） | 通用总管，适合绝大多数用户 |
+| 2 | 🗡️ 分析研究（投资） | 数据深挖、价值发现、投资机会 |
+| 3 | 🧙 学术研究 | 学术科研、论文写作、知识沉淀 |
+| 4 | 🪄 团队管理 | 团队管理、流程制度、组织协同 |
+| 5 | ⚔️ 工程开发 | 编程交付、测试排障、工程上线 |
+| 6 | 🛡️ 市场增长 | 市场增长、SEO投放、渠道运营 |
+| 7 | 🏹 设计创作 | 前端/UI/视觉/平面/工业/建筑概念 |
 
-### 配置中心与模型配置
+---
 
-| 配置中心 | 模型配置 |
-| --- | --- |
-| <img src="photo/menu.png" alt="配置中心主界面" width="100%" /> | <img src="photo/llm.png" alt="AI 模型配置" width="100%" /> |
+## Token 档位
 
-| 消息与测试 | 像素小屋工作台 |
-| --- | --- |
-| <img src="photo/social.png" alt="消息渠道配置" width="100%" /> | <img src="subprojects/lobster-sanctum-ui/vendor/star-office-ui/docs/screenshots/readme-cover-1.jpg" alt="像素小屋封面 1" width="100%" /> |
+| 档位 | 请求预算 | 总 Token | 单次 Token | 适用场景 |
+|------|---------|---------|-----------|---------|
+| low | 5h / 100 次 | 60 万 | 2.4 万 | 轻量部署 |
+| medium | 5h / 300 次 | 240 万 | 4.8 万 | 默认推荐 |
+| high | 不限 | 600 万 | 8 万 | 重度使用 |
 
-### 像素小屋与工作台
-
-| 运行世界 | 房屋场景 |
-| --- | --- |
-| <img src="subprojects/lobster-sanctum-ui/vendor/star-office-ui/docs/screenshots/readme-cover-2.jpg" alt="像素小屋封面 2" width="100%" /> | <img src="subprojects/lobster-sanctum-ui/vendor/star-office-ui/docs/screenshots/office-preview-20260301.jpg" alt="像素小屋预览" width="100%" /> |
-
-<p align="center">
-  <img src="photo/messages.png" alt="连通性与验证界面" width="900" />
-</p>
-
-## 核心能力
-
-| 模块 | 现在能做什么 |
-| --- | --- |
-| 安装器 | 安装 OpenClaw、依赖、默认运行环境、配置入口、像素小屋启动器 |
-| 配置菜单 | 模型配置、官方插件管理、权限设置、技能管理、身份配置、服务管理、配置修复、专家模型配置 |
-| 配置修复 | 清理历史残留插件/错误渠道配置，保留用户 Memory、Session、对话历史与 API Key |
-| Skills 仓 | 内置基础 / 扩展 / 超级技能包，支持本地同步、缓存重建、缺失修复 |
-| 像素小屋 | 默认工作台端口 `19000`，映射角色、技能、装备、状态与后端运行世界 |
-| Gateway | 默认收敛到 `127.0.0.1:13145`，降低误暴露风险 |
-| 健康检查 | 默认端口 `13146`，监控 Gateway 和像素小屋运行状态 |
-| 配额强制 | 默认端口 `13147`，拦截媒体生成请求检查配额，超额返回 429 |
-
-## 档位规则
-
-| 档位 | 请求预算 | 总 Token | 单次 Token | 默认策略 |
-| --- | --- | --- | --- | --- |
-| 基础档 `low` | 每 5 小时 100 次 | 600000 | 24000 | 基础技能包，适合轻量部署与低成本值守 |
-| 扩展档 `medium` | 每 5 小时 300 次 | 2400000 | 48000 | 扩展技能包，默认启用高级模型路由 |
-| 超级档 `high` | 请求次数不限 | 6000000 | 80000 | 超级技能包，请求数不限，但仍受 Token 预算与安全规则约束 |
-
-> [!TIP]
-> 超级档的“请求次数不限”在策略文件里会写成 `maxRequests=0`，约定 `0` 表示不限，不表示禁用。
-
-## 默认技能包摘录
-
-### 基础档常用技能
-
-| Skill | 作用 |
-| --- | --- |
-| `agent-browser` | 用结构化命令驱动浏览器，适合网页登录、抓取、点选与自动化操作。 |
-| `agentmail` | 给代理分配独立邮箱收发信，适合邮件自动化、附件处理和草稿审批。 |
-| `minimax-web-search` | 走 MiniMax MCP 的联网搜索链路，处理最新资讯、资料检索和网页信息获取。 |
-| `nano-pdf` | 用自然语言编辑 PDF，适合改字、补内容、调整 PDF 文件。 |
-| `content-strategy` | 做内容规划、选题设计、栏目结构和内容路线图。 |
-| `social-content` | 生成和优化社媒内容，适合微博、X、LinkedIn、短内容分发。 |
-| `media-downloader` | 按描述搜索并下载图片、视频素材，可用于找图和拉取视频片段。 |
-| `lark-calendar` | 管理飞书日历和待办，支持事件创建、更新和人员解析。 |
-| `notebooklm-skill` | 直接查询 NotebookLM 笔记库，拿到基于来源引用的问答结果。 |
-| `ai-image-generation` | 统一走多模型生图能力，适合封面、配图、营销图和视觉草稿。 |
-
-### 扩展 / 超级档重点技能
-
-| Skill | 作用 |
-| --- | --- |
-| `paperless-docs` | 对接 Paperless-ngx 文档库，检索、上传、打标签、回收文档资料。 |
-| `oracle` | 把代码和提示词打包给第二模型复核，适合调试、重构和设计检查。 |
-| `planning-with-files` | 复杂任务走文件化规划，自动拆出计划、发现和进度文件。 |
-| `baoyu-slide-deck` | 根据内容自动生成演示稿页面和配套视觉。 |
-| `baoyu-markdown-to-html` | 把 Markdown 转成更适合微信公众号等渠道分发的 HTML。 |
-| `baoyu-post-to-wechat` | 直接把内容整理后推送到公众号工作流。 |
-
-> [!TIP]
-> 更完整的技能列表、是否默认安装、是否需要 API Key，请看 [docs/skills-guides.md](docs/skills-guides.md) 和 [skills/default/DEFAULT_SKILLS.md](skills/default/DEFAULT_SKILLS.md)。
-
-## 推荐工作流
-
-```text
-安装脚本 -> 官方 onboard -> 配置菜单 -> 修复旧配置 -> 同步本地技能包 -> 启动 Gateway -> 打开像素小屋工作台
-```
-
-### 建议顺序
-
-1. 先运行安装脚本，完成 OpenClaw 与依赖初始化。
-2. 安装后执行 `bash ~/.openclaw/config-menu.sh`，走一次模型配置与服务检查。
-3. 对历史服务器执行 `bash ~/.openclaw/config-menu.sh --repair-config`，刷新本地技能缓存并修复旧配置。
-4. 需要可视化界面时执行 `bash ~/.openclaw/config-menu.sh --install-pixel-house`，然后访问 `http://127.0.0.1:19000/`。
+---
 
 ## 仓库结构
 
-```text
-.
-├── install.sh                          # 主安装脚本
-├── config-menu.sh                      # 配置中心
-├── docs/                               # 配套文档
-├── skills/default/                     # 本地默认技能仓
-├── scripts/                            # 启动器、同步器、像素小屋桥接脚本
-├── photo/                              # README 与文档展示素材
-└── subprojects/lobster-sanctum-ui/     # 像素小屋 / Lobster Sanctum Studio
 ```
+.
+├── install.sh                          # 主安装脚本（759 行）
+├── config-menu.sh                      # 配置中心菜单（437 行）
+├── openclaw-setup.sh                   # 统一入口（294 行）
+├── scripts/
+│   ├── lib/
+│   │   └── openclaw-custom.sh          # 共享库（273 行）
+│   ├── lobster-world.sh                # 像素小屋工作台管理
+│   ├── health-server.sh                # 健康检查服务
+│   ├── refresh_default_skills.py       # 技能缓存重建
+│   ├── gateway-quota-enforcer.py       # 配额强制执行
+│   └── ...
+├── skills/default/                     # 本地技能包
+├── docs/                               # 配套文档
+└── subprojects/
+    └── lobster-sanctum-ui/             # 像素小屋工作台源码
+```
+
+---
 
 ## 常用命令
-
-### openclaw-setup 统一入口（推荐）
-
-```bash
-openclaw-setup install       # 等同于 bash install.sh
-openclaw-setup config        # 等同于 bash ~/.openclaw/config-menu.sh
-openclaw-setup repair       # 修复历史错误配置（保留记忆/对话）
-openclaw-setup workbench    # 启动像素小屋工作台
-openclaw-setup status       # 查看所有服务状态
-openclaw-setup doctor       # 健康检查并自动修复
-openclaw-setup backup       # 一键备份配置
-openclaw-setup help         # 显示帮助
-```
-
-### 配置与修复
-
-```bash
-bash ~/.openclaw/config-menu.sh
-bash ~/.openclaw/config-menu.sh --repair-config
-bash ~/.openclaw/config-menu.sh --install-pixel-house
-```
 
 ### Gateway
 
 ```bash
+source ~/.openclaw/env && openclaw gateway start
 source ~/.openclaw/env && openclaw gateway status
 source ~/.openclaw/env && openclaw doctor
-source ~/.openclaw/env && openclaw health
-source ~/.openclaw/env && openclaw update --restart
-source ~/.openclaw/env && openclaw plugins update --all
 ```
 
-### 像素小屋
+### 像素小屋工作台
 
 ```bash
-~/.openclaw/lobster-world.sh start
-~/.openclaw/lobster-world.sh status
-~/.openclaw/lobster-world.sh stop
+~/.openclaw/lobster-world.sh start     # 启动（端口 19000）
+~/.openclaw/lobster-world.sh status    # 查看状态
+~/.openclaw/lobster-world.sh stop      # 停止
 ```
 
-### 健康检查与配额服务
-
-```bash
-~/.openclaw/health-server.sh status
-python3 ~/.openclaw/scripts/gateway-quota-enforcer.py status
-# 直接访问端点
-curl http://127.0.0.1:13146/health          # 健康检查服务
-curl http://127.0.0.1:13147/quota/status    # 配额强制服务
-```
-
-## 相关文档
-
-- [渠道配置总览](docs/channels-configuration-guide.md)
-- [飞书配置说明](docs/feishu-setup.md)
-- [规则档位说明](docs/vendor-control-profiles.md)
-- [技能指南汇总](docs/skills-guides.md)
-- [人格角色设计](docs/persona-roles.md)
-- [像素小屋与工作台设计](docs/roadmaps/2026-03-26-pixel-house-workbench-design.md)
+---
 
 ## 适合谁
 
-- 需要在多台服务器上批量部署 OpenClaw 的用户
-- 不想每台机器都手动装插件、配模型、修坏配置的用户
-- 希望把角色、技能、工具与后端运行状态做成可视化工作台的用户
-- 希望把安装、配置、修复、升级统一进一个仓库管理的人
+- **批量部署**：需要在数十/上百台云服务器上快速部署 OpenClaw
+- **低内存环境**：2GB/4GB 内存的云服务器，自动创建 Swap 防 OOM
+- **官方优先**：希望以官方安装为核心，自定义配置作为可选补充
+- **可视化管理**：需要通过 Web 界面管理 AI 助手状态
+- **运维友好**：需要统一的安装、配置、修复、备份入口
+
+---
+
+## v2.0.0 重构说明
+
+| 指标 | v1.x | v2.0.0 |
+|------|------|--------|
+| install.sh | 6,672 行 | 759 行 (-89%) |
+| config-menu.sh | 13,097 行 | 437 行 (-97%) |
+| 总计 | 20,086 行 | 1,763 行 (-91%) |
+| 重复定义 | 15+ 对 | 0（共享库） |
+| 安装核心 | 自定义脚本包裹 | 直接使用 npm + openclaw onboard |
+| 自定义层 | 强制捆绑 | 全部可选 |
+
+---
 
 ## License
 

@@ -1,313 +1,290 @@
 #!/bin/bash
 #
-# ╔═══════════════════════════════════════════════════════════════════════════╗
-# ║                                                                           ║
-# ║   🦞 OpenClaw 统一入口工具 v1.0.0                                          ║
-# ║   开箱即用的 AI 智能体工作台                                                ║
-# ║                                                                           ║
-# ║   用法: openclaw-setup [命令]                                              ║
-# ║   命令: install, config, repair, workbench, status, doctor, backup        ║
-# ║                                                                           ║
-# ╚═══════════════════════════════════════════════════════════════════════════╝
+# ╔══════════════════════════════════════════════════════════════════╗
+# ║   🦞 OpenClaw 统一入口工具 v2.0.0                                 ║
+# ║   开箱即用的 AI 智能体工作台管理                                   ║
+# ╚══════════════════════════════════════════════════════════════════╝
 #
 
 set -euo pipefail
 
-# 颜色定义
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-CYAN='\033[0;36m'
-NC='\033[0m'
+# 加载共享库
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+CUSTOM_LIB="$SCRIPT_DIR/scripts/lib/openclaw-custom.sh"
+[ -f "$CUSTOM_LIB" ] && source "$CUSTOM_LIB"
 
-# 路径定义
-OPENCLAW_HOME="$HOME/.openclaw"
-INSTALLER_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+CONFIG_DIR="$HOME/.openclaw"
 
-# 显示帮助
+# ================================ 帮助 ================================
 show_help() {
     cat << EOF
 ${CYAN}🦞 OpenClaw 统一入口工具${NC}
 
 ${GREEN}用法:${NC} openclaw-setup [命令] [选项]
 
-${GREEN}命令:${NC}
-  install      执行首次安装（交互式或全自动）
-  config       打开配置中心菜单
-  repair       修复历史错误配置（保留记忆/对话）
-  workbench    启动像素小屋工作台
-  status       查看所有服务状态
-  doctor       运行健康检查并自动修复
-  backup       备份配置和数据
-  help         显示此帮助信息
+${GREEN}安装与配置:${NC}
+  install [选项]     执行安装（交互式或全自动）
+  config             打开配置中心菜单
+  repair             修复历史错误配置
+  doctor [选项]      运行健康检查并自动修复
+
+${GREEN}服务管理:${NC}
+  workbench [操作]   管理像素小屋工作台 (start/stop/restart/status)
+  status             查看所有服务状态
+  gateway [操作]     管理 Gateway (start/stop/restart/status)
+
+${GREEN}工具:${NC}
+  persona            设置/切换工作档案
+  skills [档位]      同步技能包 (low/medium/high)
+  backup             备份配置和数据
+  help               显示此帮助
+
+${GREEN}安装选项:${NC}
+  --auto, --auto-confirm-all   全自动安装（批量部署）
+  --no-custom                  仅安装官方版本，跳过自定义层
+  --persona <role>             指定工作档案
+  --rule-profile <level>       指定 Token 档位
+
+${GREEN}doctor 选项:${NC}
+  --fix              自动修复发现的问题
+  --status           仅显示状态，不修复
 
 ${GREEN}示例:${NC}
-  openclaw-setup install              # 交互式安装
-  openclaw-setup install --auto       # 全自动安装
-  openclaw-setup repair               # 修复配置
-  openclaw-setup workbench start      # 启动工作台
-  openclaw-setup doctor --fix         # 自动修复问题
-
+  openclaw-setup install                    # 交互式安装
+  openclaw-setup install --auto             # 全自动安装
+  openclaw-setup install --no-custom        # 仅安装官方版本
+  openclaw-setup install --persona warrior  # 安装 + 设置工程档案
+  openclaw-setup config                     # 打开配置菜单
+  openclaw-setup doctor --fix               # 自动修复
+  openclaw-setup workbench start            # 启动工作台
+  openclaw-setup skills medium              # 同步扩展档技能
 EOF
 }
 
-# 安装命令
+# ================================ 命令实现 ================================
+
 cmd_install() {
-    local auto_flag="${1:-}"
+    local install_args=()
+    for arg in "$@"; do
+        case "$arg" in
+            --auto|--auto-confirm-all) install_args+=(--auto-confirm-all) ;;
+            --no-custom)               install_args+=(--no-custom) ;;
+            --persona|--rule-profile|--version|--gateway-bind|--gateway-port)
+                install_args+=("$arg" "${2:-}"); shift ;;
+            *) install_args+=("$arg") ;;
+        esac
+    done
+
     echo -e "${GREEN}🚀 开始安装 OpenClaw...${NC}"
-
-    if [ "$auto_flag" = "--auto" ] || [ "$auto_flag" = "--auto-confirm-all" ]; then
-        bash "$INSTALLER_DIR/install.sh" --auto-confirm-all
-    else
-        bash "$INSTALLER_DIR/install.sh"
-    fi
-
-    echo -e "${GREEN}✅ 安装完成！运行 'openclaw-setup config' 进行配置${NC}"
+    bash "$SCRIPT_DIR/install.sh" "${install_args[@]}"
 }
 
-# 配置命令
 cmd_config() {
-    if [ ! -f "$OPENCLAW_HOME/config-menu.sh" ]; then
-        echo -e "${RED}❌ 配置中心未找到，请先运行安装${NC}"
-        exit 1
+    if [ ! -f "$CONFIG_DIR/config-menu.sh" ]; then
+        bash "$SCRIPT_DIR/config-menu.sh"
+    else
+        bash "$CONFIG_DIR/config-menu.sh"
     fi
-    bash "$OPENCLAW_HOME/config-menu.sh"
 }
 
-# 修复命令
 cmd_repair() {
     echo -e "${YELLOW}🔧 开始修复配置...${NC}"
-    if [ -f "$OPENCLAW_HOME/config-menu.sh" ]; then
-        bash "$OPENCLAW_HOME/config-menu.sh" --repair-config
+    if [ -f "$CONFIG_DIR/config-menu.sh" ]; then
+        bash "$CONFIG_DIR/config-menu.sh" --repair-config
     else
-        bash "$INSTALLER_DIR/config-menu.sh" --repair-config
+        bash "$SCRIPT_DIR/config-menu.sh" --repair-config
     fi
-    echo -e "${GREEN}✅ 修复完成${NC}"
 }
 
-# 工作台命令
-cmd_workbench() {
-    local action="${1:-start}"
-    if [ ! -f "$OPENCLAW_HOME/lobster-world.sh" ]; then
-        echo -e "${YELLOW}⚠️ 工作台未安装，正在安装...${NC}"
-        if [ -f "$OPENCLAW_HOME/config-menu.sh" ]; then
-            bash "$OPENCLAW_HOME/config-menu.sh" --install-pixel-house
-        else
-            bash "$INSTALLER_DIR/config-menu.sh" --install-pixel-house
-        fi
-    fi
-
-    case "$action" in
-        start|stop|restart|status)
-            bash "$OPENCLAW_HOME/lobster-world.sh" "$action"
-            ;;
-        *)
-            bash "$OPENCLAW_HOME/lobster-world.sh" start
-            ;;
-    esac
-}
-
-# 状态命令
-cmd_status() {
-    echo -e "${CYAN}📊 OpenClaw 服务状态${NC}"
-    echo ""
-
-    # Gateway 状态
-    if pgrep -f "openclaw gateway" > /dev/null 2>&1; then
-        echo -e "  ${GREEN}✅${NC} Gateway: 运行中 (端口 13145)"
-    else
-        echo -e "  ${RED}❌${NC} Gateway: 未运行"
-    fi
-
-    # 工作台状态
-    if pgrep -f "lobster-world" > /dev/null 2>&1; then
-        echo -e "  ${GREEN}✅${NC} 像素小屋: 运行中 (端口 19000)"
-    else
-        echo -e "  ${RED}❌${NC} 像素小屋: 未运行"
-    fi
-
-    # 配置完整性
-    if [ -f "$OPENCLAW_HOME/env" ]; then
-        echo -e "  ${GREEN}✅${NC} 配置文件: 存在"
-    else
-        echo -e "  ${RED}❌${NC} 配置文件: 缺失"
-    fi
-
-    echo ""
-}
-
-# 健康检查命令
 cmd_doctor() {
-    local fix_flag="${1:-}"
-    echo -e "${CYAN}🏥 运行健康检查...${NC}"
+    local fix=false status_only=false
+    for arg in "$@"; do
+        case "$arg" in --fix) fix=true ;; --status) status_only=true ;; esac
+    done
+
+    echo -e "${CYAN}🏥 OpenClaw 健康检查${NC}"
     echo ""
 
-    if [ -f "$OPENCLAW_HOME/env" ]; then
-        source "$OPENCLAW_HOME/env"
-    fi
-
-    # 检查 Node.js 版本
-    if command -v node > /dev/null 2>&1; then
-        local node_version=$(node -v | cut -d'v' -f2 | cut -d'.' -f1)
-        if [ "$node_version" -ge 22 ]; then
-            echo -e "  ${GREEN}✅${NC} Node.js: $(node -v)"
-        else
-            echo -e "  ${RED}❌${NC} Node.js: $(node -v) (需要 22.12+)"
-            [ "$fix_flag" = "--fix" ] && echo -e "  ${YELLOW}🔧 请升级 Node.js 到 22.12 以上版本${NC}"
-        fi
+    # Node.js
+    if command -v node &>/dev/null; then
+        local nv; nv=$(node -v | sed 's/^v//' | cut -d'.' -f1)
+        [ "$nv" -ge 22 ] 2>/dev/null && echo -e "  ${GREEN}✅${NC} Node.js: $(node -v)" \
+            || echo -e "  ${RED}❌${NC} Node.js: $(node -v) (需要 22+)"
     else
         echo -e "  ${RED}❌${NC} Node.js: 未安装"
     fi
 
-    # 检查 OpenClaw CLI
-    if command -v openclaw > /dev/null 2>&1; then
-        echo -e "  ${GREEN}✅${NC} OpenClaw CLI: 可用"
+    # OpenClaw
+    if command -v openclaw &>/dev/null; then
+        echo -e "  ${GREEN}✅${NC} OpenClaw: $(openclaw --version 2>/dev/null || echo 'installed')"
     else
-        echo -e "  ${RED}❌${NC} OpenClaw CLI: 未找到"
+        echo -e "  ${RED}❌${NC} OpenClaw: 未安装"
     fi
 
-    # 端口检查
-    if lsof -i :13145 > /dev/null 2>&1; then
-        echo -e "  ${GREEN}✅${NC} 端口 13145 (Gateway): 可用"
-    else
-        echo -e "  ${YELLOW}⚠️${NC} 端口 13145 (Gateway): 未监听"
-    fi
+    # 端口
+    for port_name in "13145:Gateway" "13146:健康检查" "19000:工作台"; do
+        local port="${port_name%%:*}" name="${port_name#*:}"
+        if lsof -i :"$port" &>/dev/null 2>&1; then
+            echo -e "  ${GREEN}✅${NC} 端口 $port ($name): 监听中"
+        else
+            echo -e "  ${YELLOW}⚠️${NC} 端口 $port ($name): 未监听"
+        fi
+    done
 
-    if lsof -i :19000 > /dev/null 2>&1; then
-        echo -e "  ${GREEN}✅${NC} 端口 19000 (工作台): 可用"
-    else
-        echo -e "  ${YELLOW}⚠️${NC} 端口 19000 (工作台): 未监听"
-    fi
+    # 配置文件
+    [ -f "$CONFIG_DIR/env" ] && echo -e "  ${GREEN}✅${NC} 配置文件: 存在" \
+        || echo -e "  ${YELLOW}⚠️${NC} 配置文件: 不存在"
 
     echo ""
 
-    if [ "$fix_flag" = "--fix" ]; then
-        echo -e "${GREEN}🔧 尝试自动修复...${NC}"
-        if [ -f "$OPENCLAW_HOME/config-menu.sh" ]; then
-            bash "$OPENCLAW_HOME/config-menu.sh" --repair-config
+    if [ "$status_only" = true ]; then
+        return
+    fi
+
+    if [ "$fix" = true ]; then
+        echo -e "${GREEN}🔧 自动修复中...${NC}"
+        if command -v openclaw &>/dev/null; then
+            openclaw doctor --non-interactive 2>&1 || true
         fi
+        if [ -f "$CONFIG_DIR/config-menu.sh" ]; then
+            bash "$CONFIG_DIR/config-menu.sh" --repair-config 2>&1 || true
+        fi
+        echo -e "${GREEN}✅ 修复完成${NC}"
     fi
 }
 
-# 健康检查命令
-cmd_health() {
+cmd_workbench() {
     local action="${1:-start}"
-    local health_script="$INSTALLER_DIR/scripts/health-server.sh"
+    local wb_script=""
+    [ -f "$CONFIG_DIR/lobster-world.sh" ] && wb_script="$CONFIG_DIR/lobster-world.sh"
+    [ -z "$wb_script" ] && [ -f "$SCRIPT_DIR/scripts/lobster-world.sh" ] && wb_script="$SCRIPT_DIR/scripts/lobster-world.sh"
 
-    if [ ! -f "$health_script" ]; then
-        echo -e "${RED}❌ 健康检查脚本未找到: $health_script${NC}"
+    if [ -z "$wb_script" ]; then
+        echo -e "${YELLOW}⚠️ 工作台未安装，正在安装...${NC}"
+        if [ -f "$CONFIG_DIR/config-menu.sh" ]; then
+            bash "$CONFIG_DIR/config-menu.sh" --install-pixel-house
+        else
+            bash "$SCRIPT_DIR/config-menu.sh" --install-pixel-house
+        fi
+        [ -f "$CONFIG_DIR/lobster-world.sh" ] && wb_script="$CONFIG_DIR/lobster-world.sh"
+        [ -z "$wb_script" ] && [ -f "$SCRIPT_DIR/scripts/lobster-world.sh" ] && wb_script="$SCRIPT_DIR/scripts/lobster-world.sh"
+    fi
+
+    if [ -n "$wb_script" ]; then
+        bash "$wb_script" "$action"
+    else
+        echo -e "${RED}❌ 工作台脚本未找到${NC}"
         exit 1
     fi
-
-    bash "$health_script" "$action"
 }
 
-# 快速启动向导
-cmd_wizard() {
-    echo -e "${CYAN}🦞 OpenClaw 快速启动向导${NC}"
-    echo -e "${GREEN}5 步完成配置，开始使用 AI 智能体工作台${NC}"
+cmd_status() {
+    echo -e "${CYAN}📊 OpenClaw 服务状态${NC}"
     echo ""
 
-    # 步骤 1: 检查安装
-    echo -e "${BLUE}[1/5] 检查 OpenClaw 安装状态...${NC}"
-    if [ ! -f "$OPENCLAW_HOME/env" ]; then
-        echo -e "  ${YELLOW}⚠️ OpenClaw 未安装，正在安装...${NC}"
-        cmd_install --auto
+    # OpenClaw
+    if command -v openclaw &>/dev/null; then
+        openclaw gateway status 2>&1 || true
     else
-        echo -e "  ${GREEN}✅ OpenClaw 已安装${NC}"
+        echo -e "  ${RED}❌${NC} OpenClaw: 未安装"
     fi
     echo ""
 
-    # 步骤 2: 配置模型
-    echo -e "${BLUE}[2/5] 配置 AI 模型...${NC}"
-    echo -e "  ${YELLOW}将打开配置菜单，请选择「模型配置」${NC}"
-    read -p "按回车继续..." < "$TTY_INPUT"
-    cmd_config
-    echo ""
-
-    # 步骤 3: 安装推荐技能
-    echo -e "${BLUE}[3/5] 安装推荐技能包...${NC}"
-    echo -e "  ${YELLOW}选择档位: 1=基础档 2=扩展档 3=超级档${NC}"
-    read -p "请输入档位 (默认: 1): " tier_choice < "$TTY_INPUT"
-    case "${tier_choice:-1}" in
-        2) echo -e "  ${GREEN}✅ 安装扩展档技能包${NC}" ;;
-        3) echo -e "  ${GREEN}✅ 安装超级档技能包${NC}" ;;
-        *) echo -e "  ${GREEN}✅ 安装基础档技能包${NC}" ;;
-    esac
-    echo ""
-
-    # 步骤 4: 启动服务
-    echo -e "${BLUE}[4/5] 启动 Gateway、工作台和健康检查...${NC}"
-    source "$OPENCLAW_HOME/env" 2>/dev/null || true
-    if command -v openclaw > /dev/null 2>&1; then
-        openclaw gateway start &
-        echo -e "  ${GREEN}✅ Gateway 已启动 (端口 13145)${NC}"
-    fi
-    cmd_workbench start
-    cmd_health start
-    echo ""
-
-    # 步骤 5: 验证
-    echo -e "${BLUE}[5/5] 验证服务状态...${NC}"
-    cmd_status
-    echo ""
-
-    echo -e "${GREEN}🎉 向导完成！${NC}"
-    echo -e "  🌐 Gateway: http://127.0.0.1:13145"
-    echo -e "  🏠 工作台: http://127.0.0.1:19000"
-    echo -e "  ❤️  健康检查: http://127.0.0.1:13146/health"
+    # 端口
+    for port_name in "13145:Gateway" "13146:健康检查" "19000:工作台"; do
+        local port="${port_name%%:*}" name="${port_name#*:}"
+        if lsof -i :"$port" &>/dev/null 2>&1; then
+            echo -e "  ${GREEN}✅${NC} $name (:$port): 运行中"
+        else
+            echo -e "  ${RED}❌${NC} $name (:$port): 未运行"
+        fi
+    done
     echo ""
 }
 
-# 备份命令
-cmd_backup() {
-    local backup_dir="$OPENCLAW_HOME/backups/$(date +%Y%m%d_%H%M%S)"
-    echo -e "${GREEN}💾 开始备份配置...${NC}"
+cmd_gateway() {
+    local action="${1:-status}"
+    command -v openclaw &>/dev/null || { echo -e "${RED}❌ OpenClaw 未安装${NC}"; exit 1; }
 
-    mkdir -p "$backup_dir"
-
-    if [ -d "$OPENCLAW_HOME" ]; then
-        cp -r "$OPENCLAW_HOME"/* "$backup_dir/" 2>/dev/null || true
-        echo -e "  ${GREEN}✅${NC} 已备份: $OPENCLAW_HOME"
-    fi
-
-    echo -e "${GREEN}✅ 备份完成: $backup_dir${NC}"
-    echo -e "${YELLOW}💡 恢复: cp -r $backup_dir/* $OPENCLAW_HOME/${NC}"
-}
-
-# 主入口
-main() {
-    local cmd="${1:-help}"
-    shift || true
-
-    case "$cmd" in
-        install)
-            cmd_install "${1:-}"
-            ;;
-        config|c)
-            cmd_config
-            ;;
-        repair|fix|r)
-            cmd_repair
-            ;;
-        workbench|wb|w)
-            cmd_workbench "${1:-start}"
-            ;;
-        status|s)
-            cmd_status
-            ;;
-        doctor|d)
-            cmd_doctor "${1:-}"
-            ;;
-        backup|b)
-            cmd_backup
-            ;;
-        help|--help|-h)
-            show_help
+    case "$action" in
+        start|stop|restart|status)
+            openclaw gateway "$action" 2>&1 || true
             ;;
         *)
+            echo -e "${RED}未知操作: $action${NC}"
+            echo "用法: openclaw-setup gateway [start|stop|restart|status]"
+            ;;
+    esac
+}
+
+cmd_persona() {
+    if [ -n "${1:-}" ]; then
+        echo -e "${GREEN}设置工作档案: $1${NC}"
+        export OPENCLAW_PERSONA_ROLE="$1"
+    fi
+    if [ -f "$CONFIG_DIR/config-menu.sh" ]; then
+        bash "$CONFIG_DIR/config-menu.sh"
+    else
+        bash "$SCRIPT_DIR/config-menu.sh"
+    fi
+}
+
+cmd_skills() {
+    local level="${1:-medium}"
+    echo -e "${GREEN}同步技能包 (档位: $level)${NC}"
+
+    local skills_dir="$SCRIPT_DIR/skills/default"
+    [ -d "$skills_dir" ] || { echo -e "${RED}❌ 技能包目录不存在${NC}"; exit 1; }
+
+    mkdir -p "$CONFIG_DIR/skills"
+    local skill_list
+    skill_list="$(get_profile_skill_list "$level")"
+
+    local copied=0 skipped=0
+    for skill in $skill_list; do
+        local src="$skills_dir/$skill" dst="$CONFIG_DIR/skills/$skill"
+        [ -d "$src" ] || continue
+        if [ -d "$dst" ]; then skipped=$((skipped + 1)); continue; fi
+        cp -a "$src" "$dst" 2>/dev/null && copied=$((copied + 1))
+    done
+
+    log_info "技能同步完成: 新增 ${copied}, 保留 ${skipped}"
+}
+
+cmd_backup() {
+    local backup_dir="$CONFIG_DIR/backups/$(date +%Y%m%d_%H%M%S)"
+    echo -e "${GREEN}💾 备份配置到: $backup_dir${NC}"
+    mkdir -p "$backup_dir"
+
+    for item in env openclaw.json agents policy skills channels plugins; do
+        [ -e "$CONFIG_DIR/$item" ] && cp -r "$CONFIG_DIR/$item" "$backup_dir/" 2>/dev/null || true
+    done
+
+    log_info "备份完成: $backup_dir"
+    echo -e "${YELLOW}💡 恢复: cp -r $backup_dir/* $CONFIG_DIR/${NC}"
+}
+
+# ================================ 主入口 ================================
+
+main() {
+    local cmd="${1:-help}"
+    shift 2>/dev/null || true
+
+    case "$cmd" in
+        install|i)      cmd_install "$@" ;;
+        config|c)       cmd_config ;;
+        repair|r|fix)   cmd_repair ;;
+        doctor|d)       cmd_doctor "$@" ;;
+        workbench|wb|w) cmd_workbench "$@" ;;
+        status|s)       cmd_status ;;
+        gateway|gw|g)   cmd_gateway "$@" ;;
+        persona|p)      cmd_persona "$@" ;;
+        skills|sk)      cmd_skills "$@" ;;
+        backup|b)       cmd_backup ;;
+        help|--help|-h) show_help ;;
+        *)
             echo -e "${RED}未知命令: $cmd${NC}"
+            echo ""
             show_help
             exit 1
             ;;
