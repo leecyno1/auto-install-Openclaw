@@ -5,12 +5,12 @@
 </p>
 
 <p align="center">
-  <strong>OpenClaw 自动安装、配置修复与像素化工作台整合方案</strong><br />
-  把命令行部署、官方模型接入、插件治理、技能包同步、配置修复、像素小屋工作台收敛到一个仓库里。
+  <strong>OpenClaw 模块化安装与配置方案</strong><br />
+  极简安装 + 独立配置模块 + 本地 Skills 仓 + 像素小屋工作台
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-v1.1.0-1f6feb?style=for-the-badge" alt="Version" />
+  <img src="https://img.shields.io/badge/version-v2.0.0-1f6feb?style=for-the-badge" alt="Version" />
   <img src="https://img.shields.io/badge/platform-macOS%20%7C%20Linux-0f766e?style=for-the-badge" alt="Platform" />
   <img src="https://img.shields.io/badge/node-22.12%2B-15803d?style=for-the-badge" alt="Node" />
   <img src="https://img.shields.io/badge/gateway-13145-7c3aed?style=for-the-badge" alt="Gateway Port" />
@@ -20,166 +20,90 @@
 </p>
 
 > [!IMPORTANT]
-> 这个仓库现在不是单纯的安装脚本，而是一个完整的 OpenClaw 落地方案：
-> `安装器 + 配置菜单 + 配置修复 + 本地 Skills 仓 + 像素小屋工作台 + 角色化配置入口`。
+> **v2.0 模块化架构**：安装与配置完全解耦，移除与官方 CLI 重复的功能，保留自定义特性。
+> - **极简安装**：只负责环境铺垫 + 官方安装
+> - **独立配置**：Skills、三档规则、像素小屋、API 配置各自独立
+> - **灵活替换**：支持替换 Skills 中硬编码的第三方服务地址
 
 ## 快速入口
 
-### 1. 一键安装
-
-#### macOS / Linux 用户
+### 1. 一键安装（极简模式）
 
 ```bash
-curl -fsSL --proto '=https' --tlsv1.2 --connect-timeout 8 --max-time 25 https://gitee.com/leecyno1/auto-install-openclaw/raw/main/install-openclaw.sh | bash
+# Gitee 镜像（推荐）
+curl -fsSL https://gitee.com/leecyno1/auto-install-openclaw/raw/main/install.sh | bash
+
+# GitHub 直连
+curl -fsSL https://raw.githubusercontent.com/leecyno1/auto-install-Openclaw/main/install.sh | bash
 ```
 
-按引擎区分：
+安装脚本只负责：
+- 环境检测（OS、Node.js 22.12+、必需命令）
+- 调用官方安装脚本
+- 基础补丁（Feishu 清理）
+- 显示后续配置步骤
+
+### 2. 配置模块（独立使用）
+
+安装完成后，使用 `openclaw-setup` 命令配置各个模块：
 
 ```bash
-# 安装 OpenClaw（正式入口）
-curl -fsSL --proto '=https' --tlsv1.2 --connect-timeout 8 --max-time 25 https://gitee.com/leecyno1/auto-install-openclaw/raw/main/install-openclaw.sh | bash
+# 交互式配置菜单
+openclaw-setup config
 
-# 安装 Hermes（正式入口）
-curl -fsSL --proto '=https' --tlsv1.2 --connect-timeout 8 --max-time 25 https://gitee.com/leecyno1/auto-install-openclaw/raw/main/install-hermes.sh | bash
+# Skills 管理
+openclaw-setup config skills --tier basic      # 基础档 (~60 skills)
+openclaw-setup config skills --tier extended   # 扩展档 (~80 skills)
+openclaw-setup config skills --tier super      # 超级档 (~100+ skills)
 
-# 同时安装 OpenClaw + Hermes（兼容高级入口）
-curl -fsSL --proto '=https' --tlsv1.2 --connect-timeout 8 --max-time 25 https://gitee.com/leecyno1/auto-install-openclaw/raw/main/install.sh | bash -s -- --engine both
+# 三档规则配置
+openclaw-setup config tier-rules --level low       # 100 req/5h
+openclaw-setup config tier-rules --level medium    # 300 req/5h
+openclaw-setup config tier-rules --level high      # 无限制
+openclaw-setup config tier-rules --with-monitoring # 启动网关监控
+
+# 像素小屋工作台
+openclaw-setup config pixel-house --install
+openclaw-setup config pixel-house --start
+openclaw-setup config pixel-house --status
+
+# API 配置（替换 Skills 中的硬编码地址）
+openclaw-setup config api --show
+openclaw-setup config api --replace-service nanobanana --with https://my-service.com/api
+openclaw-setup config api --replace-service gemini --with https://my-gemini-proxy.com/v1
 ```
 
-#### Windows 用户 - 自动检测与安装
+### 3. 从旧版迁移
 
-以**管理员身份**运行 PowerShell，然后执行：
-
-```powershell
-powershell -ExecutionPolicy Bypass -Command "Invoke-WebRequest -Uri 'https://gitee.com/leecyno1/auto-install-openclaw/raw/main/install.ps1' -OutFile 'install.ps1'; .\install.ps1"
-```
-
-或本地下载后运行：
-
-```powershell
-powershell -ExecutionPolicy Bypass -Command ".\install.ps1"
-```
-
-该脚本会自动检测并安装以下任一环境：
-- **WSL2 + Ubuntu**（推荐，完整 Linux 环境）
-- **Git Bash**（轻量级，快速配置）
-
-### 1.1 GitHub 直连与镜像源
+如果你之前使用过旧版 config-menu.sh，可以使用迁移向导：
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/leecyno1/auto-install-Openclaw/main/install-openclaw.sh | bash
-curl -fsSL https://mirror.ghproxy.com/https://raw.githubusercontent.com/leecyno1/auto-install-Openclaw/main/install-openclaw.sh | bash
+openclaw-setup config migrate
 ```
 
-### 2. 全自动安装
-
-```bash
-# 全自动安装 OpenClaw（正式入口）
-curl -fsSL --proto '=https' --tlsv1.2 --connect-timeout 8 --max-time 25 https://gitee.com/leecyno1/auto-install-openclaw/raw/main/install-openclaw.sh | bash -s -- --auto-confirm-all
-
-# 全自动安装 Hermes（正式入口）
-curl -fsSL --proto '=https' --tlsv1.2 --connect-timeout 8 --max-time 25 https://gitee.com/leecyno1/auto-install-openclaw/raw/main/install-hermes.sh | bash -s -- --auto-confirm-all
-
-# 全自动双引擎安装
-curl -fsSL --proto '=https' --tlsv1.2 --connect-timeout 8 --max-time 25 https://gitee.com/leecyno1/auto-install-openclaw/raw/main/install.sh | bash -s -- --auto-confirm-all --engine both
-```
-
-兼容高级入口：
-
-```bash
-curl -fsSL --proto '=https' --tlsv1.2 --connect-timeout 8 --max-time 25 https://gitee.com/leecyno1/auto-install-openclaw/raw/main/install.sh | bash -s -- --engine openclaw
-curl -fsSL --proto '=https' --tlsv1.2 --connect-timeout 8 --max-time 25 https://gitee.com/leecyno1/auto-install-openclaw/raw/main/install.sh | bash -s -- --engine hermes
-curl -fsSL --proto '=https' --tlsv1.2 --connect-timeout 8 --max-time 25 https://gitee.com/leecyno1/auto-install-openclaw/raw/main/install.sh | bash -s -- --auto-confirm-all --engine openclaw
-curl -fsSL --proto '=https' --tlsv1.2 --connect-timeout 8 --max-time 25 https://gitee.com/leecyno1/auto-install-openclaw/raw/main/install.sh | bash -s -- --auto-confirm-all --engine hermes
-```
-
-常用附加参数：
-
-```bash
---install-method git|npm
---rule-profile low|medium|high|none
---persona druid|assassin|mage|summoner|warrior|paladin|designer
-```
-
-### 3. 统一入口（推荐）
-
-```bash
-lobster-setup install openclaw   # 安装或修复 OpenClaw
-lobster-setup install hermes     # 安装或修复 Hermes
-lobster-setup install both       # 安装双引擎
-lobster-setup config        # 等同于 bash ~/.openclaw/config-menu.sh
-lobster-setup repair        # 修复历史错误配置（保留记忆/对话）
-lobster-setup repair minimax # 仅修复 MiniMax Provider / 多模态配置
-lobster-setup workbench     # 启动像素小屋工作台
-lobster-setup status        # 查看所有服务状态
-lobster-setup doctor        # 健康检查并自动修复
-lobster-setup engine        # 打开引擎管理
-lobster-setup backup        # 一键备份配置
-lobster-setup help          # 显示帮助
-```
-
-兼容说明：
-`openclaw-setup` 仍保留为兼容别名，但新的统一入口以 `lobster-setup` 为准。
-
-### 4. 安装后打开配置中心
-
-```bash
-lobster-setup config
-# 或
-bash ~/.openclaw/config-menu.sh
-```
-
-常用配置快捷命令：
-
-```bash
-# 快捷入口
-lobster-setup config --model-only          # 模型配置
-lobster-setup config --skills-only         # 技能管理
-lobster-setup config --image-api-only     # 生图 API 配置
-lobster-setup config --status-detailed    # 详细服务状态
-lobster-setup config --advanced-model-only # 专家模型配置
-lobster-setup config --official-channels-only # 官方渠道配置
-lobster-setup config --engine-menu        # 引擎管理
-
-# 修复命令
-lobster-setup repair
-lobster-setup repair minimax
-lobster-setup workbench
-```
-
-### 5. 修复历史错误配置并保留记忆/对话
-
-```bash
-lobster-setup repair
-# 或
-bash ~/.openclaw/config-menu.sh --repair-config
-```
-
-仅修复 MiniMax Provider 去重、多模态参数和代理 URL 替换：
-
-```bash
-lobster-setup repair minimax
-# 或
-bash ~/.openclaw/config-menu.sh --repair-minimax
-```
-
-### 6. 补装或修复像素小屋工作台
-
-```bash
-lobster-setup workbench
-# 或
-bash ~/.openclaw/config-menu.sh --install-pixel-house
-```
+迁移会自动：
+- 提取现有配置（Skills tier、三档规则、API 配置）
+- 应用到新模块
+- 保留用户数据（memory、sessions、API keys）
+- 创建备份以便回滚
 
 ## 这套东西解决什么问题
 
-- 把 OpenClaw 首次部署压缩成一条可重复执行的流程，减少环境差异、版本漂移和手工误配。
-- 保留官方模型配置流程，不再用脚本硬接管 `openclaw onboard`，但会在进入前自动修复已知坏配置。
-- 自动清理历史残留插件项，避免 `pairing required`、`plugin not found`、`unknown channel id` 这类老问题反复出现。
-- 默认内置本地 Skills 仓，尽量避免安装时依赖外网动态拉取，降低大规模部署的不确定性。
-- 提供像素小屋工作台，把角色、技能、装备、状态、任务和 OpenClaw 后端配置映射到可视化页面。
-- 支持高级模型路由（OpenAI / Anthropic 规范）与独立生图 API 配置，复杂任务可自动路由到子 Agent 处理。
-- Gateway 层配额强制执行，超额自动拦截并返回 429。
+**v2.0 模块化架构的核心改进：**
+
+- **极简安装**：install.sh 从 439 行简化到 ~250 行，只负责环境铺垫和官方安装，不再包含详细配置
+- **模块解耦**：Skills、三档规则、像素小屋、API 配置各自独立，可按需使用
+- **移除重复**：不再与官方 OpenClaw CLI 重复实现模型配置、渠道管理、状态监测
+- **灵活替换**：支持替换 Skills 中硬编码的第三方服务地址（NanoBanana、Gemini、OpenAI 等）
+- **混合策略**：基础 Skills 从本地快速安装，扩展 Skills 从官方源同步保持更新
+- **数据安全**：所有配置修改前自动备份，支持回滚
+
+**保留的核心能力：**
+
+- 本地 Skills 仓库，降低大规模部署的不确定性
+- 像素小屋工作台，可视化角色、技能、装备、状态
+- 三档配额系统（low/medium/high），Gateway 层强制执行
+- 配置修复工具，清理历史残留，保留用户数据
 
 ## 视觉预览
 
@@ -207,25 +131,34 @@ bash ~/.openclaw/config-menu.sh --install-pixel-house
 
 | 模块 | 现在能做什么 |
 | --- | --- |
-| 安装器 | 安装 OpenClaw、依赖、默认运行环境、配置入口、像素小屋启动器 |
-| 配置菜单 | 模型配置、官方插件管理、权限设置、技能管理、身份配置、服务管理、配置修复、高级模型路由、生图 API 配置 |
-| 配置修复 | 清理历史残留插件/错误渠道配置，保留用户 Memory、Session、对话历史与 API Key |
-| Skills 仓 | 内置基础 / 扩展 / 超级技能包，支持本地同步、缓存重建、缺失修复 |
-| 像素小屋 | 默认工作台端口 `19000`，映射角色、技能、装备、状态与后端运行世界 |
-| Gateway | 默认收敛到 `127.0.0.1:13145`，降低误暴露风险 |
-| 健康检查 | 默认端口 `13146`，随像素小屋工作台启动链拉起，监控 Gateway 和像素小屋运行状态 |
-| 配额强制 | 默认端口 `13147`，随像素小屋工作台启动链拉起，拦截媒体生成请求检查配额，超额返回 429 |
+| 安装器 | 极简安装：环境检测 + 官方安装 + 基础补丁 |
+| Skills 模块 | 三档管理（basic/extended/super），混合安装策略（本地 + 官方） |
+| 三档规则 | 配额限制（low/medium/high/none），可选网关监控代理 |
+| 像素小屋 | 独立部署工作台（端口 19000），可视化角色、技能、装备、状态 |
+| API 配置 | 替换 Skills 中硬编码的服务地址，支持批量替换 |
+| 迁移工具 | 从旧版平滑迁移，保留用户数据（memory、sessions、API keys） |
+| Gateway | 默认端口 `127.0.0.1:13145`，降低误暴露风险 |
+| 健康检查 | 默认端口 `13146`，监控 Gateway 和像素小屋运行状态 |
+| 配额强制 | 默认端口 `13147`，拦截媒体生成请求，超额返回 429 |
 
 ## 档位规则
 
-| 档位 | 请求预算 | 总 Token | 单次 Token | 默认策略 |
-| --- | --- | --- | --- | --- |
-| 基础档 `low` | 每 5 小时 100 次 | 600000 | 24000 | 基础技能包，适合轻量部署与低成本值守 |
-| 扩展档 `medium` | 每 5 小时 300 次 | 2400000 | 48000 | 扩展技能包，默认启用高级模型路由 |
-| 超级档 `high` | 请求次数不限 | 6000000 | 80000 | 超级技能包，请求数不限，但仍受 Token 预算与安全规则约束 |
+| 档位 | 请求预算 | 总 Token | 图片请求 | 视频请求 | 默认策略 |
+| --- | --- | --- | --- | --- | --- |
+| 无限制 `none` | 不限 | 不限 | 不限 | 不限 | 无任何限制 |
+| 基础档 `low` | 每 5 小时 100 次 | 600000 | 0 | 0 | 基础技能包，适合轻量部署 |
+| 扩展档 `medium` | 每 5 小时 300 次 | 2400000 | 20 | 1 | 扩展技能包，默认配置 |
+| 超级档 `high` | 请求次数不限 | 6000000 | 50 | 2 | 超级技能包，高配额 |
 
-> [!TIP]
-> 超级档的“请求次数不限”在策略文件里会写成 `maxRequests=0`，约定 `0` 表示不限，不表示禁用。
+配置命令：
+
+```bash
+openclaw-setup config tier-rules --level low       # 基础档
+openclaw-setup config tier-rules --level medium    # 扩展档
+openclaw-setup config tier-rules --level high      # 超级档
+openclaw-setup config tier-rules --level none      # 无限制
+openclaw-setup config tier-rules --with-monitoring # 启动网关监控代理（端口 13147）
+```
 
 ## 默认技能包摘录
 
@@ -261,99 +194,147 @@ bash ~/.openclaw/config-menu.sh --install-pixel-house
 ## 推荐工作流
 
 ```text
-安装脚本 -> 官方 onboard -> 配置菜单 -> 修复旧配置 -> 同步本地技能包 -> 启动 Gateway -> 打开像素小屋工作台
+安装脚本 -> 配置模块 -> 启动服务
 ```
 
 ### 建议顺序
 
-1. 先运行安装脚本，完成 OpenClaw 与依赖初始化。
-2. 安装后执行 `lobster-setup config`，走一次模型配置与服务检查。
-3. 对历史服务器执行 `lobster-setup repair`，刷新本地技能缓存并修复旧配置。
-   如果只是 MiniMax provider 重复、官方 URL 与代理 URL 替换未覆盖原生条目，执行 `lobster-setup repair minimax`。
-4. 需要可视化界面时执行 `lobster-setup workbench`，然后访问 `http://127.0.0.1:19000/`。
+1. **安装 OpenClaw**
+   ```bash
+   curl -fsSL https://gitee.com/leecyno1/auto-install-openclaw/raw/main/install.sh | bash
+   ```
+
+2. **配置 Skills**（可选）
+   ```bash
+   openclaw-setup config skills --tier basic      # 或 extended / super
+   ```
+
+3. **配置三档规则**（可选）
+   ```bash
+   openclaw-setup config tier-rules --level medium
+   ```
+
+4. **安装像素小屋**（可选）
+   ```bash
+   openclaw-setup config pixel-house --install
+   openclaw-setup config pixel-house --start
+   ```
+
+5. **配置自定义 API**（可选）
+   ```bash
+   # 替换 Skills 中硬编码的服务地址
+   openclaw-setup config api --replace-service nanobanana --with https://my-service.com/api
+   ```
+
+6. **启动 Gateway**
+   ```bash
+   source ~/.openclaw/env && openclaw gateway start
+   ```
+
+### 从旧版迁移
+
+如果你之前使用过旧版 config-menu.sh：
+
+```bash
+openclaw-setup config migrate
+```
 
 ## 仓库结构
 
 ```text
 .
-├── install-openclaw.sh                 # OpenClaw 正式安装入口
-├── install-hermes.sh                   # Hermes 正式安装入口
-├── install.sh                          # 兼容/高级安装入口
-├── config-menu.sh                      # 配置中心
+├── install.sh                          # 极简安装脚本（~250 行）
+├── openclaw-setup.sh                   # 统一配置入口
+├── config-menu.sh.deprecated           # 旧版配置菜单（已归档）
+├── scripts/
+│   ├── modules/                        # 独立配置模块
+│   │   ├── skills.sh                   # Skills 管理
+│   │   ├── tier-rules.sh               # 三档规则配置
+│   │   ├── pixel-house.sh              # 像素小屋管理
+│   │   ├── api-config.sh               # API 配置
+│   │   └── api_replacer.py             # URL 替换工具
+│   ├── migrate-to-modular.sh           # 迁移向导
+│   ├── lobster-world.sh                # 像素小屋启动器
+│   └── *.py                            # Skills 同步、配额管理等
+├── skills/default/                     # 本地 Skills 仓库（100+ skills）
 ├── docs/                               # 配套文档
-├── skills/default/                     # 本地默认技能仓
-├── scripts/                            # 启动器、同步器、像素小屋桥接脚本
-├── photo/                              # README 与文档展示素材
-└── subprojects/lobster-sanctum-ui/     # 像素小屋 / Lobster Sanctum Studio
+└── subprojects/lobster-sanctum-ui/     # 像素小屋工作台
 ```
 
 ## 常用命令
 
-### lobster-setup 统一入口（推荐）
+### openclaw-setup 统一入口
 
 ```bash
-lobster-setup install openclaw
-lobster-setup install hermes
-lobster-setup install both
-lobster-setup config        # 等同于 bash ~/.openclaw/config-menu.sh
-lobster-setup repair        # 修复历史错误配置（保留记忆/对话）
-lobster-setup repair minimax # 仅修复 MiniMax Provider / 多模态配置
-lobster-setup workbench     # 启动像素小屋工作台
-lobster-setup status        # 查看所有服务状态
-lobster-setup doctor        # 健康检查并自动修复
-lobster-setup engine        # 打开引擎管理
-lobster-setup backup        # 一键备份配置
-lobster-setup help          # 显示帮助
+# 安装
+bash install.sh                          # 极简安装
+
+# 配置模块
+openclaw-setup config                    # 交互式菜单
+openclaw-setup config skills             # Skills 管理
+openclaw-setup config tier-rules         # 三档规则
+openclaw-setup config pixel-house        # 像素小屋
+openclaw-setup config api                # API 配置
+openclaw-setup config migrate            # 迁移向导
+
+# 具体操作
+openclaw-setup config skills --tier extended
+openclaw-setup config tier-rules --level high --with-monitoring
+openclaw-setup config pixel-house --install
+openclaw-setup config pixel-house --start
+openclaw-setup config api --replace-service nanobanana --with https://my.com/api
 ```
 
-### 配置与修复
+### Skills 管理
 
 ```bash
-lobster-setup config
-lobster-setup config --model-only
-lobster-setup config --official-channels-only
-lobster-setup config --engine-menu
-lobster-setup repair
-lobster-setup repair minimax
-
-bash ~/.openclaw/config-menu.sh
-bash ~/.openclaw/config-menu.sh --model-only
-bash ~/.openclaw/config-menu.sh --official-channels-only
-bash ~/.openclaw/config-menu.sh --engine-menu
-bash ~/.openclaw/config-menu.sh --repair-config
-bash ~/.openclaw/config-menu.sh --repair-minimax
-bash ~/.openclaw/config-menu.sh --repair-pairing
-bash ~/.openclaw/config-menu.sh --install-pixel-house
+openclaw-setup config skills --tier basic      # 基础档 (~60 skills)
+openclaw-setup config skills --tier extended   # 扩展档 (~80 skills)
+openclaw-setup config skills --tier super      # 超级档 (~100+ skills)
+openclaw-setup config skills --list            # 列出已安装 skills
 ```
 
-### Gateway
+### 三档规则
 
 ```bash
-source ~/.openclaw/env && openclaw gateway status
-source ~/.openclaw/env && openclaw doctor
-source ~/.openclaw/env && openclaw health
-source ~/.openclaw/env && openclaw update --restart
-source ~/.openclaw/env && openclaw plugins update --all
+openclaw-setup config tier-rules --level low       # 100 req/5h
+openclaw-setup config tier-rules --level medium    # 300 req/5h
+openclaw-setup config tier-rules --level high      # 无限制
+openclaw-setup config tier-rules --level none      # 无任何限制
+openclaw-setup config tier-rules --show            # 显示当前配置
+openclaw-setup config tier-rules --with-monitoring # 启动网关监控
 ```
 
 ### 像素小屋
 
 ```bash
+openclaw-setup config pixel-house --install   # 安装
+openclaw-setup config pixel-house --start     # 启动
+openclaw-setup config pixel-house --stop      # 停止
+openclaw-setup config pixel-house --status    # 状态
+openclaw-setup config pixel-house --restart   # 重启
+
+# 或使用启动脚本
 ~/.openclaw/lobster-world.sh start
 ~/.openclaw/lobster-world.sh status
 ~/.openclaw/lobster-world.sh stop
 ```
 
-### 健康检查与配额服务
-
-默认在安装像素小屋工作台时一并落盘；工作台启动链会自动拉起这两个辅助服务。若你后续执行补装/修复像素小屋，也会重新接线并启动。
+### API 配置
 
 ```bash
-~/.openclaw/health-server.sh status
-python3 ~/.openclaw/scripts/gateway-quota-enforcer.py status
-# 直接访问端点
-curl http://127.0.0.1:13146/health          # 健康检查服务
-curl http://127.0.0.1:13147/quota/status    # 配额强制服务
+# 查看当前配置
+openclaw-setup config api --show
+
+# 替换单个服务地址
+openclaw-setup config api --replace-service nanobanana --with https://my-service.com/api
+openclaw-setup config api --replace-service gemini --with https://my-gemini-proxy.com/v1
+
+# 批量替换（使用配置文件）
+openclaw-setup config api --batch-replace ~/.openclaw/api-overrides.json
+
+# 预览替换（不实际修改）
+openclaw-setup config api --replace-service nanobanana --with https://test.com --dry-run
 ```
 
 ## 相关文档
@@ -365,12 +346,35 @@ curl http://127.0.0.1:13147/quota/status    # 配额强制服务
 - [人格角色设计](docs/persona-roles.md)
 - [像素小屋与工作台设计](docs/roadmaps/2026-03-26-pixel-house-workbench-design.md)
 
+## Gateway 管理
+
+```bash
+source ~/.openclaw/env && openclaw gateway start
+source ~/.openclaw/env && openclaw gateway status
+source ~/.openclaw/env && openclaw gateway stop
+source ~/.openclaw/env && openclaw doctor
+source ~/.openclaw/env && openclaw health
+```
+
+## 迁移与备份
+
+```bash
+# 从旧版迁移
+openclaw-setup config migrate
+openclaw-setup config migrate --dry-run    # 预览迁移
+openclaw-setup config migrate --rollback   # 回滚
+
+# 备份配置
+cp -r ~/.openclaw ~/.openclaw.backup.$(date +%Y%m%d)
+```
+
 ## 适合谁
 
 - 需要在多台服务器上批量部署 OpenClaw 的用户
-- 不想每台机器都手动装插件、配模型、修坏配置的用户
+- 希望使用模块化配置，按需安装功能的用户
+- 需要替换 Skills 中硬编码服务地址的用户
 - 希望把角色、技能、工具与后端运行状态做成可视化工作台的用户
-- 希望把安装、配置、修复、升级统一进一个仓库管理的人
+- 从旧版 config-menu.sh 迁移到新架构的用户
 
 ## License
 

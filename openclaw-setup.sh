@@ -2,11 +2,11 @@
 #
 # ╔═══════════════════════════════════════════════════════════════════════════╗
 # ║                                                                           ║
-# ║   🦞 OpenClaw 统一入口工具 v1.0.0                                          ║
-# ║   开箱即用的 AI 智能体工作台                                                ║
+# ║   🦞 OpenClaw 统一入口工具 v2.0.0                                        ║
+# ║   模块化架构 - 极简安装 + 独立配置                                         ║
 # ║                                                                           ║
 # ║   用法: openclaw-setup [命令]                                              ║
-# ║   命令: install, config, repair, workbench, status, doctor, backup        ║
+# ║   命令: install, config [模块], repair, workbench, status, doctor, backup  ║
 # ║                                                                           ║
 # ╚═══════════════════════════════════════════════════════════════════════════╝
 #
@@ -28,13 +28,18 @@ INSTALLER_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # 显示帮助
 show_help() {
     cat << EOF
-${CYAN}🦞 OpenClaw 统一入口工具${NC}
+${CYAN}🦞 OpenClaw 统一入口工具 v2.0.0${NC}
+${GREEN}模块化架构${NC}
 
 ${GREEN}用法:${NC} openclaw-setup [命令] [选项]
 
 ${GREEN}命令:${NC}
-  install      执行首次安装（交互式或全自动）
-  config       打开配置中心菜单
+  install       执行首次安装（交互式或全自动）
+  config       配置中心（模块化）
+  config skills      - Skills 管理
+  config tier-rules  - 三档规则配置
+  config pixel-house - 像素小屋
+  config api        - API 配置
   repair       修复历史错误配置（保留记忆/对话）
   workbench    启动像素小屋工作台
   status       查看所有服务状态
@@ -43,11 +48,14 @@ ${GREEN}命令:${NC}
   help         显示此帮助信息
 
 ${GREEN}示例:${NC}
-  openclaw-setup install              # 交互式安装
-  openclaw-setup install --auto       # 全自动安装
-  openclaw-setup repair               # 修复配置
-  openclaw-setup workbench start      # 启动工作台
-  openclaw-setup doctor --fix         # 自动修复问题
+  openclaw-setup install                    # 交互式安装
+  openclaw-setup install --auto           # 全自动安装
+  openclaw-setup config                    # 交互式配置菜单
+  openclaw-setup config skills --tier extended
+  openclaw-setup config tier-rules --level high
+  openclaw-setup config pixel-house --install
+  openclaw-setup config api --replace-service nanobanana --with https://my.com/api
+  openclaw-setup repair                    # 修复配置
 
 EOF
 }
@@ -66,13 +74,163 @@ cmd_install() {
     echo -e "${GREEN}✅ 安装完成！运行 'openclaw-setup config' 进行配置${NC}"
 }
 
-# 配置命令
+# 模块目录
+MODULES_DIR="$INSTALLER_DIR/scripts/modules"
+
+#===============================================================================
+# 配置命令（模块化）
+#===============================================================================
+
 cmd_config() {
-    if [ ! -f "$OPENCLAW_HOME/config-menu.sh" ]; then
-        echo -e "${RED}❌ 配置中心未找到，请先运行安装${NC}"
-        exit 1
+    local module="${1:-}"
+    shift || true
+
+    # 如果有模块参数，路由到对应模块
+    if [ -n "$module" ]; then
+        route_config_module "$module" "$@"
+        return $?
     fi
-    bash "$OPENCLAW_HOME/config-menu.sh"
+
+    # 否则显示简化的交互式菜单
+    show_config_menu
+}
+
+# 模块路由
+route_config_module() {
+    local module="$1"
+    shift || true
+
+    case "$module" in
+        skills)
+            [ ! -f "$MODULES_DIR/skills.sh" ] && {
+                echo -e "${RED}❌ Skills 模块未找到${NC}"
+                exit 1
+            }
+            bash "$MODULES_DIR/skills.sh" "$@"
+            ;;
+        tier-rules|tier)
+            [ ! -f "$MODULES_DIR/tier-rules.sh" ] && {
+                echo -e "${RED}❌ Tier Rules 模块未找到${NC}"
+                exit 1
+            }
+            bash "$MODULES_DIR/tier-rules.sh" "$@"
+            ;;
+        pixel-house|pixel|house)
+            [ ! -f "$MODULES_DIR/pixel-house.sh" ] && {
+                echo -e "${RED}❌ Pixel House 模块未找到${NC}"
+                exit 1
+            }
+            bash "$MODULES_DIR/pixel-house.sh" "$@"
+            ;;
+        api)
+            [ ! -f "$MODULES_DIR/api-config.sh" ] && {
+                echo -e "${RED}❌ API 配置模块未找到${NC}"
+                exit 1
+            }
+            bash "$MODULES_DIR/api-config.sh" "$@"
+            ;;
+        migrate)
+            echo -e "${CYAN}🔄 启动迁移向导...${NC}"
+            bash "$INSTALLER_DIR/scripts/migrate-to-modular.sh" "$@"
+            ;;
+        menu)
+            show_config_menu
+            ;;
+        --help|-h)
+            show_config_help
+            ;;
+        *)
+            echo -e "${RED}❌ 未知模块: $module${NC}"
+            echo ""
+            show_config_help
+            exit 1
+            ;;
+    esac
+}
+
+# 配置菜单帮助
+show_config_help() {
+    cat << EOF
+${CYAN}OpenClaw 配置模块${NC}
+
+${GREEN}用法:${NC} openclaw-setup config [模块] [选项]
+
+${GREEN}模块:${NC}
+  skills        Skills 管理（安装/列表）
+  tier-rules    三档注入规则配置
+  pixel-house   像素小屋工作台
+  api           API 配置和替换
+  migrate       迁移到模块化架构
+
+${GREEN}示例:${NC}
+  openclaw-setup config              # 交互式菜单
+  openclaw-setup config skills       # Skills 管理
+  openclaw-setup config tier-rules   # 三档规则
+  openclaw-setup config pixel-house  # 像素小屋
+  openclaw-setup config api          # API 配置
+  openclaw-setup config migrate      # 迁移向导
+
+  # 指定选项
+  openclaw-setup config skills --tier extended
+  openclaw-setup config tier-rules --level high --with-monitoring
+  openclaw-setup config api --replace-service nanobanana --with https://my.com/api
+
+EOF
+}
+
+# 简化的配置菜单
+show_config_menu() {
+    echo -e "${CYAN}"
+    echo "╔══════════════════════════════════════════════════════════════╗"
+    echo "║                  🦞 OpenClaw 配置中心                       ║"
+    echo "╚══════════════════════════════════════════════════════════════╝"
+    echo -e "${NC}"
+    echo ""
+    echo "  1) Skills 管理        - 安装/管理 AI 技能包"
+    echo "  2) 三档规则配置       - 流量控制和配额设置"
+    echo "  3) 像素小屋           - 安装/启动工作台"
+    echo "  4) API 配置           - 配置第三方 API"
+    echo "  5) 迁移向导           - 从旧版迁移"
+    echo ""
+    echo "  0) 退出"
+    echo ""
+
+    read -p "请选择 [0-5]: " choice
+
+    case "$choice" in
+        1)
+            echo ""
+            echo -e "${BLUE}→ 启动 Skills 管理...${NC}"
+            bash "$MODULES_DIR/skills.sh" --tier basic
+            ;;
+        2)
+            echo ""
+            echo -e "${BLUE}→ 启动三档规则配置...${NC}"
+            bash "$MODULES_DIR/tier-rules.sh" --level medium
+            ;;
+        3)
+            echo ""
+            echo -e "${BLUE}→ 启动像素小屋配置...${NC}"
+            bash "$MODULES_DIR/pixel-house.sh" --status
+            ;;
+        4)
+            echo ""
+            echo -e "${BLUE}→ 启动 API 配置...${NC}"
+            bash "$MODULES_DIR/api-config.sh" --show
+            ;;
+        5)
+            echo ""
+            echo -e "${BLUE}→ 启动迁移向导...${NC}"
+            bash "$INSTALLER_DIR/scripts/migrate-to-modular.sh"
+            ;;
+        0|q)
+            echo -e "${GREEN}再见！${NC}"
+            exit 0
+            ;;
+        *)
+            echo -e "${RED}无效选择${NC}"
+            ;;
+    esac
 }
 
 # 修复命令
@@ -286,7 +444,7 @@ main() {
             cmd_install "${1:-}"
             ;;
         config|c)
-            cmd_config
+            cmd_config "${1:-}" "$@"
             ;;
         repair|fix|r)
             cmd_repair
