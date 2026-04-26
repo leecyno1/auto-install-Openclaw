@@ -13,6 +13,23 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CUSTOM_LIB="$SCRIPT_DIR/scripts/lib/openclaw-custom.sh"
 [ -f "$CUSTOM_LIB" ] && source "$CUSTOM_LIB"
 
+# 颜色变量降级（共享库加载失败时使用）
+[ -z "$RED" ] && RED='\033[0;31m'
+[ -z "$GREEN" ] && GREEN='\033[0;32m'
+[ -z "$YELLOW" ] && YELLOW='\033[1;33m'
+[ -z "$BLUE" ] && BLUE='\033[0;34m'
+[ -z "$PURPLE" ] && PURPLE='\033[0;35m'
+[ -z "$CYAN" ] && CYAN='\033[0;36m'
+[ -z "$WHITE" ] && WHITE='\033[1;37m'
+[ -z "$GRAY" ] && GRAY='\033[0;90m'
+[ -z "$NC" ] && NC='\033[0m'
+
+# TTY_INPUT 降级
+[ -z "$TTY_INPUT" ] && TTY_INPUT="/dev/stdin"
+[ -z "$AUTO_CONFIRM_ALL" ] && AUTO_CONFIRM_ALL=0
+[ -z "$NO_PROMPT" ] && NO_PROMPT=0
+[ -z "$CONFIG_DIR" ] && CONFIG_DIR="$HOME/.openclaw"
+
 # 路径
 CONFIG_DIR="$HOME/.openclaw"
 OPENCLAW_ENV="$CONFIG_DIR/env"
@@ -182,7 +199,7 @@ menu_persona() {
     log_info "已选择: ${PERSONA_ROLE_EMOJI} ${PERSONA_ROLE_NAME}"
 
     if confirm "是否应用此工作档案？" "y"; then
-        apply_persona_role "$role"
+        apply_persona_profile "$role"
         log_info "工作档案已应用"
     fi
     press_enter

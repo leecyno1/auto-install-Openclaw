@@ -65,14 +65,20 @@ EOF
 
 cmd_install() {
     local install_args=()
-    for arg in "$@"; do
+    local args=("$@")
+    local i=0
+    while [ $i -lt ${#args[@]} ]; do
+        local arg="${args[$i]}"
         case "$arg" in
             --auto|--auto-confirm-all) install_args+=(--auto-confirm-all) ;;
             --no-custom)               install_args+=(--no-custom) ;;
             --persona|--rule-profile|--version|--gateway-bind|--gateway-port)
-                install_args+=("$arg" "${2:-}"); shift ;;
+                install_args+=("$arg" "${args[$((i+1))]:-}")
+                i=$((i + 1))
+                ;;
             *) install_args+=("$arg") ;;
         esac
+        i=$((i + 1))
     done
 
     echo -e "${GREEN}🚀 开始安装 OpenClaw...${NC}"

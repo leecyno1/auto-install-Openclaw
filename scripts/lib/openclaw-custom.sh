@@ -271,3 +271,225 @@ get_gateway_bind_display_host() {
         *)        echo "127.0.0.1" ;;
     esac
 }
+
+# ================================ 交互工具函数 ================================
+
+TTY_INPUT="${TTY_INPUT:-/dev/stdin}"
+AUTO_CONFIRM_ALL="${AUTO_CONFIRM_ALL:-0}"
+NO_PROMPT="${NO_PROMPT:-0}"
+
+confirm() {
+    local message="$1" default="${2:-y}"
+    if [ "${AUTO_CONFIRM_ALL:-0}" = "1" ]; then return 0; fi
+    if [ "$NO_PROMPT" = "1" ] || [ "$TTY_INPUT" = "/dev/null" ]; then
+        [ "$default" = "y" ]; return $?
+    fi
+    echo -en "${YELLOW}$message [$([ "$default" = "y" ] && echo "Y/n" || echo "y/N")]: ${NC}"
+    local response; read response < "$TTY_INPUT"
+    response=${response:-$default}
+    case "$response" in [yY][eE][sS]|[yY]) return 0 ;; *) return 1 ;; esac
+}
+
+read_input() {
+    local prompt="$1" var_name="$2"
+    if [ "${AUTO_CONFIRM_ALL:-0}" = "1" ]; then
+        printf -v "$var_name" '%s' "$(echo "$prompt" | grep -q "请选择" && echo "1" || echo "")"
+        return 0
+    fi
+    echo -en "$prompt"; read $var_name < "$TTY_INPUT"
+}
+
+# ================================ 配置持久化 ================================
+
+CONFIG_DIR="${CONFIG_DIR:-$HOME/.openclaw}"
+
+upsert_env() {
+    local key="$1" value="$2"
+    local env_file="$CONFIG_DIR/env"
+    mkdir -p "$CONFIG_DIR"
+
+    if [ -f "$env_file" ] && grep -q "^${key}=" "$env_file" 2>/dev/null; then
+        if command -v sed >/dev/null 2>&1; then
+            sed -i '' "s|^${key}=.*|${key}=${value}|" "$env_file" 2>/dev/null || \
+            sed -i "s|^${key}=.*|${key}=${value}|" "$env_file" 2>/dev/null
+        else
+            local tmp; tmp="$(mktemp)"
+            while IFS= read -r line; do
+                case "$line" in
+                    "${key}="*) echo "${key}=${value}" ;;
+                    *) echo "$line" ;;
+                esac
+            done < "$env_file" > "$tmp"
+            mv "$tmp" "$env_file"
+        fi
+    else
+        echo "${key}=${value}" >> "$env_file"
+    fi
+}
+
+# ================================ 技能同步 ================================
+
+sync_skills() {
+    local level
+    level="$(normalize_rule_profile_level "${1:-${RULE_PROFILE_SELECTED:-medium}}")"
+    [ "$level" = "none" ] && return 0
+
+    local skills_dir="${OPENCLAW_SKILLS_DIR:-}"
+    if [ -z "$skills_dir" ]; then
+        local script_dir="${SCRIPT_DIR:-}"
+        if [ -n "$script_dir" ]; then
+            skills_dir="$script_dir/skills/default"
+        fi
+    fi
+
+    # 本地不存在时，从仓库 ZIP 下载并提取
+    if [ ! -d "$skills_dir" ]; then
+        echo -e "${BLUE}[STEP]${NC} 从仓库下载技能包 (档位: ${level}) ..."
+
+        local tmp_dir extract_dir target_dir skill_list downloaded failed
+        tmp_dir="$(mktemp -d)"
+        extract_dir="$tmp_dir/extract"
+        target_dir="$CONFIG_DIR/skills"
+        mkdir -p "$target_dir"
+        downloaded=0; failed=0
+
+        local zip_url="https://github.com/leecyno1/auto-install-openclaw/archive/refs/heads/main.zip"
+        local zip_file="$tmp_dir/repo.zip"
+
+        echo -e "${GREEN}[INFO]${NC} 正在下载仓库..."
+        if ! curl -fsSL --connect-timeout 15 --max-time 120 \
+            -o "$zip_file" "$zip_url" 2>/dev/null; then
+            echo -e "${YELLOW}[WARN]${NC} 技能包下载失败，将跳过技能同步"
+            rm -rf "$tmp_dir"
+            return 0
+        fi
+
+        echo -e "${GREEN}[INFO]${NC} 正在解压技能包..."
+        if unzip -q "$zip_file" -d "$extract_dir" 2>/dev/null; then
+            local src_dir="$extract_dir/auto-install-openclaw-main/skills/default"
+            if [ -d "$src_dir" ]; then
+                skill_list="$(get_profile_skill_list "$level")"
+                for skill_name in $skill_list; do
+                    if [ -d "$target_dir/$skill_name" ]; then
+                        continue
+                    fi
+                    if [ -d "$src_dir/$skill_name" ]; then
+                        cp -a "$src_dir/$skill_name" "$target_dir/" && \
+                            downloaded=$((downloaded + 1)) || \
+                            failed=$((failed + 1))
+                    else
+                        failed=$((failed + 1))
+                    fi
+                done
+            else
+                echo -e "${YELLOW}[WARN]${NC} skills/default 目录在仓库中不存在"
+            fi
+        else
+            echo -e "${YELLOW}[WARN]${NC} ZIP 解压失败"
+        fi
+
+        rm -rf "$tmp_dir"
+        echo -e "${GREEN}[INFO]${NC} 技能下载完成: 成功 ${downloaded}, 失败 ${failed}"
+        return 0
+    fi
+
+    # 本地存在时，直接复制
+    echo -e "${BLUE}[STEP]${NC} 同步技能包 (档位: ${level}) ..."
+
+    local skill_list target_dir copied skipped missing
+    skill_list="$(get_profile_skill_list "$level")"
+    target_dir="$CONFIG_DIR/skills"
+    mkdir -p "$target_dir"
+    copied=0; skipped=0; missing=0
+
+    for skill_name in $skill_list; do
+        local src="$skills_dir/$skill_name" dst="$target_dir/$skill_name"
+        if [ ! -d "$src" ]; then
+            missing=$((missing + 1)); continue
+        fi
+        if [ -d "$dst" ]; then
+            skipped=$((skipped + 1)); continue
+        fi
+        if cp -a "$src" "$dst" 2>/dev/null; then
+            copied=$((copied + 1))
+        fi
+    done
+
+    echo -e "${GREEN}[INFO]${NC} 技能同步完成: 新增 ${copied}, 保留 ${skipped}, 缺失 ${missing}"
+}
+
+# ================================ Persona 应用 ================================
+
+apply_persona_profile() {
+    local role="${1:-${PERSONA_ROLE_SELECTED:-druid}}"
+    set_persona_role "$role"
+
+    echo -e "${BLUE}[STEP]${NC} 应用工作档案: ${PERSONA_ROLE_EMOJI} ${PERSONA_ROLE_NAME}"
+
+    [ -z "$CONFIG_DIR" ] && CONFIG_DIR="$HOME/.openclaw"
+    mkdir -p "$CONFIG_DIR"
+
+    if [ -n "${PERSONA_ROLE_DEFAULT_GOAL:-}" ]; then
+        upsert_env "OPENCLAW_USER_GOAL" "$PERSONA_ROLE_DEFAULT_GOAL"
+    fi
+    if [ -n "${PERSONA_ROLE_DEFAULT_STYLE:-}" ]; then
+        upsert_env "OPENCLAW_ASSISTANT_PERSONALITY" "$PERSONA_ROLE_DEFAULT_STYLE"
+    fi
+    if [ -n "${PERSONA_ROLE_AGENCY:-}" ]; then
+        upsert_env "OPENCLAW_PERSONA_AGENCY" "$PERSONA_ROLE_AGENCY"
+    fi
+
+    echo -e "${GREEN}[INFO]${NC} 工作档案已保存到 ~/.openclaw/env"
+}
+
+# ================================ Token 档位应用 ================================
+
+apply_token_profile() {
+    local level="${1:-${RULE_PROFILE_SELECTED:-medium}}"
+    level="$(normalize_rule_profile_level "$level")"
+    [ "$level" = "none" ] && { echo -e "${GREEN}[INFO]${NC} 已跳过 Token 配置 (none)"; return 0; }
+
+    echo -e "${BLUE}[STEP]${NC} 应用 Token 档位: ${level}"
+
+    local limits media_limits
+    limits="$(get_profile_token_limits "$level")"
+    media_limits="$(get_profile_media_limits "$level")"
+
+    local max_requests daily_token_limit hourly_token_limit max_concurrent
+    max_requests="$(echo "$limits" | awk '{print $1}')"
+    daily_token_limit="$(echo "$limits" | awk '{print $2}')"
+    hourly_token_limit="$(echo "$limits" | awk '{print $3}')"
+    max_concurrent="$(echo "$limits" | awk '{print $4}')"
+
+    local max_image_uploads max_file_uploads
+    max_image_uploads="$(echo "$media_limits" | awk '{print $1}')"
+    max_file_uploads="$(echo "$media_limits" | awk '{print $2}')"
+
+    [ -z "$CONFIG_DIR" ] && CONFIG_DIR="$HOME/.openclaw"
+    mkdir -p "$CONFIG_DIR"
+
+    upsert_env "OPENCLAW_RATE_LIMIT_MAX_REQUESTS" "$max_requests"
+    upsert_env "OPENCLAW_RATE_LIMIT_DAILY_TOKENS" "$daily_token_limit"
+    upsert_env "OPENCLAW_RATE_LIMIT_HOURLY_TOKENS" "$hourly_token_limit"
+    upsert_env "OPENCLAW_RATE_LIMIT_MAX_CONCURRENT" "$max_concurrent"
+    upsert_env "OPENCLAW_MEDIA_MAX_IMAGE_UPLOADS" "$max_image_uploads"
+    upsert_env "OPENCLAW_MEDIA_MAX_FILE_UPLOADS" "$max_file_uploads"
+
+    echo -e "${GREEN}[INFO]${NC} Token 档位已保存到 ~/.openclaw/env"
+    echo -e "${GREEN}[INFO]${NC} 请求上限: ${max_requests}/min, 日额度: ${daily_token_limit}, 时额度: ${hourly_token_limit}"
+}
+
+# ================================ Python 技能依赖 ================================
+
+install_skill_python_deps() {
+    [ "${OPENCLAW_INSTALL_SKILL_DEPS:-1}" = "1" ] || return 0
+    command -v python3 &>/dev/null || return 0
+
+    echo -e "${BLUE}[STEP]${NC} 安装 Python 技能依赖..."
+    local pkgs="${OPENCLAW_SKILL_PIP_PACKAGES:-duckduckgo-search akshare requests pyyaml pypdf pillow openpyxl python-pptx python-docx lxml defusedxml pdf2image}"
+    for pkg in $pkgs; do
+        python3 -m pip install --user --disable-pip-version-check -q "$pkg" 2>/dev/null || \
+        python3 -m pip install --break-system-packages --disable-pip-version-check -q "$pkg" 2>/dev/null || true
+    done
+    echo -e "${GREEN}[INFO]${NC} Python 依赖安装完成"
+}

@@ -104,12 +104,12 @@ wait
 
 # 指定工作档案和档位
 curl -fsSL <url>/install.sh | bash -s -- \
-  --auto \
+  --auto-confirm-all \
   --persona warrior \
   --rule-profile high
 
 # 仅安装官方，自定义配置后续通过 openclaw-setup 完成
-curl -fsSL <url>/install.sh | bash -s -- --auto --no-custom
+curl -fsSL <url>/install.sh | bash -s -- --auto-confirm-all --no-custom
 ```
 
 ---
@@ -119,8 +119,9 @@ curl -fsSL <url>/install.sh | bash -s -- --auto --no-custom
 安装后可使用 `openclaw-setup` 管理所有功能：
 
 ```bash
+# 如果项目目录在 PATH 中，可直接调用
 openclaw-setup install                    # 安装
-openclaw-setup install --auto             # 全自动
+openclaw-setup install --auto-confirm-all # 全自动
 openclaw-setup config                     # 配置菜单
 openclaw-setup repair                     # 修复配置
 openclaw-setup doctor --fix               # 健康检查并修复
@@ -129,6 +130,9 @@ openclaw-setup skills medium              # 同步技能包
 openclaw-setup status                     # 查看服务状态
 openclaw-setup backup                     # 备份配置
 openclaw-setup persona                    # 设置工作档案
+
+# 或通过脚本路径调用（推荐）
+bash /path/to/openclaw-setup.sh config
 ```
 
 ---

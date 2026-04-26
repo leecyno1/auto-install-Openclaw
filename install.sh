@@ -367,9 +367,6 @@ Gateway 配置:
   --no-custom                   跳过所有自定义配置（仅安装官方版本）
   --rule-profile <level>        Token 档位: low|medium|high|none (默认: medium)
   --persona <role>              工作档案: druid|assassin|mage|summoner|warrior|paladin|designer
-  --assistant-name <name>       机器人名称
-  --user-goal <text>            用户主要目标
-  --assistant-personality <text> 机器人性格
 
 低内存优化（云端服务器）:
   --no-swap                     不自动创建 Swap 分区
@@ -985,9 +982,6 @@ parse_args() {
             --swap-file)                 SWAP_FILE="$2"; shift 2 ;;
             --rule-profile)              RULE_PROFILE_SELECTED="$2"; shift 2 ;;
             --persona)                   PERSONA_ROLE_SELECTED="$(echo "$2" | tr '[:upper:]' '[:lower:]')"; shift 2 ;;
-            --assistant-name)            export OPENCLAW_ASSISTANT_NAME="$2"; shift 2 ;;
-            --user-goal)                 export OPENCLAW_USER_GOAL="$2"; shift 2 ;;
-            --assistant-personality)     export OPENCLAW_ASSISTANT_PERSONALITY="$2"; shift 2 ;;
             --help|-h)                   print_usage; exit 0 ;;
             *)                           echo "忽略未知参数: $1"; shift ;;
         esac
@@ -1051,6 +1045,14 @@ main() {
         read_input "请选择 [1-4] (默认 1): " choice
         choice="${choice:-1}"
 
+        # 确定 openclaw-setup.sh 路径
+        local setup_script=""
+        if [ -f "$SCRIPT_DIR/openclaw-setup.sh" ]; then
+            setup_script="$SCRIPT_DIR/openclaw-setup.sh"
+        elif command -v openclaw-setup &>/dev/null; then
+            setup_script="openclaw-setup"
+        fi
+
         case "$choice" in
             1)
                 log_info "正在打开 Web Dashboard..."
@@ -1060,18 +1062,28 @@ main() {
                 }
                 ;;
             2)
-                log_info "正在打开配置菜单..."
-                openclaw-setup config 2>/dev/null || {
+                if [ -n "$setup_script" ]; then
+                    log_info "正在打开配置菜单..."
+                    bash "$setup_script" config 2>/dev/null || {
+                        log_warn "配置菜单启动失败，请手动运行:"
+                        echo -e "  ${CYAN}openclaw onboard${NC}"
+                    }
+                else
                     log_warn "openclaw-setup 未找到，请手动运行:"
                     echo -e "  ${CYAN}openclaw onboard${NC}"
-                }
+                fi
                 ;;
             3)
-                log_info "正在启动像素小屋工作台..."
-                openclaw-setup workbench start 2>/dev/null || {
-                    log_warn "启动失败，请检查:"
-                    echo -e "  ${CYAN}openclaw-setup workbench status${NC}"
-                }
+                if [ -n "$setup_script" ]; then
+                    log_info "正在启动像素小屋工作台..."
+                    bash "$setup_script" workbench start 2>/dev/null || {
+                        log_warn "启动失败，请检查:"
+                        echo -e "  ${CYAN}openclaw-setup workbench status${NC}"
+                    }
+                else
+                    log_warn "openclaw-setup 未找到，请手动启动:"
+                    echo -e "  ${CYAN}openclaw-setup workbench start${NC}"
+                fi
                 ;;
             4)
                 # 跳到下面的常用命令打印
