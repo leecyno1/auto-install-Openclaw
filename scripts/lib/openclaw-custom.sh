@@ -17,6 +17,14 @@ WHITE='\033[1;37m'
 GRAY='\033[0;90m'
 NC='\033[0m'
 
+# ================================ 大圣之怒品牌色 ================================
+# 红蓝交替主题：红=烈焰(行动), 蓝=深海(智慧)
+BRAND_RED='\033[0;31m'          # 烈焰红 - 警示/行动/核心
+BRAND_BRIGHT_RED='\033[1;31m'   # 亮红 - 标题/强调
+BRAND_BLUE='\033[0;34m'         # 深海蓝 - 信息/智慧/冷静
+BRAND_BRIGHT_BLUE='\033[1;34m'  # 亮蓝 - 次级标题/链接
+BRAND_GOLD='\033[0;33m'         # 金箍 - 高亮/成功/品牌标识
+
 # ================================ 基础工具函数 ================================
 
 check_command() {
@@ -58,7 +66,7 @@ set_persona_role() {
     case "$role" in
         druid)
             PERSONA_ROLE_NAME="综合助理（通用）"
-            PERSONA_ROLE_EMOJI="🦞"
+            PERSONA_ROLE_EMOJI="🐵"
             PERSONA_ROLE_DESC="通用总管，覆盖日常助理、任务推进、沟通协作与结果回报。"
             PERSONA_ROLE_AGENCY="specialized/agents-orchestrator + project-management/project-manager-senior"
             PERSONA_ROLE_DEFAULT_GOAL="综合的小助理，帮我制定日程，邮件，写作，搜索，投资分析等"
@@ -136,7 +144,7 @@ set_persona_role() {
         *)
             PERSONA_ROLE_ID="druid"
             PERSONA_ROLE_NAME="综合助理（通用）"
-            PERSONA_ROLE_EMOJI="🦞"
+            PERSONA_ROLE_EMOJI="🐵"
             PERSONA_ROLE_DESC="通用总管，覆盖日常助理、任务推进、沟通协作与结果回报。"
             PERSONA_ROLE_AGENCY="specialized/agents-orchestrator + project-management/project-manager-senior"
             PERSONA_ROLE_DEFAULT_GOAL="综合的小助理，帮我制定日程，邮件，写作，搜索，投资分析等"
@@ -150,7 +158,7 @@ set_persona_role() {
 
 show_persona_cards() {
     echo -e "${CYAN}请选择初始化工作档案（7选1）:${NC}"
-    echo "  [1] 🦞 综合助理（通用）   - 通用总管，适合绝大多数用户"
+    echo "  [1] 🐵 综合助理（通用）   - 通用总管，适合绝大多数用户"
     echo "  [2] 🗡️ 分析研究（投资）   - 数据深挖、价值发现、投资机会"
     echo "  [3] 🧙 学术研究           - 学术科研、论文写作、知识沉淀"
     echo "  [4] 🪄 团队管理           - 团队管理、流程制度、组织协同"
@@ -305,26 +313,17 @@ CONFIG_DIR="${CONFIG_DIR:-$HOME/.openclaw}"
 
 upsert_env() {
     local key="$1" value="$2"
-    local env_file="$CONFIG_DIR/env"
-    mkdir -p "$CONFIG_DIR"
-
-    if [ -f "$env_file" ] && grep -q "^${key}=" "$env_file" 2>/dev/null; then
-        if command -v sed >/dev/null 2>&1; then
-            sed -i '' "s|^${key}=.*|${key}=${value}|" "$env_file" 2>/dev/null || \
-            sed -i "s|^${key}=.*|${key}=${value}|" "$env_file" 2>/dev/null
-        else
-            local tmp; tmp="$(mktemp)"
-            while IFS= read -r line; do
-                case "$line" in
-                    "${key}="*) echo "${key}=${value}" ;;
-                    *) echo "$line" ;;
-                esac
-            done < "$env_file" > "$tmp"
-            mv "$tmp" "$env_file"
-        fi
-    else
-        echo "${key}=${value}" >> "$env_file"
-    fi
+    local env_file="${CONFIG_DIR:-$HOME/.openclaw}/env"
+    mkdir -p "$(dirname "$env_file")" 2>/dev/null || true
+    touch "$env_file" 2>/dev/null || true
+    local tmp_file; tmp_file="$(mktemp)"
+    awk -v k="$key" -v v="$value" '
+        BEGIN { done=0 }
+        $0 ~ "^export " k "=" { print "export " k "=" v; done=1; next }
+        { print }
+        END { if (!done) print "export " k "=" v }
+    ' "$env_file" > "$tmp_file" && mv "$tmp_file" "$env_file"
+    chmod 600 "$env_file" 2>/dev/null || true
 }
 
 # ================================ 技能同步 ================================
@@ -424,22 +423,53 @@ apply_persona_profile() {
     local role="${1:-${PERSONA_ROLE_SELECTED:-druid}}"
     set_persona_role "$role"
 
-    echo -e "${BLUE}[STEP]${NC} 应用工作档案: ${PERSONA_ROLE_EMOJI} ${PERSONA_ROLE_NAME}"
+    log_step "应用工作档案: ${PERSONA_ROLE_EMOJI} ${PERSONA_ROLE_NAME}"
 
     [ -z "$CONFIG_DIR" ] && CONFIG_DIR="$HOME/.openclaw"
-    mkdir -p "$CONFIG_DIR"
+    local persona_dir="$CONFIG_DIR/agents/main/persona"
+    mkdir -p "$persona_dir"
 
-    if [ -n "${PERSONA_ROLE_DEFAULT_GOAL:-}" ]; then
-        upsert_env "OPENCLAW_USER_GOAL" "$PERSONA_ROLE_DEFAULT_GOAL"
-    fi
-    if [ -n "${PERSONA_ROLE_DEFAULT_STYLE:-}" ]; then
-        upsert_env "OPENCLAW_ASSISTANT_PERSONALITY" "$PERSONA_ROLE_DEFAULT_STYLE"
-    fi
-    if [ -n "${PERSONA_ROLE_AGENCY:-}" ]; then
-        upsert_env "OPENCLAW_PERSONA_AGENCY" "$PERSONA_ROLE_AGENCY"
-    fi
+    cat > "$persona_dir/SOUL.md" <<EOF
+# SOUL.md - 基础人格规则
 
-    echo -e "${GREEN}[INFO]${NC} 工作档案已保存到 ~/.openclaw/env"
+## 初始化工作档案
+- ${PERSONA_ROLE_EMOJI} ${PERSONA_ROLE_NAME}
+- ${PERSONA_ROLE_DESC}
+
+## 性格
+- ${PERSONA_ROLE_DEFAULT_STYLE}
+
+## 原则
+- 执行优先：有明确指令先行动，边界不清先澄清。
+- 透明汇报：完成、卡住、失败都主动同步。
+- 安全第一：涉及密钥、隐私、越权请求一律拒绝并给替代方案。
+
+## 语言铁律
+- 全部输出使用简体中文；英文术语需附中文解释。
+- 时间统一按北京时间说明。
+EOF
+
+    cat > "$persona_dir/AGENTS.md" <<EOF
+# AGENTS.md - 基础工作手册
+
+## 工作档案
+- 档案: ${PERSONA_ROLE_EMOJI} ${PERSONA_ROLE_NAME}
+- 对照: ${PERSONA_ROLE_AGENCY}
+- 核心技能: ${PERSONA_ROLE_CORE_SKILLS}
+- 扩展技能: ${PERSONA_ROLE_EXTRA_SKILLS}
+
+## 任务流程 (SOP)
+1. 接收任务并复述目标与验收标准。
+2. 先判断风险等级与权限边界，再决定执行或分派。
+3. 执行中超过 5 秒的步骤转后台，前台先回执进度。
+4. 完成后输出结果、证据、后续建议。
+EOF
+
+    upsert_env "OPENCLAW_PERSONA_ROLE" "$role"
+    upsert_env "OPENCLAW_USER_GOAL" "$PERSONA_ROLE_DEFAULT_GOAL"
+    upsert_env "OPENCLAW_ASSISTANT_PERSONALITY" "$PERSONA_ROLE_DEFAULT_STYLE"
+    upsert_env "OPENCLAW_PERSONA_AGENCY" "$PERSONA_ROLE_AGENCY"
+    log_info "工作档案已写入: $persona_dir/"
 }
 
 # ================================ Token 档位应用 ================================
@@ -447,36 +477,60 @@ apply_persona_profile() {
 apply_token_profile() {
     local level="${1:-${RULE_PROFILE_SELECTED:-medium}}"
     level="$(normalize_rule_profile_level "$level")"
-    [ "$level" = "none" ] && { echo -e "${GREEN}[INFO]${NC} 已跳过 Token 配置 (none)"; return 0; }
-
-    echo -e "${BLUE}[STEP]${NC} 应用 Token 档位: ${level}"
+    [ "$level" = "none" ] && { log_info "已选择 NONE，跳过 Token 档位配置。"; return 0; }
 
     local limits media_limits
     limits="$(get_profile_token_limits "$level")"
     media_limits="$(get_profile_media_limits "$level")"
 
-    local max_requests daily_token_limit hourly_token_limit max_concurrent
-    max_requests="$(echo "$limits" | awk '{print $1}')"
-    daily_token_limit="$(echo "$limits" | awk '{print $2}')"
-    hourly_token_limit="$(echo "$limits" | awk '{print $3}')"
-    max_concurrent="$(echo "$limits" | awk '{print $4}')"
+    local window_hours max_requests max_tokens max_tokens_per_req max_image max_video
+    window_hours=$(echo "$limits" | awk '{print $1}')
+    max_requests=$(echo "$limits" | awk '{print $2}')
+    max_tokens=$(echo "$limits" | awk '{print $3}')
+    max_tokens_per_req=$(echo "$limits" | awk '{print $4}')
+    max_image=$(echo "$media_limits" | awk '{print $1}')
+    max_video=$(echo "$media_limits" | awk '{print $2}')
 
-    local max_image_uploads max_file_uploads
-    max_image_uploads="$(echo "$media_limits" | awk '{print $1}')"
-    max_file_uploads="$(echo "$media_limits" | awk '{print $2}')"
+    log_step "应用 Token 档位: ${level^^} (${window_hours}h / ${max_requests}req / ${max_tokens} tokens)"
 
     [ -z "$CONFIG_DIR" ] && CONFIG_DIR="$HOME/.openclaw"
-    mkdir -p "$CONFIG_DIR"
 
-    upsert_env "OPENCLAW_RATE_LIMIT_MAX_REQUESTS" "$max_requests"
-    upsert_env "OPENCLAW_RATE_LIMIT_DAILY_TOKENS" "$daily_token_limit"
-    upsert_env "OPENCLAW_RATE_LIMIT_HOURLY_TOKENS" "$hourly_token_limit"
-    upsert_env "OPENCLAW_RATE_LIMIT_MAX_CONCURRENT" "$max_concurrent"
-    upsert_env "OPENCLAW_MEDIA_MAX_IMAGE_UPLOADS" "$max_image_uploads"
-    upsert_env "OPENCLAW_MEDIA_MAX_FILE_UPLOADS" "$max_file_uploads"
+    # 写入环境变量
+    upsert_env "OPENCLAW_RULE_PROFILE" "$level"
+    upsert_env "OPENCLAW_RULE_WINDOW_HOURS" "$window_hours"
+    upsert_env "OPENCLAW_RULE_MAX_REQUESTS" "$max_requests"
+    upsert_env "OPENCLAW_RULE_MAX_TOKENS" "$max_tokens"
+    upsert_env "OPENCLAW_RULE_MAX_TOKENS_PER_REQUEST" "$max_tokens_per_req"
+    upsert_env "OPENCLAW_RULE_MAX_IMAGE_REQUESTS" "$max_image"
+    upsert_env "OPENCLAW_RULE_MAX_VIDEO_REQUESTS" "$max_video"
 
-    echo -e "${GREEN}[INFO]${NC} Token 档位已保存到 ~/.openclaw/env"
-    echo -e "${GREEN}[INFO]${NC} 请求上限: ${max_requests}/min, 日额度: ${daily_token_limit}, 时额度: ${hourly_token_limit}"
+    # 通过官方 CLI 写入（如果可用）
+    if command -v openclaw &>/dev/null; then
+        openclaw config set "vendor.control.profile" "$level" >/dev/null 2>&1 || true
+        openclaw config set "vendor.control.rate.windowHours" "$window_hours" >/dev/null 2>&1 || true
+        openclaw config set "vendor.control.rate.maxRequests" "$max_requests" >/dev/null 2>&1 || true
+        openclaw config set "vendor.control.rate.maxTokens" "$max_tokens" >/dev/null 2>&1 || true
+    fi
+
+    # 写入策略文件
+    local policy_dir="$CONFIG_DIR/policy"
+    mkdir -p "$policy_dir"
+    cat > "$policy_dir/vendor-control-profile.json" <<EOF
+{
+  "version": 1,
+  "profile": "${level}",
+  "rateLimit": {
+    "windowHours": ${window_hours},
+    "maxRequests": ${max_requests},
+    "maxTokens": ${max_tokens},
+    "maxTokensPerRequest": ${max_tokens_per_req},
+    "maxImageRequests": ${max_image},
+    "maxVideoRequests": ${max_video}
+  }
+}
+EOF
+
+    log_info "Token 档位策略已写入"
 }
 
 # ================================ Python 技能依赖 ================================
@@ -492,4 +546,264 @@ install_skill_python_deps() {
         python3 -m pip install --break-system-packages --disable-pip-version-check -q "$pkg" 2>/dev/null || true
     done
     echo -e "${GREEN}[INFO]${NC} Python 依赖安装完成"
+}
+
+# ================================ 网站集成 ================================
+
+# 网站连接配置
+WEBSITE_SERVER_IP="${OPENCLAW_WEBSITE_SERVER_IP:-60.205.58.39}"
+WEBSITE_SERVER_USER="${OPENCLAW_WEBSITE_SERVER_USER:-root}"
+WEBSITE_DOMAIN="${OPENCLAW_WEBSITE_DOMAIN:-monkeykingfury.com}"
+WEBSITE_PORT="${OPENCLAW_WEBSITE_PORT:-8787}"
+WEBSITE_DASHBOARD_PORT="${OPENCLAW_DASHBOARD_PORT:-13145}"
+
+# 写入网站环境变量到 ~/.openclaw/env
+write_website_env() {
+    [ -z "$CONFIG_DIR" ] && CONFIG_DIR="$HOME/.openclaw"
+    mkdir -p "$CONFIG_DIR"
+
+    log_step "写入网站集成配置..."
+
+    upsert_env "OPENCLAW_WEBSITE_SERVER_IP" "$WEBSITE_SERVER_IP"
+    upsert_env "OPENCLAW_WEBSITE_SERVER_USER" "$WEBSITE_SERVER_USER"
+    upsert_env "OPENCLAW_WEBSITE_DOMAIN" "$WEBSITE_DOMAIN"
+    upsert_env "OPENCLAW_WEBSITE_PORT" "$WEBSITE_PORT"
+    upsert_env "OPENCLAW_DASHBOARD_PORT" "$WEBSITE_DASHBOARD_PORT"
+
+    log_info "网站集成配置已写入: $CONFIG_DIR/env"
+}
+
+# ================================ SSH 隧道管理 ================================
+
+# 启动 SSH 隧道（远程端口转发，让服务器访问本地 Dashboard）
+ssh_tunnel_start() {
+    local remote_port="${1:-$WEBSITE_DASHBOARD_PORT}"
+    local local_port="${2:-$WEBSITE_DASHBOARD_PORT}"
+    local server_ip="${3:-$WEBSITE_SERVER_IP}"
+    local server_user="${4:-$WEBSITE_SERVER_USER}"
+
+    # 检查是否已有隧道在运行
+    if ssh_tunnel_status "$remote_port" >/dev/null 2>&1; then
+        log_warn "SSH 隧道已在运行 (远程端口: $remote_port)"
+        return 0
+    fi
+
+    # 检查 SSH 连接
+    if ! command -v ssh &>/dev/null; then
+        log_error "ssh 命令未找到，无法创建隧道"
+        return 1
+    fi
+
+    log_step "启动 SSH 隧道: 本地 :${local_port} → ${server_user}@${server_ip}::${remote_port}"
+
+    # 远程端口转发：服务器可通过 localhost:<remote_port> 访问本地 Dashboard
+    if ssh -fNR "${remote_port}:127.0.0.1:${local_port}" \
+        -o ServerAliveInterval=30 \
+        -o ServerAliveCountMax=3 \
+        -o ExitOnForwardFailure=yes \
+        -o StrictHostKeyChecking=accept-new \
+        "${server_user}@${server_ip}" 2>&1; then
+        log_info "SSH 隧道已建立: 服务器 ${server_ip} 可通过 localhost:${remote_port} 访问本地 Dashboard"
+    else
+        log_error "SSH 隧道创建失败，请检查 SSH 密钥配置"
+        return 1
+    fi
+}
+
+# 停止 SSH 隧道
+ssh_tunnel_stop() {
+    local remote_port="${1:-$WEBSITE_DASHBOARD_PORT}"
+
+    local pid=""
+    pid="$(pgrep -f "ssh -fNR ${remote_port}:127.0.0.1" 2>/dev/null | head -1)" || true
+
+    if [ -z "$pid" ]; then
+        log_warn "未找到运行中的 SSH 隧道 (远程端口: $remote_port)"
+        return 0
+    fi
+
+    kill "$pid" 2>/dev/null && log_info "SSH 隧道已停止 (PID: $pid)" || log_error "停止 SSH 隧道失败"
+}
+
+# 查看 SSH 隧道状态
+ssh_tunnel_status() {
+    local remote_port="${1:-$WEBSITE_DASHBOARD_PORT}"
+
+    local pid=""
+    pid="$(pgrep -f "ssh -fNR ${remote_port}:127.0.0.1" 2>/dev/null | head -1)" || true
+
+    if [ -n "$pid" ]; then
+        log_info "SSH 隧道运行中 (PID: $pid, 远程端口: $remote_port)"
+        return 0
+    else
+        log_warn "SSH 隧道未运行"
+        return 1
+    fi
+}
+
+# ================================ Hermes 代理管理 ================================
+
+# 安装 Hermes（官方方式：pip install）
+install_hermes() {
+    log_step "安装 Hermes Agent..."
+
+    # 检查 Python
+    if ! command -v python3 &>/dev/null; then
+        log_error "Python3 未安装，Hermes 需要 Python 3.10+"
+        return 1
+    fi
+
+    local py_ver
+    py_ver="$(python3 -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')" || true
+    if [ "${py_ver%%.*}" -lt 3 ] 2>/dev/null || [ "${py_ver#*.}" -lt 10 ] 2>/dev/null; then
+        log_error "Python 版本过低 ($py_ver)，Hermes 需要 Python 3.10+"
+        return 1
+    fi
+
+    # 检查是否已安装
+    if command -v hermes &>/dev/null; then
+        log_info "Hermes 已安装: $(hermes --version 2>&1 | head -1)"
+        return 0
+    fi
+
+    # pip 安装
+    log_info "通过 pip 安装 hermes-agent..."
+    python3 -m pip install --user hermes-agent 2>&1 || {
+        log_error "Hermes 安装失败，请检查 pip 权限"
+        return 1
+    }
+
+    # 验证
+    if command -v hermes &>/dev/null; then
+        log_info "Hermes 安装成功: $(hermes --version 2>&1 | head -1)"
+    else
+        log_warn "Hermes 已安装但不在 PATH 中，请添加 ~/.local/bin 到 PATH"
+    fi
+}
+
+# 配置 Hermes 模型
+configure_hermes_model() {
+    local model="${1:-}"
+    local provider="${2:-}"
+
+    command -v hermes &>/dev/null || { log_error "Hermes 未安装"; return 1; }
+
+    if [ -n "$model" ]; then
+        log_step "配置 Hermes 模型: $model"
+        hermes model set "$model" 2>&1 || true
+    fi
+
+    if [ -n "$provider" ]; then
+        log_step "配置 Hermes Provider: $provider"
+        hermes model provider "$provider" 2>&1 || true
+    fi
+}
+
+# 启动 Hermes Gateway
+start_hermes_gateway() {
+    command -v hermes &>/dev/null || { log_error "Hermes 未安装"; return 1; }
+
+    # 先检查是否已在运行
+    if hermes gateway status &>/dev/null 2>&1; then
+        log_info "Hermes Gateway 已在运行"
+        return 0
+    fi
+
+    log_step "启动 Hermes Gateway..."
+    hermes gateway start 2>&1 || {
+        log_warn "Gateway 启动失败，尝试前台模式安装服务..."
+        hermes gateway install 2>&1 || true
+        hermes gateway start 2>&1 || true
+    }
+}
+
+# 停止 Hermes Gateway
+stop_hermes_gateway() {
+    command -v hermes &>/dev/null || { log_error "Hermes 未安装"; return 1; }
+    log_step "停止 Hermes Gateway..."
+    hermes gateway stop 2>&1 || true
+}
+
+# Hermes 状态
+status_hermes() {
+    command -v hermes &>/dev/null || { log_warn "Hermes 未安装"; return 1; }
+    hermes status 2>&1
+}
+
+# ================================ 模型路由管理 ================================
+
+# 显示当前路由/Token 档位状态
+show_routing_status() {
+    local config_dir="${CONFIG_DIR:-$HOME/.openclaw}"
+
+    echo -e "${CYAN}📊 路由与 Token 档位状态${NC}"
+    echo ""
+
+    # 从 openclaw config 读取
+    if command -v openclaw &>/dev/null; then
+        local profile
+        profile="$(openclaw config get vendor.control.profile 2>/dev/null)" || true
+        if [ -n "$profile" ] && [ "$profile" != "undefined" ] && [ "$profile" != "null" ]; then
+            echo -e "  ${GREEN}✅${NC} 档位: $profile"
+        else
+            echo -e "  ${YELLOW}⚠️${NC} 档位: 未配置"
+        fi
+
+        local window max_req max_tok
+        window="$(openclaw config get vendor.control.rate.windowHours 2>/dev/null)" || true
+        max_req="$(openclaw config get vendor.control.rate.maxRequests 2>/dev/null)" || true
+        max_tok="$(openclaw config get vendor.control.rate.maxTokens 2>/dev/null)" || true
+
+        echo -e "  时间窗口: ${window:-未设置}h"
+        echo -e "  最大请求: ${max_req:-未设置}次"
+        echo -e "  最大 Token: ${max_tok:-未设置}"
+    else
+        echo -e "  ${YELLOW}⚠️${NC} OpenClaw 未安装，无法读取路由状态"
+    fi
+
+    # 从 policy 文件读取
+    local policy_file="$config_dir/policy/vendor-control-profile.json"
+    if [ -f "$policy_file" ]; then
+        echo ""
+        echo -e "  ${GRAY}策略文件: $policy_file${NC}"
+        if command -v jq &>/dev/null; then
+            jq '.' "$policy_file" 2>/dev/null | sed 's/^/  /'
+        fi
+    fi
+}
+
+# 配置模型路由（独立命令，不需要完整安装流程）
+configure_model_routing() {
+    local level="${1:-}"
+
+    if [ -z "$level" ]; then
+        echo -e "${CYAN}选择 Token 档位:${NC}"
+        echo ""
+        echo "  [1] 基础档 (low)   - 5h/100次, 60万Token"
+        echo "  [2] 扩展档 (medium) - 5h/300次, 240万Token"
+        echo "  [3] 超级档 (high)  - 请求不限, 600万Token"
+        echo "  [4] 不限 (none)    - 无限制"
+        echo "  [0] 取消"
+        echo ""
+
+        read -p "请选择 [0-4]: " choice < "${TTY_INPUT:-/dev/stdin}"
+        case "$choice" in
+            1) level="low" ;;
+            2) level="medium" ;;
+            3) level="high" ;;
+            4) level="none" ;;
+            *) return 0 ;;
+        esac
+    fi
+
+    case "$level" in
+        low|medium|high|none)
+            RULE_PROFILE_SELECTED="$level"
+            apply_token_profile "$level"
+            ;;
+        *)
+            log_error "无效档位: $level (可选: low/medium/high/none)"
+            return 1
+            ;;
+    esac
 }

@@ -1,52 +1,474 @@
 #!/bin/bash
 #
-# ╔══════════════════════════════════════════════════════════════════════╗
-# ║   🦞 OpenClaw 一键部署脚本 v2.0.0 (重构版)                            ║
-# ║   官方优先 + 自定义可选 + 低内存优化 + 批量部署支持                      ║
-# ║                                                                      ║
-# ║   用法:                                                              ║
-# ║     curl -fsSL <url>/install.sh | bash                               ║
-# ║     curl -fsSL <url>/install.sh | bash -s -- --auto-confirm-all      ║
-# ╚══════════════════════════════════════════════════════════════════════╝
+# ╔══════════════════════════════════════════════════════════════════╗
+# ║   🐵 大圣之怒 · 一键安装脚本 v2.0.0                              ║
+# ║   开箱即用的 AI 智能体工作台                                       ║
+# ╚══════════════════════════════════════════════════════════════════╝
+#
+# 用法:
+#   curl -fsSL <url>/install.sh | bash -s -- [选项]
+#
+# 核心选项:
+#   --auto-confirm-all, --fast    全自动模式（批量部署专用，跳过所有交互）
+#   --no-onboard                  跳过官方 onboarding（安装后手动配置）
+#   --no-prompt                   非交互模式
+#   --version <version>           指定 OpenClaw 版本 (默认: latest)
+#   --beta                        使用 beta 版本
+#   --dry-run                     仅打印计划，不执行
+#
+# Gateway 配置:
+#   --gateway-bind <mode>         loopback|lan|tailnet|auto|custom (默认: loopback)
+#   --gateway-port <port>         Gateway 端口 (默认: 13145)
+#
+# 自定义层配置:
+#   --no-custom                   跳过所有自定义配置
+#   --rule-profile <level>        Token 档位: low|medium|high|none (默认: medium)
+#   --persona <role>              工作档案: druid|assassin|mage|summoner|warrior|paladin|designer
+#
+# 批量部署（一键配置模型与密钥）:
+#   --model <name>                指定默认模型
+#   --api-key <key>               设置 API 密钥
+#   --api-url <url>               设置 API Base URL
+#   --api-provider <name>         设置 API Provider
+# #   --hermes-model <name>         设置 Hermes 默认模型
 #
 
-set -e
+set -euo pipefail
 
-# ================================ 加载共享库 ================================
+# 加载共享库（本地模式）
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CUSTOM_LIB="$SCRIPT_DIR/scripts/lib/openclaw-custom.sh"
-if [ -f "$CUSTOM_LIB" ]; then
-    # shellcheck disable=SC1090
-    source "$CUSTOM_LIB"
+[ -f "$CUSTOM_LIB" ] && source "$CUSTOM_LIB"
+
+# ================================ 嵌入式共享库（确保 curl|bash 模式下可用）================
+if ! type set_persona_role >/dev/null 2>&1; then
+    _SCRIPT_PATH="${BASH_SOURCE[0]:-$0}"
+    if [ -r "$_SCRIPT_PATH" ] && [ "$_SCRIPT_PATH" != "bash" ] && [ "$_SCRIPT_PATH" != "/dev/stdin" ]; then
+        _EXTRACTED_LIB="$(mktemp "${TMPDIR:-/tmp}/openclaw-lib.XXXXXX")"
+        sed -n '/^# __LIB_BEGIN__/,/^# __LIB_END__/p' "$_SCRIPT_PATH" | sed '1d;$d' > "$_EXTRACTED_LIB"
+        source "$_EXTRACTED_LIB"
+        rm -f "$_EXTRACTED_LIB"
+    else
+        _REMOTE_LIB="$(mktemp "${TMPDIR:-/tmp}/openclaw-lib.XXXXXX")"
+        if curl -fsSL --connect-timeout 10 --max-time 30 \
+            "https://raw.githubusercontent.com/leecyno1/auto-install-openclaw/main/scripts/lib/openclaw-custom.sh" \
+            -o "$_REMOTE_LIB" 2>/dev/null; then
+            source "$_REMOTE_LIB"
+        else
+            echo "[ERROR] 无法加载共享库，请使用 git clone 后运行 install.sh"
+            exit 1
+        fi
+        rm -f "$_REMOTE_LIB"
+    fi
 fi
 
-# ================================ 内联核心函数（确保 curl|bash 模式下可用）================
-# 注意：共享库在 curl|bash 模式下可能因路径问题加载失败，
-# 因此必须内联所有在 install.sh 中使用的核心函数
+# ================================ 变量 ================================
+OPENCLAW_VERSION="${OPENCLAW_VERSION:-latest}"
+USE_BETA="${USE_BETA:-0}"
+DRY_RUN="${DRY_RUN:-0}"
+VERBOSE="${VERBOSE:-0}"
+AUTO_CONFIRM_ALL="${AUTO_CONFIRM_ALL:-0}"
+NO_PROMPT="${NO_PROMPT:-0}"
+NO_ONBOARD="${NO_ONBOARD:-0}"
+ENABLE_CUSTOM_LAYERS="${ENABLE_CUSTOM_LAYERS:-1}"
+GATEWAY_BIND="${GATEWAY_BIND:-loopback}"
+GATEWAY_PORT="${GATEWAY_PORT:-13145}"
+GATEWAY_CUSTOM_HOST="${GATEWAY_CUSTOM_HOST:-}"
+AUTO_SWAP_ENABLE="${AUTO_SWAP_ENABLE:-1}"
+SWAP_TARGET_MB="${SWAP_TARGET_MB:-2048}"
+SWAP_FILE="${SWAP_FILE:-}"
+RULE_PROFILE_SELECTED="${RULE_PROFILE_SELECTED:-}"
+PERSONA_ROLE_SELECTED="${PERSONA_ROLE_SELECTED:-}"
+BATCH_MODEL="${BATCH_MODEL:-}"
+BATCH_API_KEY="${BATCH_API_KEY:-}"
+BATCH_API_URL="${BATCH_API_URL:-}"
+BATCH_API_PROVIDER="${BATCH_API_PROVIDER:-}"
 
-# 颜色定义
-[ -z "$RED" ] && RED='\033[0;31m'
-[ -z "$GREEN" ] && GREEN='\033[0;32m'
-[ -z "$YELLOW" ] && YELLOW='\033[1;33m'
-[ -z "$BLUE" ] && BLUE='\033[0;34m'
-[ -z "$PURPLE" ] && PURPLE='\033[0;35m'
-[ -z "$CYAN" ] && CYAN='\033[0;36m'
-[ -z "$WHITE" ] && WHITE='\033[1;37m'
-[ -z "$GRAY" ] && GRAY='\033[0;90m'
-[ -z "$NC" ] && NC='\033[0m'
 
-# 日志函数
+# ================================ 参数解析 ================================
+parse_args() {
+    while [ $# -gt 0 ]; do
+        case "$1" in
+            --auto-confirm-all|--fast)   AUTO_CONFIRM_ALL=1; NO_PROMPT=1; NO_ONBOARD=0; shift ;;
+            --no-onboard)                NO_ONBOARD=1; shift ;;
+            --no-prompt)                 NO_PROMPT=1; shift ;;
+            --no-custom)                 ENABLE_CUSTOM_LAYERS=0; shift ;;
+            --version)                   OPENCLAW_VERSION="$2"; shift 2 ;;
+            --beta)                      USE_BETA=1; shift ;;
+            --dry-run)                   DRY_RUN=1; shift ;;
+            --verbose)                   VERBOSE=1; shift ;;
+            --gateway-bind)              GATEWAY_BIND="$2"; shift 2 ;;
+            --gateway-port)              GATEWAY_PORT="$2"; shift 2 ;;
+            --no-swap)                   AUTO_SWAP_ENABLE=0; shift ;;
+            --swap-size)                 SWAP_TARGET_MB="$2"; shift 2 ;;
+            --swap-file)                 SWAP_FILE="$2"; shift 2 ;;
+            --rule-profile)              RULE_PROFILE_SELECTED="$2"; shift 2 ;;
+            --persona)                   PERSONA_ROLE_SELECTED="$(echo "$2" | tr '[:upper:]' '[:lower:]')"; shift 2 ;;
+            --model)                     BATCH_MODEL="$2"; shift 2 ;;
+            --api-key)                   BATCH_API_KEY="$2"; shift 2 ;;
+            --api-url)                   BATCH_API_URL="$2"; shift 2 ;;
+            --api-provider)              BATCH_API_PROVIDER="$2"; shift 2 ;;
+
+            --help|-h)                   print_usage; exit 0 ;;
+            *)                           echo "忽略未知参数: $1"; shift ;;
+        esac
+    done
+}
+
+# ================================ 帮助 ================================
+print_usage() {
+    cat << EOF
+${CYAN}🐵 大圣之怒 · 一键安装脚本${NC}
+
+${GREEN}用法:${NC} curl -fsSL <url>/install.sh | bash -s -- [选项]
+
+${GREEN}核心选项:${NC}
+  --auto-confirm-all, --fast    全自动模式（批量部署专用）
+  --no-onboard                  跳过官方 onboarding
+  --no-custom                   跳过自定义层
+  --version <version>           指定版本
+  --gateway-bind <mode>         绑定模式 (loopback|lan|tailnet)
+  --gateway-port <port>         Gateway 端口 (默认: 13145)
+  --persona <role>              工作档案
+  --rule-profile <level>        Token 档位
+  --model <name>                默认模型
+  --api-key <key>               API 密钥
+
+${GREEN}示例:${NC}
+  全自动:   bash install.sh --auto-confirm-all
+  批量部署: bash install.sh --auto --model gpt-4o --api-key sk-xxx
+  仅官方:   bash install.sh --no-custom
+  仅官方:   bash install.sh --no-custom
+EOF
+}
+
+# ================================ Banner ================================
+print_banner() {
+    echo -e "${RED}"
+    echo "  ╔═══════════════════════════════════════════════════════╗"
+    echo "  ║   🐵 大圣之怒 · OpenClaw 一键安装                      ║"
+    echo "  ║   开箱即用的 AI 智能体工作台                             ║"
+    echo "  ╚═══════════════════════════════════════════════════════╝"
+    echo -e "${NC}"
+}
+
+# ================================ Gateway 绑定 ================================
+normalize_gateway_bind_mode() {
+    local raw host
+    raw="$(echo "${1:-}" | tr '[:upper:]' '[:lower:]' | tr -d '"'\''[:space:]')"
+    host="$(echo "${2:-}" | tr -d '"'\''[:space:]')"
+
+    case "$raw" in
+        loopback|lan|tailnet|auto|custom) echo "$raw"; return 0 ;;
+        127.0.0.1|localhost|::1) echo "loopback"; return 0 ;;
+        0.0.0.0|::|all) echo "lan"; return 0 ;;
+        "")
+            case "$host" in
+                ""|127.0.0.1|localhost|::1) echo "loopback" ;;
+                0.0.0.0|::|all) echo "lan" ;;
+                tailnet) echo "tailnet" ;;
+                auto|loopback|lan|custom) echo "$host" ;;
+                *) echo "custom" ;;
+            esac
+            return 0
+            ;;
+    esac
+    echo "loopback"
+}
+
+get_gateway_bind_display_host() {
+    local bind="$1" custom_host="$2"
+    case "$bind" in
+        loopback) echo "127.0.0.1" ;;
+        lan)      echo "0.0.0.0" ;;
+        tailnet)  echo "100.x.y.z" ;;
+        custom)   echo "${custom_host:-127.0.0.1}" ;;
+        *)        echo "127.0.0.1" ;;
+    esac
+}
+
+# ================================ 官方安装 ================================
+run_official_onboard() {
+    log_step "运行官方 onboard 向导..."
+    if [ "$AUTO_CONFIRM_ALL" = "1" ]; then
+        log_info "全自动模式: 跳过交互式 onboard"
+        return 0
+    fi
+
+    if [ "$NO_ONBOARD" = "1" ]; then
+        log_info "已跳过官方 onboard（--no-onboard）"
+        return 0
+    fi
+
+    if confirm "是否运行官方 onboard 向导配置模型与渠道？" "y"; then
+        openclaw onboard 2>&1 || {
+            log_warn "onboard 失败，可稍后运行: openclaw onboard"
+        }
+    else
+        log_info "已跳过官方 onboard，可稍后运行: openclaw onboard"
+    fi
+}
+
+# ================================ 自定义层向导 ================================
+run_custom_layers_wizard() {
+    echo ""
+    echo -e "${CYAN}选择要配置的自定义层:${NC}"
+    echo ""
+    echo "  [1] 工作档案 (persona)"
+    echo "  [2] Token 档位 (rule-profile)"
+    echo "  [3] 技能包同步 (skills)"
+    echo "  [4] Python 技能依赖"
+    echo "  [5] 安装全部"
+    echo "  [6] 跳过自定义层"
+    echo ""
+
+    local choice
+    read_input "请选择 [1-6] (默认 5): " choice
+    choice="${choice:-5}"
+
+    case "$choice" in
+        1)
+            if [ -n "$PERSONA_ROLE_SELECTED" ]; then
+                set_persona_role "$PERSONA_ROLE_SELECTED"
+                apply_persona_profile "$PERSONA_ROLE_SELECTED"
+            else
+                apply_persona_profile "druid"
+            fi
+            ;;
+        2)
+            local level="${RULE_PROFILE_SELECTED:-medium}"
+            apply_token_profile "$level"
+            ;;
+        3)
+            local skill_level="${RULE_PROFILE_SELECTED:-medium}"
+            RULE_PROFILE_SELECTED="$skill_level" sync_skills "$skill_level"
+            ;;
+        4)
+            install_skill_python_deps
+            ;;
+        5)
+            # 全部安装
+            if [ -n "$PERSONA_ROLE_SELECTED" ]; then
+                set_persona_role "$PERSONA_ROLE_SELECTED"
+                apply_persona_profile "$PERSONA_ROLE_SELECTED"
+            else
+                apply_persona_profile "druid"
+            fi
+
+            local level="${RULE_PROFILE_SELECTED:-medium}"
+            apply_token_profile "$level"
+
+            RULE_PROFILE_SELECTED="$level" sync_skills "$level"
+            install_skill_python_deps
+            ;;
+        6)
+            log_info "已跳过自定义层"
+            ;;
+    esac
+}
+
+# ================================ 主流程 ================================
+main() {
+    parse_args "$@"
+    print_banner
+
+    # Phase 1: 环境准备
+    log_step "Phase 1: 环境准备"
+
+    # 检查 Node.js
+    if ! command -v node &>/dev/null; then
+        log_error "Node.js 未安装。请先安装 Node.js 22+"
+        exit 1
+    fi
+
+    local node_ver
+    node_ver="$(node -v | sed 's/^v//' | cut -d'.' -f1)"
+    if [ "$node_ver" -lt 22 ] 2>/dev/null; then
+        log_error "Node.js 版本过低 ($node_ver)，需要 22+"
+        exit 1
+    fi
+    log_info "Node.js $(node -v) ✓"
+
+    # 安装 OpenClaw（如果未安装）
+    if ! command -v openclaw &>/dev/null; then
+        log_step "安装 OpenClaw..."
+        local install_cmd="npm install -g openclaw"
+        [ "$USE_BETA" = "1" ] && install_cmd="npm install -g openclaw@beta"
+        [ "$OPENCLAW_VERSION" != "latest" ] && install_cmd="npm install -g openclaw@$OPENCLAW_VERSION"
+
+        if [ "$DRY_RUN" = "1" ]; then
+            log_info "[dry-run] $install_cmd"
+        else
+            sudo $install_cmd 2>&1 || npm install -g openclaw 2>&1 || {
+                log_error "OpenClaw 安装失败"
+                exit 1
+            }
+        fi
+        log_info "OpenClaw 安装成功"
+    else
+        log_info "OpenClaw 已安装: $(openclaw --version 2>/dev/null || echo 'installed')"
+    fi
+
+    # Phase 2: 官方安装
+    log_step "Phase 2: 官方安装"
+    run_official_onboard
+
+    # Phase 3: 自定义增强层（可选）
+    if [ "$ENABLE_CUSTOM_LAYERS" = "1" ]; then
+        log_step "Phase 3: 自定义增强层"
+        if [ "$AUTO_CONFIRM_ALL" = "1" ] || [ "$NO_PROMPT" = "1" ]; then
+            # 全自动模式: 应用所有默认配置
+            if [ -n "$PERSONA_ROLE_SELECTED" ]; then
+                set_persona_role "$PERSONA_ROLE_SELECTED"
+                apply_persona_profile "$PERSONA_ROLE_SELECTED"
+            else
+                apply_persona_profile "druid"
+            fi
+
+            local level="${RULE_PROFILE_SELECTED:-medium}"
+            apply_token_profile "$level"
+            RULE_PROFILE_SELECTED="$level" sync_skills "$level"
+            install_skill_python_deps
+        else
+            run_custom_layers_wizard
+        fi
+    else
+        log_info "已跳过自定义增强层"
+    fi
+
+    # 批量部署：自动应用模型与 API 密钥
+    if [ -n "$BATCH_MODEL" ] || [ -n "$BATCH_API_KEY" ] || [ -n "$BATCH_API_URL" ]; then
+        log_step "批量部署: 配置模型与 API 密钥"
+        [ -n "$BATCH_API_PROVIDER" ] && openclaw config set api.provider "$BATCH_API_PROVIDER" 2>/dev/null || true
+        [ -n "$BATCH_API_KEY" ] && upsert_env "OPENAI_API_KEY" "$BATCH_API_KEY"
+        [ -n "$BATCH_API_URL" ] && upsert_env "OPENAI_BASE_URL" "$BATCH_API_URL"
+        [ -n "$BATCH_MODEL" ] && openclaw config set api.defaultModel "$BATCH_MODEL" 2>/dev/null || true
+        log_info "批量部署配置已写入"
+    fi
+
+    # Phase 4: 网站集成（可选）
+    if [ "$ENABLE_CUSTOM_LAYERS" = "1" ] && [ "$AUTO_CONFIRM_ALL" != "1" ] && [ "$NO_PROMPT" != "1" ]; then
+        if confirm "是否配置网站集成 + SSH 隧道？" "n"; then
+            if [ -f "$SCRIPT_DIR/openclaw-setup.sh" ]; then
+                bash "$SCRIPT_DIR/openclaw-setup.sh" website
+            fi
+        fi
+    fi
+
+    # 完成
+    echo ""
+    echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo -e "${WHITE}  🐵 大圣之怒 · 安装完成！${NC}"
+    echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo ""
+
+    if [ "$AUTO_CONFIRM_ALL" != "1" ] && [ "$NO_PROMPT" != "1" ]; then
+        echo -e "${CYAN}接下来要做什么？${NC}"
+        echo ""
+        echo "  [1] 打开 Web Dashboard"
+        echo "  [2] 运行配置菜单"
+        echo "  [3] 启动像素小屋工作台"
+        echo "  [4] 配置网站集成 + SSH 隧道"
+        echo "  [5] 安装 Hermes 代理"
+        echo "  [6] 仅显示常用命令"
+        echo ""
+
+        local choice
+        read_input "请选择 [1-6] (默认 1): " choice
+        choice="${choice:-1}"
+
+        local setup_script=""
+        if [ -f "$SCRIPT_DIR/openclaw-setup.sh" ]; then
+            setup_script="$SCRIPT_DIR/openclaw-setup.sh"
+        elif command -v openclaw-setup &>/dev/null; then
+            setup_script="openclaw-setup"
+        fi
+
+        case "$choice" in
+            1)
+                log_info "正在打开 Web Dashboard..."
+                openclaw dashboard 2>/dev/null || log_warn "请手动访问: http://127.0.0.1:${GATEWAY_PORT}"
+                ;;
+            2)
+                [ -n "$setup_script" ] && bash "$setup_script" config 2>/dev/null || openclaw onboard
+                ;;
+            3)
+                [ -n "$setup_script" ] && bash "$setup_script" workbench start 2>/dev/null || log_warn "请手动启动"
+                ;;
+            4)
+                [ -n "$setup_script" ] && bash "$setup_script" website 2>/dev/null || log_warn "请手动配置: openclaw-setup website"
+                ;;
+            5) ;;
+        esac
+        echo ""
+    fi
+
+    # 常用命令
+    echo -e "${WHITE}常用命令:${NC}"
+    echo "  openclaw onboard                  配置模型与渠道"
+    echo "  openclaw gateway start            启动 Gateway"
+    echo "  openclaw dashboard                打开 Web 控制面板"
+    echo "  openclaw-setup config             打开配置菜单"
+    echo "  openclaw-setup doctor             健康检查"
+    echo "  openclaw-setup workbench start    启动像素小屋工作台"
+    echo "  openclaw-setup website            配置网站集成"
+    echo "  openclaw-setup tunnel start       启动 SSH 隧道"
+
+    echo ""
+    echo -e "${GRAY}文档: https://docs.openclaw.ai${NC}"
+}
+
+main "$@"
+
+
+# __LIB_BEGIN__
+#!/bin/bash
+#
+# ╔══════════════════════════════════════════════════════════════╗
+# ║  OpenClaw 自定义增强 - 共享库                                  ║
+# ║  供 install.sh / config-menu.sh / openclaw-setup.sh 共用     ║
+# ╚══════════════════════════════════════════════════════════════╝
+#
+
+# ================================ 颜色定义 ================================
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+PURPLE='\033[0;35m'
+CYAN='\033[0;36m'
+WHITE='\033[1;37m'
+GRAY='\033[0;90m'
+NC='\033[0m'
+
+# ================================ 大圣之怒品牌色 ================================
+# 红蓝交替主题：红=烈焰(行动), 蓝=深海(智慧)
+BRAND_RED='\033[0;31m'          # 烈焰红 - 警示/行动/核心
+BRAND_BRIGHT_RED='\033[1;31m'   # 亮红 - 标题/强调
+BRAND_BLUE='\033[0;34m'         # 深海蓝 - 信息/智慧/冷静
+BRAND_BRIGHT_BLUE='\033[1;34m'  # 亮蓝 - 次级标题/链接
+BRAND_GOLD='\033[0;33m'         # 金箍 - 高亮/成功/品牌标识
+
+# ================================ 基础工具函数 ================================
+
+check_command() {
+    command -v "$1" >/dev/null 2>&1
+}
+
 log_info()  { echo -e "${GREEN}[INFO]${NC} $1"; }
 log_warn()  { echo -e "${YELLOW}[WARN]${NC} $1"; }
 log_error() { echo -e "${RED}[ERROR]${NC} $1"; }
 log_step()  { echo -e "${BLUE}[STEP]${NC} $1"; }
-check_command() { command -v "$1" >/dev/null 2>&1; }
 
-# Persona 角色系统
+# ================================ Persona 角色定义 ================================
+# 7 种工作档案，仅定义一次，所有脚本共用
+
 CUSTOM_LIB_PERSONA_LOADED=0
+
 load_persona_system() {
     [ "$CUSTOM_LIB_PERSONA_LOADED" -eq 1 ] && return 0
     CUSTOM_LIB_PERSONA_LOADED=1
+
     PERSONA_ROLE_ID=""
     PERSONA_ROLE_NAME=""
     PERSONA_ROLE_EMOJI=""
@@ -68,7 +490,7 @@ set_persona_role() {
     case "$role" in
         druid)
             PERSONA_ROLE_NAME="综合助理（通用）"
-            PERSONA_ROLE_EMOJI="🦞"
+            PERSONA_ROLE_EMOJI="🐵"
             PERSONA_ROLE_DESC="通用总管，覆盖日常助理、任务推进、沟通协作与结果回报。"
             PERSONA_ROLE_AGENCY="specialized/agents-orchestrator + project-management/project-manager-senior"
             PERSONA_ROLE_DEFAULT_GOAL="综合的小助理，帮我制定日程，邮件，写作，搜索，投资分析等"
@@ -146,7 +568,7 @@ set_persona_role() {
         *)
             PERSONA_ROLE_ID="druid"
             PERSONA_ROLE_NAME="综合助理（通用）"
-            PERSONA_ROLE_EMOJI="🦞"
+            PERSONA_ROLE_EMOJI="🐵"
             PERSONA_ROLE_DESC="通用总管，覆盖日常助理、任务推进、沟通协作与结果回报。"
             PERSONA_ROLE_AGENCY="specialized/agents-orchestrator + project-management/project-manager-senior"
             PERSONA_ROLE_DEFAULT_GOAL="综合的小助理，帮我制定日程，邮件，写作，搜索，投资分析等"
@@ -158,9 +580,27 @@ set_persona_role() {
     esac
 }
 
-# 技能档位
+show_persona_cards() {
+    echo -e "${CYAN}请选择初始化工作档案（7选1）:${NC}"
+    echo "  [1] 🐵 综合助理（通用）   - 通用总管，适合绝大多数用户"
+    echo "  [2] 🗡️ 分析研究（投资）   - 数据深挖、价值发现、投资机会"
+    echo "  [3] 🧙 学术研究           - 学术科研、论文写作、知识沉淀"
+    echo "  [4] 🪄 团队管理           - 团队管理、流程制度、组织协同"
+    echo "  [5] ⚔️ 工程开发           - 编程交付、测试排障、工程上线"
+    echo "  [6] 🛡️ 市场增长           - 市场增长、SEO投放、渠道运营"
+    echo "  [7] 🏹 设计创作           - 前端/UI/视觉/平面/工业/建筑概念"
+    echo ""
+}
+
+# ================================ 技能档位定义 ================================
+
+# 核心技能（基础档）
 CORE_SKILLS="capability-evolver openclaw-cron-setup proactive-agent self-improving-agent-cn brainstorming reflection find-skills skill-creator subagent-driven-development using-superpowers verification-before-completion writing-skills agent-browser chrome-devtools-mcp github mcp-builder model-usage shell minimax-image-understanding minimax-web-search minimax-pdf minimax-docx minimax-xlsx tavily-search web-search news-radar url-to-markdown pdf nano-pdf docx pptx xlsx stock-monitor-skill multi-search-engine content-strategy social-content ai-image-generation media-downloader marketingskills inference-skills agentmail agentmail-cli agentmail-mcp agentmail-toolkit lark-calendar notebooklm-skill skill-security-auditor weather data-analyst task todo"
+
+# 扩展技能（仅扩展档/超级档）
 EXTENDED_SKILLS="animation akshare-stock gemini-image-service oracle paperless-docs paperless-ngx-tools writing-plans planning-with-files finance-data"
+
+# 超级技能（仅超级档，baoyu系列）
 SUPER_SKILLS="baoyu-skills baoyu-article-illustrator baoyu-comic baoyu-compress-image baoyu-cover-image baoyu-danger-gemini-web baoyu-danger-x-to-markdown baoyu-format-markdown baoyu-image-gen baoyu-infographic baoyu-markdown-to-html baoyu-post-to-wechat baoyu-post-to-weibo baoyu-post-to-x baoyu-slide-deck baoyu-translate baoyu-url-to-markdown baoyu-xhs-images baoyu-youtube-transcript"
 
 PROFILE_BASIC_SKILLS="${CORE_SKILLS}"
@@ -179,7 +619,8 @@ get_profile_skill_list() {
     esac
 }
 
-# Token 档位
+# ================================ Token 档位限额 ================================
+
 get_profile_token_limits() {
     local level
     level="$(echo "${1:-medium}" | tr '[:upper:]' '[:lower:]' | tr -d '[:space:]')"
@@ -203,7 +644,8 @@ get_profile_media_limits() {
     esac
 }
 
-# 规范化函数
+# ================================ 规范化函数 ================================
+
 normalize_rule_profile_level() {
     local level
     level="$(echo "${1:-medium}" | tr '[:upper:]' '[:lower:]' | tr -d '[:space:]')"
@@ -231,6 +673,7 @@ normalize_gateway_bind_mode() {
     local raw host
     raw="$(echo "${1:-}" | tr '[:upper:]' '[:lower:]' | tr -d '"'\''[:space:]')"
     host="$(echo "${2:-}" | tr -d '"'\''[:space:]')"
+
     case "$raw" in
         loopback|lan|tailnet|auto|custom) echo "$raw"; return 0 ;;
         127.0.0.1|localhost|::1) echo "loopback"; return 0 ;;
@@ -261,135 +704,11 @@ get_gateway_bind_display_host() {
     esac
 }
 
-# ================================ Windows 引导 ================================
-detect_and_guide_windows() {
-    [[ "${OSTYPE}" == "msys" || "${OSTYPE}" == "cygwin" || "${OSTYPE}" == "win32" ]] && return 0
-    grep -qi "microsoft\|wsl" /proc/version 2>/dev/null && return 0
-    if [[ -n "${WINDIR:-}" || -n "${ProgramFiles:-}" ]]; then
-        echo "检测到 Windows环境，请使用 WSL2 或 Git Bash 运行此脚本。"
-        echo "  方案 A: wsl --install -d Ubuntu  (推荐)"
-        echo "  方案 B: 安装 Git Bash"
-        exit 1
-    fi
-}
-detect_and_guide_windows
+# ================================ 交互工具函数 ================================
 
-# ================================ TTY 检测 ================================
-resolve_tty_input() {
-    if [ -t 0 ]; then echo "/dev/stdin"; return 0; fi
-    if [ -e /dev/tty ] && ( : < /dev/tty ) 2>/dev/null; then echo "/dev/tty"; return 0; fi
-    if [ -r /dev/stdin ]; then echo "/dev/stdin"; return 0; fi
-    echo "/dev/null"
-}
-TTY_INPUT="$(resolve_tty_input)"
-
-# ================================ 配置变量 ================================
-# 兼容旧环境变量
-for old_new in "CLAWDBOT_NO_ONBOARD:OPENCLAW_NO_ONBOARD" "CLAWDBOT_NO_PROMPT:OPENCLAW_NO_PROMPT" \
-               "CLAWDBOT_DRY_RUN:OPENCLAW_DRY_RUN" "CLAWDBOT_INSTALL_METHOD:OPENCLAW_INSTALL_METHOD" \
-               "CLAWDBOT_VERSION:OPENCLAW_VERSION" "CLAWDBOT_BETA:OPENCLAW_BETA"; do
-    old="${old_new%%:*}" new="${old_new##*:}"
-    [ -z "${!new:-}" ] && [ -n "${!old:-}" ] && export "$new=${!old}"
-done
-
-CONFIG_DIR="$HOME/.openclaw"
-MIN_NODE_MAJOR=22
-MIN_NODE_MINOR=14
-INSTALLER_VERSION="2.0.0"
-INSTALLER_NAME="auto-install-Openclaw"
-
-# 下载与重试配置
-CURL_CONNECT_TIMEOUT="${OPENCLAW_CURL_CONNECT_TIMEOUT:-8}"
-CURL_MAX_TIME="${OPENCLAW_CURL_MAX_TIME:-30}"
-DOWNLOAD_RETRIES="${OPENCLAW_DOWNLOAD_RETRIES:-3}"
-DOWNLOAD_BACKOFF_SECONDS="${OPENCLAW_DOWNLOAD_BACKOFF_SECONDS:-2}"
-
-# 安装参数
-OPENCLAW_VERSION="${OPENCLAW_VERSION:-latest}"
-INSTALL_METHOD="${OPENCLAW_INSTALL_METHOD:-npm}"
-USE_BETA="${OPENCLAW_BETA:-0}"
-NO_ONBOARD="${OPENCLAW_NO_ONBOARD:-0}"
-NO_PROMPT="${OPENCLAW_NO_PROMPT:-0}"
-AUTO_CONFIRM_ALL="${OPENCLAW_AUTO_CONFIRM_ALL:-0}"
-DRY_RUN="${OPENCLAW_DRY_RUN:-0}"
-VERBOSE="${OPENCLAW_VERBOSE:-0}"
-
-# Gateway 配置
-GATEWAY_BIND="${OPENCLAW_GATEWAY_BIND:-loopback}"
-GATEWAY_PORT="${OPENCLAW_GATEWAY_PORT:-13145}"
-
-# 低内存处理（云端服务器关键功能）
-AUTO_SWAP_ENABLE="${OPENCLAW_AUTO_SWAP:-1}"
-SWAP_PERSIST_ENABLE="${OPENCLAW_SWAP_PERSIST:-1}"
-SWAP_THRESHOLD_MB="${OPENCLAW_SWAP_THRESHOLD_MB:-4096}"
-SWAP_TARGET_MB="${OPENCLAW_SWAP_TARGET_MB:-0}"
-SWAP_FILE="${OPENCLAW_SWAP_FILE:-/swapfile.openclaw}"
-
-# 自定义层开关（默认开启，可跳过）
-ENABLE_CUSTOM_LAYERS="${OPENCLAW_ENABLE_CUSTOM_LAYERS:-1}"
-RULE_PROFILE_SELECTED="${OPENCLAW_RULE_PROFILE:-medium}"
-PERSONA_ROLE_SELECTED="${OPENCLAW_PERSONA_ROLE:-druid}"
-
-# ================================ 工具函数 ================================
-
-print_banner() {
-    echo -e "${CYAN}"
-    echo "  ___                     _      ____                   _ _   "
-    echo " / _ \ _ __   ___ _ __ __| |    / ___|_ __ __ _  __ _ _(_) |_ "
-    echo "| | | | '_ \ / _ \ '__/ _\` |  | |   | '__/ _\` |/ _\` | | | __|"
-    echo "| |_| | |_) |  __/ | | (_| |  | |___| | | (_| | (_| | | | |_ "
-    echo " \___/| .__/ \___|_|  \__,_|   \____|_|  \__,_|\__, |_|_|\__|"
-    echo "      |_|                                       |___/         "
-    echo -e "${NC}"
-    echo -e "${WHITE}OpenClaw 一键部署 v${INSTALLER_VERSION} - 官方优先，自定义可选${NC}"
-    echo -e "${GRAY}官方文档: https://docs.openclaw.ai${NC}"
-    echo ""
-}
-
-print_usage() {
-    cat <<EOF
-用法:
-  curl -fsSL <url>/install.sh | bash -s -- [选项]
-
-核心选项:
-  --auto-confirm-all, --fast    全自动模式（批量部署专用，跳过所有交互）
-  --no-onboard                  跳过官方 onboarding（安装后手动配置）
-  --no-prompt                   非交互模式
-  --version <version>           指定 OpenClaw 版本 (默认: latest)
-  --beta                        使用 beta 版本
-  --dry-run                     仅打印计划，不执行
-
-Gateway 配置:
-  --gateway-bind <mode>         loopback|lan|tailnet|auto|custom (默认: loopback)
-  --gateway-port <port>         Gateway 端口 (默认: 13145)
-
-自定义层配置（官方安装后的可选增强）:
-  --no-custom                   跳过所有自定义配置（仅安装官方版本）
-  --rule-profile <level>        Token 档位: low|medium|high|none (默认: medium)
-  --persona <role>              工作档案: druid|assassin|mage|summoner|warrior|paladin|designer
-
-低内存优化（云端服务器）:
-  --no-swap                     不自动创建 Swap 分区
-  --swap-size <MB>              手动指定 Swap 大小 (默认: 自动计算)
-  --swap-file <path>            Swap 文件路径 (默认: /swapfile.openclaw)
-
-其他:
-  --verbose                     详细日志输出
-  --help, -h                    显示帮助
-
-环境变量 (所有选项均可通过环境变量设置):
-  OPENCLAW_AUTO_CONFIRM_ALL=1          全自动模式
-  OPENCLAW_NO_ONBOARD=1                跳过 onboard
-  OPENCLAW_NO_PROMPT=1                 非交互模式
-  OPENCLAW_ENABLE_CUSTOM_LAYERS=0      跳过自定义层
-  OPENCLAW_AUTO_SWAP=0                 不自动创建 Swap
-  OPENCLAW_SWAP_THRESHOLD_MB=4096      内存低于此值时启用 Swap
-  OPENCLAW_RULE_PROFILE=medium         Token 档位
-  OPENCLAW_PERSONA_ROLE=druid          工作档案
-  OPENCLAW_GATEWAY_BIND=loopback       Gateway 绑定模式
-  OPENCLAW_GATEWAY_PORT=13145          Gateway 端口
-EOF
-}
+TTY_INPUT="${TTY_INPUT:-/dev/stdin}"
+AUTO_CONFIRM_ALL="${AUTO_CONFIRM_ALL:-0}"
+NO_PROMPT="${NO_PROMPT:-0}"
 
 confirm() {
     local message="$1" default="${2:-y}"
@@ -412,274 +731,13 @@ read_input() {
     echo -en "$prompt"; read $var_name < "$TTY_INPUT"
 }
 
-download_with_fallback() {
-    local output_path="$1"; shift
-    local attempts="${DOWNLOAD_RETRIES:-3}" backoff="${DOWNLOAD_BACKOFF_SECONDS:-2}"
-    for url in "$@"; do
-        [ -z "$url" ] && continue
-        local attempt=1
-        while [ "$attempt" -le "$attempts" ]; do
-            if curl -fsSL --proto '=https' --tlsv1.2 --connect-timeout "$CURL_CONNECT_TIMEOUT" \
-               --max-time "$CURL_MAX_TIME" "$url" -o "$output_path" 2>/dev/null; then
-                log_info "下载成功: $url"
-                return 0
-            fi
-            [ "$attempt" -lt "$attempts" ] && sleep $((backoff * attempt))
-            attempt=$((attempt + 1))
-        done
-    done
-    return 1
-}
+# ================================ 配置持久化 ================================
 
-# ================================ 系统检测 ================================
+CONFIG_DIR="${CONFIG_DIR:-$HOME/.openclaw}"
 
-detect_os() {
-    if [[ "$OSTYPE" == "linux-gnu"* ]]; then
-        if [ -f /etc/os-release ]; then
-            . /etc/os-release; OS=$ID; OS_VERSION=$VERSION_ID
-        else
-            OS="linux"
-        fi
-        if command -v apt-get &>/dev/null; then PKG_MGR="apt"
-        elif command -v dnf &>/dev/null; then PKG_MGR="dnf"
-        elif command -v yum &>/dev/null; then PKG_MGR="yum"
-        elif command -v pacman &>/dev/null; then PKG_MGR="pacman"
-        fi
-    elif [[ "$OSTYPE" == "darwin"* ]]; then
-        OS="macos"; OS_VERSION=$(sw_vers -productVersion); PKG_MGR="brew"
-    else
-        log_error "不支持的操作系统: $OSTYPE"; exit 1
-    fi
-    log_info "检测到系统: $OS ${OS_VERSION:-} (包管理器: ${PKG_MGR:-未知})"
-}
-
-check_nodejs() {
-    if command -v node &>/dev/null; then
-        local node_major node_minor
-        node_major=$(node -v | sed 's/^v//' | cut -d'.' -f1)
-        node_minor=$(node -v | sed 's/^v//' | cut -d'.' -f2)
-        if [ "$node_major" -gt "$MIN_NODE_MAJOR" ] || \
-           { [ "$node_major" -eq "$MIN_NODE_MAJOR" ] && [ "$node_minor" -ge "$MIN_NODE_MINOR" ]; }; then
-            log_info "Node.js 版本满足要求: $(node -v)"
-            return 0
-        fi
-        log_warn "Node.js 版本过低: $(node -v)，需要 v${MIN_NODE_MAJOR}.${MIN_NODE_MINOR}+"
-        return 1
-    fi
-    log_warn "未检测到 Node.js"
-    return 1
-}
-
-install_nodejs() {
-    log_step "安装 Node.js ${MIN_NODE_MAJOR}.x ..."
-    case "$OS" in
-        macos)
-            command -v brew &>/dev/null || /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-            brew install node@22; brew link --overwrite node@22
-            ;;
-        ubuntu|debian)
-            curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
-            sudo apt-get install -y nodejs
-            ;;
-        centos|rhel|fedora)
-            curl -fsSL https://rpm.nodesource.com/setup_22.x | sudo bash -
-            sudo yum install -y nodejs
-            ;;
-        *)
-            log_error "无法自动安装 Node.js，请手动安装 v${MIN_NODE_MAJOR}.${MIN_NODE_MINOR}+"; exit 1
-            ;;
-    esac
-    log_info "Node.js 安装完成: $(node -v)"
-}
-
-install_dependencies() {
-    log_step "安装系统依赖..."
-    case "$OS" in
-        ubuntu|debian)
-            sudo apt-get update -qq && sudo apt-get install -y -qq curl wget jq python3 python3-pip poppler-utils ffmpeg bc 2>/dev/null
-            ;;
-        centos|rhel|fedora)
-            sudo yum install -y curl wget jq python3 python3-pip ffmpeg bc 2>/dev/null || true
-            ;;
-        macos)
-            brew install curl jq python poppler ffmpeg 2>/dev/null || true
-            ;;
-    esac
-    log_info "系统依赖安装完成"
-}
-
-# ================================ 低内存处理（云端服务器关键功能） ================================
-
-get_total_mem_mb() {
-    if [ -f /proc/meminfo ]; then
-        awk '/MemTotal/ {print int($2/1024)}' /proc/meminfo
-    elif [[ "$OSTYPE" == "darwin"* ]]; then
-        echo $(( $(sysctl -n hw.memsize 2>/dev/null || echo 0) / 1048576 ))
-    else
-        echo 0
-    fi
-}
-
-get_total_swap_mb() {
-    if [ -f /proc/meminfo ]; then
-        awk '/SwapTotal/ {print int($2/1024)}' /proc/meminfo
-    else
-        echo 0
-    fi
-}
-
-is_low_memory() {
-    [[ "$OSTYPE" == "darwin"* ]] && return 1
-    local mem_mb swap_mb
-    mem_mb="$(get_total_mem_mb)"
-    swap_mb="$(get_total_swap_mb)"
-    [ "$mem_mb" -lt "$SWAP_THRESHOLD_MB" ] && [ "$swap_mb" -lt "$((mem_mb / 2))" ]
-}
-
-create_swap() {
-    local target_mb="${1:-4096}"
-    log_step "创建 Swap 分区 (${target_mb}MB)..."
-
-    if [ -f "$SWAP_FILE" ]; then
-        log_warn "Swap 文件已存在，正在重新配置..."
-        sudo swapoff "$SWAP_FILE" 2>/dev/null || true
-        sudo rm -f "$SWAP_FILE"
-    fi
-
-    if command -v fallocate &>/dev/null; then
-        sudo fallocate -l "${target_mb}M" "$SWAP_FILE"
-    else
-        sudo dd if=/dev/zero of="$SWAP_FILE" bs=1M count="$target_mb" status=progress
-    fi
-
-    sudo chmod 600 "$SWAP_FILE"
-    sudo mkswap "$SWAP_FILE"
-    sudo swapon "$SWAP_FILE"
-
-    # 持久化（重启后生效）
-    if [ "$SWAP_PERSIST_ENABLE" = "1" ] && ! grep -q "$SWAP_FILE" /etc/fstab 2>/dev/null; then
-        echo "$SWAP_FILE none swap sw 0 0" | sudo tee -a /etc/fstab >/dev/null
-        log_info "已添加到 /etc/fstab（持久化）"
-    fi
-
-    log_info "Swap 已启用: ${target_mb}MB (总内存: $(get_total_mem_mb)MB, 总Swap: $(get_total_swap_mb)MB)"
-}
-
-ensure_swap_for_install() {
-    [ "$AUTO_SWAP_ENABLE" = "1" ] || return 0
-    is_low_memory || return 0
-
-    local mem_mb swap_mb target_mb
-    mem_mb="$(get_total_mem_mb)"
-    swap_mb="$(get_total_swap_mb)"
-
-    if [ "$SWAP_TARGET_MB" -gt 0 ] 2>/dev/null; then
-        target_mb="$SWAP_TARGET_MB"
-    elif [ "$mem_mb" -lt 1024 ]; then
-        target_mb=4096
-    else
-        target_mb=2048
-    fi
-
-    log_warn "检测到低内存环境（${mem_mb}MB, Swap ${swap_mb}MB），将创建 ${target_mb}MB Swap 以防 OOM..."
-    create_swap "$target_mb"
-    return 0
-}
-
-# ================================ 官方安装 ================================
-
-install_openclaw_official() {
-    log_step "安装 OpenClaw (官方方式: npm install -g openclaw@latest)..."
-
-    # 检查是否已安装
-    if command -v openclaw &>/dev/null; then
-        log_info "OpenClaw 已安装: $(openclaw --version 2>/dev/null || echo 'installed')"
-        if [ "$AUTO_CONFIRM_ALL" != "1" ]; then
-            if ! confirm "检测到已安装，是否重新安装/更新？" "n"; then
-                return 0
-            fi
-        fi
-    fi
-
-    # 低内存环境优先启用 Swap
-    ensure_swap_for_install
-
-    # 执行官方安装
-    local node_opts=""
-    if is_low_memory; then
-        node_opts="--max-old-space-size=512"
-        log_info "低内存模式: 启用 Node.js 内存优化"
-    fi
-
-    if [ "$DRY_RUN" = "1" ]; then
-        log_info "[dry-run] npm install -g openclaw@${OPENCLAW_VERSION}"
-        return 0
-    fi
-
-    if NODE_OPTIONS="${node_opts}" npm install -g "openclaw@${OPENCLAW_VERSION}" 2>&1; then
-        log_info "OpenClaw 安装成功: $(openclaw --version 2>/dev/null || echo 'installed')"
-    else
-        log_error "官方安装失败"
-        exit 1
-    fi
-
-    # 确保 openclaw 在 PATH 中
-    if ! command -v openclaw &>/dev/null; then
-        local npm_bin
-        npm_bin="$(npm config get prefix 2>/dev/null || true)/bin"
-        if [ -d "$npm_bin" ]; then
-            export PATH="$npm_bin:$PATH"
-            hash -r 2>/dev/null || true
-        fi
-    fi
-
-    # 创建 ~/.openclaw 目录
-    mkdir -p "$CONFIG_DIR"/{agents/main,skills,plugins,channels,logs,backups,policy} 2>/dev/null || true
-}
-
-run_official_onboard() {
-    [ "$NO_ONBOARD" = "1" ] && return 0
-    command -v openclaw &>/dev/null || return 0
-
-    log_step "运行官方配置向导 (openclaw onboard)..."
-
-    if [ "$AUTO_CONFIRM_ALL" = "1" ] || [ "$NO_PROMPT" = "1" ]; then
-        # 全自动模式：非交互快速启动
-        local onboard_args=(--non-interactive --accept-risk --flow quickstart --mode local)
-
-        # 如果环境变量中已有 API Key，自动传递
-        if [ -n "${ANTHROPIC_API_KEY:-}" ]; then
-            onboard_args+=(--anthropic-api-key "$ANTHROPIC_API_KEY")
-        elif [ -n "${OPENAI_API_KEY:-}" ]; then
-            onboard_args+=(--openai-api-key "$OPENAI_API_KEY")
-        elif [ -n "${OPENROUTER_API_KEY:-}" ]; then
-            onboard_args+=(--openrouter-api-key "$OPENROUTER_API_KEY")
-        elif [ -n "${MOONSHOT_API_KEY:-}" ]; then
-            onboard_args+=(--moonshot-api-key "$MOONSHOT_API_KEY")
-        fi
-
-        # Gateway 配置
-        onboard_args+=(--gateway-bind "$GATEWAY_BIND" --gateway-port "$GATEWAY_PORT")
-
-        if openclaw onboard "${onboard_args[@]}" 2>&1; then
-            log_info "官方 onboard 完成"
-        else
-            log_warn "官方 onboard 未完全成功，可稍后手动运行: openclaw onboard"
-        fi
-    else
-        # 交互模式：让用户通过官方向导配置
-        local onboard_term
-        case "${TERM:-}" in ""|dumb|unknown) onboard_term="xterm-256color" ;; *) onboard_term="$TERM" ;; esac
-        env TERM="$onboard_term" COLORTERM="${COLORTERM:-truecolor}" openclaw onboard < /dev/tty 2>&1 || true
-        log_info "官方 onboard 完成"
-    fi
-}
-
-# ================================ 自定义增强层（可选） ================================
-
-# 写入环境变量到 ~/.openclaw/env
 upsert_env() {
-    local key="$1" value="$2" env_file="$CONFIG_DIR/env"
+    local key="$1" value="$2"
+    local env_file="${CONFIG_DIR:-$HOME/.openclaw}/env"
     mkdir -p "$(dirname "$env_file")" 2>/dev/null || true
     touch "$env_file" 2>/dev/null || true
     local tmp_file; tmp_file="$(mktemp)"
@@ -692,13 +750,106 @@ upsert_env() {
     chmod 600 "$env_file" 2>/dev/null || true
 }
 
-# 自定义层 A: 角色化档案
+# ================================ 技能同步 ================================
+
+sync_skills() {
+    local level
+    level="$(normalize_rule_profile_level "${1:-${RULE_PROFILE_SELECTED:-medium}}")"
+    [ "$level" = "none" ] && return 0
+
+    local skills_dir="${OPENCLAW_SKILLS_DIR:-}"
+    if [ -z "$skills_dir" ]; then
+        local script_dir="${SCRIPT_DIR:-}"
+        if [ -n "$script_dir" ]; then
+            skills_dir="$script_dir/skills/default"
+        fi
+    fi
+
+    # 本地不存在时，从仓库 ZIP 下载并提取
+    if [ ! -d "$skills_dir" ]; then
+        echo -e "${BLUE}[STEP]${NC} 从仓库下载技能包 (档位: ${level}) ..."
+
+        local tmp_dir extract_dir target_dir skill_list downloaded failed
+        tmp_dir="$(mktemp -d)"
+        extract_dir="$tmp_dir/extract"
+        target_dir="$CONFIG_DIR/skills"
+        mkdir -p "$target_dir"
+        downloaded=0; failed=0
+
+        local zip_url="https://github.com/leecyno1/auto-install-openclaw/archive/refs/heads/main.zip"
+        local zip_file="$tmp_dir/repo.zip"
+
+        echo -e "${GREEN}[INFO]${NC} 正在下载仓库..."
+        if ! curl -fsSL --connect-timeout 15 --max-time 120 \
+            -o "$zip_file" "$zip_url" 2>/dev/null; then
+            echo -e "${YELLOW}[WARN]${NC} 技能包下载失败，将跳过技能同步"
+            rm -rf "$tmp_dir"
+            return 0
+        fi
+
+        echo -e "${GREEN}[INFO]${NC} 正在解压技能包..."
+        if unzip -q "$zip_file" -d "$extract_dir" 2>/dev/null; then
+            local src_dir="$extract_dir/auto-install-openclaw-main/skills/default"
+            if [ -d "$src_dir" ]; then
+                skill_list="$(get_profile_skill_list "$level")"
+                for skill_name in $skill_list; do
+                    if [ -d "$target_dir/$skill_name" ]; then
+                        continue
+                    fi
+                    if [ -d "$src_dir/$skill_name" ]; then
+                        cp -a "$src_dir/$skill_name" "$target_dir/" && \
+                            downloaded=$((downloaded + 1)) || \
+                            failed=$((failed + 1))
+                    else
+                        failed=$((failed + 1))
+                    fi
+                done
+            else
+                echo -e "${YELLOW}[WARN]${NC} skills/default 目录在仓库中不存在"
+            fi
+        else
+            echo -e "${YELLOW}[WARN]${NC} ZIP 解压失败"
+        fi
+
+        rm -rf "$tmp_dir"
+        echo -e "${GREEN}[INFO]${NC} 技能下载完成: 成功 ${downloaded}, 失败 ${failed}"
+        return 0
+    fi
+
+    # 本地存在时，直接复制
+    echo -e "${BLUE}[STEP]${NC} 同步技能包 (档位: ${level}) ..."
+
+    local skill_list target_dir copied skipped missing
+    skill_list="$(get_profile_skill_list "$level")"
+    target_dir="$CONFIG_DIR/skills"
+    mkdir -p "$target_dir"
+    copied=0; skipped=0; missing=0
+
+    for skill_name in $skill_list; do
+        local src="$skills_dir/$skill_name" dst="$target_dir/$skill_name"
+        if [ ! -d "$src" ]; then
+            missing=$((missing + 1)); continue
+        fi
+        if [ -d "$dst" ]; then
+            skipped=$((skipped + 1)); continue
+        fi
+        if cp -a "$src" "$dst" 2>/dev/null; then
+            copied=$((copied + 1))
+        fi
+    done
+
+    echo -e "${GREEN}[INFO]${NC} 技能同步完成: 新增 ${copied}, 保留 ${skipped}, 缺失 ${missing}"
+}
+
+# ================================ Persona 应用 ================================
+
 apply_persona_profile() {
-    local role="${PERSONA_ROLE_SELECTED:-druid}"
+    local role="${1:-${PERSONA_ROLE_SELECTED:-druid}}"
     set_persona_role "$role"
 
     log_step "应用工作档案: ${PERSONA_ROLE_EMOJI} ${PERSONA_ROLE_NAME}"
 
+    [ -z "$CONFIG_DIR" ] && CONFIG_DIR="$HOME/.openclaw"
     local persona_dir="$CONFIG_DIR/agents/main/persona"
     mkdir -p "$persona_dir"
 
@@ -739,13 +890,17 @@ EOF
 EOF
 
     upsert_env "OPENCLAW_PERSONA_ROLE" "$role"
+    upsert_env "OPENCLAW_USER_GOAL" "$PERSONA_ROLE_DEFAULT_GOAL"
+    upsert_env "OPENCLAW_ASSISTANT_PERSONALITY" "$PERSONA_ROLE_DEFAULT_STYLE"
+    upsert_env "OPENCLAW_PERSONA_AGENCY" "$PERSONA_ROLE_AGENCY"
     log_info "工作档案已写入: $persona_dir/"
 }
 
-# 自定义层 B: Token 档位策略
+# ================================ Token 档位应用 ================================
+
 apply_token_profile() {
-    local level
-    level="$(normalize_rule_profile_level "$RULE_PROFILE_SELECTED")"
+    local level="${1:-${RULE_PROFILE_SELECTED:-medium}}"
+    level="$(normalize_rule_profile_level "$level")"
     [ "$level" = "none" ] && { log_info "已选择 NONE，跳过 Token 档位配置。"; return 0; }
 
     local limits media_limits
@@ -761,6 +916,8 @@ apply_token_profile() {
     max_video=$(echo "$media_limits" | awk '{print $2}')
 
     log_step "应用 Token 档位: ${level^^} (${window_hours}h / ${max_requests}req / ${max_tokens} tokens)"
+
+    [ -z "$CONFIG_DIR" ] && CONFIG_DIR="$HOME/.openclaw"
 
     # 写入环境变量
     upsert_env "OPENCLAW_RULE_PROFILE" "$level"
@@ -800,311 +957,278 @@ EOF
     log_info "Token 档位策略已写入"
 }
 
-# 自定义层 C: 技能包同步
-sync_skills() {
-    local level
-    level="$(normalize_rule_profile_level "$RULE_PROFILE_SELECTED")"
-    [ "$level" = "none" ] && return 0
+# ================================ Python 技能依赖 ================================
 
-    local skills_dir="$SCRIPT_DIR/skills/default"
-
-    # 本地不存在时，从仓库 ZIP 下载并提取
-    if [ ! -d "$skills_dir" ]; then
-        log_step "从仓库下载技能包 (档位: ${level}) ..."
-
-        local tmp_dir extract_dir target_dir skill_list downloaded failed
-        tmp_dir="$(mktemp -d)"
-        extract_dir="$tmp_dir/extract"
-        target_dir="$CONFIG_DIR/skills"
-        mkdir -p "$target_dir"
-        downloaded=0; failed=0
-
-        # 下载仓库 ZIP
-        local zip_url="https://github.com/leecyno1/auto-install-openclaw/archive/refs/heads/main.zip"
-        local zip_file="$tmp_dir/repo.zip"
-
-        log_info "正在下载仓库..."
-        if ! curl -fsSL --connect-timeout 15 --max-time 120 \
-            -o "$zip_file" "$zip_url" 2>/dev/null; then
-            log_warn "技能包下载失败，将跳过技能同步"
-            rm -rf "$tmp_dir"
-            return 0
-        fi
-
-        # 解压并提取 skills/default
-        log_info "正在解压技能包..."
-        if unzip -q "$zip_file" -d "$extract_dir" 2>/dev/null; then
-            local src_dir="$extract_dir/auto-install-openclaw-main/skills/default"
-            if [ -d "$src_dir" ]; then
-                skill_list="$(get_profile_skill_list "$level")"
-                for skill_name in $skill_list; do
-                    if [ -d "$target_dir/$skill_name" ]; then
-                        continue
-                    fi
-                    if [ -d "$src_dir/$skill_name" ]; then
-                        cp -a "$src_dir/$skill_name" "$target_dir/" && \
-                            downloaded=$((downloaded + 1)) || \
-                            failed=$((failed + 1))
-                    else
-                        failed=$((failed + 1))
-                    fi
-                done
-            else
-                log_warn "skills/default 目录在仓库中不存在"
-            fi
-        else
-            log_warn "ZIP 解压失败"
-        fi
-
-        rm -rf "$tmp_dir"
-        log_info "技能下载完成: 成功 ${downloaded}, 失败 ${failed}"
-        return 0
-    fi
-
-    # 本地存在时，直接复制
-    log_step "同步技能包 (档位: ${level}) ..."
-
-    local skill_list target_dir copied skipped missing
-    skill_list="$(get_profile_skill_list "$level")"
-    target_dir="$CONFIG_DIR/skills"
-    mkdir -p "$target_dir"
-    copied=0; skipped=0; missing=0
-
-    for skill_name in $skill_list; do
-        local src="$skills_dir/$skill_name" dst="$target_dir/$skill_name"
-        if [ ! -d "$src" ]; then
-            missing=$((missing + 1)); continue
-        fi
-        if [ -d "$dst" ]; then
-            skipped=$((skipped + 1)); continue
-        fi
-        if cp -a "$src" "$dst" 2>/dev/null; then
-            copied=$((copied + 1))
-        fi
-    done
-
-    log_info "技能同步完成: 新增 ${copied}, 保留 ${skipped}, 缺失 ${missing}"
-}
-
-# 自定义层 D: 安装 Python 技能依赖
 install_skill_python_deps() {
     [ "${OPENCLAW_INSTALL_SKILL_DEPS:-1}" = "1" ] || return 0
     command -v python3 &>/dev/null || return 0
 
-    log_step "安装 Python 技能依赖..."
+    echo -e "${BLUE}[STEP]${NC} 安装 Python 技能依赖..."
     local pkgs="${OPENCLAW_SKILL_PIP_PACKAGES:-duckduckgo-search akshare requests pyyaml pypdf pillow openpyxl python-pptx python-docx lxml defusedxml pdf2image}"
     for pkg in $pkgs; do
         python3 -m pip install --user --disable-pip-version-check -q "$pkg" 2>/dev/null || \
         python3 -m pip install --break-system-packages --disable-pip-version-check -q "$pkg" 2>/dev/null || true
     done
-    log_info "Python 依赖安装完成"
+    echo -e "${GREEN}[INFO]${NC} Python 依赖安装完成"
 }
 
-# ================================ 自定义层菜单 ================================
+# ================================ 网站集成 ================================
 
-run_custom_layers_wizard() {
-    [ "$ENABLE_CUSTOM_LAYERS" != "1" ] && return 0
-    [ "$AUTO_CONFIRM_ALL" = "1" ] && { run_all_custom_layers; return 0; }
+# 网站连接配置
+WEBSITE_SERVER_IP="${OPENCLAW_WEBSITE_SERVER_IP:-60.205.58.39}"
+WEBSITE_SERVER_USER="${OPENCLAW_WEBSITE_SERVER_USER:-root}"
+WEBSITE_DOMAIN="${OPENCLAW_WEBSITE_DOMAIN:-monkeykingfury.com}"
+WEBSITE_PORT="${OPENCLAW_WEBSITE_PORT:-8787}"
+WEBSITE_DASHBOARD_PORT="${OPENCLAW_DASHBOARD_PORT:-13145}"
 
-    echo ""
-    echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-    echo -e "${WHITE}  官方安装已完成！是否安装自定义增强层？${NC}"
-    echo -e "${GRAY}  以下均为可选配置，跳过不影响 OpenClaw 正常运行${NC}"
-    echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-    echo ""
-    echo "  [1] 安装全部增强（推荐）"
-    echo "  [2] 选择性地安装"
-    echo "  [3] 跳过，仅使用官方版本"
-    echo ""
+# 写入网站环境变量到 ~/.openclaw/env
+write_website_env() {
+    [ -z "$CONFIG_DIR" ] && CONFIG_DIR="$HOME/.openclaw"
+    mkdir -p "$CONFIG_DIR"
 
-    local choice; read_input "${YELLOW}请选择 [1-3] (默认: 1): ${NC}" choice
-    choice="${choice:-1}"
+    log_step "写入网站集成配置..."
 
-    case "$choice" in
-        1) run_all_custom_layers ;;
-        2) run_selective_custom_layers ;;
-        3) log_info "已跳过自定义增强层";;
-    esac
+    upsert_env "OPENCLAW_WEBSITE_SERVER_IP" "$WEBSITE_SERVER_IP"
+    upsert_env "OPENCLAW_WEBSITE_SERVER_USER" "$WEBSITE_SERVER_USER"
+    upsert_env "OPENCLAW_WEBSITE_DOMAIN" "$WEBSITE_DOMAIN"
+    upsert_env "OPENCLAW_WEBSITE_PORT" "$WEBSITE_PORT"
+    upsert_env "OPENCLAW_DASHBOARD_PORT" "$WEBSITE_DASHBOARD_PORT"
+
+    log_info "网站集成配置已写入: $CONFIG_DIR/env"
 }
 
-run_all_custom_layers() {
-    apply_persona_profile "$PERSONA_ROLE_SELECTED"
-    apply_token_profile "$RULE_PROFILE_SELECTED"
-    sync_skills "$RULE_PROFILE_SELECTED"
-    install_skill_python_deps
-    log_info "全部自定义增强层安装完成"
+# ================================ SSH 隧道管理 ================================
+
+# 启动 SSH 隧道（远程端口转发，让服务器访问本地 Dashboard）
+ssh_tunnel_start() {
+    local remote_port="${1:-$WEBSITE_DASHBOARD_PORT}"
+    local local_port="${2:-$WEBSITE_DASHBOARD_PORT}"
+    local server_ip="${3:-$WEBSITE_SERVER_IP}"
+    local server_user="${4:-$WEBSITE_SERVER_USER}"
+
+    # 检查是否已有隧道在运行
+    if ssh_tunnel_status "$remote_port" >/dev/null 2>&1; then
+        log_warn "SSH 隧道已在运行 (远程端口: $remote_port)"
+        return 0
+    fi
+
+    # 检查 SSH 连接
+    if ! command -v ssh &>/dev/null; then
+        log_error "ssh 命令未找到，无法创建隧道"
+        return 1
+    fi
+
+    log_step "启动 SSH 隧道: 本地 :${local_port} → ${server_user}@${server_ip}::${remote_port}"
+
+    # 远程端口转发：服务器可通过 localhost:<remote_port> 访问本地 Dashboard
+    if ssh -fNR "${remote_port}:127.0.0.1:${local_port}" \
+        -o ServerAliveInterval=30 \
+        -o ServerAliveCountMax=3 \
+        -o ExitOnForwardFailure=yes \
+        -o StrictHostKeyChecking=accept-new \
+        "${server_user}@${server_ip}" 2>&1; then
+        log_info "SSH 隧道已建立: 服务器 ${server_ip} 可通过 localhost:${remote_port} 访问本地 Dashboard"
+    else
+        log_error "SSH 隧道创建失败，请检查 SSH 密钥配置"
+        return 1
+    fi
 }
 
-run_selective_custom_layers() {
-    echo ""
-    echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-    echo -e "${WHITE}  选择要安装的自定义功能${NC}"
-    echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-    echo ""
-    echo "  [1] 工作档案（角色化 Persona）"
-    echo "  [2] Token 档位策略（限流与安全规则）"
-    echo "  [3] 技能包同步（本地 Skills 仓）"
-    echo "  [4] Python 技能依赖"
-    echo "  [5] 安装全部"
-    echo "  [6] 跳过"
-    echo ""
+# 停止 SSH 隧道
+ssh_tunnel_stop() {
+    local remote_port="${1:-$WEBSITE_DASHBOARD_PORT}"
 
-    local choice; read_input "${YELLOW}请选择 [1-6] (默认: 1): ${NC}" choice
-    choice="${choice:-1}"
+    local pid=""
+    pid="$(pgrep -f "ssh -fNR ${remote_port}:127.0.0.1" 2>/dev/null | head -1)" || true
 
-    case "$choice" in
-        1) apply_persona_profile "$PERSONA_ROLE_SELECTED" ;;
-        2) apply_token_profile "$RULE_PROFILE_SELECTED" ;;
-        3) sync_skills "$RULE_PROFILE_SELECTED" ;;
-        4) install_skill_python_deps ;;
-        5) run_all_custom_layers ;;
-        6) log_info "已跳过自定义增强层" ;;
-    esac
+    if [ -z "$pid" ]; then
+        log_warn "未找到运行中的 SSH 隧道 (远程端口: $remote_port)"
+        return 0
+    fi
+
+    kill "$pid" 2>/dev/null && log_info "SSH 隧道已停止 (PID: $pid)" || log_error "停止 SSH 隧道失败"
 }
 
-# ================================ 主流程 ================================
+# 查看 SSH 隧道状态
+ssh_tunnel_status() {
+    local remote_port="${1:-$WEBSITE_DASHBOARD_PORT}"
 
-parse_args() {
-    while [ $# -gt 0 ]; do
-        case "$1" in
-            --auto-confirm-all|--fast)   AUTO_CONFIRM_ALL=1; NO_PROMPT=1; NO_ONBOARD=0; shift ;;
-            --no-onboard)                NO_ONBOARD=1; shift ;;
-            --no-prompt)                 NO_PROMPT=1; shift ;;
-            --no-custom)                 ENABLE_CUSTOM_LAYERS=0; shift ;;
-            --version)                   OPENCLAW_VERSION="$2"; shift 2 ;;
-            --beta)                      USE_BETA=1; shift ;;
-            --dry-run)                   DRY_RUN=1; shift ;;
-            --verbose)                   VERBOSE=1; shift ;;
-            --gateway-bind)              GATEWAY_BIND="$2"; shift 2 ;;
-            --gateway-port)              GATEWAY_PORT="$2"; shift 2 ;;
-            --no-swap)                   AUTO_SWAP_ENABLE=0; shift ;;
-            --swap-size)                 SWAP_TARGET_MB="$2"; shift 2 ;;
-            --swap-file)                 SWAP_FILE="$2"; shift 2 ;;
-            --rule-profile)              RULE_PROFILE_SELECTED="$2"; shift 2 ;;
-            --persona)                   PERSONA_ROLE_SELECTED="$(echo "$2" | tr '[:upper:]' '[:lower:]')"; shift 2 ;;
-            --help|-h)                   print_usage; exit 0 ;;
-            *)                           echo "忽略未知参数: $1"; shift ;;
-        esac
-    done
+    local pid=""
+    pid="$(pgrep -f "ssh -fNR ${remote_port}:127.0.0.1" 2>/dev/null | head -1)" || true
+
+    if [ -n "$pid" ]; then
+        log_info "SSH 隧道运行中 (PID: $pid, 远程端口: $remote_port)"
+        return 0
+    else
+        log_warn "SSH 隧道未运行"
+        return 1
+    fi
 }
 
-main() {
-    parse_args "$@"
-    print_banner
+# ================================ Hermes 代理管理 ================================
 
-    # Phase 1: 环境准备
-    log_step "Phase 1: 环境准备"
-    detect_os
+# 安装 Hermes（官方方式：pip install）
+install_hermes() {
+    log_step "安装 Hermes Agent..."
 
-    if ! check_nodejs; then
-        if confirm "是否自动安装 Node.js ${MIN_NODE_MAJOR}.x？" "y"; then
-            install_nodejs
+    # 检查 Python
+    if ! command -v python3 &>/dev/null; then
+        log_error "Python3 未安装，Hermes 需要 Python 3.10+"
+        return 1
+    fi
+
+    local py_ver
+    py_ver="$(python3 -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')" || true
+    if [ "${py_ver%%.*}" -lt 3 ] 2>/dev/null || [ "${py_ver#*.}" -lt 10 ] 2>/dev/null; then
+        log_error "Python 版本过低 ($py_ver)，Hermes 需要 Python 3.10+"
+        return 1
+    fi
+
+    # 检查是否已安装
+    if command -v hermes &>/dev/null; then
+        log_info "Hermes 已安装: $(hermes --version 2>&1 | head -1)"
+        return 0
+    fi
+
+    # pip 安装
+    log_info "通过 pip 安装 hermes-agent..."
+    python3 -m pip install --user hermes-agent 2>&1 || {
+        log_error "Hermes 安装失败，请检查 pip 权限"
+        return 1
+    }
+
+    # 验证
+    if command -v hermes &>/dev/null; then
+        log_info "Hermes 安装成功: $(hermes --version 2>&1 | head -1)"
+    else
+        log_warn "Hermes 已安装但不在 PATH 中，请添加 ~/.local/bin 到 PATH"
+    fi
+}
+
+# 配置 Hermes 模型
+configure_hermes_model() {
+    local model="${1:-}"
+    local provider="${2:-}"
+
+    command -v hermes &>/dev/null || { log_error "Hermes 未安装"; return 1; }
+
+    if [ -n "$model" ]; then
+        log_step "配置 Hermes 模型: $model"
+        hermes model set "$model" 2>&1 || true
+    fi
+
+    if [ -n "$provider" ]; then
+        log_step "配置 Hermes Provider: $provider"
+        hermes model provider "$provider" 2>&1 || true
+    fi
+}
+
+# 启动 Hermes Gateway
+start_hermes_gateway() {
+    command -v hermes &>/dev/null || { log_error "Hermes 未安装"; return 1; }
+
+    # 先检查是否已在运行
+    if hermes gateway status &>/dev/null 2>&1; then
+        log_info "Hermes Gateway 已在运行"
+        return 0
+    fi
+
+    log_step "启动 Hermes Gateway..."
+    hermes gateway start 2>&1 || {
+        log_warn "Gateway 启动失败，尝试前台模式安装服务..."
+        hermes gateway install 2>&1 || true
+        hermes gateway start 2>&1 || true
+    }
+}
+
+# 停止 Hermes Gateway
+stop_hermes_gateway() {
+    command -v hermes &>/dev/null || { log_error "Hermes 未安装"; return 1; }
+    log_step "停止 Hermes Gateway..."
+    hermes gateway stop 2>&1 || true
+}
+
+# Hermes 状态
+status_hermes() {
+    command -v hermes &>/dev/null || { log_warn "Hermes 未安装"; return 1; }
+    hermes status 2>&1
+}
+
+# ================================ 模型路由管理 ================================
+
+# 显示当前路由/Token 档位状态
+show_routing_status() {
+    local config_dir="${CONFIG_DIR:-$HOME/.openclaw}"
+
+    echo -e "${CYAN}📊 路由与 Token 档位状态${NC}"
+    echo ""
+
+    # 从 openclaw config 读取
+    if command -v openclaw &>/dev/null; then
+        local profile
+        profile="$(openclaw config get vendor.control.profile 2>/dev/null)" || true
+        if [ -n "$profile" ] && [ "$profile" != "undefined" ] && [ "$profile" != "null" ]; then
+            echo -e "  ${GREEN}✅${NC} 档位: $profile"
         else
-            log_error "Node.js 是必需的依赖。请手动安装后重试。"; exit 1
-        fi
-    fi
-
-    install_dependencies 2>/dev/null || true
-
-    # Phase 2: 官方安装
-    log_step "Phase 2: 官方安装"
-    install_openclaw_official
-
-    if [ "$NO_ONBOARD" != "1" ]; then
-        run_official_onboard
-    else
-        log_info "已跳过官方 onboard，可稍后运行: openclaw onboard"
-    fi
-
-    # Phase 3: 自定义增强层（可选）
-    if [ "$ENABLE_CUSTOM_LAYERS" = "1" ]; then
-        log_step "Phase 3: 自定义增强层"
-        run_custom_layers_wizard
-    else
-        log_info "已跳过自定义增强层"
-    fi
-
-    # 完成 - 交互引导
-    echo ""
-    echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-    echo -e "${WHITE}  OpenClaw 安装完成！${NC}"
-    echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-    echo ""
-
-    # 非全自动模式下，提供交互引导
-    if [ "$AUTO_CONFIRM_ALL" != "1" ] && [ "$NO_PROMPT" != "1" ]; then
-        echo -e "${CYAN}接下来要做什么？${NC}"
-        echo ""
-        echo "  [1] 打开 Web Dashboard  (http://127.0.0.1:${GATEWAY_PORT})"
-        echo "  [2] 运行配置菜单（模型/插件/技能/工作档案）"
-        echo "  [3] 启动像素小屋工作台  (http://127.0.0.1:19000)"
-        echo "  [4] 仅显示常用命令，稍后手动配置"
-        echo ""
-
-        local choice
-        read_input "请选择 [1-4] (默认 1): " choice
-        choice="${choice:-1}"
-
-        # 确定 openclaw-setup.sh 路径
-        local setup_script=""
-        if [ -f "$SCRIPT_DIR/openclaw-setup.sh" ]; then
-            setup_script="$SCRIPT_DIR/openclaw-setup.sh"
-        elif command -v openclaw-setup &>/dev/null; then
-            setup_script="openclaw-setup"
+            echo -e "  ${YELLOW}⚠️${NC} 档位: 未配置"
         fi
 
-        case "$choice" in
-            1)
-                log_info "正在打开 Web Dashboard..."
-                openclaw dashboard 2>/dev/null || {
-                    log_warn "openclaw dashboard 命令失败，请手动访问:"
-                    echo -e "  ${CYAN}http://127.0.0.1:${GATEWAY_PORT}${NC}"
-                }
-                ;;
-            2)
-                if [ -n "$setup_script" ]; then
-                    log_info "正在打开配置菜单..."
-                    bash "$setup_script" config 2>/dev/null || {
-                        log_warn "配置菜单启动失败，请手动运行:"
-                        echo -e "  ${CYAN}openclaw onboard${NC}"
-                    }
-                else
-                    log_warn "openclaw-setup 未找到，请手动运行:"
-                    echo -e "  ${CYAN}openclaw onboard${NC}"
-                fi
-                ;;
-            3)
-                if [ -n "$setup_script" ]; then
-                    log_info "正在启动像素小屋工作台..."
-                    bash "$setup_script" workbench start 2>/dev/null || {
-                        log_warn "启动失败，请检查:"
-                        echo -e "  ${CYAN}openclaw-setup workbench status${NC}"
-                    }
-                else
-                    log_warn "openclaw-setup 未找到，请手动启动:"
-                    echo -e "  ${CYAN}openclaw-setup workbench start${NC}"
-                fi
-                ;;
-            4)
-                # 跳到下面的常用命令打印
-                ;;
-            *)
-                log_info "无效选择，显示常用命令列表"
-                ;;
-        esac
-        echo ""
+        local window max_req max_tok
+        window="$(openclaw config get vendor.control.rate.windowHours 2>/dev/null)" || true
+        max_req="$(openclaw config get vendor.control.rate.maxRequests 2>/dev/null)" || true
+        max_tok="$(openclaw config get vendor.control.rate.maxTokens 2>/dev/null)" || true
+
+        echo -e "  时间窗口: ${window:-未设置}h"
+        echo -e "  最大请求: ${max_req:-未设置}次"
+        echo -e "  最大 Token: ${max_tok:-未设置}"
+    else
+        echo -e "  ${YELLOW}⚠️${NC} OpenClaw 未安装，无法读取路由状态"
     fi
 
-    # 显示常用命令
-    echo -e "${WHITE}常用命令:${NC}"
-    echo "  openclaw onboard                  配置模型与渠道"
-    echo "  openclaw gateway start            启动 Gateway"
-    echo "  openclaw dashboard                打开 Web 控制面板"
-    echo "  openclaw-setup config             打开配置菜单"
-    echo "  openclaw-setup doctor             健康检查"
-    echo "  openclaw-setup workbench start    启动像素小屋工作台"
-    echo ""
-    echo -e "${GRAY}文档: https://docs.openclaw.ai${NC}"
+    # 从 policy 文件读取
+    local policy_file="$config_dir/policy/vendor-control-profile.json"
+    if [ -f "$policy_file" ]; then
+        echo ""
+        echo -e "  ${GRAY}策略文件: $policy_file${NC}"
+        if command -v jq &>/dev/null; then
+            jq '.' "$policy_file" 2>/dev/null | sed 's/^/  /'
+        fi
+    fi
 }
 
-main "$@"
+# 配置模型路由（独立命令，不需要完整安装流程）
+configure_model_routing() {
+    local level="${1:-}"
+
+    if [ -z "$level" ]; then
+        echo -e "${CYAN}选择 Token 档位:${NC}"
+        echo ""
+        echo "  [1] 基础档 (low)   - 5h/100次, 60万Token"
+        echo "  [2] 扩展档 (medium) - 5h/300次, 240万Token"
+        echo "  [3] 超级档 (high)  - 请求不限, 600万Token"
+        echo "  [4] 不限 (none)    - 无限制"
+        echo "  [0] 取消"
+        echo ""
+
+        read -p "请选择 [0-4]: " choice < "${TTY_INPUT:-/dev/stdin}"
+        case "$choice" in
+            1) level="low" ;;
+            2) level="medium" ;;
+            3) level="high" ;;
+            4) level="none" ;;
+            *) return 0 ;;
+        esac
+    fi
+
+    case "$level" in
+        low|medium|high|none)
+            RULE_PROFILE_SELECTED="$level"
+            apply_token_profile "$level"
+            ;;
+        *)
+            log_error "无效档位: $level (可选: low/medium/high/none)"
+            return 1
+            ;;
+    esac
+}
+# __LIB_END__

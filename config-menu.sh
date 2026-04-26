@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 # ╔══════════════════════════════════════════════════════════════════╗
-# ║   🦞 OpenClaw 配置中心 - 简洁版                                    ║
+# ║   🐵 大圣之怒 · 配置中心 - 简洁版                                    ║
 # ║   快速入口模型配置、插件管理、技能同步与服务控制                      ║
 # ╚══════════════════════════════════════════════════════════════════╝
 #
@@ -14,21 +14,21 @@ CUSTOM_LIB="$SCRIPT_DIR/scripts/lib/openclaw-custom.sh"
 [ -f "$CUSTOM_LIB" ] && source "$CUSTOM_LIB"
 
 # 颜色变量降级（共享库加载失败时使用）
-[ -z "$RED" ] && RED='\033[0;31m'
-[ -z "$GREEN" ] && GREEN='\033[0;32m'
-[ -z "$YELLOW" ] && YELLOW='\033[1;33m'
-[ -z "$BLUE" ] && BLUE='\033[0;34m'
-[ -z "$PURPLE" ] && PURPLE='\033[0;35m'
-[ -z "$CYAN" ] && CYAN='\033[0;36m'
-[ -z "$WHITE" ] && WHITE='\033[1;37m'
-[ -z "$GRAY" ] && GRAY='\033[0;90m'
-[ -z "$NC" ] && NC='\033[0m'
+[ -z "${RED:-}" ] && RED='\033[0;31m'
+[ -z "${GREEN:-}" ] && GREEN='\033[0;32m'
+[ -z "${YELLOW:-}" ] && YELLOW='\033[1;33m'
+[ -z "${BLUE:-}" ] && BLUE='\033[0;34m'
+[ -z "${PURPLE:-}" ] && PURPLE='\033[0;35m'
+[ -z "${CYAN:-}" ] && CYAN='\033[0;36m'
+[ -z "${WHITE:-}" ] && WHITE='\033[1;37m'
+[ -z "${GRAY:-}" ] && GRAY='\033[0;90m'
+[ -z "${NC:-}" ] && NC='\033[0m'
 
 # TTY_INPUT 降级
-[ -z "$TTY_INPUT" ] && TTY_INPUT="/dev/stdin"
-[ -z "$AUTO_CONFIRM_ALL" ] && AUTO_CONFIRM_ALL=0
-[ -z "$NO_PROMPT" ] && NO_PROMPT=0
-[ -z "$CONFIG_DIR" ] && CONFIG_DIR="$HOME/.openclaw"
+[ -z "${TTY_INPUT:-}" ] && TTY_INPUT="/dev/stdin"
+[ -z "${AUTO_CONFIRM_ALL:-}" ] && AUTO_CONFIRM_ALL=0
+[ -z "${NO_PROMPT:-}" ] && NO_PROMPT=0
+[ -z "${CONFIG_DIR:-}" ] && CONFIG_DIR="$HOME/.openclaw"
 
 # 路径
 CONFIG_DIR="$HOME/.openclaw"
@@ -56,7 +56,7 @@ print_header() {
     clear 2>/dev/null || true
     echo -e "${CYAN}"
     echo "  ╔═══════════════════════════════════════════╗"
-    echo "  ║   🦞 OpenClaw 配置中心                     ║"
+    echo "  ║   🐵 大圣之怒 · 配置中心                     ║"
     echo "  ╚═══════════════════════════════════════════╝"
     echo -e "${NC}"
 }
@@ -356,6 +356,112 @@ status_pixel_house() {
     fi
 }
 
+# 9. 网站集成
+menu_website() {
+    print_header
+    echo -e "${WHITE}网站集成 - SSH 隧道与远程连接${NC}"
+    echo ""
+    echo -e "  服务器: ${WEBSITE_SERVER_IP:-60.205.58.39}"
+    echo -e "  域名:   ${WEBSITE_DOMAIN:-monkeykingfury.com}"
+    echo -e "  端口:   ${WEBSITE_PORT:-8787}"
+    echo -e "  Dashboard 端口: ${WEBSITE_DASHBOARD_PORT:-13145}"
+    echo ""
+    echo "  [1] 写入网站环境变量"
+    echo "  [2] 启动 SSH 隧道"
+    echo "  [3] 查看 SSH 隧道状态"
+    echo "  [4] 停止 SSH 隧道"
+    echo "  [5] 测试网站连接"
+    echo "  [0] 返回主菜单"
+    echo ""
+
+    read -p "请选择 [0-5]: " choice < "$TTY_INPUT"
+    case "$choice" in
+        1) write_website_env ;;
+        2) ssh_tunnel_start ;;
+        3) ssh_tunnel_status ;;
+        4) ssh_tunnel_stop ;;
+        5)
+            log_info "测试连接 ${WEBSITE_DOMAIN:-monkeykingfury.com}..."
+            if curl -fsSL --connect-timeout 5 --max-time 10 "https://${WEBSITE_DOMAIN:-monkeykingfury.com}" >/dev/null 2>&1; then
+                log_info "网站连接正常"
+            else
+                log_warn "网站连接失败"
+            fi
+            ;;
+        0) return ;;
+    esac
+    press_enter
+}
+
+# A. Hermes 代理
+menu_hermes() {
+    print_header
+    echo -e "${WHITE}Hermes 代理 - AI 智能体网关管理${NC}"
+    echo ""
+
+    if command -v hermes &>/dev/null; then
+        echo -e "  ${GREEN}✅${NC} Hermes: $(hermes --version 2>&1 | head -1)"
+    else
+        echo -e "  ${YELLOW}⚠️${NC} Hermes: 未安装"
+    fi
+    echo ""
+
+    echo "  [1] 安装 Hermes"
+    echo "  [2] 运行配置向导"
+    echo "  [3] 配置模型"
+    echo "  [4] 启动 Gateway"
+    echo "  [5] 停止 Gateway"
+    echo "  [6] 查看状态"
+    echo "  [0] 返回主菜单"
+    echo ""
+
+    read -p "请选择 [0-6]: " choice < "$TTY_INPUT"
+    case "$choice" in
+        1) install_hermes ;;
+        2)
+            command -v hermes &>/dev/null || { log_warn "请先安装 Hermes"; press_enter; return; }
+            hermes setup 2>&1 || true
+            ;;
+        3)
+            command -v hermes &>/dev/null || { log_warn "请先安装 Hermes"; press_enter; return; }
+            hermes model 2>&1 || true
+            ;;
+        4) start_hermes_gateway ;;
+        5) stop_hermes_gateway ;;
+        6) status_hermes ;;
+        0) return ;;
+    esac
+    press_enter
+}
+
+# B. 路由与档位
+menu_routing() {
+    print_header
+    echo -e "${WHITE}路由与档位 - Token 消耗控制与安全策略${NC}"
+    echo ""
+    show_routing_status
+    echo ""
+
+    echo "  [1] 设置基础档 (low)    - 5h/100次, 60万Token"
+    echo "  [2] 设置扩展档 (medium)  - 5h/300次, 240万Token"
+    echo "  [3] 设置超级档 (high)   - 请求不限, 600万Token"
+    echo "  [4] 不限 (none)         - 无限制"
+    echo "  [5] 刷新状态"
+    echo "  [0] 返回主菜单"
+    echo ""
+
+    read -p "请选择 [0-5]: " choice < "$TTY_INPUT"
+    case "$choice" in
+        1) configure_model_routing "low" ;;
+        2) configure_model_routing "medium" ;;
+        3) configure_model_routing "high" ;;
+        4) configure_model_routing "none" ;;
+        5) show_routing_status ;;
+        0) return ;;
+    esac
+    press_enter
+}
+
 # ================================ 主菜单 ================================
 
 show_all_services() {
@@ -382,6 +488,13 @@ show_all_services() {
         echo -e "  ${GREEN}✅${NC} 健康检查 (13146): 运行中"
     else
         echo -e "  ${GRAY}--${NC} 健康检查 (13146): 未运行"
+    fi
+
+    # Hermes
+    if command -v hermes &>/dev/null; then
+        echo -e "  ${GREEN}✅${NC} Hermes: $(hermes --version 2>&1 | head -1)"
+    else
+        echo -e "  ${GRAY}--${NC} Hermes: 未安装"
     fi
 
     # Node.js
@@ -424,18 +537,17 @@ main_menu() {
         show_all_services
         echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
         echo ""
-        echo "  [1] 模型配置"
-        echo "  [2] 插件管理"
-        echo "  [3] 技能管理"
-        echo "  [4] 工作档案"
-        echo "  [5] Token 档位"
-        echo "  [6] 服务管理"
-        echo "  [7] 配置修复"
-        echo "  [8] 像素小屋工作台"
+        echo "  [1] 模型配置          [6] 服务管理"
+        echo "  [2] 插件管理          [7] 配置修复"
+        echo "  [3] 技能管理          [8] 像素小屋工作台"
+        echo "  [4] 工作档案          [9] 网站集成"
+        echo "  [5] Token 档位        [A] Hermes 代理"
+        echo "                        [B] 路由与档位"
+        echo ""
         echo "  [0] 退出"
         echo ""
 
-        read -p "请选择 [0-8]: " choice < "$TTY_INPUT"
+        read -p "请选择 [0-9,A,B]: " choice < "$TTY_INPUT"
         case "$choice" in
             1) menu_model_config ;;
             2) menu_plugin_manager ;;
@@ -445,6 +557,9 @@ main_menu() {
             6) menu_service_manager ;;
             7) menu_repair_config ;;
             8) menu_pixel_house ;;
+            9) menu_website ;;
+            A|a) menu_hermes ;;
+            B|b) menu_routing ;;
             0) echo -e "${GREEN}再见！${NC}"; exit 0 ;;
             *) echo -e "${RED}无效选择${NC}"; press_enter ;;
         esac

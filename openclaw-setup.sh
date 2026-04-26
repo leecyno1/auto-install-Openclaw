@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 # ╔══════════════════════════════════════════════════════════════════╗
-# ║   🦞 OpenClaw 统一入口工具 v2.0.0                                 ║
+# ║   🐵 大圣之怒 · 统一入口工具 v2.0.0                                 ║
 # ║   开箱即用的 AI 智能体工作台管理                                   ║
 # ╚══════════════════════════════════════════════════════════════════╝
 #
@@ -18,7 +18,7 @@ CONFIG_DIR="$HOME/.openclaw"
 # ================================ 帮助 ================================
 show_help() {
     cat << EOF
-${CYAN}🦞 OpenClaw 统一入口工具${NC}
+${CYAN}🐵 大圣之怒 · 统一入口工具${NC}
 
 ${GREEN}用法:${NC} openclaw-setup [命令] [选项]
 
@@ -33,6 +33,17 @@ ${GREEN}服务管理:${NC}
   status             查看所有服务状态
   gateway [操作]     管理 Gateway (start/stop/restart/status)
 
+${GREEN}网站集成:${NC}
+  tunnel [操作]      管理 SSH 隧道 (start/stop/status)
+  website            配置网站集成 (monkeykingfury.com)
+
+${GREEN}Hermes 代理:${NC}
+  hermes [操作]      管理 Hermes 代理 (install/setup/start/stop/status/model)
+
+${GREEN}路由与档位:${NC}
+  routing [档位]     配置 Token 档位 (low/medium/high/none)
+  routing status     查看当前路由状态
+
 ${GREEN}工具:${NC}
   persona            设置/切换工作档案
   skills [档位]      同步技能包 (low/medium/high)
@@ -44,20 +55,22 @@ ${GREEN}安装选项:${NC}
   --no-custom                  仅安装官方版本，跳过自定义层
   --persona <role>             指定工作档案
   --rule-profile <level>       指定 Token 档位
+  --model <name>               指定默认模型
+  --api-key <key>              设置 API 密钥
+  --api-url <url>              设置 API Base URL
+  --api-provider <name>        设置 API Provider
 
-${GREEN}doctor 选项:${NC}
-  --fix              自动修复发现的问题
-  --status           仅显示状态，不修复
+${GREEN}智能体选择:${NC}
+  两者一般只装一个，按需选择：
+  openclaw-setup install                    # 安装龙虾（OpenClaw）
+  openclaw-setup hermes install             # 安装 Hermes
 
 ${GREEN}示例:${NC}
-  openclaw-setup install                    # 交互式安装
-  openclaw-setup install --auto             # 全自动安装
-  openclaw-setup install --no-custom        # 仅安装官方版本
-  openclaw-setup install --persona warrior  # 安装 + 设置工程档案
-  openclaw-setup config                     # 打开配置菜单
-  openclaw-setup doctor --fix               # 自动修复
-  openclaw-setup workbench start            # 启动工作台
-  openclaw-setup skills medium              # 同步扩展档技能
+  openclaw-setup install --auto --model gpt-4o --api-key sk-xxx
+  openclaw-setup hermes install             # 安装 Hermes
+  openclaw-setup hermes setup               # 运行 Hermes 配置向导
+  openclaw-setup tunnel start               # 启动 SSH 隧道
+  openclaw-setup rt medium                  # 设置扩展档
 EOF
 }
 
@@ -72,7 +85,8 @@ cmd_install() {
         case "$arg" in
             --auto|--auto-confirm-all) install_args+=(--auto-confirm-all) ;;
             --no-custom)               install_args+=(--no-custom) ;;
-            --persona|--rule-profile|--version|--gateway-bind|--gateway-port)
+            --persona|--rule-profile|--version|--gateway-bind|--gateway-port|\
+            --model|--api-key|--api-url|--api-provider)
                 install_args+=("$arg" "${args[$((i+1))]:-}")
                 i=$((i + 1))
                 ;;
@@ -80,7 +94,6 @@ cmd_install() {
         esac
         i=$((i + 1))
     done
-
     echo -e "${GREEN}🚀 开始安装 OpenClaw...${NC}"
     bash "$SCRIPT_DIR/install.sh" "${install_args[@]}"
 }
@@ -107,11 +120,8 @@ cmd_doctor() {
     for arg in "$@"; do
         case "$arg" in --fix) fix=true ;; --status) status_only=true ;; esac
     done
-
     echo -e "${CYAN}🏥 OpenClaw 健康检查${NC}"
     echo ""
-
-    # Node.js
     if command -v node &>/dev/null; then
         local nv; nv=$(node -v | sed 's/^v//' | cut -d'.' -f1)
         [ "$nv" -ge 22 ] 2>/dev/null && echo -e "  ${GREEN}✅${NC} Node.js: $(node -v)" \
@@ -119,15 +129,16 @@ cmd_doctor() {
     else
         echo -e "  ${RED}❌${NC} Node.js: 未安装"
     fi
-
-    # OpenClaw
     if command -v openclaw &>/dev/null; then
         echo -e "  ${GREEN}✅${NC} OpenClaw: $(openclaw --version 2>/dev/null || echo 'installed')"
     else
         echo -e "  ${RED}❌${NC} OpenClaw: 未安装"
     fi
-
-    # 端口
+    if command -v hermes &>/dev/null; then
+        echo -e "  ${GREEN}✅${NC} Hermes: $(hermes --version 2>&1 | head -1)"
+    else
+        echo -e "  ${YELLOW}⚠️${NC} Hermes: 未安装"
+    fi
     for port_name in "13145:Gateway" "13146:健康检查" "19000:工作台"; do
         local port="${port_name%%:*}" name="${port_name#*:}"
         if lsof -i :"$port" &>/dev/null 2>&1; then
@@ -136,25 +147,14 @@ cmd_doctor() {
             echo -e "  ${YELLOW}⚠️${NC} 端口 $port ($name): 未监听"
         fi
     done
-
-    # 配置文件
     [ -f "$CONFIG_DIR/env" ] && echo -e "  ${GREEN}✅${NC} 配置文件: 存在" \
         || echo -e "  ${YELLOW}⚠️${NC} 配置文件: 不存在"
-
     echo ""
-
-    if [ "$status_only" = true ]; then
-        return
-    fi
-
+    if [ "$status_only" = true ]; then return; fi
     if [ "$fix" = true ]; then
         echo -e "${GREEN}🔧 自动修复中...${NC}"
-        if command -v openclaw &>/dev/null; then
-            openclaw doctor --non-interactive 2>&1 || true
-        fi
-        if [ -f "$CONFIG_DIR/config-menu.sh" ]; then
-            bash "$CONFIG_DIR/config-menu.sh" --repair-config 2>&1 || true
-        fi
+        if command -v openclaw &>/dev/null; then openclaw doctor --non-interactive 2>&1 || true; fi
+        if [ -f "$CONFIG_DIR/config-menu.sh" ]; then bash "$CONFIG_DIR/config-menu.sh" --repair-config 2>&1 || true; fi
         echo -e "${GREEN}✅ 修复完成${NC}"
     fi
 }
@@ -164,46 +164,30 @@ cmd_workbench() {
     local wb_script=""
     [ -f "$CONFIG_DIR/lobster-world.sh" ] && wb_script="$CONFIG_DIR/lobster-world.sh"
     [ -z "$wb_script" ] && [ -f "$SCRIPT_DIR/scripts/lobster-world.sh" ] && wb_script="$SCRIPT_DIR/scripts/lobster-world.sh"
-
     if [ -z "$wb_script" ]; then
         echo -e "${YELLOW}⚠️ 工作台未安装，正在安装...${NC}"
-        if [ -f "$CONFIG_DIR/config-menu.sh" ]; then
-            bash "$CONFIG_DIR/config-menu.sh" --install-pixel-house
-        else
-            bash "$SCRIPT_DIR/config-menu.sh" --install-pixel-house
-        fi
+        if [ -f "$CONFIG_DIR/config-menu.sh" ]; then bash "$CONFIG_DIR/config-menu.sh" --install-pixel-house
+        else bash "$SCRIPT_DIR/config-menu.sh" --install-pixel-house; fi
         [ -f "$CONFIG_DIR/lobster-world.sh" ] && wb_script="$CONFIG_DIR/lobster-world.sh"
         [ -z "$wb_script" ] && [ -f "$SCRIPT_DIR/scripts/lobster-world.sh" ] && wb_script="$SCRIPT_DIR/scripts/lobster-world.sh"
     fi
-
-    if [ -n "$wb_script" ]; then
-        bash "$wb_script" "$action"
-    else
-        echo -e "${RED}❌ 工作台脚本未找到${NC}"
-        exit 1
-    fi
+    if [ -n "$wb_script" ]; then bash "$wb_script" "$action"
+    else echo -e "${RED}❌ 工作台脚本未找到${NC}"; exit 1; fi
 }
 
 cmd_status() {
     echo -e "${CYAN}📊 OpenClaw 服务状态${NC}"
     echo ""
-
-    # OpenClaw
-    if command -v openclaw &>/dev/null; then
-        openclaw gateway status 2>&1 || true
-    else
-        echo -e "  ${RED}❌${NC} OpenClaw: 未安装"
-    fi
+    if command -v openclaw &>/dev/null; then openclaw gateway status 2>&1 || true
+    else echo -e "  ${RED}❌${NC} OpenClaw: 未安装"; fi
     echo ""
-
-    # 端口
+    if command -v hermes &>/dev/null; then echo -e "  ${GREEN}✅${NC} Hermes: $(hermes --version 2>&1 | head -1)"
+    else echo -e "  ${YELLOW}⚠️${NC} Hermes: 未安装"; fi
+    echo ""
     for port_name in "13145:Gateway" "13146:健康检查" "19000:工作台"; do
         local port="${port_name%%:*}" name="${port_name#*:}"
-        if lsof -i :"$port" &>/dev/null 2>&1; then
-            echo -e "  ${GREEN}✅${NC} $name (:$port): 运行中"
-        else
-            echo -e "  ${RED}❌${NC} $name (:$port): 未运行"
-        fi
+        if lsof -i :"$port" &>/dev/null 2>&1; then echo -e "  ${GREEN}✅${NC} $name (:$port): 运行中"
+        else echo -e "  ${RED}❌${NC} $name (:$port): 未运行"; fi
     done
     echo ""
 }
@@ -211,63 +195,93 @@ cmd_status() {
 cmd_gateway() {
     local action="${1:-status}"
     command -v openclaw &>/dev/null || { echo -e "${RED}❌ OpenClaw 未安装${NC}"; exit 1; }
-
     case "$action" in
-        start|stop|restart|status)
-            openclaw gateway "$action" 2>&1 || true
-            ;;
-        *)
-            echo -e "${RED}未知操作: $action${NC}"
-            echo "用法: openclaw-setup gateway [start|stop|restart|status]"
-            ;;
+        start|stop|restart|status) openclaw gateway "$action" 2>&1 || true ;;
+        *) echo -e "${RED}未知操作: $action${NC}"; echo "用法: openclaw-setup gateway [start|stop|restart|status]" ;;
     esac
 }
 
 cmd_persona() {
-    if [ -n "${1:-}" ]; then
-        echo -e "${GREEN}设置工作档案: $1${NC}"
-        export OPENCLAW_PERSONA_ROLE="$1"
-    fi
-    if [ -f "$CONFIG_DIR/config-menu.sh" ]; then
-        bash "$CONFIG_DIR/config-menu.sh"
-    else
-        bash "$SCRIPT_DIR/config-menu.sh"
-    fi
+    if [ -n "${1:-}" ]; then echo -e "${GREEN}设置工作档案: $1${NC}"; export OPENCLAW_PERSONA_ROLE="$1"; fi
+    if [ -f "$CONFIG_DIR/config-menu.sh" ]; then bash "$CONFIG_DIR/config-menu.sh"
+    else bash "$SCRIPT_DIR/config-menu.sh"; fi
 }
 
 cmd_skills() {
     local level="${1:-medium}"
-    echo -e "${GREEN}同步技能包 (档位: $level)${NC}"
-
-    local skills_dir="$SCRIPT_DIR/skills/default"
-    [ -d "$skills_dir" ] || { echo -e "${RED}❌ 技能包目录不存在${NC}"; exit 1; }
-
-    mkdir -p "$CONFIG_DIR/skills"
-    local skill_list
-    skill_list="$(get_profile_skill_list "$level")"
-
-    local copied=0 skipped=0
-    for skill in $skill_list; do
-        local src="$skills_dir/$skill" dst="$CONFIG_DIR/skills/$skill"
-        [ -d "$src" ] || continue
-        if [ -d "$dst" ]; then skipped=$((skipped + 1)); continue; fi
-        cp -a "$src" "$dst" 2>/dev/null && copied=$((copied + 1))
-    done
-
-    log_info "技能同步完成: 新增 ${copied}, 保留 ${skipped}"
+    RULE_PROFILE_SELECTED="$level" sync_skills "$level"
 }
 
 cmd_backup() {
     local backup_dir="$CONFIG_DIR/backups/$(date +%Y%m%d_%H%M%S)"
     echo -e "${GREEN}💾 备份配置到: $backup_dir${NC}"
     mkdir -p "$backup_dir"
-
     for item in env openclaw.json agents policy skills channels plugins; do
         [ -e "$CONFIG_DIR/$item" ] && cp -r "$CONFIG_DIR/$item" "$backup_dir/" 2>/dev/null || true
     done
-
     log_info "备份完成: $backup_dir"
     echo -e "${YELLOW}💡 恢复: cp -r $backup_dir/* $CONFIG_DIR/${NC}"
+}
+
+cmd_tunnel() {
+    local action="${1:-status}"
+    local remote_port="${2:-${WEBSITE_DASHBOARD_PORT:-13145}}"
+    local local_port="${3:-${WEBSITE_DASHBOARD_PORT:-13145}}"
+    case "$action" in
+        start)  ssh_tunnel_start "$remote_port" "$local_port" ;;
+        stop)   ssh_tunnel_stop "$remote_port" ;;
+        status) ssh_tunnel_status "$remote_port" ;;
+        *) echo -e "${RED}未知操作: $action${NC}"; echo "用法: openclaw-setup tunnel [start|stop|status]" ;;
+    esac
+}
+
+cmd_website() {
+    echo -e "${CYAN}🌐 网站集成配置${NC}"
+    echo ""
+    echo -e "  服务器: ${WEBSITE_SERVER_IP:-60.205.58.39}"
+    echo -e "  域名:   ${WEBSITE_DOMAIN:-monkeykingfury.com}"
+    echo -e "  端口:   ${WEBSITE_PORT:-8787}"
+    echo -e "  Dashboard: ${WEBSITE_DASHBOARD_PORT:-13145}"
+    echo ""
+    echo "  [1] 写入网站环境变量"
+    echo "  [2] 启动 SSH 隧道"
+    echo "  [3] 查看 SSH 隧道状态"
+    echo "  [4] 停止 SSH 隧道"
+    echo "  [5] 测试网站连接"
+    echo "  [0] 返回"
+    echo ""
+    read -p "请选择 [0-5]: " choice < "${TTY_INPUT:-/dev/stdin}"
+    case "$choice" in
+        1) write_website_env ;;
+        2) ssh_tunnel_start ;;
+        3) ssh_tunnel_status ;;
+        4) ssh_tunnel_stop ;;
+        5) log_info "测试连接 ${WEBSITE_DOMAIN:-monkeykingfury.com}..."; curl -fsSL --connect-timeout 5 --max-time 10 "https://${WEBSITE_DOMAIN:-monkeykingfury.com}" >/dev/null 2>&1 && log_info "连接正常" || log_warn "连接失败" ;;
+        0) return ;;
+    esac
+}
+
+cmd_hermes() {
+    local action="${1:-status}"
+    case "$action" in
+        install) install_hermes ;;
+        setup) command -v hermes &>/dev/null || { echo -e "${RED}❌ Hermes 未安装${NC}"; return 1; }; hermes setup 2>&1 ;;
+        model) command -v hermes &>/dev/null || { echo -e "${RED}❌ Hermes 未安装${NC}"; return 1; }; if [ -n "${2:-}" ]; then configure_hermes_model "$2" "${3:-}"; else hermes model 2>&1; fi ;;
+        start) start_hermes_gateway ;;
+        stop) stop_hermes_gateway ;;
+        status) status_hermes ;;
+        *) echo -e "${RED}未知操作: $action${NC}"; echo "用法: openclaw-setup hermes [install|setup|start|stop|status|model]" ;;
+    esac
+}
+
+cmd_routing() {
+    local action="${1:-status}"
+    case "$action" in
+        low|medium|high|none) configure_model_routing "$action" ;;
+        status|show) show_routing_status ;;
+        set) configure_model_routing "${2:-}" ;;
+        *) echo -e "${RED}未知操作: $action${NC}"; echo "用法: openclaw-setup routing [low|medium|high|none|status|set]" ;;
+    esac
 }
 
 # ================================ 主入口 ================================
@@ -275,7 +289,6 @@ cmd_backup() {
 main() {
     local cmd="${1:-help}"
     shift 2>/dev/null || true
-
     case "$cmd" in
         install|i)      cmd_install "$@" ;;
         config|c)       cmd_config ;;
@@ -287,13 +300,12 @@ main() {
         persona|p)      cmd_persona "$@" ;;
         skills|sk)      cmd_skills "$@" ;;
         backup|b)       cmd_backup ;;
+        tunnel|t)       cmd_tunnel "$@" ;;
+        website|web)    cmd_website ;;
+        hermes|h)       cmd_hermes "$@" ;;
+        routing|rt)     cmd_routing "$@" ;;
         help|--help|-h) show_help ;;
-        *)
-            echo -e "${RED}未知命令: $cmd${NC}"
-            echo ""
-            show_help
-            exit 1
-            ;;
+        *) echo -e "${RED}未知命令: $cmd${NC}"; echo ""; show_help; exit 1 ;;
     esac
 }
 
