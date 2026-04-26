@@ -316,6 +316,10 @@ main() {
     # Phase 3: 自定义增强层（可选）
     if [ "$ENABLE_CUSTOM_LAYERS" = "1" ]; then
         log_step "Phase 3: 自定义增强层"
+
+        # 配置兼容性检查和修复
+        fix_openclaw_config
+
         if [ "$AUTO_CONFIRM_ALL" = "1" ] || [ "$NO_PROMPT" = "1" ]; then
             # 全自动模式: 应用所有默认配置
             if [ -n "$PERSONA_ROLE_SELECTED" ]; then
@@ -1184,6 +1188,57 @@ stop_hermes_gateway() {
 status_hermes() {
     command -v hermes &>/dev/null || { log_warn "Hermes 未安装"; return 1; }
     hermes status 2>&1
+}
+
+# ================================ 配置兼容性修复 ================================
+
+# 修复旧版配置文件兼容性问题
+fix_openclaw_config() {
+    local config_file="${CONFIG_DIR:-$HOME/.openclaw}/openclaw.json"
+
+    [ -f "$config_file" ] || return 0
+
+    log_step "检查配置文件兼容性..."
+
+    # 检查是否有 python3
+    command -v python3 &>/dev/null || { log_warn "python3 未安装，跳过配置检查"; return 0; }
+
+    # 使用 Python 修复无效配置
+    python3 << 'PYEOF'
+import json
+import sys
+import os
+
+config_file = os.path.expanduser("~/.openclaw/openclaw.json")
+if not os.path.exists(config_file):
+    sys.exit(0)
+
+with open(config_file, 'r') as f:
+    config = json.load(f)
+
+fixed = False
+
+# 修复 channels.feishu - 移除无效属性
+if 'channels' in config and 'feishu' in config['channels']:
+    feishu = config['channels']['feishu']
+    valid_keys = {'enabled', 'dmPolicy', 'groupPolicy', 'allowFrom', 'groupAllowFrom'}
+    invalid_keys = set(feishu.keys()) - valid_keys
+    if invalid_keys:
+        print(f"  移除 feishu 无效属性: {', '.join(invalid_keys)}")
+        config['channels']['feishu'] = {k: v for k, v in feishu.items() if k in valid_keys}
+        fixed = True
+
+# 备份并保存
+if fixed:
+    backup = config_file + '.bak.auto-fix'
+    with open(backup, 'w') as f:
+        json.dump(config, f, indent=2)
+    print(f"  配置已修复，备份到: {backup}")
+else:
+    print("  配置检查通过，无需修复")
+PYEOF
+
+    log_info "配置兼容性检查完成"
 }
 
 # ================================ 模型路由管理 ================================
