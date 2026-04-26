@@ -643,7 +643,7 @@ ssh_tunnel_status() {
 
 # ================================ Hermes 代理管理 ================================
 
-# 安装 Hermes（官方方式：pip install）
+# 安装 Hermes（从 GitHub 源码安装）
 install_hermes() {
     log_step "安装 Hermes Agent..."
 
@@ -666,9 +666,28 @@ install_hermes() {
         return 0
     fi
 
-    # pip 安装
-    log_info "通过 pip 安装 hermes-agent..."
-    python3 -m pip install --user hermes-agent 2>&1 || {
+    # 检查 git
+    if ! command -v git &>/dev/null; then
+        log_error "git 未安装，无法从 GitHub 克隆 Hermes"
+        return 1
+    fi
+
+    # 从 GitHub 克隆并安装
+    local install_dir="/tmp/hermes-agent"
+    log_info "从 GitHub 克隆 Hermes Agent..."
+    if [ -d "$install_dir" ]; then
+        rm -rf "$install_dir"
+    fi
+
+    if ! git clone https://github.com/nousresearch/hermes-agent.git "$install_dir" 2>&1; then
+        log_error "克隆 Hermes 仓库失败，请检查网络"
+        return 1
+    fi
+
+    # pip 安装（支持 Ubuntu 24.04+ 的外部管理环境）
+    log_info "安装 Hermes Agent..."
+    local pip_opts="--break-system-packages --ignore-installed"
+    cd "$install_dir" && python3 -m pip install $pip_opts -e . 2>&1 || {
         log_error "Hermes 安装失败，请检查 pip 权限"
         return 1
     }
@@ -677,7 +696,8 @@ install_hermes() {
     if command -v hermes &>/dev/null; then
         log_info "Hermes 安装成功: $(hermes --version 2>&1 | head -1)"
     else
-        log_warn "Hermes 已安装但不在 PATH 中，请添加 ~/.local/bin 到 PATH"
+        log_warn "Hermes 已安装但不在 PATH 中，请添加 /usr/local/bin 到 PATH"
+        return 1
     fi
 }
 
@@ -685,17 +705,29 @@ install_hermes() {
 configure_hermes_model() {
     local model="${1:-}"
     local provider="${2:-}"
+    local api_url="${3:-}"
+    local api_key="${4:-}"
 
     command -v hermes &>/dev/null || { log_error "Hermes 未安装"; return 1; }
 
     if [ -n "$model" ]; then
         log_step "配置 Hermes 模型: $model"
-        hermes model set "$model" 2>&1 || true
+        hermes config set model.default "$model" 2>&1 || true
     fi
 
     if [ -n "$provider" ]; then
         log_step "配置 Hermes Provider: $provider"
-        hermes model provider "$provider" 2>&1 || true
+        hermes config set model.provider "$provider" 2>&1 || true
+    fi
+
+    if [ -n "$api_url" ]; then
+        log_step "配置 Hermes API URL: $api_url"
+        hermes config set api.base_url "$api_url" 2>&1 || true
+    fi
+
+    if [ -n "$api_key" ]; then
+        log_step "配置 Hermes API Key"
+        hermes config set api.key "$api_key" 2>&1 || true
     fi
 }
 
