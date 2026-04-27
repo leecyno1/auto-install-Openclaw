@@ -417,6 +417,135 @@ sync_skills() {
     echo -e "${GREEN}[INFO]${NC} 技能同步完成: 新增 ${copied}, 保留 ${skipped}, 缺失 ${missing}"
 }
 
+# ================================ 技能包独立更新 ================================
+
+# 从上游仓库更新单个技能包
+update_skill_individual() {
+    local skill_name="$1"
+    local skills_dir="${2:-$HOME/.openclaw/skills}"
+    local skill_dir="$skills_dir/$skill_name"
+
+    if [ ! -d "$skill_dir" ]; then
+        echo -e "${YELLOW}⚠️ 技能包未安装: $skill_name${NC}"
+        return 1
+    fi
+
+    # 读取来源信息（优先 origin.json，其次查询注册表）
+    local source_url update_url
+    if [ -f "$skill_dir/.clawhub/origin.json" ]; then
+        source_url="$(python3 -c "import json; print(json.load(open('$skill_dir/.clawhub/origin.json')).get('source', ''))" 2>/dev/null)"
+        update_url="$(python3 -c "import json; print(json.load(open('$skill_dir/.clawhub/origin.json')).get('update_url', ''))" 2>/dev/null)"
+    else
+        local source_info
+        source_info="$(lookup_skill_source "$skill_name")"
+        IFS='|' read -r _ source_url update_url _ _ <<< "$source_info"
+    fi
+
+    if [ -z "$source_url" ] || [ -z "$update_url" ]; then
+        echo -e "${RED}❌ 无法确定技能包来源: $skill_name${NC}"
+        return 1
+    fi
+
+    echo -e "${CYAN}📦 更新技能包: $skill_name${NC}"
+    echo -e "${GRAY}   来源: $source_url${NC}"
+
+    # 判断来源类型
+    local tmp_dir backup_dir
+    tmp_dir="$(mktemp -d)"
+    backup_dir="$(mktemp -d)"
+
+    # 备份现有技能包
+    cp -a "$skill_dir" "$backup_dir/$skill_name"
+
+    if echo "$source_url" | grep -q "github.com/leecyno1/auto-install-Openclaw"; then
+        # 本仓库技能：从 ZIP 下载更新
+        local zip_url="${update_url}/archive/refs/heads/main.zip"
+        local zip_file="$tmp_dir/skill.zip"
+
+        if curl -fsSL --connect-timeout 15 --max-time 120 -o "$zip_file" "$zip_url" 2>/dev/null; then
+            local extract_dir="$tmp_dir/extract"
+            mkdir -p "$extract_dir"
+            if unzip -q "$zip_file" -d "$extract_dir" 2>/dev/null; then
+                local src_dir="$extract_dir/auto-install-openclaw-main/skills/default/$skill_name"
+                if [ -d "$src_dir" ]; then
+                    rm -rf "$skill_dir"
+                    cp -a "$src_dir" "$skill_dir"
+                    echo -e "${GREEN}✅ 更新成功: $skill_name${NC}"
+                    rm -rf "$tmp_dir" "$backup_dir"
+                    return 0
+                fi
+            fi
+        fi
+    elif echo "$source_url" | grep -q "github.com/openclaw/skills"; then
+        # 官方 skills 仓库：需要克隆或拉取
+        local repo_url="https://github.com/openclaw/skills.git"
+        local skill_path="skills/$skill_name"
+
+        if check_command git; then
+            local clone_dir="$tmp_dir/skills-repo"
+            if git clone --depth 1 --filter=blob:none --sparse "$repo_url" "$clone_dir" 2>/dev/null; then
+                cd "$clone_dir" && git sparse-checkout set "$skill_path" 2>/dev/null
+                if [ -d "$clone_dir/$skill_path" ]; then
+                    rm -rf "$skill_dir"
+                    cp -a "$clone_dir/$skill_path" "$skill_dir"
+                    echo -e "${GREEN}✅ 更新成功: $skill_name${NC}"
+                    rm -rf "$tmp_dir" "$backup_dir"
+                    return 0
+                fi
+            fi
+        fi
+    fi
+
+    # 更新失败，恢复备份
+    echo -e "${YELLOW}⚠️ 更新失败，恢复备份: $skill_name${NC}"
+    rm -rf "$skill_dir"
+    cp -a "$backup_dir/$skill_name" "$skill_dir"
+    rm -rf "$tmp_dir" "$backup_dir"
+    return 1
+}
+
+# 批量更新所有技能包（基于元数据）
+update_all_skills_from_source() {
+    local skills_dir="${1:-$HOME/.openclaw/skills}"
+
+    if [ ! -d "$skills_dir" ]; then
+        echo -e "${YELLOW}⚠️ 技能包目录不存在: $skills_dir${NC}"
+        return 1
+    fi
+
+    log_step "从上游仓库批量更新技能包..."
+    echo ""
+
+    local success=0 failed=0 skipped=0 total=0
+
+    for skill_dir in "$skills_dir"/*/; do
+        [ -d "$skill_dir" ] || continue
+        local skill_name
+        skill_name="$(basename "$skill_dir")"
+        total=$((total + 1))
+
+        echo -e "${GRAY}[$total] 检查: $skill_name${NC}"
+
+        if update_skill_individual "$skill_name" "$skills_dir" 2>/dev/null; then
+            success=$((success + 1))
+        else
+            # 区分是未找到来源还是更新失败
+            if [ -f "$skill_dir/.clawhub/origin.json" ] || lookup_skill_source "$skill_name" >/dev/null 2>&1; then
+                failed=$((failed + 1))
+            else
+                skipped=$((skipped + 1))
+                echo -e "${GRAY}   跳过: 无来源信息${NC}"
+            fi
+        fi
+        echo ""
+    done
+
+    echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo -e "${GREEN}✅ 更新完成${NC}"
+    echo -e "   总计: $total | 成功: $success | 失败: $failed | 跳过: $skipped"
+    echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+}
+
 # ================================ 技能包元数据增强 ================================
 
 # 技能包来源注册表（已知技能包的上游仓库和更新地址）
