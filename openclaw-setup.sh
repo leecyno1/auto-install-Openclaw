@@ -51,6 +51,9 @@ ${GREEN}路由与档位:${NC}
 ${GREEN}工具:${NC}
   persona            设置/切换工作档案
   skills [档位]      同步技能包 (low/medium/high)
+  skills enrich      补充技能包元数据（来源/版本）
+  skills update      从上游仓库更新所有技能包
+  skills show-source 查看单个技能包来源
   backup             备份配置和数据
   help               显示此帮助
 
@@ -212,8 +215,30 @@ cmd_persona() {
 }
 
 cmd_skills() {
-    local level="${1:-medium}"
-    RULE_PROFILE_SELECTED="$level" sync_skills "$level"
+    local action="${1:-medium}"
+    case "$action" in
+        low|medium|high|none)
+            RULE_PROFILE_SELECTED="$action" sync_skills "$action"
+            ;;
+        enrich)
+            enrich_all_skills_metadata "${2:-}"
+            ;;
+        update)
+            update_all_skills_from_source "${2:-}"
+            ;;
+        show-source|source)
+            local skill_name="${2:-}"
+            if [ -z "$skill_name" ]; then
+                echo -e "${RED}用法: openclaw-setup skills show-source <skill_name>${NC}"
+                return 1
+            fi
+            show_skill_source "$skill_name" "${3:-}"
+            ;;
+        *)
+            # 默认行为：同步技能
+            RULE_PROFILE_SELECTED="$action" sync_skills "$action"
+            ;;
+    esac
 }
 
 cmd_backup() {
