@@ -350,6 +350,69 @@ main() {
         log_info "批量部署配置已写入"
     fi
 
+    # 配置 Gateway API Server（外网访问支持）
+    log_step "配置 Gateway API Server..."
+    local bind_mode
+    bind_mode="$(normalize_gateway_bind_mode "${GATEWAY_BIND:-lan}")"
+    local display_host
+    display_host="$(get_gateway_bind_display_host "$bind_mode" "")"
+
+    # 配置 Gateway 绑定模式
+    openclaw config set gateway.bind "$bind_mode" 2>/dev/null || true
+    openclaw config set gateway.port "${GATEWAY_PORT:-13145}" 2>/dev/null || true
+
+    # 配置 CORS 允许来源（支持外网访问）
+    local server_ip
+    server_ip="$(curl -fsSL --connect-timeout 5 --max-time 10 https://api.ipify.org 2>/dev/null || echo '')"
+    local allowed_origins="http://127.0.0.1:${GATEWAY_PORT:-13145},https://127.0.0.1:${GATEWAY_PORT:-13145},http://localhost:${GATEWAY_PORT:-13145},https://localhost:${GATEWAY_PORT:-13145}"
+    if [ -n "$server_ip" ]; then
+        allowed_origins="${allowed_origins},http://${server_ip},https://${server_ip},http://${server_ip}:${GATEWAY_PORT:-13145},https://${server_ip}:${GATEWAY_PORT:-13145}"
+    fi
+    # 添加常见域名
+    allowed_origins="${allowed_origins},http://monkeyclaw.cc,https://monkeyclaw.cc,http://www.monkeyclaw.cc,https://www.monkeyclaw.cc"
+
+    openclaw config set gateway.controlUi.allowedOrigins "$allowed_origins" 2>/dev/null || true
+
+    # 启用不安全认证（用于外网 HTTP 访问）
+    openclaw config set gateway.controlUi.allowInsecureAuth true 2>/dev/null || true
+
+    # 生成 API 认证 Token（如果不存在）
+    local auth_token
+    auth_token="$(openclaw config get gateway.auth.token 2>/dev/null || echo '')"
+    if [ -z "$auth_token" ] || [ "$auth_token" = "null" ] || [ "$auth_token" = "undefined" ]; then
+        auth_token="$(openssl rand -hex 20 2>/dev/null || echo "$(date +%s%N | sha256sum | head -c 40)")"
+        openclaw config set gateway.auth.token "$auth_token" 2>/dev/null || true
+        openclaw config set gateway.auth.mode token 2>/dev/null || true
+        log_info "API 认证 Token 已生成: ${auth_token:0:8}..."
+        # 保存到环境变量文件
+        upsert_env "OPENCLAW_GATEWAY_AUTH_TOKEN" "$auth_token"
+    fi
+
+    # 写入环境变量
+    upsert_env "OPENCLAW_GATEWAY_HOST" "$display_host"
+    upsert_env "OPENCLAW_GATEWAY_PORT" "${GATEWAY_PORT:-13145}"
+
+    log_info "Gateway API Server 配置完成"
+    log_info "  绑定模式: $bind_mode ($display_host)"
+    log_info "  端口: ${GATEWAY_PORT:-13145}"
+    log_info "  外网调用: curl http://<服务器IP>:${GATEWAY_PORT:-13145}/v1/chat/completions"
+    log_info "  认证 Token: ${auth_token:0:16}..."
+
+    # 显示外网调用示例
+    if [ -n "$auth_token" ] && [ "$auth_token" != "null" ]; then
+        echo ""
+        echo -e "${CYAN}外网调用示例:${NC}"
+        echo "  curl http://<服务器公网IP>:${GATEWAY_PORT:-13145}/v1/chat/completions \\"
+        echo "    -H \"Content-Type: application/json\" \\"
+        echo "    -H \"Authorization: Bearer ${auth_token}\" \\"
+        echo "    -d '{"
+        echo "      \"model\": \"minimax/MiniMax-M2.7\","
+        echo "      \"messages\": [{\"role\": \"user\", \"content\": \"你好\"}]"
+        echo "    }'"
+        echo ""
+        echo -e "${YELLOW}注意: 生产环境建议使用 nginx 反向代理 + HTTPS${NC}"
+    fi
+
     # Phase 4: 网站集成（可选）
     if [ "$ENABLE_CUSTOM_LAYERS" = "1" ] && [ "$AUTO_CONFIRM_ALL" != "1" ] && [ "$NO_PROMPT" != "1" ]; then
         if confirm "是否配置网站集成 + SSH 隧道？" "n"; then

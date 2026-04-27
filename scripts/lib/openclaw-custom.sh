@@ -820,6 +820,177 @@ status_hermes() {
     hermes status 2>&1
 }
 
+# ================================ OpenClaw Gateway API Server 配置 ================================
+
+# 配置 OpenClaw Gateway API Server（支持外网访问）
+configure_openclaw_api_server() {
+    local bind_mode="${1:-lan}"
+    local port="${2:-13145}"
+    local allowed_domains="${3:-}"
+
+    log_step "配置 OpenClaw Gateway API Server..."
+
+    # 规范化绑定模式
+    bind_mode="$(normalize_gateway_bind_mode "$bind_mode")"
+    local display_host
+    display_host="$(get_gateway_bind_display_host "$bind_mode" "")"
+
+    # 配置 Gateway 绑定
+    openclaw config set gateway.bind "$bind_mode" 2>/dev/null || true
+    openclaw config set gateway.port "$port" 2>/dev/null || true
+
+    # 配置 CORS 允许来源
+    local server_ip
+    server_ip="$(curl -fsSL --connect-timeout 5 --max-time 10 https://api.ipify.org 2>/dev/null || echo '')"
+
+    local allowed_origins="http://127.0.0.1:${port},https://127.0.0.1:${port},http://localhost:${port},https://localhost:${port}"
+    if [ -n "$server_ip" ]; then
+        allowed_origins="${allowed_origins},http://${server_ip},https://${server_ip},http://${server_ip}:${port},https://${server_ip}:${port}"
+    fi
+
+    # 添加自定义域名
+    if [ -n "$allowed_domains" ]; then
+        local IFS=','
+        for domain in $allowed_domains; do
+            domain="$(echo "$domain" | xargs)"  # trim whitespace
+            [ -z "$domain" ] && continue
+            # 添加 http 和 https 版本
+            case "$domain" in
+                http://*|https://*) allowed_origins="${allowed_origins},${domain}" ;;
+                *) allowed_origins="${allowed_origins},http://${domain},https://${domain}" ;;
+            esac
+        done
+    fi
+
+    # 添加常见域名
+    allowed_origins="${allowed_origins},http://monkeyclaw.cc,https://monkeyclaw.cc,http://www.monkeyclaw.cc,https://www.monkeyclaw.cc"
+
+    openclaw config set gateway.controlUi.allowedOrigins "$allowed_origins" 2>/dev/null || true
+
+    # 启用不安全认证（用于外网 HTTP 访问）
+    openclaw config set gateway.controlUi.allowInsecureAuth true 2>/dev/null || true
+
+    # 生成 API 认证 Token（如果不存在）
+    local auth_token
+    auth_token="$(openclaw config get gateway.auth.token 2>/dev/null || echo '')"
+    if [ -z "$auth_token" ] || [ "$auth_token" = "null" ] || [ "$auth_token" = "undefined" ]; then
+        auth_token="$(openssl rand -hex 20 2>/dev/null || echo "$(date +%s%N | sha256sum | head -c 40)")"
+        openclaw config set gateway.auth.token "$auth_token" 2>/dev/null || true
+        openclaw config set gateway.auth.mode token 2>/dev/null || true
+        log_info "API 认证 Token 已生成"
+        # 保存到环境变量文件
+        upsert_env "OPENCLAW_GATEWAY_AUTH_TOKEN" "$auth_token"
+    fi
+
+    # 写入环境变量
+    upsert_env "OPENCLAW_GATEWAY_HOST" "$display_host"
+    upsert_env "OPENCLAW_GATEWAY_PORT" "$port"
+
+    log_info "Gateway API Server 配置完成"
+    log_info "  绑定模式: $bind_mode ($display_host)"
+    log_info "  端口: $port"
+    log_info "  外网调用: curl http://<服务器IP>:$port/v1/chat/completions"
+    log_info "  认证 Token: ${auth_token:0:8}..."
+
+    # 显示外网调用示例
+    if [ -n "$auth_token" ] && [ "$auth_token" != "null" ]; then
+        echo ""
+        echo -e "${CYAN}外网调用示例:${NC}"
+        echo "  curl http://<服务器公网IP>:$port/v1/chat/completions \\"
+        echo "    -H \"Content-Type: application/json\" \\"
+        echo "    -H \"Authorization: Bearer ${auth_token}\" \\"
+        echo "    -d '{"
+        echo "      \"model\": \"minimax/MiniMax-M2.7\","
+        echo "      \"messages\": [{\"role\": \"user\", \"content\": \"你好\"}]"
+        echo "    }'"
+        echo ""
+        echo -e "${YELLOW}注意: 生产环境建议使用 nginx 反向代理 + HTTPS${NC}"
+    fi
+}
+
+# ================================ Hermes API Server 配置 ================================
+
+# 配置 Hermes API Server（支持外网访问）
+configure_hermes_api_server() {
+    local host="${1:-0.0.0.0}"
+    local port="${2:-8000}"
+    local api_key="${3:-}"
+
+    command -v hermes &>/dev/null || { log_error "Hermes 未安装"; return 1; }
+
+    log_step "配置 Hermes API Server..."
+
+    # 生成 API Key（如果未提供）
+    if [ -z "$api_key" ]; then
+        api_key="$(openssl rand -hex 24 2>/dev/null || echo "$(date +%s%N | sha256sum | head -c 48)")"
+    fi
+
+    # 配置 API Server 平台
+    # 使用 Python 写入 YAML 配置
+    python3 << PYEOF
+import yaml
+import os
+
+config_file = os.path.expanduser("~/.hermes/config.yaml")
+
+# 读取现有配置
+config = {}
+if os.path.exists(config_file):
+    with open(config_file, 'r') as f:
+        config = yaml.safe_load(f) or {}
+
+# 确保 platforms 部分存在
+if 'platforms' not in config:
+    config['platforms'] = {}
+
+# 配置 API Server
+config['platforms']['api_server'] = {
+    'enabled': True,
+    'host': '${host}',
+    'port': ${port},
+    'api_key': '${api_key}',
+    'allowed_origins': [
+        'http://60.205.58.39',
+        'https://60.205.58.39',
+        'http://monkeyclaw.cc',
+        'https://monkeyclaw.cc',
+        'http://localhost:${port}',
+        'https://localhost:${port}'
+    ]
+}
+
+# 保存配置
+with open(config_file, 'w') as f:
+    yaml.dump(config, f, default_flow_style=False)
+
+print(f"Hermes API server configured: http://${host}:${port}")
+PYEOF
+
+    # 保存 API Key 到环境变量
+    upsert_env "HERMES_API_KEY" "$api_key"
+    upsert_env "HERMES_API_PORT" "$port"
+
+    log_info "Hermes API Server 配置完成"
+    log_info "  监听地址: http://$host:$port"
+    log_info "  API Key: ${api_key:0:16}..."
+    log_info "  允许来源: 60.205.58.39, monkeyclaw.cc"
+
+    # 显示调用示例
+    echo ""
+    echo -e "${CYAN}Open WebUI 连接配置:${NC}"
+    echo "  | 参数 | 值 |"
+    echo "  |------|-----|"
+    echo "  | API Type | OpenAI Compatible |"
+    echo "  | Base URL | http://<本机IP>:$port/v1 |"
+    echo "  | API Key | $api_key |"
+    echo "  | Model | MiniMax-M2.7 |"
+    echo ""
+    echo -e "${CYAN}验证连接:${NC}"
+    echo "  curl http://localhost:$port/health"
+    echo ""
+    echo -e "${YELLOW}注意: 重启 Gateway 使配置生效: hermes gateway restart${NC}"
+}
+
 # ================================ 模型路由管理 ================================
 
 # 显示当前路由/Token 档位状态

@@ -37,6 +37,10 @@ ${GREEN}网站集成:${NC}
   tunnel [操作]      管理 SSH 隧道 (start/stop/status)
   website            配置网站集成 (monkeykingfury.com)
 
+${GREEN}API Server:${NC}
+  api-server [操作]  配置 API Server (setup/status/test)
+  hermes-api [操作]  配置 Hermes API Server (setup/status/test)
+
 ${GREEN}Hermes 代理:${NC}
   hermes [操作]      管理 Hermes 代理 (install/setup/start/stop/status/model)
 
@@ -261,6 +265,109 @@ cmd_website() {
     esac
 }
 
+cmd_api_server() {
+    local action="${1:-setup}"
+    case "$action" in
+        setup|config)
+            local bind="${2:-lan}"
+            local port="${3:-13145}"
+            local domains="${4:-}"
+            configure_openclaw_api_server "$bind" "$port" "$domains"
+            ;;
+        status)
+            echo -e "${CYAN}📊 OpenClaw Gateway API Server 状态${NC}"
+            echo ""
+            if command -v openclaw &>/dev/null; then
+                local bind port token
+                bind="$(openclaw config get gateway.bind 2>/dev/null || echo '未配置')"
+                port="$(openclaw config get gateway.port 2>/dev/null || echo '13145')"
+                token="$(openclaw config get gateway.auth.token 2>/dev/null || echo '未配置')"
+                echo -e "  绑定模式: $bind"
+                echo -e "  端口: $port"
+                echo -e "  认证 Token: ${token:0:16}..."
+                echo ""
+                # 检查端口监听
+                if lsof -i :"$port" &>/dev/null 2>&1; then
+                    echo -e "  ${GREEN}✅${NC} Gateway: 运行中 (端口 $port)"
+                else
+                    echo -e "  ${YELLOW}⚠️${NC} Gateway: 未运行"
+                    echo -e "  启动: openclaw gateway start"
+                fi
+            else
+                echo -e "  ${RED}❌${NC} OpenClaw 未安装"
+            fi
+            ;;
+        test)
+            local port="${2:-13145}"
+            local token
+            token="$(openclaw config get gateway.auth.token 2>/dev/null || echo '')"
+            if [ -z "$token" ] || [ "$token" = "null" ]; then
+                echo -e "${RED}❌ 未配置认证 Token${NC}"
+                return 1
+            fi
+            echo -e "${CYAN}测试 API Server 连接...${NC}"
+            curl -fsSL --connect-timeout 5 --max-time 10 \
+                "http://127.0.0.1:$port/v1/chat/completions" \
+                -H "Content-Type: application/json" \
+                -H "Authorization: Bearer $token" \
+                -d '{"model": "test", "messages": [{"role": "user", "content": "test"}]}' 2>&1 || \
+                echo -e "${YELLOW}测试失败，请检查 Gateway 是否运行${NC}"
+            ;;
+        *) echo -e "${RED}未知操作: $action${NC}"; echo "用法: openclaw-setup api-server [setup|status|test]" ;;
+    esac
+}
+
+cmd_hermes_api() {
+    local action="${1:-setup}"
+    case "$action" in
+        setup|config)
+            local host="${2:-0.0.0.0}"
+            local port="${3:-8000}"
+            local api_key="${4:-}"
+            configure_hermes_api_server "$host" "$port" "$api_key"
+            echo -e "${YELLOW}请重启 Gateway 使配置生效: hermes gateway restart${NC}"
+            ;;
+        status)
+            echo -e "${CYAN}📊 Hermes API Server 状态${NC}"
+            echo ""
+            if command -v hermes &>/dev/null; then
+                if [ -f "$HOME/.hermes/config.yaml" ]; then
+                    python3 -c "
+import yaml
+with open('$HOME/.hermes/config.yaml') as f:
+    config = yaml.safe_load(f) or {}
+api = config.get('platforms', {}).get('api_server', {})
+print(f\"  启用: {api.get('enabled', False)}\")
+print(f\"  地址: http://{api.get('host', '0.0.0.0')}:{api.get('port', 8000)}\")
+print(f\"  API Key: {str(api.get('api_key', ''))[:16]}...\")
+" 2>/dev/null || echo -e "  ${YELLOW}⚠️${NC} 无法读取配置"
+                    echo ""
+                    # 检查端口监听
+                    local port
+                    port="$(python3 -c "import yaml; c=yaml.safe_load(open('$HOME/.hermes/config.yaml')) or {}; print(c.get('platforms', {}).get('api_server', {}).get('port', 8000))" 2>/dev/null || echo '8000')"
+                    if lsof -i :"$port" &>/dev/null 2>&1; then
+                        echo -e "  ${GREEN}✅${NC} API Server: 运行中 (端口 $port)"
+                    else
+                        echo -e "  ${YELLOW}⚠️${NC} API Server: 未运行"
+                        echo -e "  重启: hermes gateway restart"
+                    fi
+                else
+                    echo -e "  ${YELLOW}⚠️${NC} Hermes 未配置"
+                fi
+            else
+                echo -e "  ${RED}❌${NC} Hermes 未安装"
+            fi
+            ;;
+        test)
+            local port="${2:-8000}"
+            echo -e "${CYAN}测试 Hermes API Server 连接...${NC}"
+            curl -fsSL --connect-timeout 5 --max-time 10 "http://127.0.0.1:$port/health" 2>&1 || \
+                echo -e "${YELLOW}测试失败，请检查 Gateway 是否运行${NC}"
+            ;;
+        *) echo -e "${RED}未知操作: $action${NC}"; echo "用法: openclaw-setup hermes-api [setup|status|test]" ;;
+    esac
+}
+
 cmd_hermes() {
     local action="${1:-status}"
     case "$action" in
@@ -302,6 +409,8 @@ main() {
         backup|b)       cmd_backup ;;
         tunnel|t)       cmd_tunnel "$@" ;;
         website|web)    cmd_website ;;
+        api-server|api) cmd_api_server "$@" ;;
+        hermes-api|hapi) cmd_hermes_api "$@" ;;
         hermes|h)       cmd_hermes "$@" ;;
         routing|rt)     cmd_routing "$@" ;;
         help|--help|-h) show_help ;;
