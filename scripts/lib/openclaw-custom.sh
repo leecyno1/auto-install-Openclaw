@@ -723,15 +723,22 @@ install_hermes() {
         return 1
     fi
 
-    # 从 GitHub 克隆并安装
-    local install_dir="/tmp/hermes-agent"
+    # 从 GitHub 克隆并安装（使用 /opt 而非 /tmp，避免某些服务器的 /tmp 限制）
+    local install_dir="/opt/hermes-agent"
     log_info "从 GitHub 克隆 Hermes Agent..."
     if [ -d "$install_dir" ]; then
         rm -rf "$install_dir"
     fi
+    mkdir -p "$install_dir"
 
     if ! git clone https://github.com/nousresearch/hermes-agent.git "$install_dir" 2>&1; then
         log_error "克隆 Hermes 仓库失败，请检查网络"
+        return 1
+    fi
+
+    # 验证克隆完整性
+    if [ ! -f "$install_dir/pyproject.toml" ]; then
+        log_error "克隆不完整，缺少 pyproject.toml"
         return 1
     fi
 
