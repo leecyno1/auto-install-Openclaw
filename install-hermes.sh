@@ -9,9 +9,10 @@ Hermes 独立安装入口
 
 用法:
   ./install-hermes.sh [install.sh 兼容参数]
-  curl -fsSL https://gitee.com/leecyno1/auto-install-openclaw/raw/main/install-hermes.sh | bash
+  curl -fsSL https://gitee.com/leecyno1/auto-install-openclaw/raw/release/hermes-website-minimax-hardening-20260503/install-hermes.sh | bash
 
 说明:
+  - 当前最新分支: release/hermes-website-minimax-hardening-20260503
   - 此入口固定安装 Hermes
   - 如需安装 OpenClaw，请使用 install-openclaw.sh
   - 如需双引擎，请使用 install.sh --engine both

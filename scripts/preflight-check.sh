@@ -68,8 +68,8 @@ pass "installer compatibility markers"
 # 7) 文档命令一致性检查
 grep -q "openclaw update --restart" README.md || fail "README missing official upgrade command"
 grep -q "openclaw plugins update --all" README.md || fail "README missing plugin update command"
-grep -q "raw.githubusercontent.com/leecyno1/auto-install-Openclaw/main/install.sh" README.md || fail "README missing new one-click url"
-grep -q "mirror.ghproxy.com/https://raw.githubusercontent.com/leecyno1/auto-install-Openclaw/main/install.sh" README.md || fail "README missing mirror one-click url"
+grep -q "raw.githubusercontent.com/leecyno1/auto-install-Openclaw/release/hermes-website-minimax-hardening-20260503/install.sh" README.md || fail "README missing release one-click url"
+grep -q "mirror.ghproxy.com/https://raw.githubusercontent.com/leecyno1/auto-install-Openclaw/release/hermes-website-minimax-hardening-20260503/install.sh" README.md || fail "README missing release mirror one-click url"
 grep -q "openclaw-setup config" README.md || fail "README missing openclaw-setup primary entry"
 pass "README command markers"
 
