@@ -1,7 +1,7 @@
 # wechat-public-cli 使用指南
 
 ## 1. 功能定位
-- Publish and download WeChat Public Platform content and Baijiahao articles via a local CLI.
+- Use when publishing or managing WeChat Official Account content via CLI.
 - 默认档位: 仅全量默认包/手动同步
 - 仓库目录: `skills/default/wechat-public-cli`
 - 安装后目录: `~/.openclaw/skills/wechat-public-cli`

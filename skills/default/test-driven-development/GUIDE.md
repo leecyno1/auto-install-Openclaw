@@ -1,7 +1,7 @@
 # test-driven-development 使用指南
 
 ## 1. 功能定位
-- Use when implementing any feature or bugfix, before writing implementation code
+- Use before implementing any feature or bugfix that should be tested.
 - 默认档位: 仅全量默认包/手动同步
 - 仓库目录: `skills/default/test-driven-development`
 - 安装后目录: `~/.openclaw/skills/test-driven-development`

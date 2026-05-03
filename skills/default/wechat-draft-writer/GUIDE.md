@@ -1,7 +1,7 @@
 # wechat-draft-writer 使用指南
 
 ## 1. 功能定位
-- 公众号初稿写作适配器。用于在公众号文章结构已确认后，基于 Content Brief、Material Pack、确认版大纲和文风 DNA 生成一版高保真初稿。它不负责全局选题、大纲决策和标题决策。
+- Use when drafting WeChat articles from a confirmed brief, outline, and style DNA.
 - 默认档位: 仅全量默认包/手动同步
 - 仓库目录: `skills/default/wechat-draft-writer`
 - 安装后目录: `~/.openclaw/skills/wechat-draft-writer`

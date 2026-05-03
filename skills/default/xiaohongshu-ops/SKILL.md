@@ -1,6 +1,6 @@
 ---
 name: xiaohongshu-ops
-description: "End-to-end Xiaohongshu operations including positioning, topic research, content production, publish execution, and post-incident recovery. Reusable across verticals with templates and a concrete 陪你看剧 case preset."
+description: "小红书相关操作，覆盖账号定位、选题研究、内容生产、发布执行与复盘修复的小红书全链路运营技能。凡是小红书的浏览/搜索/发布/评论任务，默认必须使用 OpenClaw 内置浏览器流程并指定 profile=\"openclaw\"；除非用户明确要求，否则不要使用系统 open 或外部浏览器。"
 ---
 
 # Openclaw 小红书运营技能（通用版）
@@ -14,6 +14,7 @@ description: "End-to-end Xiaohongshu operations including positioning, topic res
 - 竞品/同类账号对标
 - 小红书发布前演练与内容交付
 - 发布后快速复盘（互动结构、评论回复、热点追踪）
+- Viral Copy 链路（输入 URL，高贴合学习封面/配图、标题、正文并生成可发布近似结构笔记）
 
 将每类账号的行业细节作为“案例模块（case module）”挂载到通用流程中。
 
@@ -30,12 +31,14 @@ description: "End-to-end Xiaohongshu operations including positioning, topic res
 执行前先按 `references/xhs-runtime-rules.md` 中“运行规则”执行，优先遵循失败可复用顺序。
 
 - 固定使用内置浏览器 profile：`openclaw`，出现通道异常先切回后再重试。
+- 若 browser（openclaw-manager）能力处于 disabled/不可用：先执行一次轻量重试（如 status/profiles），仍不可用则进入故障引导，明确告知用户“当前浏览器工具未启用”，并引导用户按文档启用后再继续（参考：`https://docs.openclaw.ai/tools/browser`）。
 - 以 `evaluate` 为先，关键节点少量 `snapshot`，单步动作最多重试一次。
 - 失败后保留已获结果，切稳健路径并汇报。
 
 ## 1) 技能默认行为（所有任务都遵循）
 
 - **先读本技能目录下的 `persona.md`**（小红书平台专用人设/语气/发布与回复风格）。所有对外文案（发帖/评论回复/私信话术）都必须遵循。
+- 开始新任务前，先读 `knowledge-base/README.md` 这个总览入口，再按 `references/xhs-knowledge-base.md` 的规则检索最近的同类记录；能复用的 pattern 不重复摸索。
 - 优先输出可执行的 SOP 而非一次性内容稿
 - 语言优先“能对话”而不是“写报告”：短句、口语、站位明确、可引导评论
 - 所有输出默认保留“可追问点”，用于评论区继续延展
@@ -56,6 +59,14 @@ description: "End-to-end Xiaohongshu operations including positioning, topic res
 - 口头禅/固定句式（2-3 个）
 - 不能碰底线（红线）清单（剧透、人身攻击、虚假承诺）
 
+## 2.5) 账号分析（新增）
+
+按 `references/xhs-account-analysis.md` 执行。
+
+- 默认采样最近 9-15 篇内容做轻量体检
+- 从定位、内容结构、互动转化、辨识度、可持续性 5 个维度判断
+- 输出必须包含“最大优势、最大短板、下一步动作”
+
 ## 3) 通用选题与对标流程
 
 ### A. 平台侧抓取信号（可并行）
@@ -63,6 +74,14 @@ description: "End-to-end Xiaohongshu operations including positioning, topic res
 1. 先在小红书抓同题材高互动内容（点赞/收藏/评论高于近期平均值）
 2. 记录可复用字段：`title`, `hook`, `angle`, `结构标签`, `评论信号`, `互动CTA`, `标签组`
 3. 汇总前 10-20 条到候选池
+
+### A.1 首页推荐流分析（新增）
+
+按 `references/xhs-home-feed-analysis.md` 执行。
+
+- 先看首页推荐流里“为什么推给你”
+- 再提炼可复用的传播钩子、内容结构和选题方向
+- 结果优先服务账号定位、选题灵感和后续内容判断
 
 ### B. 需求侧补充信号（行业/场景）
 
@@ -80,6 +99,14 @@ description: "End-to-end Xiaohongshu operations including positioning, topic res
 - 证据来源（哪组高互动数据）
 - 风险提示（是否容易踩线）
 
+## 3.2) 选题灵感（新增）
+
+按 `references/xhs-topic-ideation.md` 执行。
+
+- 将平台信号、需求信号、账号定位合并成可发布选题
+- 默认输出 3-5 条，每条都要带互动钩子和三段式结构
+- 产物可直接作为内容生成或 Viral Copy 的前置输入
+
 ## 3.5) 搜索并浏览（新增操作类型）
 
 按 `references/xhs-runtime-rules.md` 的搜索与评论入口章节执行。
@@ -87,6 +114,14 @@ description: "End-to-end Xiaohongshu operations including positioning, topic res
 - 只允许从搜索结果页进入帖子；
 - 优先通知/回复场景前先对位校验。
 - 连续失败回退策略见引用文件。
+
+## 3.6) Viral Copy（URL → 新笔记）
+
+按 `references/xhs-viral-copy-flow.md` 执行。
+
+- 输入：目标爆款笔记 URL（可多条）。
+- 输出：1 套可发布素材（封面/配图方案 + 标题 + 正文 + 话题）。
+- 复刻原则：高贴合主题与结构（标题句式、封面信息层级、正文节奏、互动机制），同时避免逐字照抄与素材侵权。
 
 ## 4) 通用内容模板（小红书）
 
@@ -118,11 +153,22 @@ description: "End-to-end Xiaohongshu operations including positioning, topic res
 - 默认 one-send-per-turn（如无明确要求不连发）。
 - 长度、隐性承诺、风控停损点等风险控制项请以引用文件为准。
 
+## 6.5) 知识库沉淀（新增）
+
+按 `references/xhs-knowledge-base.md` 执行。
+
+- 总览入口固定为 `knowledge-base/README.md`
+- 细分记录按类型写入 `knowledge-base/accounts/`、`knowledge-base/topics/`、`knowledge-base/patterns/`、`knowledge-base/actions/`、`knowledge-base/reviews/`
+- 分析优先沉淀 `pattern` / `topic` / `review`
+- 执行动作优先沉淀 `action`
+- 任务结束时至少留下可检索的结论、证据、风险和下一步
+
 ## 7) 失败与修复（必须遵循）
 
 - 自动化失败先重试一次（同策略）
 - 仍失败则改道：换到“更稳妥同义路径”
 - 不做无效重复动作；保留当前进度可复用，报告一次用户需手动的单一动作
+- 若知识库暂时不可写，先返回结构化摘要，任务结束后补记，不阻塞主流程
 
 ## 8) 通用提取示例（Evaluate）
 

@@ -1,7 +1,7 @@
 # requesting-code-review 使用指南
 
 ## 1. 功能定位
-- Use when completing tasks, implementing major features, or before merging to verify work meets requirements
+- Use before review of completed feature work or significant changes.
 - 默认档位: 仅全量默认包/手动同步
 - 仓库目录: `skills/default/requesting-code-review`
 - 安装后目录: `~/.openclaw/skills/requesting-code-review`

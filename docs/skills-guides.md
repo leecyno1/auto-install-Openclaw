@@ -1,7 +1,6 @@
 # Skills 使用指南总览
 
 所有默认 skill 都带有 `GUIDE.md`，安装到 `~/.openclaw/skills/<name>/GUIDE.md` 后，配置菜单可直接查看。
-想先看精简版用途说明，可先读 `skills/default/DEFAULT_SKILLS.md`。
 
 | Skill | 默认档位 | 需要额外配置 | 指南路径 |
 |---|---|---|---|
@@ -17,6 +16,7 @@
 | ai-music-prompts | 仅全量默认包/手动同步 | 否 | `skills/default/ai-music-prompts/GUIDE.md` |
 | akshare-stock | 基础档默认安装 | 是 | `skills/default/akshare-stock/GUIDE.md` |
 | algorithmic-art | 仅全量默认包/手动同步 | 否 | `skills/default/algorithmic-art/GUIDE.md` |
+| android-native-dev | 仅全量默认包/手动同步 | 否 | `skills/default/android-native-dev/GUIDE.md` |
 | animated-financial-display | 仅全量默认包/手动同步 | 否 | `skills/default/animated-financial-display/GUIDE.md` |
 | animation | 扩展档默认安装 | 否 | `skills/default/animation/GUIDE.md` |
 | atxp | 仅全量默认包/手动同步 | 否 | `skills/default/atxp/GUIDE.md` |
@@ -44,6 +44,7 @@
 | blogwatcher | 仅全量默认包/手动同步 | 是 | `skills/default/blogwatcher/GUIDE.md` |
 | brainstorming | 基础档默认安装 | 否 | `skills/default/brainstorming/GUIDE.md` |
 | brand-guidelines | 仅全量默认包/手动同步 | 否 | `skills/default/brand-guidelines/GUIDE.md` |
+| buddy-sings | 仅全量默认包/手动同步 | 否 | `skills/default/buddy-sings/GUIDE.md` |
 | byterover | 仅全量默认包/手动同步 | 否 | `skills/default/byterover/GUIDE.md` |
 | canvas-design | 仅全量默认包/手动同步 | 否 | `skills/default/canvas-design/GUIDE.md` |
 | capability-evolver | 基础档默认安装 | 是 | `skills/default/capability-evolver/GUIDE.md` |
@@ -85,10 +86,14 @@
 | finance-data | 基础档默认安装 | 否 | `skills/default/finance-data/GUIDE.md` |
 | find-skills | 基础档默认安装 | 否 | `skills/default/find-skills/GUIDE.md` |
 | finishing-a-development-branch | 仅全量默认包/手动同步 | 否 | `skills/default/finishing-a-development-branch/GUIDE.md` |
+| flutter-dev | 仅全量默认包/手动同步 | 否 | `skills/default/flutter-dev/GUIDE.md` |
 | format-pro | 仅全量默认包/手动同步 | 否 | `skills/default/format-pro/GUIDE.md` |
 | frontend-design | 仅全量默认包/手动同步 | 否 | `skills/default/frontend-design/GUIDE.md` |
+| frontend-dev | 仅全量默认包/手动同步 | 否 | `skills/default/frontend-dev/GUIDE.md` |
+| fullstack-dev | 仅全量默认包/手动同步 | 否 | `skills/default/fullstack-dev/GUIDE.md` |
 | gemini-image-service | 扩展档默认安装 | 是 | `skills/default/gemini-image-service/GUIDE.md` |
 | gh-modify-pr | 仅全量默认包/手动同步 | 否 | `skills/default/gh-modify-pr/GUIDE.md` |
+| gif-sticker-maker | 仅全量默认包/手动同步 | 否 | `skills/default/gif-sticker-maker/GUIDE.md` |
 | gitclassic | 仅全量默认包/手动同步 | 否 | `skills/default/gitclassic/GUIDE.md` |
 | github | 基础档默认安装 | 是 | `skills/default/github/GUIDE.md` |
 | github-actions-generator | 仅全量默认包/手动同步 | 否 | `skills/default/github-actions-generator/GUIDE.md` |
@@ -100,6 +105,7 @@
 | inference-skills | 基础档默认安装 | 否 | `skills/default/inference-skills/GUIDE.md` |
 | infographic-pro | 仅全量默认包/手动同步 | 否 | `skills/default/infographic-pro/GUIDE.md` |
 | internal-comms | 仅全量默认包/手动同步 | 否 | `skills/default/internal-comms/GUIDE.md` |
+| ios-application-dev | 仅全量默认包/手动同步 | 否 | `skills/default/ios-application-dev/GUIDE.md` |
 | jupyter-notebook | 仅全量默认包/手动同步 | 否 | `skills/default/jupyter-notebook/GUIDE.md` |
 | lark-calendar | 基础档默认安装 | 否 | `skills/default/lark-calendar/GUIDE.md` |
 | larry | 仅全量默认包/手动同步 | 否 | `skills/default/larry/GUIDE.md` |
@@ -113,8 +119,14 @@
 | media-downloader | 基础档默认安装 | 否 | `skills/default/media-downloader/GUIDE.md` |
 | media-planner | 仅全量默认包/手动同步 | 否 | `skills/default/media-planner/GUIDE.md` |
 | merge-pr | 仅全量默认包/手动同步 | 否 | `skills/default/merge-pr/GUIDE.md` |
+| minimax-docx | 仅全量默认包/手动同步 | 否 | `skills/default/minimax-docx/GUIDE.md` |
 | minimax-image-understanding | 基础档默认安装 | 是 | `skills/default/minimax-image-understanding/GUIDE.md` |
+| minimax-multimodal-toolkit | 仅全量默认包/手动同步 | 否 | `skills/default/minimax-multimodal-toolkit/GUIDE.md` |
+| minimax-music-gen | 仅全量默认包/手动同步 | 否 | `skills/default/minimax-music-gen/GUIDE.md` |
+| minimax-music-playlist | 仅全量默认包/手动同步 | 否 | `skills/default/minimax-music-playlist/GUIDE.md` |
+| minimax-pdf | 仅全量默认包/手动同步 | 否 | `skills/default/minimax-pdf/GUIDE.md` |
 | minimax-web-search | 基础档默认安装 | 是 | `skills/default/minimax-web-search/GUIDE.md` |
+| minimax-xlsx | 仅全量默认包/手动同步 | 否 | `skills/default/minimax-xlsx/GUIDE.md` |
 | mintlify | 仅全量默认包/手动同步 | 否 | `skills/default/mintlify/GUIDE.md` |
 | model-usage | 基础档默认安装 | 是 | `skills/default/model-usage/GUIDE.md` |
 | multi-search-engine | 基础档默认安装 | 是 | `skills/default/multi-search-engine/GUIDE.md` |
@@ -138,6 +150,7 @@
 | planning-with-files | 仅全量默认包/手动同步 | 否 | `skills/default/planning-with-files/GUIDE.md` |
 | plugin-creator | 仅全量默认包/手动同步 | 否 | `skills/default/plugin-creator/GUIDE.md` |
 | pptx | 基础档默认安装 | 是 | `skills/default/pptx/GUIDE.md` |
+| pptx-generator | 仅全量默认包/手动同步 | 否 | `skills/default/pptx-generator/GUIDE.md` |
 | preflight-checks | 仅全量默认包/手动同步 | 否 | `skills/default/preflight-checks/GUIDE.md` |
 | prepare-pr | 仅全量默认包/手动同步 | 否 | `skills/default/prepare-pr/GUIDE.md` |
 | prisma-database-setup | 仅全量默认包/手动同步 | 否 | `skills/default/prisma-database-setup/GUIDE.md` |
@@ -146,6 +159,7 @@
 | programmatic-seo | 仅全量默认包/手动同步 | 否 | `skills/default/programmatic-seo/GUIDE.md` |
 | pua | 仅全量默认包/手动同步 | 否 | `skills/default/pua/GUIDE.md` |
 | publish-guard | 仅全量默认包/手动同步 | 否 | `skills/default/publish-guard/GUIDE.md` |
+| react-native-dev | 仅全量默认包/手动同步 | 否 | `skills/default/react-native-dev/GUIDE.md` |
 | receiving-code-review | 仅全量默认包/手动同步 | 否 | `skills/default/receiving-code-review/GUIDE.md` |
 | reddit | 仅全量默认包/手动同步 | 否 | `skills/default/reddit/GUIDE.md` |
 | reflection | 基础档默认安装 | 否 | `skills/default/reflection/GUIDE.md` |
@@ -160,6 +174,7 @@
 | self-improving-agent-cn | 基础档默认安装 | 否 | `skills/default/self-improving-agent-cn/GUIDE.md` |
 | seo-geo | 仅全量默认包/手动同步 | 否 | `skills/default/seo-geo/GUIDE.md` |
 | session-logs | 仅全量默认包/手动同步 | 否 | `skills/default/session-logs/GUIDE.md` |
+| shader-dev | 仅全量默认包/手动同步 | 否 | `skills/default/shader-dev/GUIDE.md` |
 | shell | 基础档默认安装 | 否 | `skills/default/shell/GUIDE.md` |
 | skill-creator | 基础档默认安装 | 否 | `skills/default/skill-creator/GUIDE.md` |
 | skill-installer | 仅全量默认包/手动同步 | 否 | `skills/default/skill-installer/GUIDE.md` |
@@ -194,6 +209,7 @@
 | video-download | 仅全量默认包/手动同步 | 否 | `skills/default/video-download/GUIDE.md` |
 | video-frames | 仅全量默认包/手动同步 | 否 | `skills/default/video-frames/GUIDE.md` |
 | video-subtitles | 仅全量默认包/手动同步 | 否 | `skills/default/video-subtitles/GUIDE.md` |
+| vision-analysis | 仅全量默认包/手动同步 | 否 | `skills/default/vision-analysis/GUIDE.md` |
 | weather | 基础档默认安装 | 否 | `skills/default/weather/GUIDE.md` |
 | web-animation-design | 仅全量默认包/手动同步 | 否 | `skills/default/web-animation-design/GUIDE.md` |
 | web-artifacts-builder | 仅全量默认包/手动同步 | 否 | `skills/default/web-artifacts-builder/GUIDE.md` |

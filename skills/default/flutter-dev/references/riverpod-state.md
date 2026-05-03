@@ -1,11 +1,19 @@
 # Riverpod State Management
 
+Riverpod 2.0 state management guide covering provider types, notifier patterns, and widget integration.
+
 ## Provider Types
 
 ```dart
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-// Simple state
+// Simple computed value
+final greetingProvider = Provider<String>((ref) {
+  final name = ref.watch(userNameProvider);
+  return 'Hello, $name';
+});
+
+// Simple mutable state
 final counterProvider = StateProvider<int>((ref) => 0);
 
 // Async state (API calls)
@@ -20,7 +28,20 @@ final messagesProvider = StreamProvider<List<Message>>((ref) {
 });
 ```
 
+### Provider Type Reference
+
+| Provider | Use Case |
+|----------|----------|
+| `Provider` | Computed/derived values, dependency injection |
+| `StateProvider` | Simple mutable state (counter, toggle) |
+| `FutureProvider` | Async operations (one-time fetch) |
+| `StreamProvider` | Real-time data streams |
+| `NotifierProvider` | Complex state with methods |
+| `AsyncNotifierProvider` | Async state with methods |
+
 ## Notifier Pattern (Riverpod 2.0)
+
+### Synchronous Notifier
 
 ```dart
 @riverpod
@@ -35,7 +56,10 @@ class TodoList extends _$TodoList {
   void toggle(String id) {
     state = [
       for (final todo in state)
-        if (todo.id == id) todo.copyWith(completed: !todo.completed) else todo,
+        if (todo.id == id) 
+          todo.copyWith(completed: !todo.completed) 
+        else 
+          todo,
     ];
   }
 
@@ -43,8 +67,11 @@ class TodoList extends _$TodoList {
     state = state.where((t) => t.id != id).toList();
   }
 }
+```
 
-// Async Notifier
+### Async Notifier
+
+```dart
 @riverpod
 class UserProfile extends _$UserProfile {
   @override
@@ -59,13 +86,19 @@ class UserProfile extends _$UserProfile {
       return updated;
     });
   }
+
+  Future<void> refresh() async {
+    ref.invalidateSelf();
+    await future;
+  }
 }
 ```
 
 ## Usage in Widgets
 
+### ConsumerWidget (Recommended)
+
 ```dart
-// ConsumerWidget (recommended)
 class TodoScreen extends ConsumerWidget {
   const TodoScreen({super.key});
 
@@ -78,6 +111,7 @@ class TodoScreen extends ConsumerWidget {
       itemBuilder: (context, index) {
         final todo = todos[index];
         return ListTile(
+          key: ValueKey(todo.id),
           title: Text(todo.title),
           leading: Checkbox(
             value: todo.completed,
@@ -88,13 +122,17 @@ class TodoScreen extends ConsumerWidget {
     );
   }
 }
+```
 
-// Selective rebuilds with select
+### Selective Rebuilds with select
+
+```dart
 class UserAvatar extends ConsumerWidget {
   const UserAvatar({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Only rebuilds when avatarUrl changes
     final avatarUrl = ref.watch(userProvider.select((u) => u?.avatarUrl));
 
     return CircleAvatar(
@@ -102,29 +140,93 @@ class UserAvatar extends ConsumerWidget {
     );
   }
 }
+```
 
-// Async state handling
+### Async State Handling
+
+```dart
 class UserProfileScreen extends ConsumerWidget {
+  const UserProfileScreen({super.key});
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final userAsync = ref.watch(userProfileProvider);
 
     return userAsync.when(
-      data: (user) => Text(user.name),
-      loading: () => const CircularProgressIndicator(),
-      error: (err, stack) => Text('Error: $err'),
+      data: (user) => UserProfileContent(user: user),
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (err, stack) => ErrorView(
+        message: err.toString(),
+        onRetry: () => ref.invalidate(userProfileProvider),
+      ),
     );
   }
 }
 ```
 
+### Consumer for Scoped Rebuilds
+
+```dart
+class MyScreen extends StatelessWidget {
+  const MyScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        const Text('Static content'),
+        Consumer(
+          builder: (context, ref, child) {
+            final count = ref.watch(counterProvider);
+            return Text('Count: $count');
+          },
+        ),
+      ],
+    );
+  }
+}
+```
+
+## Provider Modifiers
+
+```dart
+// Auto-dispose when no longer used
+@riverpod
+class AutoDisposeExample extends _$AutoDisposeExample {
+  @override
+  String build() => 'value';
+}
+
+// Family - parameterized providers
+@riverpod
+Future<User> userById(UserByIdRef ref, String id) async {
+  return ref.read(apiProvider).getUser(id);
+}
+
+// Usage
+final user = ref.watch(userByIdProvider('123'));
+```
+
+## Best Practices
+
+| Do | Don't |
+|----|-------|
+| Use `ref.watch()` in build | Use `ref.watch()` in callbacks |
+| Use `ref.read()` in callbacks | Use `ref.read()` in build |
+| Use `select()` for granular rebuilds | Watch entire state unnecessarily |
+| Create new state instances | Mutate state directly |
+| Use `AsyncValue.guard()` for errors | Catch errors manually |
+
 ## Quick Reference
 
-| Provider | Use Case |
-|----------|----------|
-| `Provider` | Computed/derived values |
-| `StateProvider` | Simple mutable state |
-| `FutureProvider` | Async operations (one-time) |
-| `StreamProvider` | Real-time data streams |
-| `NotifierProvider` | Complex state with methods |
-| `AsyncNotifierProvider` | Async state with methods |
+| Method | When to Use |
+|--------|-------------|
+| `ref.watch()` | In build method, rebuilds on change |
+| `ref.read()` | In callbacks, one-time read |
+| `ref.listen()` | Side effects on change |
+| `ref.invalidate()` | Force provider refresh |
+| `ref.refresh()` | Invalidate and get new value |
+
+---
+
+*Riverpod is an open-source state management library by Remi Rousselet.*

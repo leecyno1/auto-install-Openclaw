@@ -1,6 +1,6 @@
 ---
 name: writing-plans
-description: Use when you have a spec or requirements for a multi-step task, before touching code
+description: Use when writing implementation plans from specs before editing code.
 ---
 
 # Writing Plans

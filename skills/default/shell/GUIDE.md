@@ -22,5 +22,5 @@ ls -la ~/.openclaw/skills/shell
 ```
 
 ## 6. 参考资料
-- 上游来源: /Users/lichengyin/.codex/skills/shell
+- 上游来源: ~/.codex/skills/shell
 - 本技能说明: `SKILL.md`

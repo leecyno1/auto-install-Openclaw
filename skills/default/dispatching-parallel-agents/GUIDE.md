@@ -1,7 +1,7 @@
 # dispatching-parallel-agents 使用指南
 
 ## 1. 功能定位
-- Use when facing 2+ independent tasks that can be worked on without shared state or sequential dependencies
+- Use when two or more independent tasks can run in parallel without shared state.
 - 默认档位: 仅全量默认包/手动同步
 - 仓库目录: `skills/default/dispatching-parallel-agents`
 - 安装后目录: `~/.openclaw/skills/dispatching-parallel-agents`

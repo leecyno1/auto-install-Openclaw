@@ -1,7 +1,7 @@
 # using-git-worktrees 使用指南
 
 ## 1. 功能定位
-- Use when starting feature work that needs isolation from current workspace or before executing implementation plans - creates isolated git worktrees with smart directory selecti...
+- Use when starting feature work needing isolated git worktrees.
 - 默认档位: 仅全量默认包/手动同步
 - 仓库目录: `skills/default/using-git-worktrees`
 - 安装后目录: `~/.openclaw/skills/using-git-worktrees`

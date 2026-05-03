@@ -16,7 +16,6 @@
   <img src="https://img.shields.io/badge/gateway-13145-7c3aed?style=for-the-badge" alt="Gateway Port" />
   <img src="https://img.shields.io/badge/pixel%20house-19000-b91c1c?style=for-the-badge" alt="Pixel House Port" />
   <img src="https://img.shields.io/badge/health%20check-13146-7c3aed?style=for-the-badge" alt="Health Port" />
-  <img src="https://img.shields.io/badge/quota%20enforcer-13147-7c3aed?style=for-the-badge" alt="Quota Enforcer Port" />
 </p>
 
 > [!IMPORTANT]
@@ -24,7 +23,7 @@
 > - **双轨入口**：`install-openclaw.sh` 安装 OpenClaw，`install-hermes.sh` 安装 Hermes，`install.sh --engine both` 作为高级兼容入口。
 > - **统一命令**：主入口是 `openclaw-setup`，`lobster-setup` 仅作为兼容别名。
 > - **批量部署**：支持 `--auto-confirm-all`、`--provider`、`--model`、`--api-key`、`--base-url`、`--image-model`、`--image-api-key`、`--image-base-url`、`--enable-advanced-routing` 等全自动参数。
-> - **网站联动**：同步 `19000` 像素小屋、`13145` Gateway Control、终端 bootstrap 和 allowed origins。
+> - **网站联动**：同步 `19000` 像素小屋、`13145` OpenClaw Dashboard、`9119` Hermes Dashboard、`8000` Hermes OpenAI 兼容聊天接口、`13146` 健康检查和终端 bootstrap。
 
 ## 快速入口
 
@@ -90,12 +89,16 @@ openclaw-setup config skills --tier super      # 超级档 (~100+ skills)
 openclaw-setup config tier-rules --level low       # 100 req/5h
 openclaw-setup config tier-rules --level medium    # 300 req/5h
 openclaw-setup config tier-rules --level high      # 无限制
-openclaw-setup config tier-rules --with-monitoring # 启动网关监控
+openclaw-setup config tier-rules --show            # 显示当前配额规则
 
 # 像素小屋工作台
 openclaw-setup config pixel-house --install
 openclaw-setup config pixel-house --start
 openclaw-setup config pixel-house --status
+
+# 可选：云端 OpenClaw/Hermes 通过反向 SSH 操作本地主机
+openclaw-setup config --remote-local-control
+~/.openclaw/remote-local-control.sh help
 
 # Provider / 模型 / 生图 / 路由
 openclaw-setup config model
@@ -103,9 +106,6 @@ openclaw-setup config image
 openclaw-setup config routing
 openclaw-setup config website --sync
 
-# Dashboard 配对修复（修复 "pairing required" 错误）
-openclaw-setup config dashboard-pairing --fix
-openclaw-setup config dashboard-pairing --show
 ```
 
 ### 3. 从旧版迁移
@@ -122,6 +122,11 @@ openclaw-setup config migrate
 - 保留用户数据（memory、sessions、API keys）
 - 创建备份以便回滚
 
+推荐发布前检查：
+- 官方 MiniMax 渠道优先使用 `minimax` / `MiniMax-M2.7` / `https://api.minimaxi.com/v1`，选择官方 MiniMax 时会清理 `OPENCLAW_CUSTOM_PROVIDER_*` 自定义大模型残留。
+- Hermes-only 和 OpenClaw-only 是未来主要安装模式；双引擎入口仅保留为高级兼容。Hermes 默认优先读取自身 `.env`，共享配置只作为兜底。
+- 网站 AI 页面走 `stream:true` 时依赖 `8000` 的 SSE 输出；如果线上出现 `messages is required`，优先检查网站后端是否已部署最新 `chat-tunnel-manager` / `chat/completions` 转发逻辑并重启 `dasheng-api`。
+
 推荐运维流程：
 - 安装后执行 `openclaw-setup config` 完成模型、Skills、规则、像素小屋与网站联动配置。
 - 对历史服务器执行 `openclaw-setup repair` 清理重复 Provider 和旧配置。
@@ -137,11 +142,10 @@ bash ~/.openclaw/config-menu.sh --official-channels-only
 bash ~/.openclaw/config-menu.sh --engine-menu
 bash ~/.openclaw/config-menu.sh --repair-config
 bash ~/.openclaw/config-menu.sh --repair-minimax
-bash ~/.openclaw/config-menu.sh --repair-pairing
 bash ~/.openclaw/config-menu.sh --install-pixel-house
+bash ~/.openclaw/config-menu.sh --remote-local-control
 ~/.openclaw/lobster-world.sh start
 ~/.openclaw/health-server.sh status
-python3 ~/.openclaw/scripts/gateway-quota-enforcer.py status
 ```
 
 ## 这套东西解决什么问题
@@ -190,22 +194,23 @@ python3 ~/.openclaw/scripts/gateway-quota-enforcer.py status
 | --- | --- |
 | 安装器 | 极简安装：环境检测 + 官方安装 + 基础补丁 |
 | Skills 模块 | 三档管理（basic/extended/super），混合安装策略（本地 + 官方） |
-| 三档规则 | 配额限制（low/medium/high/none），可选网关监控代理 |
+| 三档规则 | 请求次数与媒体配额规则（low/medium/high/none），写入 OpenClaw 配置和本地 env |
 | 像素小屋 | 独立部署工作台（端口 19000），可视化角色、技能、装备、状态 |
 | API 配置 | 替换 Skills 中硬编码的服务地址，支持批量替换 |
 | 迁移工具 | 从旧版平滑迁移，保留用户数据（memory、sessions、API keys） |
 | Gateway | 默认端口 `127.0.0.1:13145`，降低误暴露风险 |
+| Hermes Dashboard | 默认端口 `127.0.0.1:9119`，供网站通过 SSH 隧道接入管理 UI |
+| Hermes Chat API | 默认端口 `127.0.0.1:8000`，安装器自动提供 OpenAI 兼容 `/v1/models`、`/v1/chat/completions`，支持网站 AI 页面流式 SSE 对话 |
 | 健康检查 | 默认端口 `13146`，监控 Gateway 和像素小屋运行状态 |
-| 配额强制 | 默认端口 `13147`，拦截媒体生成请求，超额返回 429 |
 
 ## 档位规则
 
-| 档位 | 请求预算 | 总 Token | 图片请求 | 视频请求 | 默认策略 |
-| --- | --- | --- | --- | --- | --- |
-| 无限制 `none` | 不限 | 不限 | 不限 | 不限 | 无任何限制 |
-| 基础档 `low` | 每 5 小时 100 次 | 600000 | 0 | 0 | 基础技能包，适合轻量部署 |
-| 扩展档 `medium` | 每 5 小时 300 次 | 2400000 | 20 | 1 | 扩展技能包，默认配置 |
-| 超级档 `high` | 请求次数不限 | 6000000 | 50 | 2 | 超级技能包，高配额 |
+| 档位 | 普通/文字请求 | 图片请求 | 视频请求 | 默认策略 |
+| --- | --- | --- | --- | --- |
+| 无限制 `none` | 不限 | 不限 | 不限 | 无任何本地配额限制 |
+| 基础档 `low` | 每 5 小时 100 次 | 0 | 0 | 基础技能包，适合轻量部署 |
+| 扩展档 `medium` | 每 5 小时 300 次 | 20 | 1 | 扩展技能包，默认配置 |
+| 超级档 `high` | 不限 | 50 | 2 | 超级技能包，高配额 |
 
 配置命令：
 
@@ -214,7 +219,6 @@ openclaw-setup config tier-rules --level low       # 基础档
 openclaw-setup config tier-rules --level medium    # 扩展档
 openclaw-setup config tier-rules --level high      # 超级档
 openclaw-setup config tier-rules --level none      # 无限制
-openclaw-setup config tier-rules --with-monitoring # 启动网关监控代理（端口 13147）
 ```
 
 ## 默认技能包摘录
@@ -339,7 +343,7 @@ openclaw-setup config migrate            # 迁移向导
 
 # 具体操作
 openclaw-setup config skills --tier extended
-openclaw-setup config tier-rules --level high --with-monitoring
+openclaw-setup config tier-rules --level high
 openclaw-setup config pixel-house --install
 openclaw-setup config pixel-house --start
 openclaw-setup config api --replace-service nanobanana --with https://my.com/api
@@ -377,7 +381,6 @@ openclaw-setup config tier-rules --level medium    # 300 req/5h
 openclaw-setup config tier-rules --level high      # 无限制
 openclaw-setup config tier-rules --level none      # 无任何限制
 openclaw-setup config tier-rules --show            # 显示当前配置
-openclaw-setup config tier-rules --with-monitoring # 启动网关监控
 ```
 
 ### 像素小屋
@@ -394,6 +397,31 @@ openclaw-setup config pixel-house --restart   # 重启
 ~/.openclaw/lobster-world.sh status
 ~/.openclaw/lobster-world.sh stop
 ```
+
+### 云端控制本地主机（可选）
+
+该能力用于云端 OpenClaw/Hermes 通过反向 SSH 调用本地主机上的白名单命令。默认不会启用远程控制，也不会暴露本地 SSH 或 OpenClaw Gateway 到公网。
+
+```bash
+# 安装辅助脚本（仅安装，不自动启用隧道）
+openclaw-setup config --remote-local-control
+
+# 查看本地/云端配置模板和安全说明
+~/.openclaw/remote-local-control.sh help
+~/.openclaw/remote-local-control.sh status
+```
+
+详细设计见：`docs/plans/2026-04-30-cloud-to-local-reverse-ssh-control.md`。
+
+### 网站联动
+
+```bash
+openclaw-setup config website --sync
+```
+
+该命令会写入网站需要的联动配置：`OPENCLAW_DASHBOARD_PORT=13145`、`HERMES_DASHBOARD_PORT=9119`、`HERMES_CHAT_PORT=8000`、`OPENCLAW_DASHBOARD_ALLOWED_ORIGINS` 和像素小屋 `19000` 入口。安装器也会尽量把 OpenClaw `gateway.controlUi.allowedOrigins` 与网站域名白名单对齐，避免网页端通过 SSH 隧道打开 Dashboard 时触发 pairing required。
+
+Hermes 节点会额外启动本机 `openclaw-hermes-openai.service`，只监听 `127.0.0.1:8000`，把 Hermes CLI 包装成网站后端可调用的 OpenAI 兼容接口。网站后端应把 Hermes `chat_port` 配为 `8000`，Dashboard 仍使用 `9119`。
 
 ### API 配置
 
@@ -420,6 +448,7 @@ openclaw-setup config api --replace-service nanobanana --with https://test.com -
 - [技能指南汇总](docs/skills-guides.md)
 - [人格角色设计](docs/persona-roles.md)
 - [像素小屋与工作台设计](docs/roadmaps/2026-03-26-pixel-house-workbench-design.md)
+- [云端控制本地主机设计](docs/plans/2026-04-30-cloud-to-local-reverse-ssh-control.md)
 
 ## Gateway 管理
 

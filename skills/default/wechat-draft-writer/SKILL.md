@@ -1,6 +1,6 @@
 ---
 name: wechat-draft-writer
-description: 公众号初稿写作适配器。用于在公众号文章结构已确认后，基于 Content Brief、Material Pack、确认版大纲和文风 DNA 生成一版高保真初稿。它不负责全局选题、大纲决策和标题决策。
+description: Use when drafting WeChat articles from a confirmed brief, outline, and style DNA.
 ---
 
 # Wechat Draft Writer - v2 契约版本

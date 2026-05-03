@@ -1,7 +1,7 @@
 # writing-skills 使用指南
 
 ## 1. 功能定位
-- Use when creating new skills, editing existing skills, or verifying skills work before deployment
+- Use when creating, editing, or verifying Codex skills.
 - 默认档位: 基础档默认安装
 - 仓库目录: `skills/default/writing-skills`
 - 安装后目录: `~/.openclaw/skills/writing-skills`

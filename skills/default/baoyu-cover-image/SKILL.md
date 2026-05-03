@@ -1,6 +1,6 @@
 ---
 name: baoyu-cover-image
-description: Generates article cover images with 5 dimensions (type, palette, rendering, text, mood) combining 10 color palettes and 7 rendering styles. Supports cinematic (2.35:1), widescreen (16:9), and square (1:1) aspects. Use when user asks to "generate cover image", "create article cover", or "make cover".
+description: Use when generating article cover images in cinematic, widescreen, or square formats.
 version: 1.56.1
 metadata:
   openclaw:

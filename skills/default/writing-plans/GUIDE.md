@@ -1,7 +1,7 @@
 # writing-plans 使用指南
 
 ## 1. 功能定位
-- Use when you have a spec or requirements for a multi-step task, before touching code
+- Use when writing implementation plans from specs before editing code.
 - 默认档位: 扩展档默认安装
 - 仓库目录: `skills/default/writing-plans`
 - 安装后目录: `~/.openclaw/skills/writing-plans`

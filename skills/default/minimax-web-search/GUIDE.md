@@ -25,7 +25,7 @@ python3 skills/default/minimax-web-search/scripts/web_search.py --help
 ```
 
 ## 6. 参考资料
-- 上游来源: /Users/lichengyin/.codex/skills/minimax-web-search
+- 上游来源: ~/.codex/skills/minimax-web-search
 - 本技能说明: `SKILL.md`
 
 ## 7. 备注

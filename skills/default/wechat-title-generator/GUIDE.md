@@ -1,7 +1,7 @@
 # wechat-title-generator 使用指南
 
 ## 1. 功能定位
-- 公众号标题生成适配器。用于基于已确认的 Content Brief、文章大纲或初稿、目标读者与文章目标，生成 8 个公众号标题候选并推荐最佳标题。它只负责标题层，不负责全局主题判断与正文生成。
+- Use when generating WeChat article title candidates from a brief, outline, or draft.
 - 默认档位: 仅全量默认包/手动同步
 - 仓库目录: `skills/default/wechat-title-generator`
 - 安装后目录: `~/.openclaw/skills/wechat-title-generator`

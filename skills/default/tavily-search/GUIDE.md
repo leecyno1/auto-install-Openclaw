@@ -23,5 +23,5 @@ bash skills/default/tavily-search/scripts/search.sh --help
 ```
 
 ## 6. 参考资料
-- 上游来源: /Users/lichengyin/.codex/skills/tavily-search
+- 上游来源: ~/.codex/skills/tavily-search
 - 本技能说明: `SKILL.md`

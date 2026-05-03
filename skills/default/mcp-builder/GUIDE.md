@@ -22,5 +22,5 @@ ls -la ~/.openclaw/skills/mcp-builder
 ```
 
 ## 6. 参考资料
-- 上游来源: /Users/lichengyin/.codex/skills/mcp-builder
+- 上游来源: ~/.codex/skills/mcp-builder
 - 本技能说明: `SKILL.md`

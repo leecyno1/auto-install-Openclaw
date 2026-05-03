@@ -1,7 +1,7 @@
 # verification-before-completion 使用指南
 
 ## 1. 功能定位
-- Use when about to claim work is complete, fixed, or passing, before committing or creating PRs - requires running verification commands and confirming output before making any s...
+- Use before claiming work is complete, fixed, or passing.
 - 默认档位: 基础档默认安装
 - 仓库目录: `skills/default/verification-before-completion`
 - 安装后目录: `~/.openclaw/skills/verification-before-completion`

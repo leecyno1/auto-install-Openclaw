@@ -1,7 +1,7 @@
 # ai-image-generation 使用指南
 
 ## 1. 功能定位
-- Generate AI images with FLUX, Gemini, Grok, Seedream, Reve and 50+ models via inference.sh CLI. Models: FLUX Dev LoRA, FLUX.2 Klein LoRA, Gemini 3 Pro Image, Grok Imagine, Seedr...
+- Generate AI images with GPT-Image-2, FLUX, Gemini, Grok, Seedream, Reve and 50+ models via inference.sh CLI. Models: GPT-Image-2, FLUX Dev LoRA, FLUX.2 Klein LoRA, Gemini 3 Pro...
 - 默认档位: 基础档默认安装
 - 仓库目录: `skills/default/ai-image-generation`
 - 安装后目录: `~/.openclaw/skills/ai-image-generation`

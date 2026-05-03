@@ -22,5 +22,5 @@ ls -la ~/.openclaw/skills/frontend-design
 ```
 
 ## 6. 参考资料
-- 上游来源: /Users/lichengyin/.codex/skills/frontend-design
+- 上游来源: ~/.codex/skills/frontend-design
 - 本技能说明: `SKILL.md`

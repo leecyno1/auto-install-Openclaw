@@ -1,7 +1,7 @@
 # openai-docs 使用指南
 
 ## 1. 功能定位
-- Use when the user asks how to build with OpenAI products or APIs and needs up-to-date official documentation with citations, help choosing the latest model for a use case, or ex...
+- Use when the user asks how to build with OpenAI products or APIs and needs up-to-date official documentation with citations, help choosing the latest model for a use case, or mo...
 - 默认档位: 仅全量默认包/手动同步
 - 仓库目录: `skills/default/openai-docs`
 - 安装后目录: `~/.openclaw/skills/openai-docs`

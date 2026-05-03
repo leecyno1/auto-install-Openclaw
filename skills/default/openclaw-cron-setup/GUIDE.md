@@ -22,5 +22,5 @@ ls -la ~/.openclaw/skills/openclaw-cron-setup
 ```
 
 ## 6. 参考资料
-- 上游来源: /Users/lichengyin/.codex/skills/openclaw-cron-setup
+- 上游来源: ~/.codex/skills/openclaw-cron-setup
 - 本技能说明: `SKILL.md`

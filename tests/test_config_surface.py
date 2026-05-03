@@ -38,6 +38,7 @@ class ConfigSurfaceTests(unittest.TestCase):
         )
         self.assertIn('大圣之怒配置中心', output)
         self.assertIn('--install-pixel-house', output)
+        self.assertIn('--remote-local-control', output)
         self.assertIn('--engine-menu', output)
         self.assertIn('--model-only', output)
         self.assertIn('--official-channels-only', output)
@@ -47,7 +48,7 @@ class ConfigSurfaceTests(unittest.TestCase):
         text = CONFIG_MENU.read_text(encoding='utf-8')
         self.assertIn('allow_noninteractive_shortcut_menu()', text)
         self.assertIn(
-            '--help|-h|--repair-config|--repair-minimax|--repair-pairing|--install-pixel-house|--engine-menu|--model-only|--official-channels-only',
+            '--help|-h|--repair-config|--repair-minimax|--install-pixel-house|--remote-local-control|--engine-menu|--model-only|--official-channels-only',
             text,
         )
         self.assertIn('--model-only)', text)
@@ -58,8 +59,46 @@ class ConfigSurfaceTests(unittest.TestCase):
         self.assertIn('repair_runtime_config_preserve_data', text)
         self.assertIn('--repair-minimax)', text)
         self.assertIn('repair_minimax_provider_only_menu', text)
-        self.assertIn('--repair-pairing)', text)
-        self.assertIn('repair_dashboard_pairing_only_menu', text)
+        self.assertIn('--remote-local-control)', text)
+        self.assertIn('install_remote_local_control_menu', text)
+
+    def test_installer_and_menu_prepare_website_dashboard_integration(self):
+        install_text = INSTALL.read_text(encoding='utf-8')
+        menu_text = CONFIG_MENU.read_text(encoding='utf-8')
+        common_text = COMMON.read_text(encoding='utf-8')
+
+        for text in (install_text, menu_text):
+            self.assertIn('OPENCLAW_DASHBOARD_PORT', text)
+            self.assertIn('HERMES_DASHBOARD_PORT', text)
+            self.assertIn('9119', text)
+            self.assertIn('gateway.controlUi.allowedOrigins', text)
+            self.assertIn('OPENCLAW_DASHBOARD_ALLOWED_ORIGINS', text)
+            self.assertIn('https://monkeykingfury.com', text)
+            self.assertIn('gateway.controlUi.allowInsecureAuth', text)
+            self.assertIn('gateway.controlUi.dangerouslyDisableDeviceAuth', text)
+            self.assertIn('patch_openclaw_dashboard_json', text)
+
+        self.assertIn('ensure_website_dashboard_integration_install', install_text)
+        self.assertIn('gateway.controlUi.dangerouslyDisableDeviceAuth" "false"', install_text)
+        self.assertIn("control['dangerouslyDisableDeviceAuth'] = False", install_text)
+        self.assertIn('gateway.controlUi.dangerouslyDisableDeviceAuth" "false"', menu_text)
+        self.assertIn("control['dangerouslyDisableDeviceAuth'] = False", menu_text)
+        self.assertIn('ensure_website_dashboard_integration_menu', menu_text)
+        self.assertIn('start_hermes_dashboard_install', install_text)
+        self.assertIn('start_hermes_dashboard_menu', menu_text)
+        self.assertIn('HERMES_DASHBOARD_HOST="127.0.0.1"', install_text)
+        self.assertIn('HERMES_DASHBOARD_HOST="127.0.0.1"', menu_text)
+        self.assertIn('HERMES_CHAT_PORT_DEFAULT="${HERMES_CHAT_PORT:-8000}"', install_text)
+        self.assertIn('HERMES_CHAT_PORT_DEFAULT="${HERMES_CHAT_PORT:-8000}"', menu_text)
+        self.assertIn('start_hermes_openai_bridge_install', install_text)
+        self.assertIn('start_hermes_openai_bridge_menu', menu_text)
+        self.assertIn('openclaw_install_hermes_openai_bridge', text)
+        self.assertIn('/v1/chat/completions', text)
+        self.assertIn('openclaw_apply_hermes_default_model_from_env', common_text)
+        self.assertIn('cleanup_custom_model_provider_env_install', install_text)
+        self.assertIn('cleanup_custom_model_provider_env_menu', menu_text)
+        self.assertNotIn('--repair-' + 'pairing', text)
+        self.assertNotIn('repair_dashboard_' + 'pairing_only_menu', text)
         self.assertIn('--install-pixel-house)', text)
         self.assertIn('install_pixel_house_stack_menu', text)
         self.assertIn('--engine-menu)', text)
@@ -93,6 +132,18 @@ class ConfigSurfaceTests(unittest.TestCase):
         self.assertIn('RUNTIME_REPO_DIR_MENU="$HOME/.openclaw/runtime/installer-repo"', text)
         self.assertIn('"$RUNTIME_REPO_DIR_MENU/$relative_path"', text)
         self.assertIn('"$RUNTIME_REPO_DIR_MENU/scripts/lobster-world.sh"', text)
+
+    def test_installer_persists_cli_access_and_noninteractive_repair(self):
+        text = INSTALL.read_text(encoding='utf-8')
+        self.assertIn('persist_cli_command_access_install()', text)
+        self.assertIn('persist_openclaw_command_access_install', text)
+        self.assertIn('persist_hermes_command_access_install', text)
+        self.assertIn('sync_minimax_auth_profile_install', text)
+        self.assertIn('auth-profiles.json', text)
+        self.assertIn('ln -sf "$command_path" "/usr/local/bin/$command_name"', text)
+        self.assertIn("printf 'y\\n\\n' | bash \"$config_menu_path\" --repair-config", text)
+        self.assertIn('配置清理失败，继续安装', text)
+        self.assertIn('return 0', text)
 
     def test_install_launchers_prefer_runtime_snapshot_repo(self):
         text = INSTALL.read_text(encoding='utf-8')

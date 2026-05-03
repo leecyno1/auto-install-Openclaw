@@ -1,121 +1,150 @@
 ---
-name: vercel-react-native-skills
-description:
-  React Native and Expo best practices for building performant mobile apps. Use
-  when building React Native components, optimizing list performance,
-  implementing animations, or working with native modules. Triggers on tasks
-  involving React Native, Expo, mobile performance, or native platform APIs.
+name: react-native-dev
+description: |
+  React Native and Expo development guide covering components, styling, animations, navigation,
+  state management, forms, networking, performance optimization, testing, native capabilities,
+  and engineering (project structure, deployment, SDK upgrades, CI/CD).
+  Use when: building React Native or Expo apps, implementing animations or native UI, managing
+  state, fetching data, writing tests, optimizing performance, deploying to App Store/Play Store,
+  setting up CI/CD, upgrading Expo SDK, or configuring Tailwind/NativeWind.
 license: MIT
 metadata:
-  author: vercel
-  version: '1.0.0'
+  version: "1.0.0"
+  category: mobile
+  sources:
+    - expo/skills by Expo (https://github.com/expo/skills) — Native UI, navigation, and animation patterns
+    - Expo documentation (docs.expo.dev)
+    - React Native documentation (reactnative.dev)
+    - EAS (Expo Application Services) documentation
 ---
 
-# React Native Skills
+# React Native & Expo Development Guide
 
-Comprehensive best practices for React Native and Expo applications. Contains
-rules across multiple categories covering performance, animations, UI patterns,
-and platform-specific optimizations.
+A practical guide for building production-ready React Native and Expo applications. Covers UI, animations, state, testing, performance, and deployment.
 
-## When to Apply
+## References
 
-Reference these guidelines when:
+Consult these resources as needed:
 
-- Building React Native or Expo apps
-- Optimizing list and scroll performance
-- Implementing animations with Reanimated
-- Working with images and media
-- Configuring native modules or fonts
-- Structuring monorepo projects with native dependencies
-
-## Rule Categories by Priority
-
-| Priority | Category         | Impact   | Prefix               |
-| -------- | ---------------- | -------- | -------------------- |
-| 1        | List Performance | CRITICAL | `list-performance-`  |
-| 2        | Animation        | HIGH     | `animation-`         |
-| 3        | Navigation       | HIGH     | `navigation-`        |
-| 4        | UI Patterns      | HIGH     | `ui-`                |
-| 5        | State Management | MEDIUM   | `react-state-`       |
-| 6        | Rendering        | MEDIUM   | `rendering-`         |
-| 7        | Monorepo         | MEDIUM   | `monorepo-`          |
-| 8        | Configuration    | LOW      | `fonts-`, `imports-` |
+- [references/navigation.md](references/navigation.md) — Expo Router: Stack, Tabs, NativeTabs (`headerLargeTitle`, `headerBackButtonDisplayMode`), links, modals, sheets, context menus
+- [references/components.md](references/components.md) — FlashList patterns, `expo-image`, safe areas (`contentInsetAdjustmentBehavior`), native controls, blur/glass effects, storage
+- [references/styling.md](references/styling.md) — StyleSheet, NativeWind/Tailwind, platform styles, theming, dark mode
+- [references/animations.md](references/animations.md) — Reanimated 3: entering/exiting, shared values, gestures, scroll-driven
+- [references/state-management.md](references/state-management.md) — Zustand (selectors, persist), Jotai (atoms, derived), React Query, Context
+- [references/forms.md](references/forms.md) — React Hook Form + Zod: validation, multi-step, dynamic arrays
+- [references/networking.md](references/networking.md) — fetch wrapper, React Query (optimistic updates), auth tokens, offline, API routes, webhooks
+- [references/performance.md](references/performance.md) — Profiling workflow, FlashList + `memo`, bundle analysis, TTI, memory leaks, animation perf
+- [references/testing.md](references/testing.md) — Jest, React Native Testing Library, E2E with Maestro
+- [references/native-capabilities.md](references/native-capabilities.md) — Camera, location, permissions (`use*Permissions` hooks), haptics, notifications, biometrics
+- [references/engineering.md](references/engineering.md) — Project layout (`components/ui/`, `stores/`, `services/`), path aliases, SDK upgrades, EAS build/submit, CI/CD, DOM components
 
 ## Quick Reference
 
-### 1. List Performance (CRITICAL)
+### Component Preferences
 
-- `list-performance-virtualize` - Use FlashList for large lists
-- `list-performance-item-memo` - Memoize list item components
-- `list-performance-callbacks` - Stabilize callback references
-- `list-performance-inline-objects` - Avoid inline style objects
-- `list-performance-function-references` - Extract functions outside render
-- `list-performance-images` - Optimize images in lists
-- `list-performance-item-expensive` - Move expensive work outside items
-- `list-performance-item-types` - Use item types for heterogeneous lists
+| Purpose | Use | Instead of |
+|---------|-----|------------|
+| Lists | `FlashList` (`@shopify/flash-list`) + `memo` items | `FlatList` (no view recycling) |
+| Images | `expo-image` | RN `<Image>` (no cache, no WebP) |
+| Press | `Pressable` | `TouchableOpacity` (legacy) |
+| Audio | `expo-audio` | `expo-av` (deprecated) |
+| Video | `expo-video` | `expo-av` (deprecated) |
+| Animations | Reanimated 3 | RN Animated API (limited) |
+| Gestures | Gesture Handler | PanResponder (legacy) |
+| Platform check | `process.env.EXPO_OS` | `Platform.OS` |
+| Context | `React.use()` | `React.useContext()` (React 18) |
+| Safe area scroll | `contentInsetAdjustmentBehavior="automatic"` | `<SafeAreaView>` |
+| SF Symbols | `expo-image` with `source="sf:name"` | `expo-symbols` |
 
-### 2. Animation (HIGH)
+### Scaling Up
 
-- `animation-gpu-properties` - Animate only transform and opacity
-- `animation-derived-value` - Use useDerivedValue for computed animations
-- `animation-gesture-detector-press` - Use Gesture.Tap instead of Pressable
+| Situation | Consider |
+|-----------|----------|
+| Long lists with scroll jank | Virtualized list libraries (e.g. FlashList) |
+| Want Tailwind-style classes | NativeWind v4 |
+| High-frequency storage reads | Sync-based storage (e.g. MMKV) |
+| New project with Expo | Expo Router over bare React Navigation |
 
-### 3. Navigation (HIGH)
+### State Management
 
-- `navigation-native-navigators` - Use native stack and native tabs over JS navigators
+| State Type | Solution |
+|------------|----------|
+| Local UI state | `useState` / `useReducer` |
+| Shared app state | Zustand or Jotai |
+| Server / async data | React Query |
+| Form state | React Hook Form + Zod |
 
-### 4. UI Patterns (HIGH)
+### Performance Priorities
 
-- `ui-expo-image` - Use expo-image for all images
-- `ui-image-gallery` - Use Galeria for image lightboxes
-- `ui-pressable` - Use Pressable over TouchableOpacity
-- `ui-safe-area-scroll` - Handle safe areas in ScrollViews
-- `ui-scrollview-content-inset` - Use contentInset for headers
-- `ui-menus` - Use native context menus
-- `ui-native-modals` - Use native modals when possible
-- `ui-measure-views` - Use onLayout, not measure()
-- `ui-styling` - Use StyleSheet.create or Nativewind
+| Priority | Issue | Fix |
+|----------|-------|-----|
+| CRITICAL | Long list jank | `FlashList` + memoized items |
+| CRITICAL | Large bundle | Avoid barrel imports, enable R8 |
+| HIGH | Too many re-renders | Zustand selectors, React Compiler |
+| HIGH | Slow startup | Disable bundle compression, native nav |
+| MEDIUM | Animation drops | Only animate `transform`/`opacity` |
 
-### 5. State Management (MEDIUM)
+## New Project Init
 
-- `react-state-minimize` - Minimize state subscriptions
-- `react-state-dispatcher` - Use dispatcher pattern for callbacks
-- `react-state-fallback` - Show fallback on first render
-- `react-compiler-destructure-functions` - Destructure for React Compiler
-- `react-compiler-reanimated-shared-values` - Handle shared values with compiler
+```bash
+# 1. Create project
+npx create-expo-app@latest my-app --template blank-typescript
+cd my-app
 
-### 6. Rendering (MEDIUM)
+# 2. Install Expo Router + core deps
+npx expo install expo-router react-native-safe-area-context react-native-screens
 
-- `rendering-text-in-text-component` - Wrap text in Text components
-- `rendering-no-falsy-and` - Avoid falsy && for conditional rendering
-
-### 7. Monorepo (MEDIUM)
-
-- `monorepo-native-deps-in-app` - Keep native dependencies in app package
-- `monorepo-single-dependency-versions` - Use single versions across packages
-
-### 8. Configuration (LOW)
-
-- `fonts-config-plugin` - Use config plugins for custom fonts
-- `imports-design-system-folder` - Organize design system imports
-- `js-hoist-intl` - Hoist Intl object creation
-
-## How to Use
-
-Read individual rule files for detailed explanations and code examples:
-
-```
-rules/list-performance-virtualize.md
-rules/animation-gpu-properties.md
+# 3. (Optional) Common extras
+npx expo install expo-image react-native-reanimated react-native-gesture-handler
 ```
 
-Each rule file contains:
+Then configure:
 
-- Brief explanation of why it matters
-- Incorrect code example with explanation
-- Correct code example with explanation
-- Additional context and references
+1. Set entry point in `package.json`: `"main": "expo-router/entry"`
+2. Add scheme in `app.json`: `"scheme": "my-app"`
+3. Delete `App.tsx` and `index.ts`
+4. Create `app/_layout.tsx` as root Stack layout
+5. Create `app/(tabs)/_layout.tsx` for tab navigation
+6. Create route files in `app/(tabs)/` (see [navigation.md](references/navigation.md))
 
-## Full Compiled Document
+For web support, also install: `npx expo install react-native-web react-dom @expo/metro-runtime`
 
-For the complete guide with all rules expanded: `AGENTS.md`
+## Core Principles
+
+**Consult references before writing**: when implementing navigation, lists, networking, or project setup, read the matching reference file above for patterns and pitfalls.
+
+**Try Expo Go first** (`npx expo start`). Custom builds (`eas build`) only needed when using local Expo modules, Apple targets, or third-party native modules not in Expo Go.
+
+**Conditional rendering**: use `{count > 0 && <Text />}` not `{count && <Text />}` (renders "0").
+
+**Animation rule**: only animate `transform` and `opacity` — GPU-composited, no layout thrash.
+
+**Imports**: always import directly from source, not barrel files — avoids bundle bloat.
+
+**Lists and images**: before using `FlatList` or RN `Image`, check the Component Preferences table above — `FlashList` and `expo-image` are almost always the right choice.
+
+**Route files**: always use kebab-case, never co-locate components/types/utils in `app/`.
+
+## Checklist
+
+### New Project Setup
+- [ ] `tsconfig.json` path aliases configured
+- [ ] `EXPO_PUBLIC_API_URL` env var set per environment
+- [ ] Root layout has `GestureHandlerRootView` (if using gestures)
+- [ ] `contentInsetAdjustmentBehavior="automatic"` on all scroll views
+- [ ] `FlashList` instead of `FlatList` for lists > 20 items
+
+### Before Shipping
+- [ ] Profile in `--profile` mode, fix frames > 16ms
+- [ ] Bundle analyzed (`source-map-explorer`), no barrel imports
+- [ ] R8 enabled for Android
+- [ ] Unit + component tests for critical paths
+- [ ] E2E flows for login, core feature, checkout
+
+---
+
+Flutter development → see `flutter-dev` skill.
+iOS native (UIKit/SwiftUI) → see `ios-application-dev` skill.
+Android native (Kotlin/Compose) → see `android-native-dev` skill.
+
+*React Native is a trademark of Meta Platforms, Inc. Expo is a trademark of 650 Industries, Inc. All other product names are trademarks of their respective owners.*

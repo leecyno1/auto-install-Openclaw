@@ -1,22 +1,26 @@
-# `minimax-docx` 使用指南
+# minimax-docx 使用指南
 
-## 作用
-- MiniMax 官方 DOCX 技能。
-- 支持创建、编辑、套模板/格式化 Word 文档。
+## 1. 功能定位
+- Professional DOCX document creation, editing, and formatting using OpenXML SDK (.NET). Three pipelines: (A) create new documents from scratch, (B) fill/edit content in existing...
+- 默认档位: 仅全量默认包/手动同步
+- 仓库目录: `skills/default/minimax-docx`
+- 安装后目录: `~/.openclaw/skills/minimax-docx`
 
-## 前置条件
-- 首次执行：`bash scripts/setup.sh`
-- 每次会话首个任务建议先跑：`scripts/env_check.sh`
+## 2. 使用前准备
+- 无强制 API Key；按 skill 自身依赖运行。
 
-## 常见流程
-- 创建文档：`dotnet run --project scripts/dotnet/MiniMaxAIDocx.Cli -- create ...`
-- 编辑替换：`... -- edit replace-text ...`
-- 套模板：`... -- apply-template ...`
-- 校验：`... -- validate ...`
+## 3. 配置步骤
+1. 通常无需额外配置。若运行时报缺依赖，再按 `SKILL.md` 补装。
 
-## 快速示例
+## 4. 推荐提问方式
+- 请使用 minimax-docx 帮我处理当前任务。
+- 如果 minimax-docx 需要额外配置，请先告诉我缺少什么。
+
+## 5. 手动验证
 ```bash
-dotnet run --project skills/default/minimax-docx/scripts/dotnet/MiniMaxAIDocx.Cli -- \
-  create --type report --title "OpenClaw Roadmap" --output roadmap.docx
+ls -la ~/.openclaw/skills/minimax-docx
 ```
 
+## 6. 参考资料
+- 上游来源: https://github.com/MiniMax-AI/skills/tree/main/skills/minimax-docx
+- 本技能说明: `SKILL.md`

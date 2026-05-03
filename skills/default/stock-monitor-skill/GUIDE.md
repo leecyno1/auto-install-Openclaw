@@ -23,5 +23,5 @@ bash skills/default/stock-monitor-skill/scripts/control.sh status
 ```
 
 ## 6. 参考资料
-- 上游来源: /Users/lichengyin/.codex/skills/stock-monitor-skill
+- 上游来源: ~/.codex/skills/stock-monitor-skill
 - 本技能说明: `SKILL.md`

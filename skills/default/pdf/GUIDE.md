@@ -22,5 +22,5 @@ python3 skills/default/pdf/scripts/check_fillable_fields.py --help
 ```
 
 ## 6. 参考资料
-- 上游来源: /Users/lichengyin/.codex/skills/pdf
+- 上游来源: ~/.codex/skills/pdf
 - 本技能说明: `SKILL.md`

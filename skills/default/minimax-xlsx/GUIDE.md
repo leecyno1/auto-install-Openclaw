@@ -1,19 +1,26 @@
-# `minimax-xlsx` 使用指南
+# minimax-xlsx 使用指南
 
-## 作用
-- MiniMax 官方表格技能，处理 `.xlsx/.xlsm/.csv/.tsv`。
-- 支持读取分析、创建新表、编辑现有表、公式修复与校验。
+## 1. 功能定位
+- Open, create, read, analyze, edit, or validate Excel/spreadsheet files (.xlsx, .xlsm, .csv, .tsv). Use when the user asks to create, build, modify, analyze, read, validate, or f...
+- 默认档位: 仅全量默认包/手动同步
+- 仓库目录: `skills/default/minimax-xlsx`
+- 安装后目录: `~/.openclaw/skills/minimax-xlsx`
 
-## 核心原则
-- 新建可用模板方式。
-- 编辑现有文件优先走 XML 解包/回包流程，避免格式丢失。
-- 涉及计算必须优先写公式而非硬编码数值。
+## 2. 使用前准备
+- 无强制 API Key；按 skill 自身依赖运行。
 
-## 常用命令
+## 3. 配置步骤
+1. 通常无需额外配置。若运行时报缺依赖，再按 `SKILL.md` 补装。
+
+## 4. 推荐提问方式
+- 请使用 minimax-xlsx 帮我处理当前任务。
+- 如果 minimax-xlsx 需要额外配置，请先告诉我缺少什么。
+
+## 5. 手动验证
 ```bash
-python3 skills/default/minimax-xlsx/scripts/xlsx_reader.py input.xlsx
-python3 skills/default/minimax-xlsx/scripts/xlsx_unpack.py input.xlsx /tmp/xlsx_work
-python3 skills/default/minimax-xlsx/scripts/xlsx_pack.py /tmp/xlsx_work output.xlsx
-python3 skills/default/minimax-xlsx/scripts/formula_check.py output.xlsx --report
+ls -la ~/.openclaw/skills/minimax-xlsx
 ```
 
+## 6. 参考资料
+- 上游来源: https://github.com/MiniMax-AI/skills/tree/main/skills/minimax-xlsx
+- 本技能说明: `SKILL.md`

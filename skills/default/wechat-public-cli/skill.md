@@ -1,6 +1,6 @@
 ---
 name: wechat-public-cli
-description: Publish and download WeChat Public Platform content and Baijiahao articles via a local CLI.
+description: Use when publishing or managing WeChat Official Account content via CLI.
 homepage: https://github.com/ai-chen2050/obsidian-wechat-public-platform
 metadata:
     {

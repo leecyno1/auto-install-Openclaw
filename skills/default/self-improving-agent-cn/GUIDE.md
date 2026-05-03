@@ -22,5 +22,5 @@ ls -la ~/.openclaw/skills/self-improving-agent-cn
 ```
 
 ## 6. 参考资料
-- 上游来源: /Users/lichengyin/.codex/skills/self-improving-agent-cn
+- 上游来源: ~/.codex/skills/self-improving-agent-cn
 - 本技能说明: `SKILL.md`

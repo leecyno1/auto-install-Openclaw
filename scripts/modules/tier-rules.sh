@@ -5,11 +5,11 @@
 # 职责：
 # - 配置三档流量规则（low/medium/high/none）
 # - 设置配额限制（请求数、图片数、视频数）
-# - 可选：部署网关流量监测代理（端口 13147）
+# - 写入请求次数/媒体配额规则；13147 兼容代理仅按显式命令启动
 #
 # CLI 用法：
 #   openclaw-setup config tier-rules --level low|medium|high|none
-#   openclaw-setup config tier-rules --with-monitoring
+#   openclaw-setup config tier-rules --restart-enforcer
 #   openclaw-setup config tier-rules --show
 #===============================================================================
 
@@ -100,13 +100,6 @@ declare -A TIER_MAX_REQUESTS=(
     ["high"]="0"
 )
 
-declare -A TIER_MAX_TOKENS=(
-    ["none"]="0"
-    ["low"]="600000"
-    ["medium"]="2400000"
-    ["high"]="6000000"
-)
-
 declare -A TIER_MAX_IMAGE_REQUESTS=(
     ["none"]="0"
     ["low"]="0"
@@ -155,7 +148,6 @@ show_current_config() {
 
     echo "Limits for $level:"
     echo "  Max Requests:      ${TIER_MAX_REQUESTS["$level"]:-unlimited}"
-    echo "  Max Tokens:       ${TIER_MAX_TOKENS["$level"]:-unlimited}"
     echo "  Max Image Req:    ${TIER_MAX_IMAGE_REQUESTS["$level"]:-0}"
     echo "  Max Video Req:    ${TIER_MAX_VIDEO_REQUESTS["$level"]:-0}"
     echo "  Window Hours:     ${TIER_WINDOW_HOURS["$level"]:-5}"
@@ -199,9 +191,9 @@ set_tier_level() {
     upsert_env "OPENCLAW_RULE_PROFILE" "$level"
     upsert_env "OPENCLAW_RULE_WINDOW_HOURS" "${TIER_WINDOW_HOURS["$level"]}"
     upsert_env "OPENCLAW_RULE_MAX_REQUESTS" "${TIER_MAX_REQUESTS["$level"]}"
-    upsert_env "OPENCLAW_RULE_MAX_TOKENS" "${TIER_MAX_TOKENS["$level"]}"
     upsert_env "OPENCLAW_RULE_MAX_IMAGE_REQUESTS" "${TIER_MAX_IMAGE_REQUESTS["$level"]}"
     upsert_env "OPENCLAW_RULE_MAX_VIDEO_REQUESTS" "${TIER_MAX_VIDEO_REQUESTS["$level"]}"
+    upsert_env "OPENCLAW_MEDIA_QUOTA_STATE_FILE" "$HOME/.openclaw/quota/media-state.json"
 
     # 应用到 web profile（如果存在）
     if [ -f "$APPLY_WEB_PROFILE" ]; then
@@ -209,9 +201,7 @@ set_tier_level() {
         bash "$APPLY_WEB_PROFILE" "$level" 2>/dev/null || true
     fi
 
-    # 更新配额脚本配置
     update_quota_config "$level"
-
     log_success "Tier level set to: $level"
 }
 
@@ -224,6 +214,7 @@ update_quota_config() {
     export OPENCLAW_RULE_MAX_VIDEO_REQUESTS="${TIER_MAX_VIDEO_REQUESTS["$level"]}"
     export OPENCLAW_RULE_MAX_REQUESTS="${TIER_MAX_REQUESTS["$level"]}"
     export OPENCLAW_RULE_WINDOW_HOURS="${TIER_WINDOW_HOURS["$level"]}"
+    export OPENCLAW_MEDIA_QUOTA_STATE_FILE="$HOME/.openclaw/quota/media-state.json"
 }
 
 #===============================================================================
@@ -250,8 +241,8 @@ start_gateway_enforcer() {
         return 1
     }
 
-    log_success "Gateway enforcer started on port 13147"
-    log_info "Configure clients to use: http://localhost:13147"
+    log_success "Gateway enforcer started on compatibility port 13147"
+    log_info "Compatibility quota proxy: http://127.0.0.1:13147"
 }
 
 stop_gateway_enforcer() {
@@ -306,7 +297,7 @@ Usage:
 
 Options:
   --level, -l <level>     Set tier level: none, low, medium, high
-  --with-monitoring       Start gateway quota enforcer proxy
+  --with-monitoring       Deprecated compatibility flag; does not auto-start services
   --start-enforcer        Start gateway enforcer only
   --stop-enforcer         Stop gateway enforcer only
   --restart-enforcer      Restart gateway enforcer
@@ -316,16 +307,16 @@ Options:
 
 Levels:
   none    No limits (unrestricted)
-  low     100 req/5h, 600K tokens, 0 images, 0 videos
-  medium  300 req/5h, 2.4M tokens, 20 images, 1 video
-  high    unlimited req, 6M tokens, 50 images, 2 videos
+  low     100 req/5h, 0 images, 0 videos
+  medium  300 req/5h, 20 images, 1 video
+  high    unlimited text req, 50 images, 2 videos
 
 Examples:
   # Set to medium tier
   openclaw-setup config tier-rules --level medium
 
-  # Set to high tier with monitoring
-  openclaw-setup config tier-rules --level high --with-monitoring
+  # Start the legacy quota proxy explicitly when needed
+  openclaw-setup config tier-rules --restart-enforcer
 
   # Check status
   openclaw-setup config tier-rules --status
@@ -414,10 +405,9 @@ main() {
     if [ -n "$level" ]; then
         set_tier_level "$level"
 
-        # 可选：启动网关执行器
         if [ "$with_monitoring" = "true" ]; then
             echo ""
-            start_gateway_enforcer
+            log_info "--with-monitoring 已兼容保留；如需 13147 兼容代理，请显式使用 --restart-enforcer。"
         fi
     else
         show_help

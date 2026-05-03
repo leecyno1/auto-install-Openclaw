@@ -73,6 +73,18 @@ grep -q "mirror.ghproxy.com/https://raw.githubusercontent.com/leecyno1/auto-inst
 grep -q "openclaw-setup config" README.md || fail "README missing openclaw-setup primary entry"
 pass "README command markers"
 
+# 7b) 上市默认入口负向检查：不再推荐旧 pairing 修复或 13147 外部入口
+if rg -n 'dashboard-pairing|repair-pairing|--repair-pairing' README.md install.sh config-menu.sh scripts/modules docs >/dev/null 2>&1; then
+    fail "found legacy pairing repair entry references"
+fi
+if rg -n '外部统一入口|外部统一限流入口|13147 配额强制|限流代理自动刷新' README.md install.sh config-menu.sh scripts/modules/tier-rules.sh >/dev/null 2>&1; then
+    fail "found 13147 recommended-entry wording"
+fi
+if rg -n 'OPENCLAW_PUBLIC_API_URL.*127\.0\.0\.1:13147|OPENCLAW_QUOTA_ENFORCER_URL.*127\.0\.0\.1:13147' README.md install.sh config-menu.sh scripts/modules/tier-rules.sh >/dev/null 2>&1; then
+    fail "found default env wiring to 13147"
+fi
+pass "launch default negative markers"
+
 # 8) 独立仓库命名检查（不应再指向旧仓库）
 if rg -n "miaoxworld/OpenClawInstaller|raw.githubusercontent.com/miaoxworld/OpenClawInstaller" README.md install.sh config-menu.sh docs/feishu-setup.md >/dev/null 2>&1; then
     fail "found legacy upstream repository references"

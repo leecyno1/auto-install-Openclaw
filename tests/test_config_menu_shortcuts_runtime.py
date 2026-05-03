@@ -25,6 +25,7 @@ config_channels_official() { echo "SHORTCUT:CHANNELS:$*"; }
 repair_runtime_config_preserve_data() { echo "SHORTCUT:REPAIR:$*"; }
 install_pixel_house_stack_menu() { echo "SHORTCUT:PIXEL:$*"; }
 manage_engine_menu() { echo "SHORTCUT:ENGINE:$*"; }
+install_remote_local_control_menu() { echo "SHORTCUT:REMOTE_LOCAL:$*"; }
 '''
             marker = '    # 启动阶段只做本地 JSON 快速修复，避免旧服务器在进入菜单前卡死。'
             text = text.replace(marker, stub_block + '\n' + marker, 1)
@@ -42,6 +43,7 @@ manage_engine_menu() { echo "SHORTCUT:ENGINE:$*"; }
                 (['bash', str(script_copy), '--repair-config'], 'SHORTCUT:REPAIR:'),
                 (['bash', str(script_copy), '--install-pixel-house'], 'SHORTCUT:PIXEL:'),
                 (['bash', str(script_copy), '--engine-menu'], 'SHORTCUT:ENGINE:'),
+                (['bash', str(script_copy), '--remote-local-control'], 'SHORTCUT:REMOTE_LOCAL:'),
             ]
 
             for cmd, expected in cases:

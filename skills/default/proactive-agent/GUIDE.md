@@ -22,5 +22,5 @@ ls -la ~/.openclaw/skills/proactive-agent
 ```
 
 ## 6. 参考资料
-- 上游来源: /Users/lichengyin/.codex/skills/proactive-agent
+- 上游来源: ~/.codex/skills/proactive-agent
 - 本技能说明: `SKILL.md`

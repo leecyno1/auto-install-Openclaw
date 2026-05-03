@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-import os
 import json
+import os
 import subprocess
 import sys
 
@@ -34,15 +34,10 @@ def call_mcp(query):
         or config.get('output_path')
         or '~/.openclaw/workspace/minimax-output'
     )
-    api_host = (
-        os.environ.get('MINIMAX_API_HOST')
-        or config.get('api_host')
-        or 'https://api.minimaxi.com'
-    )
     env = {
         'MINIMAX_API_KEY': api_key,
         'MINIMAX_MCP_BASE_PATH': os.path.expanduser(output_path),
-        'MINIMAX_API_HOST': api_host,
+        'MINIMAX_API_HOST': os.environ.get('MINIMAX_API_HOST') or config.get('api_host') or 'https://api.minimaxi.com',
     }
 
     # MCP protocol: send initialize + tool call in one go

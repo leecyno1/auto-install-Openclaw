@@ -24,5 +24,5 @@ node --version
 ```
 
 ## 6. 参考资料
-- 上游来源: /Users/lichengyin/.codex/skills/url-to-markdown
+- 上游来源: ~/.codex/skills/url-to-markdown
 - 本技能说明: `SKILL.md`

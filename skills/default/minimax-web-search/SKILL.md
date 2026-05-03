@@ -1,17 +1,11 @@
 ---
 name: minimax-web-search
-description: 使用 MiniMax MCP 进行网络搜索（优先）。触发条件：(1) 用户要求进行网络搜索、在线搜索、查找信息 (2) 需要查询最新资讯、新闻、资料 (3) 使用 MiniMax 的 web_search 功能
+description: 使用 MiniMax MCP 进行网络搜索。触发条件：(1) 用户要求进行网络搜索、在线搜索、查找信息 (2) 需要查询最新资讯、新闻、资料 (3) 使用 MiniMax 的 web_search 功能
 ---
 
 # minimax-web-search
 
 使用 MiniMax MCP 服务器进行网络搜索。
-
-## 优先策略（必须遵循）
-
-1. 只要任务属于“联网搜索/实时信息查询”，优先使用本 skill 的 `web_search`（MiniMax MCP）。
-2. 不先调用其他搜索 skill；仅当 MiniMax MCP 连续失败或鉴权失败时，才回退到其它搜索能力。
-3. 在回退时，必须在回复中标注回退原因（如 API Key 缺失、超时、上游错误）。
 
 ## 执行流程（首次需要安装，后续直接步骤4调用）
 
@@ -56,7 +50,7 @@ uvx minimax-coding-plan-mcp --help
 
 **方法 1: 使用默认源安装**
 ```bash
-uv tool install minimax-coding-plan-mcp
+uvx install minimax-coding-plan-mcp
 ```
 
 **方法 2: 使用国内镜像加速（如果默认源下载失败）**
@@ -64,13 +58,13 @@ uv tool install minimax-coding-plan-mcp
 临时使用清华镜像源：
 ```bash
 export UV_INDEX_URL="https://pypi.tuna.tsinghua.edu.cn/simple"
-uv tool install minimax-coding-plan-mcp
+uvx install minimax-coding-plan-mcp
 ```
 
 或者临时使用阿里云镜像源：
 ```bash
 export UV_INDEX_URL="https://mirrors.aliyun.com/pypi/simple/"
-uv tool install minimax-coding-plan-mcp
+uvx install minimax-coding-plan-mcp
 ```
 
 ### 步骤 2: 检查 API Key 配置

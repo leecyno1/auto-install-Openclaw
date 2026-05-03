@@ -1,7 +1,7 @@
 # executing-plans 使用指南
 
 ## 1. 功能定位
-- Use when you have a written implementation plan to execute in a separate session with review checkpoints
+- Use when executing a written implementation plan with review checkpoints.
 - 默认档位: 仅全量默认包/手动同步
 - 仓库目录: `skills/default/executing-plans`
 - 安装后目录: `~/.openclaw/skills/executing-plans`

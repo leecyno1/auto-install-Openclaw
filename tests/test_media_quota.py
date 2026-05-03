@@ -114,6 +114,46 @@ class MediaQuotaTests(unittest.TestCase):
         self.assertTrue(status['text']['enabled'])
         self.assertTrue(status['text']['unlimited'])
 
+    def test_none_profile_is_unlimited_for_all_categories(self):
+        self.assertIsNotNone(media_quota)
+        env = dict(self.env)
+        env['OPENCLAW_RULE_PROFILE'] = 'none'
+        env['OPENCLAW_RULE_MAX_REQUESTS'] = '0'
+        env['OPENCLAW_RULE_MAX_IMAGE_REQUESTS'] = '0'
+        env['OPENCLAW_RULE_MAX_VIDEO_REQUESTS'] = '0'
+        for category in ('text', 'image', 'video'):
+            for _ in range(3):
+                reservation = media_quota.reserve_quota(category, 1, env=env, tool='test')
+                self.assertTrue(reservation['ok'], reservation)
+                media_quota.commit_quota(reservation['reservation']['id'], env=env)
+        status = media_quota.get_quota_status(env=env)
+        for category in ('text', 'image', 'video'):
+            self.assertTrue(status[category]['enabled'])
+            self.assertTrue(status[category]['unlimited'])
+            self.assertEqual(status[category]['remaining'], -1)
+
+    def test_high_profile_keeps_image_and_video_caps(self):
+        self.assertIsNotNone(media_quota)
+        env = dict(self.env)
+        env['OPENCLAW_RULE_PROFILE'] = 'high'
+        env['OPENCLAW_RULE_MAX_REQUESTS'] = '0'
+        env['OPENCLAW_RULE_MAX_IMAGE_REQUESTS'] = '50'
+        env['OPENCLAW_RULE_MAX_VIDEO_REQUESTS'] = '2'
+        for _ in range(50):
+            reservation = media_quota.reserve_quota('image', 1, env=env, tool='test')
+            self.assertTrue(reservation['ok'])
+            media_quota.commit_quota(reservation['reservation']['id'], env=env)
+        blocked_image = media_quota.reserve_quota('image', 1, env=env, tool='test')
+        self.assertFalse(blocked_image['ok'])
+        self.assertEqual(blocked_image['reason'], 'quota_exceeded')
+        for _ in range(2):
+            reservation = media_quota.reserve_quota('video', 1, env=env, tool='test')
+            self.assertTrue(reservation['ok'])
+            media_quota.commit_quota(reservation['reservation']['id'], env=env)
+        blocked_video = media_quota.reserve_quota('video', 1, env=env, tool='test')
+        self.assertFalse(blocked_video['ok'])
+        self.assertEqual(blocked_video['reason'], 'quota_exceeded')
+
 
 if __name__ == '__main__':
     unittest.main()

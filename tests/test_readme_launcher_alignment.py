@@ -62,7 +62,7 @@ class ReadmeLauncherAlignmentTests(unittest.TestCase):
         self.assertIn('bash ~/.openclaw/config-menu.sh', readme_text)
         self.assertIn('~/.openclaw/lobster-world.sh start', readme_text)
         self.assertIn('~/.openclaw/health-server.sh status', readme_text)
-        self.assertIn('python3 ~/.openclaw/scripts/gateway-quota-enforcer.py status', readme_text)
+        self.assertNotIn('python3 ~/.openclaw/scripts/gateway-quota-enforcer.py status', readme_text)
 
         self.assertIn('$CONFIG_DIR/config-menu.sh', install_text)
         self.assertIn('$CONFIG_DIR/lobster-world.sh', install_text)
@@ -76,7 +76,7 @@ class ReadmeLauncherAlignmentTests(unittest.TestCase):
         self.assertIn('bash ~/.openclaw/config-menu.sh --engine-menu', readme_text)
         self.assertIn('bash ~/.openclaw/config-menu.sh --repair-config', readme_text)
         self.assertIn('bash ~/.openclaw/config-menu.sh --repair-minimax', readme_text)
-        self.assertIn('bash ~/.openclaw/config-menu.sh --repair-pairing', readme_text)
+        self.assertNotIn('bash ~/.openclaw/config-menu.sh --repair-' + 'pairing', readme_text)
         self.assertIn('bash ~/.openclaw/config-menu.sh --install-pixel-house', readme_text)
 
     def test_config_menu_help_shortcuts_align_with_readme_shortcuts(self):
@@ -87,9 +87,9 @@ class ReadmeLauncherAlignmentTests(unittest.TestCase):
             '--official-channels-only',
             '--repair-config',
             '--repair-minimax',
-            '--repair-pairing',
             '--install-pixel-house',
             '--engine-menu',
+            '--remote-local-control',
         )
         for shortcut in expected_shortcuts:
             self.assertIn(shortcut, config_menu_text)
@@ -100,11 +100,25 @@ class ReadmeLauncherAlignmentTests(unittest.TestCase):
         self.assertIn('openclaw-setup repair', config_menu_text)
         self.assertIn('openclaw-setup repair minimax', readme_text)
 
-    def test_config_menu_mentions_health_and_quota_helpers_under_pixel_house(self):
+    def test_readme_documents_remote_local_control_as_optional(self):
+        readme_text = README.read_text(encoding='utf-8')
+        self.assertIn('openclaw-setup config --remote-local-control', readme_text)
+        self.assertIn('反向 SSH', readme_text)
+        self.assertIn('可选', readme_text)
+
+    def test_config_menu_mentions_health_without_default_quota_proxy_under_pixel_house(self):
         config_menu_text = (ROOT / 'config-menu.sh').read_text(encoding='utf-8')
         self.assertIn('13146 健康检查', config_menu_text)
-        self.assertIn('13147 配额强制', config_menu_text)
-        self.assertIn('安装/修复像素小屋时会同步接线并启动这两个辅助服务', config_menu_text)
+        self.assertNotIn('13147 配额强制', config_menu_text)
+        self.assertIn('安装/修复像素小屋时会同步接线并启动健康检查服务', config_menu_text)
+
+    def test_readme_does_not_recommend_legacy_pairing_or_13147_public_entry(self):
+        readme_text = README.read_text(encoding='utf-8')
+        self.assertNotIn('dashboard-pairing', readme_text)
+        self.assertNotIn('repair-pairing', readme_text)
+        self.assertNotIn('外部统一限流入口', readme_text)
+        self.assertNotIn('外部统一入口', readme_text)
+        self.assertNotIn('OPENCLAW_PUBLIC_API_URL=http://127.0.0.1:13147', readme_text)
 
 
 if __name__ == '__main__':

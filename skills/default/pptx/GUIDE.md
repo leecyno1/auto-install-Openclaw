@@ -22,5 +22,5 @@ node -e "console.log("pptx skill ready")"
 ```
 
 ## 6. 参考资料
-- 上游来源: /Users/lichengyin/.codex/skills/pptx
+- 上游来源: ~/.codex/skills/pptx
 - 本技能说明: `SKILL.md`

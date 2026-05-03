@@ -23,5 +23,5 @@ ls -la ~/.openclaw/skills/multi-search-engine
 ```
 
 ## 6. 参考资料
-- 上游来源: /Users/lichengyin/.codex/skills/multi-search-engine
+- 上游来源: ~/.codex/skills/multi-search-engine
 - 本技能说明: `SKILL.md`

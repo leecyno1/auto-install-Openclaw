@@ -22,5 +22,5 @@ python3 -c "import openpyxl; print(openpyxl.__version__)"
 ```
 
 ## 6. 参考资料
-- 上游来源: /Users/lichengyin/.codex/skills/xlsx
+- 上游来源: ~/.codex/skills/xlsx
 - 本技能说明: `SKILL.md`

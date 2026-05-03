@@ -1,7 +1,7 @@
 # wechat-style-profiler 使用指南
 
 ## 1. 功能定位
-- 面向公众号作者的文风 DNA 梳理技能。用于从 3-10 篇参考文章中建立可复用的风格画像，输出 14 维分析、标点符号偏好、分块习惯、段落配方、叙述方法体系、内容推进方式和默认 DNA 文件，并通过用户校准确保画像可直接给写稿技能调用。
+- Use when building reusable WeChat writing-style DNA from reference articles.
 - 默认档位: 仅全量默认包/手动同步
 - 仓库目录: `skills/default/wechat-style-profiler`
 - 安装后目录: `~/.openclaw/skills/wechat-style-profiler`

@@ -1,7 +1,7 @@
 # imagegen 使用指南
 
 ## 1. 功能定位
-- Use when the user asks to generate or edit images via the OpenAI Image API (for example: generate image, edit/inpaint/mask, background removal or replacement, transparent backgr...
+- Generate or edit raster images when the task benefits from AI-created bitmap visuals such as photos, illustrations, textures, sprites, mockups, or transparent-background cutouts...
 - 默认档位: 仅全量默认包/手动同步
 - 仓库目录: `skills/default/imagegen`
 - 安装后目录: `~/.openclaw/skills/imagegen`

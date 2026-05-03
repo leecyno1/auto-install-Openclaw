@@ -3,7 +3,9 @@
 OpenClaw Gateway Quota Enforcer
 ================================
 A thin HTTP proxy that sits in front of the OpenClaw Gateway (port 13145) to enforce
-media generation quotas (image / video) at the gateway layer.
+request-count quotas (text / image / video) at the gateway layer. The official
+OpenClaw Gateway remains the internal upstream; external clients should use this
+proxy endpoint (default port 13147).
 
 Usage:
     python3 gateway-quota-enforcer.py [start|stop|status|restart]
@@ -100,58 +102,76 @@ def quota_status() -> dict:
 
 # ── Request classification ─────────────────────────────────────────────────────
 
-# URL patterns that represent media generation calls (image, video, music)
-MEDIA_URL_PATTERNS = [
+# URL patterns that represent media generation calls (image, video).
+IMAGE_URL_PATTERNS = [
     re.compile(r"/v1/images?[/]?$", re.IGNORECASE),
     re.compile(r"/v1/images?/generations", re.IGNORECASE),
     re.compile(r"/v1/images?/edits", re.IGNORECASE),
     re.compile(r"/v1/images?/variations", re.IGNORECASE),
-    re.compile(r"/v1/video", re.IGNORECASE),
-    re.compile(r"/v1/music", re.IGNORECASE),
     re.compile(r"/v1/generation/images?", re.IGNORECASE),
 ]
 
+VIDEO_URL_PATTERNS = [
+    re.compile(r"/v1/video", re.IGNORECASE),
+    re.compile(r"/v1/videos?", re.IGNORECASE),
+]
+
 # Body patterns that indicate image generation in JSON payloads
-MEDIA_BODY_PATTERNS = [
+IMAGE_BODY_PATTERNS = [
     re.compile(r'"model"\s*:\s*"[^"]*image[^"]*"', re.IGNORECASE),
-    re.compile(r'"prompt"\s*:', re.IGNORECASE),
-    re.compile(r'"n"\s*:\s*[1-9]', re.IGNORECASE),
+    re.compile(r'"model"\s*:\s*"[^"]*(seedream|flux|midjourney|dall-e|imagen|stable-diffusion|qwen-image|glm-image|z-image)[^"]*"', re.IGNORECASE),
+    re.compile(r'"type"\s*:\s*"image_generation"', re.IGNORECASE),
+]
+
+VIDEO_BODY_PATTERNS = [
+    re.compile(r'"model"\s*:\s*"[^"]*video[^"]*"', re.IGNORECASE),
+    re.compile(r'"type"\s*:\s*"video_generation"', re.IGNORECASE),
 ]
 
 
 def is_media_generation_request(method: str, path: str, body: Optional[bytes]) -> tuple[bool, str]:
     """
     Determine if a request is a media generation call.
-    Returns (is_media, category) where category is 'image', 'video', or 'music'.
+    Returns (is_media, category) where category is 'image' or 'video'.
+    Music/audio/search/vision requests are intentionally treated as text in v1.
     """
     if method not in ("POST", "PUT", "PATCH"):
         return False, ""
 
     path_lower = path.lower()
 
-    # Check URL patterns
-    for pat in MEDIA_URL_PATTERNS:
+    for pat in IMAGE_URL_PATTERNS:
         if pat.search(path_lower):
-            if "image" in path_lower or "image" in str(path):
-                return True, "image"
-            if "video" in path_lower:
-                return True, "video"
-            if "music" in path_lower:
-                return True, "music"
-            # Default based on URL
             return True, "image"
 
-    # Check body content
+    for pat in VIDEO_URL_PATTERNS:
+        if pat.search(path_lower):
+            return True, "video"
+
     if body:
         try:
             text = body.decode("utf-8", errors="ignore").lower()
-            for pat in MEDIA_BODY_PATTERNS:
+            for pat in IMAGE_BODY_PATTERNS:
                 if pat.search(text):
                     return True, "image"
+            for pat in VIDEO_BODY_PATTERNS:
+                if pat.search(text):
+                    return True, "video"
         except Exception:
             pass
 
     return False, ""
+
+
+def should_count_text_request(method: str, path: str) -> bool:
+    if method not in ("POST", "PUT", "PATCH"):
+        return False
+    normalized = path.split("?", 1)[0].rstrip("/")
+    if normalized.startswith("/quota"):
+        return False
+    if normalized in ("", "/health"):
+        return False
+    return True
 
 
 def count_image_units(method: str, path: str, body: Optional[bytes]) -> int:
@@ -166,6 +186,12 @@ def count_image_units(method: str, path: str, body: Optional[bytes]) -> int:
         except Exception:
             pass
     return units
+
+
+def units_for_category(category: str, method: str, path: str, body: Optional[bytes]) -> int:
+    if category == "image":
+        return count_image_units(method, path, body)
+    return 1
 
 # ── HTTP Proxy Handler ────────────────────────────────────────────────────────
 
@@ -223,6 +249,54 @@ class QuotaEnforcerHandler(BaseHTTPRequestHandler):
         if body:
             self.wfile.write(body)
 
+    def _send_quota_denied(self, category: str, units: int, reserve_result: dict) -> None:
+        reason = reserve_result.get("reason", "unknown")
+        message = reserve_result.get("message", "Quota exceeded")
+        status_summary = reserve_result.get("status", {})
+        log_warn(f"Quota denied: {category}/{units} -> {reason}: {message}")
+        self._send_json(429, {
+            "error": "quota_exceeded",
+            "reason": reason,
+            "message": message,
+            "category": category,
+            "requestedUnits": units,
+            "remaining": status_summary.get("remaining", 0),
+            "limit": status_summary.get("limit", 0),
+            "resetAt": status_summary.get("resetAt", 0),
+            "windowHours": status_summary.get("windowHours", 5),
+        })
+
+    def _proxy_with_quota(self, method: str, path: str, headers: dict, body: Optional[bytes], category: str, units: int) -> None:
+        log_info(f"Quota-controlled request: {path} category={category} units={units}")
+        reserve_result = quota_reserve(category, units, tool=path)
+
+        if not reserve_result.get("ok"):
+            self._send_quota_denied(category, units, reserve_result)
+            return
+
+        reservation_id = reserve_result.get("reservation", {}).get("id", "")
+        log_info(f"Quota reserved: {category}/{units} reservation_id={reservation_id}")
+
+        status, resp_headers, resp_body = self._proxy_to_gateway(method, path, headers, body)
+
+        if 200 <= status < 300:
+            commit_result = quota_commit(reservation_id)
+            if commit_result.get("ok"):
+                log_info(f"Quota committed: {category}/{units} reservation_id={reservation_id}")
+            else:
+                log_warn(f"Quota commit failed: {commit_result}")
+        else:
+            release_result = quota_release(reservation_id)
+            if release_result.get("ok"):
+                log_info(f"Quota released (non-2xx): {category}/{units} status={status}")
+            else:
+                log_warn(f"Quota release failed: {release_result}")
+
+        resp_headers["X-Quota-Reservation-Id"] = reservation_id
+        resp_headers["X-Quota-Category"] = category
+        resp_headers["X-Proxy-By"] = "openclaw-quota-enforcer"
+        self._forward_response(status, resp_headers, resp_body)
+
     def do_OPTIONS(self) -> None:
         self.send_response(204)
         self.send_header("Access-Control-Allow-Origin", "*")
@@ -252,6 +326,11 @@ class QuotaEnforcerHandler(BaseHTTPRequestHandler):
             self._send_json(200, result.get("video", {"error": "no data"}))
             return
 
+        if self.path == "/quota/status/text":
+            result = quota_status()
+            self._send_json(200, result.get("text", {"error": "no data"}))
+            return
+
         if self.path in ("/quota/reset", "/quota/reset/"):
             log_warn("Quota reset requested (no-op in proxy mode, use media_quota.py directly)")
             self._send_json(400, {"error": "reset_not_supported", "message": "Use scripts/media_quota.py to reset quota state"})
@@ -270,59 +349,15 @@ class QuotaEnforcerHandler(BaseHTTPRequestHandler):
             self._handle_quota_api(body)
             return
 
-        # Check if this is a media generation request
         is_media, category = is_media_generation_request("POST", self.path, body)
-        if is_media and category:
-            units = count_image_units("POST", self.path, body)
-            log_info(f"Media request detected: {self.path} category={category} units={units}")
-
-            reserve_result = quota_reserve(category, units, tool=self.path)
-
-            if not reserve_result.get("ok"):
-                reason = reserve_result.get("reason", "unknown")
-                message = reserve_result.get("message", "Quota exceeded")
-                log_warn(f"Quota denied: {category}/{units} → {reason}: {message}")
-                status_summary = reserve_result.get("status", {})
-                self._send_json(429, {
-                    "error": "quota_exceeded",
-                    "reason": reason,
-                    "message": message,
-                    "category": category,
-                    "requestedUnits": units,
-                    "remaining": status_summary.get("remaining", 0),
-                    "limit": status_summary.get("limit", 0),
-                    "windowHours": status_summary.get("windowHours", 5),
-                })
-                return
-
-            reservation_id = reserve_result.get("reservation", {}).get("id", "")
-            log_info(f"Quota reserved: {category}/{units} reservation_id={reservation_id}")
-
-            # Forward request to gateway
+        if not category and should_count_text_request("POST", self.path):
+            category = "text"
+        if category:
+            units = units_for_category(category, "POST", self.path, body)
             headers = {k: v for k, v in self.headers.items()}
-            status, resp_headers, resp_body = self._proxy_to_gateway("POST", self.path, headers, body)
-
-            # Commit or release based on response
-            if 200 <= status < 300:
-                commit_result = quota_commit(reservation_id)
-                if commit_result.get("ok"):
-                    log_info(f"Quota committed: {category}/{units} reservation_id={reservation_id}")
-                else:
-                    log_warn(f"Quota commit failed: {commit_result}")
-            else:
-                release_result = quota_release(reservation_id)
-                if release_result.get("ok"):
-                    log_info(f"Quota released (non-2xx): {category}/{units} status={status}")
-                else:
-                    log_warn(f"Quota release failed: {release_result}")
-
-            # Add quota headers to response
-            resp_headers["X-Quota-Reservation-Id"] = reservation_id
-            resp_headers["X-Proxy-By"] = "openclaw-quota-enforcer"
-            self._forward_response(status, resp_headers, resp_body)
+            self._proxy_with_quota("POST", self.path, headers, body, category, units)
             return
 
-        # Non-media POST — proxy directly
         headers = {k: v for k, v in self.headers.items()}
         status, resp_headers, body = self._proxy_to_gateway("POST", self.path, headers, body)
         self._forward_response(status, resp_headers, body)
@@ -447,6 +482,7 @@ def status_server() -> None:
             req = urllib.request.Request(f"http://127.0.0.1:{QUOTA_ENFORCER_PORT}/quota/status")
             with urllib.request.urlopen(req, timeout=5) as resp:
                 data = json.loads(resp.read())
+                print(f"  Text quota:  {data.get('text', {}).get('used', 0)}/{data.get('text', {}).get('limit', 0)} used, {data.get('text', {}).get('remaining', 0)} remaining")
                 print(f"  Image quota: {data.get('image', {}).get('used', 0)}/{data.get('image', {}).get('limit', 0)} used, {data.get('image', {}).get('remaining', 0)} remaining")
                 print(f"  Video quota: {data.get('video', {}).get('used', 0)}/{data.get('video', {}).get('limit', 0)} used, {data.get('video', {}).get('remaining', 0)} remaining")
         except Exception as e:

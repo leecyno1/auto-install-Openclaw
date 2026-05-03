@@ -24,5 +24,5 @@ python3 skills/default/grok-imagine-1.0-video/scripts/generate_video.py --help
 ```
 
 ## 6. 参考资料
-- 上游来源: /Users/lichengyin/.codex/skills/grok-imagine-1.0-video
+- 上游来源: ~/.codex/skills/grok-imagine-1.0-video
 - 本技能说明: `SKILL.md`

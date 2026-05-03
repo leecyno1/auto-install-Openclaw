@@ -24,5 +24,5 @@ gh auth status
 ```
 
 ## 6. 参考资料
-- 上游来源: /Users/lichengyin/.codex/skills/github
+- 上游来源: ~/.codex/skills/github
 - 本技能说明: `SKILL.md`

@@ -714,7 +714,7 @@ AI-powered generation backends.
 
 #### baoyu-imagine
 
-AI SDK-based image generation using OpenAI, Azure OpenAI, Google, OpenRouter, DashScope (Aliyun Tongyi Wanxiang), MiniMax, Jimeng (即梦), Seedream (豆包), and Replicate APIs. Supports text-to-image, reference images, aspect ratios, custom sizes, batch generation, and quality presets.
+AI SDK-based image generation using OpenAI GPT Image 2, Azure OpenAI, Google, OpenRouter, DashScope (Aliyun Tongyi Wanxiang), MiniMax, Jimeng (即梦), Seedream (豆包), and Replicate APIs. Supports text-to-image, reference images, aspect ratios, custom sizes, batch generation, and quality presets.
 
 ```bash
 # Basic generation (auto-detect provider)
@@ -727,10 +727,10 @@ AI SDK-based image generation using OpenAI, Azure OpenAI, Google, OpenRouter, Da
 /baoyu-imagine --prompt "A banner" --image banner.png --quality 2k
 
 # Specific provider
-/baoyu-imagine --prompt "A cat" --image cat.png --provider openai
+/baoyu-imagine --prompt "A cat" --image cat.png --provider openai --model gpt-image-2
 
 # Azure OpenAI (model = deployment name)
-/baoyu-imagine --prompt "A cat" --image cat.png --provider azure --model gpt-image-1.5
+/baoyu-imagine --prompt "A cat" --image cat.png --provider azure --model gpt-image-2
 
 # OpenRouter
 /baoyu-imagine --prompt "A cat" --image cat.png --provider openrouter
@@ -786,7 +786,7 @@ AI SDK-based image generation using OpenAI, Azure OpenAI, Google, OpenRouter, Da
 | `--provider` | `google`, `openai`, `azure`, `openrouter`, `dashscope`, `zai`, `minimax`, `jimeng`, `seedream`, or `replicate` |
 | `--model`, `-m` | Model ID or deployment name. Azure uses deployment name; OpenRouter uses full model IDs; Z.AI uses `glm-image`; MiniMax uses `image-01` / `image-01-live` |
 | `--ar` | Aspect ratio (e.g., `16:9`, `1:1`, `4:3`) |
-| `--size` | Size (e.g., `1024x1024`) |
+| `--size` | Size (e.g., `1024x1024`; `gpt-image-2` accepts valid custom sizes up to 3840px max edge) |
 | `--quality` | `normal` or `2k` (default: `2k`) |
 | `--imageSize` | `1K`, `2K`, or `4K` for Google/OpenRouter |
 | `--imageApiDialect` | `openai-native` or `ratio-metadata` for OpenAI-compatible gateways |
@@ -810,9 +810,9 @@ AI SDK-based image generation using OpenAI, Azure OpenAI, Google, OpenRouter, Da
 | `JIMENG_ACCESS_KEY_ID` | Jimeng Volcengine access key | - |
 | `JIMENG_SECRET_ACCESS_KEY` | Jimeng Volcengine secret key | - |
 | `ARK_API_KEY` | Seedream Volcengine ARK API key | - |
-| `OPENAI_IMAGE_MODEL` | OpenAI model | `gpt-image-1.5` |
+| `OPENAI_IMAGE_MODEL` | OpenAI model | `gpt-image-2` |
 | `AZURE_OPENAI_DEPLOYMENT` | Azure default deployment name | - |
-| `AZURE_OPENAI_IMAGE_MODEL` | Backward-compatible Azure deployment/model alias | `gpt-image-1.5` |
+| `AZURE_OPENAI_IMAGE_MODEL` | Backward-compatible Azure deployment/model alias | `gpt-image-2` |
 | `OPENROUTER_IMAGE_MODEL` | OpenRouter model | `google/gemini-3.1-flash-image-preview` |
 | `GOOGLE_IMAGE_MODEL` | Google model | `gemini-3-pro-image-preview` |
 | `DASHSCOPE_IMAGE_MODEL` | DashScope model | `qwen-image-2.0-pro` |
@@ -1132,14 +1132,14 @@ mkdir -p ~/.baoyu-skills
 cat > ~/.baoyu-skills/.env << 'EOF'
 # OpenAI
 OPENAI_API_KEY=sk-xxx
-OPENAI_IMAGE_MODEL=gpt-image-1.5
+OPENAI_IMAGE_MODEL=gpt-image-2
 # OPENAI_BASE_URL=https://api.openai.com/v1
 # OPENAI_IMAGE_USE_CHAT=false
 
 # Azure OpenAI
 AZURE_OPENAI_API_KEY=xxx
 AZURE_OPENAI_BASE_URL=https://your-resource.openai.azure.com
-AZURE_OPENAI_DEPLOYMENT=gpt-image-1.5
+AZURE_OPENAI_DEPLOYMENT=gpt-image-2
 # AZURE_API_VERSION=2025-04-01-preview
 
 # OpenRouter

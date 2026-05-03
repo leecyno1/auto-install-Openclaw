@@ -23,5 +23,5 @@ ls -la ~/.openclaw/skills/capability-evolver
 ```
 
 ## 6. 参考资料
-- 上游来源: /Users/lichengyin/.codex/skills/capability-evolver
+- 上游来源: ~/.codex/skills/capability-evolver
 - 本技能说明: `SKILL.md`

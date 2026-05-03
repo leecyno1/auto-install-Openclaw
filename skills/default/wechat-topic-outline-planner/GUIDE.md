@@ -1,7 +1,7 @@
 # wechat-topic-outline-planner 使用指南
 
 ## 1. 功能定位
-- 公众号文章结构规划适配器。用于在 `target_media=article_wechat` 的前提下，基于已确认的 Content Brief、Material Pack 和可选的 Media Plan，生成公众号文章的主大纲与备选大纲。它是 article adapter，而不是全局策划中枢。
+- Use when planning WeChat article outlines from confirmed briefs and materials.
 - 默认档位: 仅全量默认包/手动同步
 - 仓库目录: `skills/default/wechat-topic-outline-planner`
 - 安装后目录: `~/.openclaw/skills/wechat-topic-outline-planner`

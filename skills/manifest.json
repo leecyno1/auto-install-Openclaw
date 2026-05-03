@@ -398,8 +398,8 @@
   "skills": [
     {
       "id": "agent-browser",
-      "name": "Agent Browser",
-      "description": "A fast Rust-based headless browser automation CLI with Node.js fallback that enables AI agents to navigate, click, type, and snapshot pages via structured commands.",
+      "name": "agent-browser",
+      "description": "Headless browser automation CLI for AI agents. Use when interacting with websites — navigating pages, filling forms, clicking buttons, taking screenshots, extracting data, scraping, testing web apps, downloading files, or automating any browser task. Trigge...",
       "path": "skills/default/agent-browser",
       "tiers": [
         "basic",
@@ -502,7 +502,7 @@
     {
       "id": "ai-image-generation",
       "name": "ai-image-generation",
-      "description": "Generate AI images with FLUX, Gemini, Grok, Seedream, Reve and 50+ models via inference.sh CLI. Models: FLUX Dev LoRA, FLUX.2 Klein LoRA, Gemini 3 Pro Image, Grok Imagine, Seedream 4.5, Reve, ImagineArt. Capabilities: text-to-image, image-to-image, inpainti...",
+      "description": "Generate AI images with GPT-Image-2, FLUX, Gemini, Grok, Seedream, Reve and 50+ models via inference.sh CLI. Models: GPT-Image-2, FLUX Dev LoRA, FLUX.2 Klein LoRA, Gemini 3 Pro Image, Grok Imagine, Seedream 4.5, Reve, ImagineArt. Capabilities: text-to-image...",
       "path": "skills/default/ai-image-generation",
       "tiers": [
         "basic",
@@ -643,7 +643,7 @@
     {
       "id": "baoyu-article-illustrator",
       "name": "baoyu-article-illustrator",
-      "description": "Analyzes article structure, identifies positions requiring visual aids, generates illustrations with Type × Style two-dimension approach. Use when user asks to \"illustrate article\", \"add images\", \"generate images for article\", or \"为文章配图\".",
+      "description": "Use when adding article illustrations or visual aids to markdown or long-form writing.",
       "path": "skills/default/baoyu-article-illustrator",
       "tiers": [
         "super"
@@ -688,7 +688,7 @@
     {
       "id": "baoyu-cover-image",
       "name": "baoyu-cover-image",
-      "description": "Generates article cover images with 5 dimensions (type, palette, rendering, text, mood) combining 10 color palettes and 7 rendering styles. Supports cinematic (2.35:1), widescreen (16:9), and square (1:1) aspects. Use when user asks to \"generate cover image...",
+      "description": "Use when generating article cover images in cinematic, widescreen, or square formats.",
       "path": "skills/default/baoyu-cover-image",
       "tiers": [
         "super"
@@ -735,7 +735,7 @@
     {
       "id": "baoyu-format-markdown",
       "name": "baoyu-format-markdown",
-      "description": "Formats plain text or markdown files with frontmatter, titles, summaries, headings, bold, lists, and code blocks. Use when user asks to \"format markdown\", \"beautify article\", \"add formatting\", or improve article layout. Outputs to {filename}-formatted.md.",
+      "description": "Use when formatting plain text or markdown articles with headings, summaries, lists, and polish.",
       "path": "skills/default/baoyu-format-markdown",
       "tiers": [
         "super"
@@ -776,7 +776,7 @@
     {
       "id": "baoyu-infographic",
       "name": "baoyu-infographic",
-      "description": "Generates professional infographics with 21 layout types and 20 visual styles. Analyzes content, recommends layout×style combinations, and generates publication-ready infographics. Use when user asks to create \"infographic\", \"信息图\", \"visual summary\", \"可视化\",...",
+      "description": "Use when turning content into professional infographics or visual summaries.",
       "path": "skills/default/baoyu-infographic",
       "tiers": [
         "super"
@@ -791,7 +791,7 @@
     {
       "id": "baoyu-markdown-to-html",
       "name": "baoyu-markdown-to-html",
-      "description": "Converts Markdown to styled HTML with WeChat-compatible themes. Supports code highlighting, math, PlantUML, footnotes, alerts, infographics, and optional bottom citations for external links. Use when user asks for \"markdown to html\", \"convert md to html\", \"...",
+      "description": "Use when converting Markdown to styled HTML, especially WeChat-compatible article HTML.",
       "path": "skills/default/baoyu-markdown-to-html",
       "tiers": [
         "super"
@@ -806,7 +806,7 @@
     {
       "id": "baoyu-post-to-wechat",
       "name": "baoyu-post-to-wechat",
-      "description": "Posts content to WeChat Official Account (微信公众号) via API or Chrome CDP. Supports article posting (文章) with HTML, markdown, or plain text input, and image-text posting (贴图, formerly 图文) with multiple images. Markdown article workflows default to converting o...",
+      "description": "Use when posting articles or image-text content to WeChat Official Account.",
       "path": "skills/default/baoyu-post-to-wechat",
       "tiers": [
         "super"
@@ -886,7 +886,7 @@
     {
       "id": "baoyu-translate",
       "name": "baoyu-translate",
-      "description": "Translates articles and documents between languages with three modes - quick (direct), normal (analyze then translate), and refined (analyze, translate, review, polish). Supports custom glossaries and terminology consistency via EXTEND.md. Use when user ask...",
+      "description": "Use when translating articles or documents with terminology consistency or review polish.",
       "path": "skills/default/baoyu-translate",
       "tiers": [
         "super"
@@ -916,7 +916,7 @@
     {
       "id": "baoyu-xhs-images",
       "name": "baoyu-xhs-images",
-      "description": "Generates Xiaohongshu (Little Red Book) infographic series with 11 visual styles and 8 layouts. Breaks content into 1-10 cartoon-style images optimized for XHS engagement. Use when user mentions \"小红书图片\", \"XHS images\", \"RedNote infographics\", \"小红书种草\", or wan...",
+      "description": "Use when creating Xiaohongshu/RedNote infographic image series from content.",
       "path": "skills/default/baoyu-xhs-images",
       "tiers": [
         "super"
@@ -968,7 +968,7 @@
     {
       "id": "brainstorming",
       "name": "brainstorming",
-      "description": "You MUST use this before any creative work - creating features, building components, adding functionality, or modifying behavior. Explores user intent, requirements and design before implementation.",
+      "description": "Use before creative feature, component, behavior, or product design work.",
       "path": "skills/default/brainstorming",
       "tiers": [
         "basic",
@@ -1351,7 +1351,7 @@
     {
       "id": "dispatching-parallel-agents",
       "name": "dispatching-parallel-agents",
-      "description": "Use when facing 2+ independent tasks that can be worked on without shared state or sequential dependencies",
+      "description": "Use when two or more independent tasks can run in parallel without shared state.",
       "path": "skills/default/dispatching-parallel-agents",
       "tiers": [],
       "groups": [],
@@ -1399,7 +1399,7 @@
     {
       "id": "douyin-hot-trend",
       "name": "douyin-hot-trend",
-      "description": "获取抖音热榜/热搜榜数据，包含热门视频、挑战赛、音乐等多领域热门内容，并输出标题、热度值与跳转链接。",
+      "description": "获取抖音热榜/热搜榜数据，包含热门视频、挑战赛、音乐等多领域热门内容，并输出标题、热度值、跳转链接及封面图（如有）。",
       "path": "skills/default/douyin-hot-trend",
       "tiers": [],
       "groups": [],
@@ -1446,7 +1446,7 @@
     {
       "id": "executing-plans",
       "name": "executing-plans",
-      "description": "Use when you have a written implementation plan to execute in a separate session with review checkpoints",
+      "description": "Use when executing a written implementation plan with review checkpoints.",
       "path": "skills/default/executing-plans",
       "tiers": [],
       "groups": [],
@@ -1489,7 +1489,7 @@
     {
       "id": "finishing-a-development-branch",
       "name": "finishing-a-development-branch",
-      "description": "Use when implementation is complete, all tests pass, and you need to decide how to integrate the work - guides completion of development work by presenting structured options for merge, PR, or cleanup",
+      "description": "Use when implementation is complete and integration or cleanup options are needed.",
       "path": "skills/default/finishing-a-development-branch",
       "tiers": [],
       "groups": [],
@@ -1499,8 +1499,8 @@
     },
     {
       "id": "flutter-dev",
-      "name": "flutter-expert",
-      "description": "Use when building cross-platform applications with Flutter 3+ and Dart. Invoke for widget development, Riverpod/Bloc state management, GoRouter navigation, platform-specific implementations, performance optimization.",
+      "name": "flutter-dev",
+      "description": "Flutter cross-platform development guide covering widget patterns, Riverpod/Bloc state management, GoRouter navigation, performance optimization, and platform-specific implementations. Includes const optimization, responsive layouts, testing strategies, and...",
       "path": "skills/default/flutter-dev",
       "tiers": [
         "basic",
@@ -1529,7 +1529,7 @@
     {
       "id": "frontend-design",
       "name": "frontend-design",
-      "description": "Create distinctive, production-grade frontend interfaces with high design quality. Use this skill when the user asks to build web components, pages, artifacts, posters, or applications (examples include websites, landing pages, dashboards, React components,...",
+      "description": "Use when building or improving high-quality frontend pages, components, dashboards, or apps.",
       "path": "skills/default/frontend-design",
       "tiers": [],
       "groups": [],
@@ -1540,7 +1540,7 @@
     {
       "id": "frontend-dev",
       "name": "frontend-design",
-      "description": "Create distinctive, production-grade frontend interfaces with high design quality. Use this skill when the user asks to build web components, pages, artifacts, posters, or applications (examples include websites, landing pages, dashboards, React components,...",
+      "description": "Use when building or improving high-quality frontend pages, components, dashboards, or apps.",
       "path": "skills/default/frontend-dev",
       "tiers": [
         "basic",
@@ -1557,8 +1557,8 @@
     },
     {
       "id": "fullstack-dev",
-      "name": "fullstack-guardian",
-      "description": "Builds security-focused full-stack web applications by implementing integrated frontend and backend components with layered security at every level. Covers the complete stack from database to UI, enforcing auth, input validation, output encoding, and parame...",
+      "name": "fullstack-dev",
+      "description": "Full-stack backend architecture and frontend-backend integration guide. TRIGGER when: building a full-stack app, creating REST API with frontend, scaffolding backend service, building todo app, building CRUD app, building real-time app, building chat app, E...",
       "path": "skills/default/fullstack-dev",
       "tiers": [
         "basic",
@@ -1570,8 +1570,10 @@
         "default_sentinel"
       ],
       "source": "github:MiniMax-AI/skills",
-      "requires_api_keys": false,
-      "api_keys": []
+      "requires_api_keys": true,
+      "api_keys": [
+        "JWT_SECRET"
+      ]
     },
     {
       "id": "gemini-image-service",
@@ -1706,7 +1708,7 @@
     {
       "id": "imagegen",
       "name": "imagegen",
-      "description": "Use when the user asks to generate or edit images via the OpenAI Image API (for example: generate image, edit/inpaint/mask, background removal or replacement, transparent background, product shots, concept art, covers, or batch variants); run the bundled CL...",
+      "description": "Generate or edit raster images when the task benefits from AI-created bitmap visuals such as photos, illustrations, textures, sprites, mockups, or transparent-background cutouts. Use when Codex should create a brand-new image, transform an existing image, o...",
       "path": "skills/default/imagegen",
       "tiers": [],
       "groups": [],
@@ -1758,7 +1760,7 @@
     {
       "id": "ios-application-dev",
       "name": "iosdev-cn",
-      "description": "通用 iOS App 开发、构建、签名、测试与 App Store 上架流程（中国区）指南。用于当用户询问 iOS 开发/上架/审核/签名/TestFlight/App Store Connect/隐私合规/订阅配置，或输入触发词 iosdev 时。",
+      "description": "Use for iOS development, signing, TestFlight, App Store, privacy, or China-region release tasks.",
       "path": "skills/default/ios-application-dev",
       "tiers": [
         "basic",
@@ -1776,7 +1778,7 @@
     {
       "id": "jupyter-notebook",
       "name": "jupyter-notebook",
-      "description": "Use when the user asks to create, scaffold, or edit Jupyter notebooks (`.ipynb`) for experiments, explorations, or tutorials; prefer the bundled templates and run the helper script `new_notebook.py` to generate a clean starting notebook.",
+      "description": "Use when creating, scaffolding, or editing Jupyter notebooks for experiments or tutorials.",
       "path": "skills/default/jupyter-notebook",
       "tiers": [],
       "groups": [],
@@ -1893,7 +1895,7 @@
     {
       "id": "mcp-builder",
       "name": "mcp-builder",
-      "description": "Guide for creating high-quality MCP (Model Context Protocol) servers that enable LLMs to interact with external services through well-designed tools. Use when building MCP servers to integrate external APIs or services, whether in Python (FastMCP) or Node/T...",
+      "description": "Use when building MCP servers or tools for external APIs and services.",
       "path": "skills/default/mcp-builder",
       "tiers": [
         "basic",
@@ -1908,7 +1910,7 @@
     {
       "id": "media-downloader",
       "name": "media-downloader",
-      "description": "智能媒体下载器。根据用户描述自动搜索和下载图片、视频片段，支持视频自动剪辑。 Smart media downloader. Automatically search and download images/video clips based on user description, with auto-trimming support. 触发方式 Triggers: \"下载图片\", \"找视频\", \"download media\", \"download images\", \"find video\", \"/media\"",
+      "description": "|-",
       "path": "skills/default/media-downloader",
       "tiers": [
         "basic",
@@ -2061,7 +2063,7 @@
     {
       "id": "minimax-web-search",
       "name": "minimax-web-search",
-      "description": "使用 MiniMax MCP 进行网络搜索（优先）。触发条件：(1) 用户要求进行网络搜索、在线搜索、查找信息 (2) 需要查询最新资讯、新闻、资料 (3) 使用 MiniMax 的 web_search 功能",
+      "description": "使用 MiniMax MCP 进行网络搜索。触发条件：(1) 用户要求进行网络搜索、在线搜索、查找信息 (2) 需要查询最新资讯、新闻、资料 (3) 使用 MiniMax 的 web_search 功能",
       "path": "skills/default/minimax-web-search",
       "tiers": [
         "basic",
@@ -2125,7 +2127,7 @@
     {
       "id": "multi-search-engine",
       "name": "multi-search-engine",
-      "description": "Multi search engine integration with 17 engines (8 CN + 9 Global). Supports advanced search operators, time filters, site search, privacy engines, and WolframAlpha knowledge queries. No API keys required.",
+      "description": "Multi search engine integration with 16 engines (7 CN + 9 Global). Supports advanced search operators, time filters, site search, privacy engines, and WolframAlpha knowledge queries. No API keys required.",
       "path": "skills/default/multi-search-engine",
       "tiers": [
         "basic",
@@ -2200,7 +2202,7 @@
     {
       "id": "openai-docs",
       "name": "openai-docs",
-      "description": "Use when the user asks how to build with OpenAI products or APIs and needs up-to-date official documentation with citations, help choosing the latest model for a use case, or explicit GPT-5.4 upgrade and prompt-upgrade guidance; prioritize OpenAI docs MCP t...",
+      "description": "Use when the user asks how to build with OpenAI products or APIs and needs up-to-date official documentation with citations, help choosing the latest model for a use case, or model upgrade and prompt-upgrade guidance; prioritize OpenAI docs MCP tools, use b...",
       "path": "skills/default/openai-docs",
       "tiers": [],
       "groups": [],
@@ -2332,7 +2334,7 @@
     {
       "id": "pdf",
       "name": "pdf",
-      "description": "Comprehensive PDF manipulation toolkit for extracting text and tables, creating new PDFs, merging/splitting documents, and handling forms. When Claude needs to fill in a PDF form or programmatically process, generate, or analyze PDF documents at scale.",
+      "description": "Use when extracting, creating, merging, splitting, filling, or analyzing PDF files.",
       "path": "skills/default/pdf",
       "tiers": [
         "basic",
@@ -2369,7 +2371,7 @@
     {
       "id": "planning-with-files",
       "name": "planning-with-files",
-      "description": "Implements Manus-style file-based planning for complex tasks. Creates task_plan.md, findings.md, and progress.md. Use when starting complex multi-step tasks, research projects, or any task requiring >5 tool calls.",
+      "description": "Use for complex multi-step tasks that need file-based plans and progress tracking.",
       "path": "skills/default/planning-with-files",
       "tiers": [
         "extended",
@@ -2408,8 +2410,8 @@
     },
     {
       "id": "pptx-generator",
-      "name": "pptx",
-      "description": "Presentation creation, editing, and analysis. When Claude needs to work with presentations (.pptx files) for: (1) Creating new presentations, (2) Modifying or editing content, (3) Working with layouts, (4) Adding comments or speaker notes, or any other pres...",
+      "name": "pptx-generator",
+      "description": "Generate, edit, and read PowerPoint presentations. Create from scratch with PptxGenJS (cover, TOC, content, section divider, summary slides), edit existing PPTX via XML workflows, or extract text with markitdown. Triggers: PPT, PPTX, PowerPoint, presentatio...",
       "path": "skills/default/pptx-generator",
       "tiers": [
         "basic",
@@ -2520,8 +2522,8 @@
     },
     {
       "id": "react-native-dev",
-      "name": "vercel-react-native-skills",
-      "description": "description:",
+      "name": "react-native-dev",
+      "description": "React Native and Expo development guide covering components, styling, animations, navigation, state management, forms, networking, performance optimization, testing, native capabilities, and engineering (project structure, deployment, SDK upgrades, CI/CD)....",
       "path": "skills/default/react-native-dev",
       "tiers": [
         "basic",
@@ -2539,7 +2541,7 @@
     {
       "id": "receiving-code-review",
       "name": "receiving-code-review",
-      "description": "Use when receiving code review feedback, before implementing suggestions, especially if feedback seems unclear or technically questionable - requires technical rigor and verification, not performative agreement or blind implementation",
+      "description": "Use when implementing or evaluating code review feedback.",
       "path": "skills/default/receiving-code-review",
       "tiers": [],
       "groups": [],
@@ -2587,7 +2589,7 @@
     {
       "id": "remotion-best-practices",
       "name": "remotion-best-practices",
-      "description": "Best practices for Remotion - Video creation in React",
+      "description": "Use when creating or improving Remotion videos in React.",
       "path": "skills/default/remotion-best-practices",
       "tiers": [],
       "groups": [],
@@ -2633,7 +2635,7 @@
     {
       "id": "requesting-code-review",
       "name": "requesting-code-review",
-      "description": "Use when completing tasks, implementing major features, or before merging to verify work meets requirements",
+      "description": "Use before review of completed feature work or significant changes.",
       "path": "skills/default/requesting-code-review",
       "tiers": [],
       "groups": [],
@@ -2736,7 +2738,7 @@
     {
       "id": "skill-creator",
       "name": "skill-creator",
-      "description": "Guide for creating effective skills. This skill should be used when users want to create a new skill (or update an existing skill) that extends Claude's capabilities with specialized knowledge, workflows, or tool integrations.",
+      "description": "Guide for creating effective skills. This skill should be used when users want to create a new skill (or update an existing skill) that extends Codex's capabilities with specialized knowledge, workflows, or tool integrations.",
       "path": "skills/default/skill-creator",
       "tiers": [
         "basic",
@@ -2860,7 +2862,7 @@
     {
       "id": "subagent-driven-development",
       "name": "subagent-driven-development",
-      "description": "Use when executing implementation plans with independent tasks in the current session",
+      "description": "Use when executing implementation plans with independent subagent tasks.",
       "path": "skills/default/subagent-driven-development",
       "tiers": [
         "basic",
@@ -2897,7 +2899,7 @@
     {
       "id": "systematic-debugging",
       "name": "systematic-debugging",
-      "description": "Use when encountering any bug, test failure, or unexpected behavior, before proposing fixes",
+      "description": "Use when investigating bugs, failures, unexpected behavior, or broken builds.",
       "path": "skills/default/systematic-debugging",
       "tiers": [],
       "groups": [],
@@ -2964,7 +2966,7 @@
     {
       "id": "tdd",
       "name": "test-driven-development",
-      "description": "Use when implementing any feature or bugfix, before writing implementation code",
+      "description": "Use before implementing any feature or bugfix that should be tested.",
       "path": "skills/default/tdd",
       "tiers": [],
       "groups": [],
@@ -2975,7 +2977,7 @@
     {
       "id": "test-driven-development",
       "name": "test-driven-development",
-      "description": "Use when implementing any feature or bugfix, before writing implementation code",
+      "description": "Use before implementing any feature or bugfix that should be tested.",
       "path": "skills/default/test-driven-development",
       "tiers": [],
       "groups": [],
@@ -3086,7 +3088,7 @@
     {
       "id": "using-git-worktrees",
       "name": "using-git-worktrees",
-      "description": "Use when starting feature work that needs isolation from current workspace or before executing implementation plans - creates isolated git worktrees with smart directory selection and safety verification",
+      "description": "Use when starting feature work needing isolated git worktrees.",
       "path": "skills/default/using-git-worktrees",
       "tiers": [],
       "groups": [],
@@ -3097,7 +3099,7 @@
     {
       "id": "using-superpowers",
       "name": "using-superpowers",
-      "description": "Use when starting any conversation - establishes how to find and use skills, requiring Skill tool invocation before ANY response including clarifying questions",
+      "description": "Use when starting any conversation to check and apply relevant skills.",
       "path": "skills/default/using-superpowers",
       "tiers": [
         "basic",
@@ -3114,7 +3116,7 @@
     {
       "id": "verification-before-completion",
       "name": "verification-before-completion",
-      "description": "Use when about to claim work is complete, fixed, or passing, before committing or creating PRs - requires running verification commands and confirming output before making any success claims; evidence before assertions always",
+      "description": "Use before claiming work is complete, fixed, or passing.",
       "path": "skills/default/verification-before-completion",
       "tiers": [
         "basic",
@@ -3131,7 +3133,7 @@
     {
       "id": "video-agent",
       "name": "heygen",
-      "description": "HeyGen AI video creation API. Use when: (1) Using Video Agent for one-shot prompt-to-video generation, (2) Generating AI avatar videos with /v2/video/generate, (3) Working with HeyGen avatars, voices, backgrounds, or captions, (4) Creating transparent WebM...",
+      "description": "[DEPRECATED — uses outdated v1/v2 endpoints] Use `create-video` for prompt-based video generation (v3 Video Agent) or `avatar-video` for precise avatar/scene control (v3 API). This legacy skill combines both workflows with deprecated endpoints.",
       "path": "skills/default/video-agent",
       "tiers": [],
       "groups": [],
@@ -3273,7 +3275,7 @@
     {
       "id": "webapp-testing",
       "name": "webapp-testing",
-      "description": "Toolkit for interacting with and testing local web applications using Playwright. Supports verifying frontend functionality, debugging UI behavior, capturing browser screenshots, and viewing browser logs.",
+      "description": "Use when testing local web apps with browser automation, screenshots, or logs.",
       "path": "skills/default/webapp-testing",
       "tiers": [],
       "groups": [],
@@ -3284,7 +3286,7 @@
     {
       "id": "wechat-article-extractor-skill",
       "name": "wechat-article-extractor",
-      "description": "Extract metadata and content from WeChat Official Account articles. Use when user needs to parse WeChat article URLs (mp.weixin.qq.com), extract article info (title, author, content, publish time, cover image), or convert WeChat articles to structured data....",
+      "description": "Use when extracting metadata or content from WeChat article URLs.",
       "path": "skills/default/wechat-article-extractor-skill",
       "tiers": [],
       "groups": [],
@@ -3295,7 +3297,7 @@
     {
       "id": "wechat-draft-writer",
       "name": "wechat-draft-writer",
-      "description": "公众号初稿写作适配器。用于在公众号文章结构已确认后，基于 Content Brief、Material Pack、确认版大纲和文风 DNA 生成一版高保真初稿。它不负责全局选题、大纲决策和标题决策。",
+      "description": "Use when drafting WeChat articles from a confirmed brief, outline, and style DNA.",
       "path": "skills/default/wechat-draft-writer",
       "tiers": [],
       "groups": [],
@@ -3319,7 +3321,7 @@
     {
       "id": "wechat-public-cli",
       "name": "wechat-public-cli",
-      "description": "Publish and download WeChat Public Platform content and Baijiahao articles via a local CLI.",
+      "description": "Use when publishing or managing WeChat Official Account content via CLI.",
       "path": "skills/default/wechat-public-cli",
       "tiers": [],
       "groups": [],
@@ -3347,7 +3349,7 @@
     {
       "id": "wechat-style-profiler",
       "name": "wechat-style-profiler",
-      "description": "面向公众号作者的文风 DNA 梳理技能。用于从 3-10 篇参考文章中建立可复用的风格画像，输出 14 维分析、标点符号偏好、分块习惯、段落配方、叙述方法体系、内容推进方式和默认 DNA 文件，并通过用户校准确保画像可直接给写稿技能调用。",
+      "description": "Use when building reusable WeChat writing-style DNA from reference articles.",
       "path": "skills/default/wechat-style-profiler",
       "tiers": [],
       "groups": [],
@@ -3358,7 +3360,7 @@
     {
       "id": "wechat-title-generator",
       "name": "wechat-title-generator",
-      "description": "公众号标题生成适配器。用于基于已确认的 Content Brief、文章大纲或初稿、目标读者与文章目标，生成 8 个公众号标题候选并推荐最佳标题。它只负责标题层，不负责全局主题判断与正文生成。",
+      "description": "Use when generating WeChat article title candidates from a brief, outline, or draft.",
       "path": "skills/default/wechat-title-generator",
       "tiers": [],
       "groups": [],
@@ -3369,7 +3371,7 @@
     {
       "id": "wechat-topic-outline-planner",
       "name": "wechat-topic-outline-planner",
-      "description": "公众号文章结构规划适配器。用于在 `target_media=article_wechat` 的前提下，基于已确认的 Content Brief、Material Pack 和可选的 Media Plan，生成公众号文章的主大纲与备选大纲。它是 article adapter，而不是全局策划中枢。",
+      "description": "Use when planning WeChat article outlines from confirmed briefs and materials.",
       "path": "skills/default/wechat-topic-outline-planner",
       "tiers": [],
       "groups": [],
@@ -3402,7 +3404,7 @@
     {
       "id": "writing-plans",
       "name": "writing-plans",
-      "description": "Use when you have a spec or requirements for a multi-step task, before touching code",
+      "description": "Use when writing implementation plans from specs before editing code.",
       "path": "skills/default/writing-plans",
       "tiers": [
         "extended",
@@ -3416,7 +3418,7 @@
     {
       "id": "writing-skills",
       "name": "writing-skills",
-      "description": "Use when creating new skills, editing existing skills, or verifying skills work before deployment",
+      "description": "Use when creating, editing, or verifying Codex skills.",
       "path": "skills/default/writing-skills",
       "tiers": [
         "basic",
@@ -3455,7 +3457,7 @@
     {
       "id": "xiaohongshu-ops",
       "name": "xiaohongshu-ops",
-      "description": "End-to-end Xiaohongshu operations including positioning, topic research, content production, publish execution, and post-incident recovery. Reusable across verticals with templates and a concrete 陪你看剧 case preset.",
+      "description": "小红书相关操作，覆盖账号定位、选题研究、内容生产、发布执行与复盘修复的小红书全链路运营技能。凡是小红书的浏览/搜索/发布/评论任务，默认必须使用 OpenClaw 内置浏览器流程并指定 profile=\\\"openclaw\\\"；除非用户明确要求，否则不要使用系统 open 或外部浏览器。",
       "path": "skills/default/xiaohongshu-ops",
       "tiers": [],
       "groups": [],

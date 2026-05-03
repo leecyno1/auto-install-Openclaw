@@ -22,5 +22,5 @@ ls -la ~/.openclaw/skills/find-skills
 ```
 
 ## 6. 参考资料
-- 上游来源: /Users/lichengyin/.codex/skills/find-skills
+- 上游来源: ~/.codex/skills/find-skills
 - 本技能说明: `SKILL.md`

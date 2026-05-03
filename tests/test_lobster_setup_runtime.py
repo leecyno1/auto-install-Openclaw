@@ -77,7 +77,7 @@ class LobsterSetupRuntimeTests(unittest.TestCase):
                 self.assertEqual(help_result.returncode, 0, help_result.stderr)
                 self.assertIn('用法: openclaw-setup', help_result.stdout)
                 self.assertIn('13146 健康检查', help_result.stdout)
-                self.assertIn('13147 配额强制', help_result.stdout)
+                self.assertNotIn('13147 配额强制', help_result.stdout)
 
                 workbench_result = subprocess.run([str(launcher), 'workbench', 'restart'], cwd=ROOT, text=True, capture_output=True, env=env)
                 self.assertEqual(workbench_result.returncode, 0, workbench_result.stderr)

@@ -1,138 +1,129 @@
 ---
-name: flutter-expert
-description: Use when building cross-platform applications with Flutter 3+ and Dart. Invoke for widget development, Riverpod/Bloc state management, GoRouter navigation, platform-specific implementations, performance optimization.
+name: flutter-dev
+description: |
+  Flutter cross-platform development guide covering widget patterns, Riverpod/Bloc state management, GoRouter navigation, performance optimization, and platform-specific implementations. Includes const optimization, responsive layouts, testing strategies, and DevTools profiling.
+  Use when: building Flutter apps, implementing state management (Riverpod/Bloc), setting up GoRouter navigation, creating custom widgets, optimizing performance, writing widget tests, cross-platform development.
 license: MIT
 metadata:
-  author: https://github.com/Jeffallan
-  version: "1.1.0"
-  domain: frontend
-  triggers: Flutter, Dart, widget, Riverpod, Bloc, GoRouter, cross-platform
-  role: specialist
-  scope: implementation
-  output-format: code
-  related-skills: react-native-expert, test-master, fullstack-guardian
+  version: "1.0.0"
+  category: mobile
+  sources:
+    - flutter-expert by Jeff Smolinski (https://github.com/Jeffallan/claude-skills) — Flutter expert skill framework
+    - Flutter Documentation
+    - Riverpod Documentation
+    - Bloc Library Documentation
 ---
 
-# Flutter Expert
+# Flutter Development Guide
 
-Senior mobile engineer building high-performance cross-platform applications with Flutter 3 and Dart.
+A practical guide for building cross-platform applications with Flutter 3 and Dart. Focuses on proven patterns, state management, and performance optimization.
 
-## When to Use This Skill
+## Quick Reference
 
-- Building cross-platform Flutter applications
-- Implementing state management (Riverpod, Bloc)
-- Setting up navigation with GoRouter
-- Creating custom widgets and animations
-- Optimizing Flutter performance
-- Platform-specific implementations
+### Widget Patterns
 
-## Core Workflow
+| Purpose | Component |
+|---------|-----------|
+| State management (simple) | `StateProvider` + `ConsumerWidget` |
+| State management (complex) | `NotifierProvider` / `Bloc` |
+| Async data | `FutureProvider` / `AsyncNotifierProvider` |
+| Real-time streams | `StreamProvider` |
+| Navigation | `GoRouter` + `context.go/push` |
+| Responsive layout | `LayoutBuilder` + breakpoints |
+| List display | `ListView.builder` |
+| Complex scrolling | `CustomScrollView` + Slivers |
+| Hooks | `HookWidget` + `useState/useEffect` |
+| Forms | `Form` + `TextFormField` + validation |
 
-1. **Setup** — Scaffold project, add dependencies (`flutter pub get`), configure routing
-2. **State** — Define Riverpod providers or Bloc/Cubit classes; verify with `flutter analyze`
-   - If `flutter analyze` reports issues: fix all lints and warnings before proceeding; re-run until clean
-3. **Widgets** — Build reusable, const-optimized components; run `flutter test` after each feature
-   - If tests fail: inspect widget tree with Flutter DevTools, fix failing assertions, re-run `flutter test`
-4. **Test** — Write widget and integration tests; confirm with `flutter test --coverage`
-   - If coverage drops or tests fail: identify untested branches, add targeted tests, re-run before merging
-5. **Optimize** — Profile with Flutter DevTools (`flutter run --profile`), eliminate jank, reduce rebuilds
-   - If jank persists: check rebuild counts in the Performance overlay, isolate expensive `build()` calls, apply `const` or move state closer to consumers
+### Performance Patterns
 
-## Reference Guide
+| Purpose | Solution |
+|---------|----------|
+| Prevent rebuilds | `const` constructors |
+| Selective updates | `ref.watch(provider.select(...))` |
+| Isolate repaints | `RepaintBoundary` |
+| Lazy lists | `ListView.builder` |
+| Heavy computation | `compute()` isolate |
+| Image caching | `cached_network_image` |
 
-Load detailed guidance based on context:
+## Core Principles
 
-| Topic | Reference | Load When |
-|-------|-----------|-----------|
-| Riverpod | `references/riverpod-state.md` | State management, providers, notifiers |
-| Bloc | `references/bloc-state.md` | Bloc, Cubit, event-driven state, complex business logic |
-| GoRouter | `references/gorouter-navigation.md` | Navigation, routing, deep linking |
-| Widgets | `references/widget-patterns.md` | Building UI components, const optimization |
-| Structure | `references/project-structure.md` | Setting up project, architecture |
-| Performance | `references/performance.md` | Optimization, profiling, jank fixes |
-
-## Code Examples
-
-### Riverpod Provider + ConsumerWidget (correct pattern)
-
-```dart
-// provider definition
-final counterProvider = StateNotifierProvider<CounterNotifier, int>(
-  (ref) => CounterNotifier(),
-);
-
-class CounterNotifier extends StateNotifier<int> {
-  CounterNotifier() : super(0);
-  void increment() => state = state + 1; // new instance, never mutate
-}
-
-// consuming widget — use ConsumerWidget, not StatefulWidget
-class CounterView extends ConsumerWidget {
-  const CounterView({super.key});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final count = ref.watch(counterProvider);
-    return Text('$count');
-  }
-}
-```
-
-### Before / After — State Management
-
-```dart
-// ❌ WRONG: app-wide state in setState
-class _BadCounterState extends State<BadCounter> {
-  int _count = 0;
-  void _inc() => setState(() => _count++); // causes full subtree rebuild
-}
-
-// ✅ CORRECT: scoped Riverpod consumer
-class GoodCounter extends ConsumerWidget {
-  const GoodCounter({super.key});
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final count = ref.watch(counterProvider);
-    return IconButton(
-      onPressed: () => ref.read(counterProvider.notifier).increment(),
-      icon: const Icon(Icons.add), // const on static widgets
-    );
-  }
-}
-```
-
-## Constraints
-
-### MUST DO
+### Widget Optimization
 - Use `const` constructors wherever possible
-- Implement proper keys for lists
-- Use `Consumer`/`ConsumerWidget` for state (not `StatefulWidget`)
-- Follow Material/Cupertino design guidelines
-- Profile with DevTools, fix jank
-- Test widgets with `flutter_test`
+- Extract static widgets to separate const classes
+- Use `Key` for list items (ValueKey, ObjectKey)
+- Prefer `ConsumerWidget` over `StatefulWidget` for state
 
-### MUST NOT DO
-- Build widgets inside `build()` method
-- Mutate state directly (always create new instances)
-- Use `setState` for app-wide state
-- Skip `const` on static widgets
-- Ignore platform-specific behavior
-- Block UI thread with heavy computation (use `compute()`)
+### State Management
+- Riverpod for dependency injection and simple state
+- Bloc/Cubit for event-driven workflows and complex logic
+- Never mutate state directly (create new instances)
+- Use `select()` to minimize rebuilds
 
-## Troubleshooting Common Failures
+### Layout
+- 8pt spacing increments (8, 16, 24, 32, 48)
+- Responsive breakpoints: mobile (<650), tablet (650-1100), desktop (>1100)
+- Support all screen sizes with flexible layouts
+- Follow Material 3 / Cupertino design guidelines
 
-| Symptom | Likely Cause | Recovery |
-|---------|-------------|----------|
-| `flutter analyze` errors | Unresolved imports, missing `const`, type mismatches | Fix flagged lines; run `flutter pub get` if imports are missing |
-| Widget test assertion failures | Widget tree mismatch or async state not settled | Use `tester.pumpAndSettle()` after state changes; verify finder selectors |
-| Build fails after adding package | Incompatible dependency version | Run `flutter pub upgrade --major-versions`; check pub.dev compatibility |
-| Jank / dropped frames | Expensive `build()` calls, uncached widgets, heavy main-thread work | Use `RepaintBoundary`, move heavy work to `compute()`, add `const` |
-| Hot reload not reflecting changes | State held in `StateNotifier` not reset | Use hot restart (`R` in terminal) to reset full app state |
+### Performance
+- Profile with DevTools before optimizing
+- Target <16ms frame time for 60fps
+- Use `RepaintBoundary` for complex animations
+- Offload heavy work with `compute()`
 
-## Output Templates
+## Checklist
 
-When implementing Flutter features, provide:
-1. Widget code with proper `const` usage
-2. Provider/Bloc definitions
-3. Route configuration if needed
-4. Test file structure
+### Widget Best Practices
+- [ ] `const` constructors on all static widgets
+- [ ] Proper `Key` on list items
+- [ ] `ConsumerWidget` for state-dependent widgets
+- [ ] No widget building inside `build()` method
+- [ ] Extract reusable widgets to separate files
+
+### State Management
+- [ ] Immutable state objects
+- [ ] `select()` for granular rebuilds
+- [ ] Proper provider scoping
+- [ ] Dispose controllers and subscriptions
+- [ ] Handle loading/error states
+
+### Navigation
+- [ ] GoRouter with typed routes
+- [ ] Auth guards via redirect
+- [ ] Deep linking support
+- [ ] State preservation across routes
+
+### Performance
+- [ ] Profile mode testing (`flutter run --profile`)
+- [ ] <16ms frame rendering time
+- [ ] No unnecessary rebuilds (DevTools check)
+- [ ] Images cached and resized
+- [ ] Heavy computation in isolates
+
+### Testing
+- [ ] Widget tests for UI components
+- [ ] Unit tests for business logic
+- [ ] Integration tests for user flows
+- [ ] Bloc tests with `blocTest()`
+
+## References
+
+| Topic | Reference |
+|-------|-----------|
+| Widget patterns, const optimization, responsive layout | [Widget Patterns](references/widget-patterns.md) |
+| Riverpod providers, notifiers, async state | [Riverpod State Management](references/riverpod-state.md) |
+| Bloc, Cubit, event-driven state | [Bloc State Management](references/bloc-state.md) |
+| GoRouter setup, routes, deep linking | [GoRouter Navigation](references/gorouter-navigation.md) |
+| Feature-based structure, dependencies | [Project Structure](references/project-structure.md) |
+| Profiling, const optimization, DevTools | [Performance Optimization](references/performance.md) |
+| Widget tests, integration tests, mocking | [Testing Strategies](references/testing.md) |
+| iOS/Android/Web specific implementations | [Platform Integration](references/platform-specific.md) |
+| Implicit/explicit animations, Hero, transitions | [Animations](references/animations.md) |
+| Dio, interceptors, error handling, caching | [Networking](references/networking.md) |
+| Form validation, FormField, input formatters | [Forms](references/forms.md) |
+| i18n, flutter_localizations, intl | [Localization](references/localization.md) |
+
+---
+
+Flutter, Dart, Material Design, and Cupertino are trademarks of Google LLC and Apple Inc. respectively. Riverpod, Bloc, and GoRouter are open-source packages by their respective maintainers.

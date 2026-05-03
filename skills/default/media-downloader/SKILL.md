@@ -1,6 +1,7 @@
 ---
 name: media-downloader
-description: |
+description: |-
+  Use when downloading or finding images, videos, clips, or media assets.
   智能媒体下载器。根据用户描述自动搜索和下载图片、视频片段，支持视频自动剪辑。
   Smart media downloader. Automatically search and download images/video clips based on user description, with auto-trimming support.
   触发方式 Triggers: "下载图片", "找视频", "download media", "download images", "find video", "/media"

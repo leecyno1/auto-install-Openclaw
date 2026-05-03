@@ -24,5 +24,5 @@ agent-browser --help
 ```
 
 ## 6. 参考资料
-- 上游来源: /Users/lichengyin/.codex/skills/agent-browser
+- 上游来源: ~/.codex/skills/agent-browser
 - 本技能说明: `SKILL.md`

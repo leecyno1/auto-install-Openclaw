@@ -23,5 +23,5 @@ python3 skills/default/web-search/scripts/search.py --help
 ```
 
 ## 6. 参考资料
-- 上游来源: /Users/lichengyin/.codex/skills/web-search
+- 上游来源: ~/.codex/skills/web-search
 - 本技能说明: `SKILL.md`

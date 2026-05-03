@@ -72,6 +72,17 @@ def _limits(env: dict[str, str] | None = None) -> dict[str, int]:
     }
 
 
+def _profile(env: dict[str, str] | None = None) -> str:
+    return _env_get(env, "OPENCLAW_RULE_PROFILE", "medium").strip().lower()
+
+
+def _is_unlimited(category: str, limit: int, env: dict[str, str] | None = None) -> bool:
+    profile = _profile(env)
+    if profile == "none":
+        return True
+    return category == "text" and limit <= 0
+
+
 @contextmanager
 def _file_lock(env: dict[str, str] | None = None):
     lock_path = _lock_path(env)
@@ -159,7 +170,7 @@ def _category_status(state: dict[str, Any], category: str, env: dict[str, str] |
     used = sum(max(0, _to_int(e.get("units"), 0)) for e in committed)
     pending = sum(max(0, _to_int(e.get("units"), 0)) for e in reserved)
     limit = max(0, limits.get(category, 0))
-    unlimited = category == "text" and limit <= 0
+    unlimited = _is_unlimited(category, limit, env)
     if unlimited:
         remaining = -1
     elif limit <= 0:

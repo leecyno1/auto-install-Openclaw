@@ -1,7 +1,7 @@
 # planning-with-files 使用指南
 
 ## 1. 功能定位
-- Implements Manus-style file-based planning for complex tasks. Creates task_plan.md, findings.md, and progress.md. Use when starting complex multi-step tasks, research projects,...
+- Use for complex multi-step tasks that need file-based plans and progress tracking.
 - 默认档位: 仅全量默认包/手动同步
 - 仓库目录: `skills/default/planning-with-files`
 - 安装后目录: `~/.openclaw/skills/planning-with-files`

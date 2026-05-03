@@ -1,7 +1,7 @@
 # baoyu-infographic 使用指南
 
 ## 1. 功能定位
-- Generates professional infographics with 21 layout types and 20 visual styles. Analyzes content, recommends layout×style combinations, and generates publication-ready infographi...
+- Use when turning content into professional infographics or visual summaries.
 - 默认档位: 仅全量默认包/手动同步
 - 仓库目录: `skills/default/baoyu-infographic`
 - 安装后目录: `~/.openclaw/skills/baoyu-infographic`

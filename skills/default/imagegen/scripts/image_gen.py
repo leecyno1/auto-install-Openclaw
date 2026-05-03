@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
-"""Generate or edit images with the OpenAI Image API.
+"""Fallback CLI for explicit image generation or editing with GPT Image models.
 
-Defaults to gpt-image-1.5 and a structured prompt augmentation workflow.
+Used only when the user explicitly opts into CLI fallback mode, or when explicit
+transparent output requires the `gpt-image-1.5` fallback path.
+
+Defaults to gpt-image-2 and a structured prompt augmentation workflow.
 """
 
 from __future__ import annotations
@@ -19,16 +22,25 @@ from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 from io import BytesIO
 
-DEFAULT_MODEL = "gpt-image-1.5"
-DEFAULT_SIZE = "1024x1024"
-DEFAULT_QUALITY = "auto"
+DEFAULT_MODEL = "gpt-image-2"
+DEFAULT_SIZE = "auto"
+DEFAULT_QUALITY = "medium"
 DEFAULT_OUTPUT_FORMAT = "png"
 DEFAULT_CONCURRENCY = 5
 DEFAULT_DOWNSCALE_SUFFIX = "-web"
+DEFAULT_OUTPUT_PATH = "output/imagegen/output.png"
+GPT_IMAGE_MODEL_PREFIX = "gpt-image-"
 
-ALLOWED_SIZES = {"1024x1024", "1536x1024", "1024x1536", "auto"}
+ALLOWED_LEGACY_SIZES = {"1024x1024", "1536x1024", "1024x1536", "auto"}
 ALLOWED_QUALITIES = {"low", "medium", "high", "auto"}
 ALLOWED_BACKGROUNDS = {"transparent", "opaque", "auto", None}
+ALLOWED_INPUT_FIDELITIES = {"low", "high", None}
+
+GPT_IMAGE_2_MODEL = "gpt-image-2"
+GPT_IMAGE_2_MIN_PIXELS = 655_360
+GPT_IMAGE_2_MAX_PIXELS = 8_294_400
+GPT_IMAGE_2_MAX_EDGE = 3840
+GPT_IMAGE_2_MAX_RATIO = 3.0
 
 MAX_IMAGE_BYTES = 50 * 1024 * 1024
 MAX_BATCH_JOBS = 500
@@ -41,6 +53,17 @@ def _die(message: str, code: int = 1) -> None:
 
 def _warn(message: str) -> None:
     print(f"Warning: {message}", file=sys.stderr)
+
+
+def _dependency_hint(package: str, *, upgrade: bool = False) -> str:
+    command = f"uv pip install {'-U ' if upgrade else ''}{package}"
+    return (
+        "Activate the repo-selected environment first, then install it with "
+        f"`{command}`. If this repo uses a local virtualenv, start with "
+        "`source .venv/bin/activate`; otherwise use this repo's configured shared fallback "
+        "environment. If your project declares dependencies, prefer that project's normal "
+        "`uv sync` flow."
+    )
 
 
 def _ensure_api_key(dry_run: bool) -> None:
@@ -88,10 +111,46 @@ def _normalize_output_format(fmt: Optional[str]) -> str:
     return "jpeg" if fmt == "jpg" else fmt
 
 
-def _validate_size(size: str) -> None:
-    if size not in ALLOWED_SIZES:
+def _parse_size(size: str) -> Optional[Tuple[int, int]]:
+    match = re.fullmatch(r"([1-9][0-9]*)x([1-9][0-9]*)", size)
+    if not match:
+        return None
+    return int(match.group(1)), int(match.group(2))
+
+
+def _validate_gpt_image_2_size(size: str) -> None:
+    if size == "auto":
+        return
+
+    parsed = _parse_size(size)
+    if parsed is None:
+        _die("size must be auto or WIDTHxHEIGHT, for example 1024x1024.")
+
+    width, height = parsed
+    max_edge = max(width, height)
+    min_edge = min(width, height)
+    total_pixels = width * height
+
+    if max_edge > GPT_IMAGE_2_MAX_EDGE:
+        _die("gpt-image-2 size maximum edge length must be less than or equal to 3840px.")
+    if width % 16 != 0 or height % 16 != 0:
+        _die("gpt-image-2 size width and height must be multiples of 16px.")
+    if max_edge / min_edge > GPT_IMAGE_2_MAX_RATIO:
+        _die("gpt-image-2 size long edge to short edge ratio must not exceed 3:1.")
+    if total_pixels < GPT_IMAGE_2_MIN_PIXELS or total_pixels > GPT_IMAGE_2_MAX_PIXELS:
         _die(
-            "size must be one of 1024x1024, 1536x1024, 1024x1536, or auto for GPT image models."
+            "gpt-image-2 size total pixels must be at least 655,360 and no more than 8,294,400."
+        )
+
+
+def _validate_size(size: str, model: str) -> None:
+    if model == GPT_IMAGE_2_MODEL:
+        _validate_gpt_image_2_size(size)
+        return
+
+    if size not in ALLOWED_LEGACY_SIZES:
+        _die(
+            "size must be one of 1024x1024, 1536x1024, 1024x1536, or auto for this GPT Image model."
         )
 
 
@@ -105,21 +164,55 @@ def _validate_background(background: Optional[str]) -> None:
         _die("background must be one of transparent, opaque, or auto.")
 
 
+def _validate_input_fidelity(input_fidelity: Optional[str]) -> None:
+    if input_fidelity not in ALLOWED_INPUT_FIDELITIES:
+        _die("input-fidelity must be one of low or high.")
+
+
+def _validate_model(model: str) -> None:
+    if not model.startswith(GPT_IMAGE_MODEL_PREFIX):
+        _die(
+            "model must be a GPT Image model (for example gpt-image-1.5, gpt-image-1, or gpt-image-1-mini)."
+        )
+
+
 def _validate_transparency(background: Optional[str], output_format: str) -> None:
     if background == "transparent" and output_format not in {"png", "webp"}:
         _die("transparent background requires output-format png or webp.")
 
 
+def _validate_model_specific_options(
+    *,
+    model: str,
+    background: Optional[str],
+    input_fidelity: Optional[str] = None,
+) -> None:
+    if model != GPT_IMAGE_2_MODEL:
+        return
+    if background == "transparent":
+        _die(
+            "transparent backgrounds are not supported in gpt-image-2, the latest model. "
+            "Use --model gpt-image-1.5 --background transparent --output-format png instead."
+        )
+    if input_fidelity is not None:
+        _die(
+            "input_fidelity is not supported in gpt-image-2 because image inputs always use high fidelity for this model."
+        )
+
+
 def _validate_generate_payload(payload: Dict[str, Any]) -> None:
+    model = str(payload.get("model", DEFAULT_MODEL))
+    _validate_model(model)
     n = int(payload.get("n", 1))
     if n < 1 or n > 10:
         _die("n must be between 1 and 10")
     size = str(payload.get("size", DEFAULT_SIZE))
     quality = str(payload.get("quality", DEFAULT_QUALITY))
     background = payload.get("background")
-    _validate_size(size)
+    _validate_size(size, model)
     _validate_quality(quality)
     _validate_background(background)
+    _validate_model_specific_options(model=model, background=background)
     oc = payload.get("output_compression")
     if oc is not None and not (0 <= int(oc) <= 100):
         _die("output_compression must be between 0 and 100")
@@ -238,9 +331,7 @@ def _downscale_image_bytes(image_bytes: bytes, *, max_dim: int, output_format: s
     try:
         from PIL import Image
     except Exception:
-        _die(
-            "Downscaling requires Pillow. Install with `uv pip install pillow` (then re-run)."
-        )
+        _die(f"Downscaling requires Pillow. {_dependency_hint('pillow')}")
 
     if max_dim < 1:
         _die("--downscale-max-dim must be >= 1")
@@ -306,8 +397,8 @@ def _decode_write_and_downscale(
 def _create_client():
     try:
         from openai import OpenAI
-    except ImportError as exc:
-        _die("openai SDK not installed. Install with `uv pip install openai`.")
+    except ImportError:
+        _die(f"openai SDK not installed in the active environment. {_dependency_hint('openai')}")
     return OpenAI()
 
 
@@ -318,9 +409,12 @@ def _create_async_client():
         try:
             import openai as _openai  # noqa: F401
         except ImportError:
-            _die("openai SDK not installed. Install with `uv pip install openai`.")
+            _die(
+                f"openai SDK not installed in the active environment. {_dependency_hint('openai')}"
+            )
         _die(
-            "AsyncOpenAI not available in this openai SDK version. Upgrade with `uv pip install -U openai`."
+            "AsyncOpenAI not available in this openai SDK version. "
+            f"{_dependency_hint('openai', upgrade=True)}"
         )
     return AsyncOpenAI()
 
@@ -506,8 +600,7 @@ async def _run_generate_batch(args: argparse.Namespace) -> int:
             _validate_generate_payload(job_payload)
             effective_output_format = _normalize_output_format(job_payload.get("output_format"))
             _validate_transparency(job_payload.get("background"), effective_output_format)
-            if "output_format" in job_payload:
-                job_payload["output_format"] = effective_output_format
+            job_payload["output_format"] = effective_output_format
 
             n = int(job_payload.get("n", 1))
             outputs = _job_output_paths(
@@ -557,8 +650,7 @@ async def _run_generate_batch(args: argparse.Namespace) -> int:
         _validate_generate_payload(payload)
         effective_output_format = _normalize_output_format(payload.get("output_format"))
         _validate_transparency(payload.get("background"), effective_output_format)
-        if "output_format" in payload:
-            payload["output_format"] = effective_output_format
+        payload["output_format"] = effective_output_format
         outputs = _job_output_paths(
             out_dir=out_dir,
             output_format=effective_output_format,
@@ -634,12 +726,21 @@ def _generate(args: argparse.Namespace) -> None:
 
     output_format = _normalize_output_format(args.output_format)
     _validate_transparency(args.background, output_format)
-    if "output_format" in payload:
-        payload["output_format"] = output_format
+    payload["output_format"] = output_format
     output_paths = _build_output_paths(args.out, output_format, args.n, args.out_dir)
+    downscaled = None
+    if args.downscale_max_dim is not None:
+        downscaled = [str(_derive_downscale_path(p, args.downscale_suffix)) for p in output_paths]
 
     if args.dry_run:
-        _print_request({"endpoint": "/v1/images/generations", **payload})
+        _print_request(
+            {
+                "endpoint": "/v1/images/generations",
+                "outputs": [str(p) for p in output_paths],
+                "outputs_downscaled": downscaled,
+                **payload,
+            }
+        )
         return
 
     print(
@@ -693,16 +794,26 @@ def _edit(args: argparse.Namespace) -> None:
 
     output_format = _normalize_output_format(args.output_format)
     _validate_transparency(args.background, output_format)
-    if "output_format" in payload:
-        payload["output_format"] = output_format
+    payload["output_format"] = output_format
+    _validate_input_fidelity(args.input_fidelity)
     output_paths = _build_output_paths(args.out, output_format, args.n, args.out_dir)
+    downscaled = None
+    if args.downscale_max_dim is not None:
+        downscaled = [str(_derive_downscale_path(p, args.downscale_suffix)) for p in output_paths]
 
     if args.dry_run:
         payload_preview = dict(payload)
         payload_preview["image"] = [str(p) for p in image_paths]
         if mask_path:
             payload_preview["mask"] = str(mask_path)
-        _print_request({"endpoint": "/v1/images/edits", **payload_preview})
+        _print_request(
+            {
+                "endpoint": "/v1/images/edits",
+                "outputs": [str(p) for p in output_paths],
+                "outputs_downscaled": downscaled,
+                **payload_preview,
+            }
+        )
         return
 
     print(
@@ -797,7 +908,7 @@ def _add_shared_args(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--output-format")
     parser.add_argument("--output-compression", type=int)
     parser.add_argument("--moderation")
-    parser.add_argument("--out", default="output.png")
+    parser.add_argument("--out", default=DEFAULT_OUTPUT_PATH)
     parser.add_argument("--out-dir")
     parser.add_argument("--force", action="store_true")
     parser.add_argument("--dry-run", action="store_true")
@@ -824,7 +935,9 @@ def _add_shared_args(parser: argparse.ArgumentParser) -> None:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Generate or edit images via the Image API")
+    parser = argparse.ArgumentParser(
+        description="Fallback CLI for explicit image generation or editing via GPT Image models"
+    )
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     gen_parser = subparsers.add_parser("generate", help="Create a new image")
@@ -863,9 +976,15 @@ def main() -> int:
     if getattr(args, "downscale_max_dim", None) is not None and args.downscale_max_dim < 1:
         _die("--downscale-max-dim must be >= 1")
 
-    _validate_size(args.size)
+    _validate_model(args.model)
+    _validate_size(args.size, args.model)
     _validate_quality(args.quality)
     _validate_background(args.background)
+    _validate_model_specific_options(
+        model=args.model,
+        background=args.background,
+        input_fidelity=getattr(args, "input_fidelity", None),
+    )
     _ensure_api_key(args.dry_run)
 
     args.func(args)

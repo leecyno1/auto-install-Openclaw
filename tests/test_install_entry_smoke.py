@@ -118,6 +118,15 @@ main "$@"
                 self.assertIn('export STAR_BACKEND_PORT=19000', env_text)
                 self.assertIn('export PROJECTION_API_PORT=19100', env_text)
                 self.assertIn('export OPENCLAW_STATUS_URL=http://127.0.0.1:13145/status', env_text)
+                self.assertIn('export OPENCLAW_DASHBOARD_PORT=13145', env_text)
+                self.assertIn('export HERMES_DASHBOARD_PORT=9119', env_text)
+                self.assertIn('export HERMES_CHAT_PORT=8000', env_text)
+                self.assertIn('export OPENCLAW_WEBSITE_ALLOWED_ORIGINS=', env_text)
+                self.assertIn('export OPENCLAW_DASHBOARD_ALLOWED_ORIGINS=', env_text)
+                self.assertIn('export NODE_COMPILE_CACHE=/var/tmp/openclaw-compile-cache', env_text)
+                self.assertIn('export OPENCLAW_NO_RESPAWN=1', env_text)
+                self.assertNotIn('export OPENCLAW_PUBLIC_API_URL=http://127.0.0.1:13147', env_text)
+                self.assertNotIn('export OPENCLAW_QUOTA_ENFORCER_URL=http://127.0.0.1:13147', env_text)
 
                 self.assertIn('🦞 Lobster 安装完成！当前引擎: openclaw', result.stdout)
             finally:

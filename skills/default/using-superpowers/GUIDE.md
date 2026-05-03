@@ -1,7 +1,7 @@
 # using-superpowers 使用指南
 
 ## 1. 功能定位
-- Use when starting any conversation - establishes how to find and use skills, requiring Skill tool invocation before ANY response including clarifying questions
+- Use when starting any conversation to check and apply relevant skills.
 - 默认档位: 基础档默认安装
 - 仓库目录: `skills/default/using-superpowers`
 - 安装后目录: `~/.openclaw/skills/using-superpowers`

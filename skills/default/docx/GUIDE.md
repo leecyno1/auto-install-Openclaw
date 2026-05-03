@@ -22,5 +22,5 @@ python3 -c "import docx; print(docx.__version__)"
 ```
 
 ## 6. 参考资料
-- 上游来源: /Users/lichengyin/.codex/skills/docx
+- 上游来源: ~/.codex/skills/docx
 - 本技能说明: `SKILL.md`

@@ -1,7 +1,7 @@
 # receiving-code-review 使用指南
 
 ## 1. 功能定位
-- Use when receiving code review feedback, before implementing suggestions, especially if feedback seems unclear or technically questionable - requires technical rigor and verific...
+- Use when implementing or evaluating code review feedback.
 - 默认档位: 仅全量默认包/手动同步
 - 仓库目录: `skills/default/receiving-code-review`
 - 安装后目录: `~/.openclaw/skills/receiving-code-review`

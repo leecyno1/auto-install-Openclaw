@@ -24,5 +24,5 @@ python3 skills/default/minimax-image-understanding/scripts/understand_image.py -
 ```
 
 ## 6. 参考资料
-- 上游来源: /Users/lichengyin/.codex/skills/minimax-image-understanding
+- 上游来源: ~/.codex/skills/minimax-image-understanding
 - 本技能说明: `SKILL.md`

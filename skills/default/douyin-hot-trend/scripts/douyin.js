@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
 /**
- * 抖音热榜抓取脚本
- * 获取抖音热搜榜数据
+ * 抖音热榜抓取脚本（增强版 - 带封面图）
+ * 获取抖音热搜榜数据，并尝试获取封面图
  */
 
 const https = require('https');
@@ -10,7 +10,7 @@ const https = require('https');
 const USER_AGENTS = [
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
   'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-  'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0'
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Gecko/20100101 Firefox/121.0'
 ];
 
 function getRandomUserAgent() {
@@ -71,6 +71,7 @@ function formatHotBoard(data, limit = 50) {
     title: item.word || '无标题',
     popularity: item.hot_value || 0,
     link: item.url || `https://www.douyin.com/search/${encodeURIComponent(item.word || '')}`,
+    cover: item.cover || null,
     label: item.label || null,
     type: item.type || '未知'
   }));
@@ -85,7 +86,10 @@ function printHotBoard(hotList) {
     console.log(`${item.rank.toString().padStart(2, ' ')}. ${item.title}`);
     console.log(`    🔥 热度: ${item.popularity.toLocaleString()}`);
     if (item.label) {
-      console.log(`    🏷️  标签: ${item.label}`);
+      console.log(`    🏷️ 标签: ${item.label}`);
+    }
+    if (item.cover) {
+      console.log(`    🖼️  封面: ${item.cover}`);
     }
     console.log(`    🔗 链接: ${item.link}`);
     console.log();

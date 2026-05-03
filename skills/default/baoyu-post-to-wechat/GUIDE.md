@@ -1,7 +1,7 @@
 # baoyu-post-to-wechat 使用指南
 
 ## 1. 功能定位
-- Posts content to WeChat Official Account (微信公众号) via API or Chrome CDP. Supports article posting (文章) with HTML, markdown, or plain text input, and image-text posting (贴图, forme...
+- Use when posting articles or image-text content to WeChat Official Account.
 - 默认档位: 仅全量默认包/手动同步
 - 仓库目录: `skills/default/baoyu-post-to-wechat`
 - 安装后目录: `~/.openclaw/skills/baoyu-post-to-wechat`

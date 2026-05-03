@@ -166,6 +166,12 @@ GATEWAY_BIND="${OPENCLAW_GATEWAY_BIND:-}"
 GATEWAY_HOST="${OPENCLAW_GATEWAY_HOST:-}"
 GATEWAY_CUSTOM_BIND_HOST="${OPENCLAW_GATEWAY_CUSTOM_BIND_HOST:-}"
 GATEWAY_PORT="${OPENCLAW_GATEWAY_PORT:-13145}"
+OPENCLAW_DASHBOARD_PORT_DEFAULT="${OPENCLAW_DASHBOARD_PORT:-13145}"
+HERMES_DASHBOARD_PORT_DEFAULT="${HERMES_DASHBOARD_PORT:-9119}"
+HERMES_CHAT_PORT_DEFAULT="${HERMES_CHAT_PORT:-8000}"
+OPENCLAW_WEBSITE_PUBLIC_BASE_URL="${OPENCLAW_WEBSITE_PUBLIC_BASE_URL:-https://monkeykingfury.com}"
+OPENCLAW_WEBSITE_ALLOWED_ORIGINS_DEFAULT="${OPENCLAW_WEBSITE_ALLOWED_ORIGINS:-https://monkeykingfury.com,https://www.monkeykingfury.com,http://127.0.0.1:4173}"
+OPENCLAW_DASHBOARD_ALLOWED_ORIGINS_DEFAULT="${OPENCLAW_DASHBOARD_ALLOWED_ORIGINS:-$OPENCLAW_WEBSITE_ALLOWED_ORIGINS_DEFAULT}"
 LOBSTER_WORLD_PORT_DEFAULT="19000"
 PROJECTION_API_HOST_DEFAULT="127.0.0.1"
 PROJECTION_API_PORT_DEFAULT="19100"
@@ -338,7 +344,7 @@ print_lobster_setup_quick_commands() {
     echo "  openclaw-setup engine       # 打开引擎管理"
     echo "  openclaw-setup backup       # 一键备份 OpenClaw 配置"
     echo "  lobster-setup ...          # 兼容旧命令，等价转发到 openclaw-setup"
-    echo "  像素小屋补装/修复后会同步接线 13146 健康检查 与 13147 配额强制"
+    echo "  像素小屋补装/修复后会同步接线并启动 13146 健康检查"
 }
 
 print_post_install_config_hint() {
@@ -376,6 +382,7 @@ print_post_install_config_hint() {
 
 print_exit_hint() {
     local exit_code="${1:-0}"
+    local engine="${LOBSTER_ENGINE:-openclaw}"
     echo ""
     if [ "$exit_code" -eq 0 ]; then
         echo -e "${GREEN}安装脚本执行结束。${NC}"
@@ -387,11 +394,17 @@ print_exit_hint() {
     print_lobster_setup_quick_commands "compact"
     echo ""
     echo -e "${WHITE}直接命令:${NC}"
-    echo "  source ~/.openclaw/env && openclaw doctor"
-    echo "  source ~/.openclaw/env && openclaw models status --probe --check"
     echo "  openclaw-setup config"
-    echo "  openclaw-setup repair minimax"
-    echo "  ~/.openclaw/lobster-world.sh start"
+    if [ "$engine" = "hermes" ]; then
+        echo "  openclaw-setup config hermes"
+        echo "  openclaw-setup config model"
+        echo "  openclaw-setup config image"
+    else
+        echo "  source ~/.openclaw/env && openclaw doctor"
+        echo "  source ~/.openclaw/env && openclaw models status --probe --check"
+        echo "  openclaw-setup repair minimax"
+        echo "  ~/.openclaw/lobster-world.sh start"
+    fi
     echo ""
 }
 
@@ -671,13 +684,13 @@ ${INSTALLER_NAME} (OpenClaw 安装增强版)
   --auto-confirm-all, --fast-install   全自动模式（所有确认默认通过，选择题默认 1，等价 no-prompt + no-onboard）
   --dry-run                            只显示执行计划，不做变更
   --verbose                            详细日志
-  --gateway-host <host>               Gateway 监听地址 (默认: 127.0.0.1)
-  --gateway-bind <mode>               Gateway 绑定模式: loopback|lan|tailnet|auto|custom
+  --gateway-host <host>               内部 Gateway 监听地址 (默认: 127.0.0.1)
+  --gateway-bind <mode>               内部 Gateway 绑定模式: loopback|lan|tailnet|auto|custom
   --gateway-custom-host <ipv4>        当绑定模式为 custom 时指定自定义 IPv4
   --gateway-port <port>               Gateway 监听端口 (默认: 13145)
   --reset-chat-history                安装后重置聊天历史 (默认开启)
   --keep-chat-history                 安装后保留历史聊天记录
-  --rule-profile <low|medium|high|none> token规划规则档位 (默认: medium)
+  --rule-profile <low|medium|high|none> 请求次数限流档位 (默认: medium)
   --provider <id>                    官方 Provider 预设: anthropic|openai|glm|minimax|gemini|deepseek|openrouter
   --model <model>                    默认文本模型
   --api-key <key>                    默认文本模型 API Key
@@ -688,6 +701,7 @@ ${INSTALLER_NAME} (OpenClaw 安装增强版)
   --image-base-url <url>             生图接口 URL（原样保存）
   --install-skills <basic|extended|super> 安装/记录技能包档位
   --install-pixel-house              安装/修复像素小屋
+  --remote-local-control             安装云端控制本地主机的可选反向 SSH 辅助脚本
   --enable-advanced-routing          启用默认模型 + 子 Agent 高级模型路由
   --persona <role>                    工作档案: druid|assassin|mage|summoner|warrior|paladin|designer
   --model-route <route>               记录前端模型路由选择
@@ -921,6 +935,10 @@ parse_args() {
                 ;;
             --install-pixel-house)
                 export OPENCLAW_INSTALL_PIXEL_HOUSE=1
+                shift
+                ;;
+            --remote-local-control)
+                export OPENCLAW_INSTALL_REMOTE_LOCAL_CONTROL=1
                 shift
                 ;;
             --enable-advanced-routing)
@@ -1296,7 +1314,7 @@ get_profile_token_limits() {
     level="$(normalize_rule_profile_level "$1")"
     case "$level" in
         none)
-            echo "0 0 0 0"
+            echo "5 0 0 0"
             ;;
         low)
             echo "5 100 600000 24000"
@@ -1355,10 +1373,10 @@ get_profile_prompt_text() {
     case "$level" in
         none)
             cat <<'EOF'
-未注入 token规划规则（NONE）。
-- 跳过本轮 token/request 限流与策略文件写入。
-- 跳过档位 API 参数采集与技能档位注入。
-- 仅保留现有配置，不做额外变更。
+你是无限制执行模式（NONE）。
+- 请求、图片、视频均不做本地配额限制。
+- 仍然必须遵守密钥保护、权限边界和隐私保护规则。
+- 上下文压缩仅作为稳定性建议，不作为硬性请求限流。
 EOF
             ;;
         low)
@@ -1417,12 +1435,12 @@ select_rule_profile_level() {
 
     echo ""
     echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-    echo -e "${WHITE}  token规划规则注入档位${NC}"
+    echo -e "${WHITE}  请求次数限流规则档位${NC}"
     echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
     echo -e "  ${CYAN}[1]${NC} LOW    - 基础档（5小时 100 次，不含图/视频）"
     echo -e "  ${CYAN}[2]${NC} MEDIUM - 扩展档（5小时 300 次，20图/1视频）"
     echo -e "  ${CYAN}[3]${NC} HIGH   - 超级档（请求不限，50图/2视频）"
-    echo -e "  ${CYAN}[4]${NC} NONE   - 跳过本次注入"
+    echo -e "  ${CYAN}[4]${NC} NONE   - 不限制请求/图片/视频"
     echo ""
 
     if [ "$NO_PROMPT" = "1" ] || [ "$TTY_INPUT" = "/dev/null" ]; then
@@ -1721,8 +1739,7 @@ apply_profile_token_policy() {
     local level
     level="$(normalize_rule_profile_level "$1")"
     if [ "$level" = "none" ]; then
-        log_info "已选择 NONE，跳过 token/request 限流配置。"
-        return 0
+        log_info "已选择 NONE，写入无限制请求配额。"
     fi
     local limits media_limits window_hours max_requests max_tokens max_tokens_per_req max_image_requests max_video_requests
     local context_limits context_warn_tokens context_ask_tokens context_force_tokens
@@ -1755,8 +1772,6 @@ apply_profile_token_policy() {
     if check_command openclaw; then
         openclaw config set "vendor.control.rate.windowHours" "$window_hours" >/dev/null 2>&1 || true
         openclaw config set "vendor.control.rate.maxRequests" "$max_requests" >/dev/null 2>&1 || true
-        openclaw config set "vendor.control.rate.maxTokens" "$max_tokens" >/dev/null 2>&1 || true
-        openclaw config set "vendor.control.rate.maxTokensPerRequest" "$max_tokens_per_req" >/dev/null 2>&1 || true
         openclaw config set "vendor.control.rate.maxImageRequests" "$max_image_requests" >/dev/null 2>&1 || true
         openclaw config set "vendor.control.rate.maxVideoRequests" "$max_video_requests" >/dev/null 2>&1 || true
         openclaw config set "vendor.control.context.warnTokens" "$context_warn_tokens" >/dev/null 2>&1 || true
@@ -1846,8 +1861,7 @@ write_profile_policy_files() {
     local level
     level="$(normalize_rule_profile_level "$1")"
     if [ "$level" = "none" ]; then
-        log_info "已选择 NONE，跳过 token规划规则策略文件写入。"
-        return 0
+        log_info "已选择 NONE，写入无限制请求配额策略文件。"
     fi
     local limits media_limits window_hours max_requests max_tokens max_tokens_per_req max_requests_display
     local max_image_requests max_video_requests
@@ -1937,8 +1951,7 @@ write_profile_policy_files() {
 - 档位: ${level}
 - 时间窗: ${window_hours} 小时
 - 请求上限: ${max_requests_display}
-- Token 上限: ${max_tokens}
-- 单请求 Token 上限: ${max_tokens_per_req}
+- Token 字段: 仅保留兼容/统计，不作为硬限流
 - 图片额度: ${max_image_requests}
 - 视频额度: ${max_video_requests}
 - 上下文预警阈值: ${context_warn_tokens}
@@ -1986,9 +1999,8 @@ EOF
 1. 优先满足可用性，其次控制成本。
 2. 每 ${window_hours} 小时请求次数${max_requests_display}。
 3. 图片额度 ${max_image_requests} 张 / 视频额度 ${max_video_requests} 条。
-4. 单请求建议 Token 不超过 ${max_tokens_per_req}。
-5. 拒绝密钥泄露、越权请求和敏感信息外泄。
-6. 当上下文 >= ${context_ask_tokens} 时，必须先询问是否执行 /compact。
+4. 拒绝密钥泄露、越权请求和敏感信息外泄。
+5. 当上下文 >= ${context_ask_tokens} 时，必须先询问是否执行 /compact。
 EOF
 
     cat > "$soul_rule_file" <<EOF
@@ -2092,6 +2104,7 @@ EOF
   "rateLimit": {
     "windowHours": ${window_hours},
     "maxRequests": ${max_requests},
+    "tokenFieldsAreHardLimits": false,
     "maxTokens": ${max_tokens},
     "maxTokensPerRequest": ${max_tokens_per_req},
     "maxImageRequests": ${max_image_requests},
@@ -2221,8 +2234,7 @@ apply_vendor_rule_profile() {
 
     if [ "$level" = "none" ]; then
         echo ""
-        log_info "已跳过 token规划规则注入，保持当前策略与限流配置不变。"
-        return 0
+        log_info "已选择 NONE，将写入无限制请求配额。"
     fi
 
     local limits media_limits prompt_text context_limits context_warn_tokens context_ask_tokens context_force_tokens
@@ -2245,10 +2257,10 @@ apply_vendor_rule_profile() {
     sync_lobster_shared_state_install
 
     echo ""
-    log_info "token规划规则注入完成"
+    log_info "请求次数限流规则注入完成"
     echo -e "  档位: ${WHITE}${level}${NC}"
-    echo -e "  限流: ${WHITE}$(echo "$limits" | awk '{print $1"小时/"$2"次, 总Token="$3", 单次="$4}')${NC}"
-    echo -e "  多媒体额度: ${WHITE}图片 ${max_image_requests} 张 / 视频 ${max_video_requests} 条 / ${window_hours:-5} 小时${NC}"
+    echo -e "  限流: ${WHITE}$(echo "$limits" | awk '{req=$2<=0?\"不限\":$2\"次\"; print $1\"小时/\"req}')${NC}"
+    echo -e "  多媒体额度: ${WHITE}图片 ${max_image_requests} 张 / 视频 ${max_video_requests} 条 / $(echo "$limits" | awk '{print $1}') 小时${NC}"
     echo -e "  Skills 档位: ${WHITE}$(case "$level" in low) echo 低档=基础必装;; medium) echo 中档=基础+进阶;; high) echo 高档=中档+全量;; *) echo 中档=基础+进阶;; esac)${NC}"
     echo -e "  上下文守门: ${WHITE}预警 ${context_warn_tokens} / 询问 ${context_ask_tokens} / 强制 ${context_force_tokens}${NC}"
     echo -e "  生图接口: ${WHITE}${OPENCLAW_IMAGE_API_URL:-https://api.viviai.cc/v1/chat/completions}${NC}"
@@ -2335,10 +2347,17 @@ print_install_plan() {
     echo "  - auto_confirm_all: $AUTO_CONFIRM_ALL"
     echo "  - dry_run: $DRY_RUN"
     echo "  - verbose: $VERBOSE"
-    echo "  - gateway_bind: $GATEWAY_BIND"
-    [ -n "$GATEWAY_CUSTOM_BIND_HOST" ] && echo "  - gateway_custom_host: $GATEWAY_CUSTOM_BIND_HOST"
-    echo "  - gateway_host_display: $GATEWAY_HOST"
-    echo "  - gateway_port: $GATEWAY_PORT"
+    if [ "$LOBSTER_ENGINE" = "hermes" ]; then
+        echo "  - shared_config: models/skills/rules/routing/image"
+        echo "  - openclaw_gateway: skipped (Hermes-only)"
+        echo "  - quota_proxy: skipped (OpenClaw compatibility tool)"
+    else
+        echo "  - gateway_bind: $GATEWAY_BIND"
+        [ -n "$GATEWAY_CUSTOM_BIND_HOST" ] && echo "  - gateway_custom_host: $GATEWAY_CUSTOM_BIND_HOST"
+        echo "  - gateway_host_display: $GATEWAY_HOST"
+        echo "  - gateway_port: $GATEWAY_PORT"
+        echo "  - quota_proxy: compatibility tool only (not enabled by default)"
+    fi
     echo "  - reset_chat_after_install: $RESET_CHAT_AFTER_INSTALL"
     echo "  - rule_profile: $RULE_PROFILE_SELECTED"
     if [ "$INSTALL_METHOD" = "git" ]; then
@@ -3218,6 +3237,7 @@ EOF
             log_info "已创建 openclaw 命令兼容 shim: $shim_target"
         fi
 
+        persist_openclaw_command_access_install
         # 先做 JSON 级清洗，避免 openclaw 命令加载历史残留渠道时刷出 Config invalid/warnings
         cleanup_stale_channel_keys_in_json_install || true
         log_info "OpenClaw 安装成功: $("$claw_bin" --version 2>/dev/null || echo 'installed')"
@@ -3236,6 +3256,42 @@ EOF
         fi
         exit 1
     fi
+}
+
+persist_cli_command_access_install() {
+    local command_name="$1"
+    local command_path="${2:-}"
+    [ -n "$command_name" ] || return 0
+
+    if [ -z "$command_path" ]; then
+        command_path="$(command -v "$command_name" 2>/dev/null || true)"
+    fi
+    [ -n "$command_path" ] && [ -x "$command_path" ] || return 0
+
+    mkdir -p "$HOME/.local/bin" 2>/dev/null || true
+
+    local shell_rc marker
+    marker="# OpenClaw/Hermes local bin"
+    for shell_rc in "$HOME/.bashrc" "$HOME/.profile" "$HOME/.bash_profile" "$HOME/.zshrc"; do
+        [ -e "$shell_rc" ] || continue
+        if ! grep -qF "$marker" "$shell_rc" 2>/dev/null; then
+            {
+                echo ""
+                echo "$marker"
+                echo 'case ":$PATH:" in *":$HOME/.local/bin:"*) ;; *) export PATH="$HOME/.local/bin:$PATH" ;; esac'
+            } >> "$shell_rc" || true
+        fi
+    done
+
+    if [ "$(id -u 2>/dev/null || echo 1)" = "0" ] && [ -d /usr/local/bin ]; then
+        ln -sf "$command_path" "/usr/local/bin/$command_name" 2>/dev/null || true
+    fi
+}
+
+persist_openclaw_command_access_install() {
+    local claw_bin=""
+    claw_bin="$(resolve_openclaw_bin 2>/dev/null || command -v openclaw 2>/dev/null || true)"
+    persist_cli_command_access_install "openclaw" "$claw_bin"
 }
 
 check_hermes_installed() {
@@ -3257,6 +3313,17 @@ ensure_hermes_on_path() {
     done
 }
 
+persist_hermes_command_access_install() {
+    ensure_hermes_on_path
+
+    local hermes_bin=""
+    hermes_bin="$(command -v hermes 2>/dev/null || true)"
+    if [ -z "$hermes_bin" ] && [ -x "$HOME/.local/bin/hermes" ]; then
+        hermes_bin="$HOME/.local/bin/hermes"
+    fi
+    persist_cli_command_access_install "hermes" "$hermes_bin"
+}
+
 run_hermes_status_summary() {
     if ! check_hermes_installed; then
         return 1
@@ -3267,6 +3334,35 @@ run_hermes_status_summary() {
         return 0
     fi
     return 1
+}
+
+start_hermes_dashboard_install() {
+    ensure_hermes_on_path
+    if ! check_hermes_installed; then
+        return 0
+    fi
+    local port="$HERMES_DASHBOARD_PORT_DEFAULT"
+    local host="127.0.0.1"
+    HERMES_DASHBOARD_HOST="127.0.0.1" HERMES_DASHBOARD_PORT="$port" \
+        nohup bash -lc "hermes dashboard --host '$host' --port '$port' >/tmp/hermes-dashboard.log 2>&1 || hermes web --host '$host' --port '$port' >/tmp/hermes-dashboard.log 2>&1 || hermes ui --host '$host' --port '$port' >/tmp/hermes-dashboard.log 2>&1" \
+        >/dev/null 2>&1 &
+    log_info "Hermes Dashboard 已尝试在 127.0.0.1:${port} 启动（如当前 Hermes 版本支持 dashboard/web/ui 命令）。"
+}
+
+start_hermes_openai_bridge_install() {
+    load_openclaw_common_lib_install >/dev/null 2>&1 || return 0
+    if ! command -v openclaw_install_hermes_openai_bridge >/dev/null 2>&1; then
+        return 0
+    fi
+    ensure_hermes_on_path
+    if ! check_hermes_installed; then
+        return 0
+    fi
+    if openclaw_install_hermes_openai_bridge "$HERMES_HOME" "$HERMES_CHAT_PORT_DEFAULT" "127.0.0.1" "${AI_MODEL:-MiniMax-M2.7}" "${AI_PROVIDER:-minimax}"; then
+        log_info "Hermes OpenAI 兼容聊天接口已在 127.0.0.1:${HERMES_CHAT_PORT_DEFAULT} 启动"
+    else
+        log_warn "Hermes OpenAI 兼容聊天接口启动失败；网站聊天可能不可用，请检查 systemd / python3"
+    fi
 }
 
 apply_hermes_profile_cli_install() {
@@ -3314,12 +3410,15 @@ install_hermes() {
         return 1
     fi
 
+    persist_hermes_command_access_install
     log_info "Hermes 安装成功: $(hermes --version 2>/dev/null || echo installed)"
     if apply_hermes_profile_cli_install; then
         log_info "Hermes 已同步当前龙虾角色 / 规则 / 工具映射"
     else
         log_warn "Hermes 已安装，但 Lobster 配置映射应用失败；可稍后在配置菜单中重试"
     fi
+    start_hermes_dashboard_install || true
+    start_hermes_openai_bridge_install || true
     run_hermes_status_summary || true
 }
 
@@ -3717,6 +3816,23 @@ install_openclaw_bridge_launcher() {
         "subprojects/lobster-sanctum-ui/openclaw-runtime-bridge.sh"
 }
 
+install_remote_local_control_helper() {
+    local script_dir source_script target_script
+    script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    source_script="$script_dir/scripts/remote-local-control.sh"
+    target_script="$CONFIG_DIR/remote-local-control.sh"
+
+    if [ ! -f "$source_script" ]; then
+        log_warn "未找到远程本地主机控制脚本源码，跳过安装: $source_script"
+        return 1
+    fi
+
+    mkdir -p "$CONFIG_DIR"
+    cp "$source_script" "$target_script"
+    chmod +x "$CONFIG_DIR/remote-local-control.sh" 2>/dev/null || true
+    log_info "已安装远程本地主机控制辅助脚本: $target_script"
+}
+
 install_gateway_quota_enforcer_script() {
     local script_dir source_script target_script source_media_quota target_media_quota
     script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -3749,6 +3865,7 @@ install_pixel_house_launchers_install() {
     install_health_server_launcher
     install_openclaw_bridge_launcher
     install_gateway_quota_enforcer_script
+    install_remote_local_control_helper
 }
 
 pixel_house_systemd_available_install() {
@@ -3877,7 +3994,7 @@ EOF
     cat <<EOF | run_as_root tee "$health_unit" >/dev/null
 [Unit]
 Description=Lobster Health Server
-After=network-online.target ${LOBSTER_WORLD_SERVICE_NAME} ${LOBSTER_QUOTA_SERVICE_NAME}
+After=network-online.target ${LOBSTER_WORLD_SERVICE_NAME}
 Wants=network-online.target
 
 [Service]
@@ -3898,7 +4015,7 @@ WantedBy=multi-user.target
 EOF
 
     run_as_root systemctl daemon-reload >/dev/null 2>&1 || true
-    run_as_root systemctl enable "$LOBSTER_WORLD_SERVICE_NAME" "$LOBSTER_PROJECTION_SERVICE_NAME" "$LOBSTER_BRIDGE_SERVICE_NAME" "$LOBSTER_QUOTA_SERVICE_NAME" "$LOBSTER_HEALTH_SERVICE_NAME" >/dev/null 2>&1 || true
+    run_as_root systemctl enable "$LOBSTER_WORLD_SERVICE_NAME" "$LOBSTER_PROJECTION_SERVICE_NAME" "$LOBSTER_BRIDGE_SERVICE_NAME" "$LOBSTER_HEALTH_SERVICE_NAME" >/dev/null 2>&1 || true
 }
 
 start_pixel_house_stack_install() {
@@ -3907,7 +4024,6 @@ start_pixel_house_stack_install() {
         run_as_root systemctl restart "$LOBSTER_PROJECTION_SERVICE_NAME" >/dev/null 2>&1 || true
         run_as_root systemctl restart "$LOBSTER_BRIDGE_SERVICE_NAME" >/dev/null 2>&1 || true
         run_as_root systemctl restart "$LOBSTER_WORLD_SERVICE_NAME" >/dev/null 2>&1 || true
-        run_as_root systemctl restart "$LOBSTER_QUOTA_SERVICE_NAME" >/dev/null 2>&1 || true
         run_as_root systemctl restart "$LOBSTER_HEALTH_SERVICE_NAME" >/dev/null 2>&1 || true
     else
         PROJECTION_API_HOST="$PROJECTION_API_HOST_DEFAULT" PROJECTION_API_PORT="$PROJECTION_API_PORT_DEFAULT" \
@@ -3917,8 +4033,6 @@ start_pixel_house_stack_install() {
             "$CONFIG_DIR/lobster-openclaw-bridge.sh" restart >/dev/null 2>&1 || true
         STAR_BACKEND_HOST="0.0.0.0" STAR_BACKEND_PORT="$LOBSTER_WORLD_PORT_DEFAULT" \
             "$CONFIG_DIR/lobster-world.sh" restart >/dev/null 2>&1 || true
-        QUOTA_GATEWAY_HOST="127.0.0.1" QUOTA_GATEWAY_PORT="$GATEWAY_PORT" QUOTA_ENFORCER_PORT="13147" \
-            nohup python3 "$CONFIG_DIR/scripts/gateway-quota-enforcer.py" restart >/tmp/openclaw-quota-enforcer.log 2>&1 &
         HEALTH_PORT="13146" "$CONFIG_DIR/health-server.sh" restart >/dev/null 2>&1 || true
     fi
 }
@@ -4001,7 +4115,7 @@ print_lobster_setup_help() {
   echo "               openclaw-setup repair"
   echo "               openclaw-setup repair minimax"
   echo ""
-  echo "  说明         像素小屋补装/修复后会同步接线并启动 13146 健康检查 与 13147 配额强制"
+  echo "  说明         像素小屋补装/修复后会同步接线并启动 13146 健康检查"
 }
 
 cmd="\${1:-config}"
@@ -4114,6 +4228,11 @@ setup_lobster_world_defaults_install() {
     upsert_env_export_install "PROJECTION_API_HOST" "$PROJECTION_API_HOST_DEFAULT"
     upsert_env_export_install "PROJECTION_API_PORT" "$PROJECTION_API_PORT_DEFAULT"
     upsert_env_export_install "OPENCLAW_STATUS_URL" "http://127.0.0.1:${GATEWAY_PORT}/status"
+    upsert_env_export_install "OPENCLAW_INTERNAL_GATEWAY_URL" "http://127.0.0.1:${GATEWAY_PORT}"
+    upsert_env_export_install "NODE_COMPILE_CACHE" "${NODE_COMPILE_CACHE:-/var/tmp/openclaw-compile-cache}"
+    upsert_env_export_install "OPENCLAW_NO_RESPAWN" "${OPENCLAW_NO_RESPAWN:-1}"
+    mkdir -p "${NODE_COMPILE_CACHE:-/var/tmp/openclaw-compile-cache}" 2>/dev/null || true
+    ensure_website_dashboard_integration_install
     upsert_env_export_install "PROJECTION_API_INGEST_URL" "http://${PROJECTION_API_HOST_DEFAULT}:${PROJECTION_API_PORT_DEFAULT}/runtime/ingest"
 
     sync_runtime_repo_snapshot_install >/dev/null 2>&1 || true
@@ -4384,52 +4503,8 @@ normalize_channel_policy_in_json_install() {
     if [ ! -f "$cfg" ]; then
         mkdir -p "$(dirname "$cfg")" 2>/dev/null || true
         cat > "$cfg" <<'EOF'
-{
-  "gateway": {
-    "controlUi": {
-      "allowInsecureAuth": true,
-      "dangerouslyDisableDeviceAuth": true
-    }
-  }
-}
+{}
 EOF
-    fi
-    if check_command jq; then
-        local tmp
-        tmp="$(mktemp)"
-        if jq '
-            .gateway = (.gateway // {})
-            | .gateway.controlUi = (.gateway.controlUi // {})
-            | .gateway.controlUi.allowInsecureAuth = true
-            | .gateway.controlUi.dangerouslyDisableDeviceAuth = true
-        ' "$cfg" > "$tmp" 2>/dev/null && [ -s "$tmp" ]; then
-            mv "$tmp" "$cfg"
-            return 0
-        fi
-        rm -f "$tmp" 2>/dev/null || true
-    fi
-    if check_command python3; then
-        python3 - "$cfg" <<'PY' 2>/dev/null || true
-import json, sys
-path = sys.argv[1]
-try:
-    with open(path, "r", encoding="utf-8") as f:
-        data = json.load(f)
-    gateway = data.get("gateway") or {}
-    if not isinstance(gateway, dict):
-        gateway = {}
-    control_ui = gateway.get("controlUi") or {}
-    if not isinstance(control_ui, dict):
-        control_ui = {}
-    control_ui["allowInsecureAuth"] = True
-    control_ui["dangerouslyDisableDeviceAuth"] = True
-    gateway["controlUi"] = control_ui
-    data["gateway"] = gateway
-    with open(path, "w", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
-except Exception:
-    pass
-PY
     fi
 }
 
@@ -4529,15 +4604,6 @@ openclaw_config_set_if_changed_install() {
     else
         openclaw config set "$key" "$value" >/dev/null 2>&1 || true
     fi
-}
-
-apply_dashboard_pairing_bypass_install() {
-    if ! check_command openclaw; then
-        return 0
-    fi
-    # 禁用 Control UI 设备配对门槛，避免远程浏览器隧道反复出现 pairing required。
-    openclaw_config_set_if_changed_install "gateway.controlUi.allowInsecureAuth" "true"
-    openclaw_config_set_if_changed_install "gateway.controlUi.dangerouslyDisableDeviceAuth" "true"
 }
 
 apply_default_feishu_runtime_flags() {
@@ -5082,7 +5148,7 @@ init_openclaw_config() {
     # 修复权限
     chmod 700 "$OPENCLAW_DIR" 2>/dev/null || true
 
-    # 预先修正 dashboard 配置并迁移历史 Feishu 字段，避免后续出现 config invalid。
+    # 预先修正渠道配置并迁移历史 Feishu 字段，避免后续出现 config invalid。
     normalize_channel_policy_in_json_install || true
     migrate_legacy_feishu_schema_in_json_install || true
 
@@ -5093,7 +5159,6 @@ init_openclaw_config() {
         [ "$GATEWAY_BIND" = "custom" ] && [ -n "$GATEWAY_CUSTOM_BIND_HOST" ] && \
             openclaw_config_set_if_changed_install "gateway.customBindHost" "$GATEWAY_CUSTOM_BIND_HOST"
         openclaw_config_set_if_changed_install "gateway.port" "$GATEWAY_PORT"
-        apply_dashboard_pairing_bypass_install
         log_info "Gateway 模式已设置为 local（bind=${GATEWAY_BIND}, port=${GATEWAY_PORT}）"
 
         local auth_mode
@@ -5114,6 +5179,7 @@ init_openclaw_config() {
                 log_info "已初始化并持久化 Gateway Token，用于远程隧道/反向代理访问。"
             fi
         fi
+        ensure_website_dashboard_integration_install
     fi
 
     local env_file="$OPENCLAW_DIR/env"
@@ -5176,117 +5242,54 @@ init_openclaw_config() {
     fi
     chmod 600 "$env_file" 2>/dev/null || true
 
-    # 自动写入 Dashboard 反向代理/内嵌场景所需 Origin 白名单
-    ensure_gateway_controlui_allowed_origins
 }
 
-# 为 Gateway Control UI 自动补齐 allowedOrigins，避免 Dashboard 内嵌/代理后出现 origin not allowed。
-ensure_gateway_controlui_allowed_origins() {
-    local openclaw_json="$HOME/.openclaw/openclaw.json"
-    if [ ! -f "$openclaw_json" ]; then
-        log_warn "未找到 $openclaw_json，跳过 gateway.controlUi.allowedOrigins 自动配置"
+ensure_website_dashboard_integration_install() {
+    upsert_env_export_install "OPENCLAW_DASHBOARD_PORT" "$OPENCLAW_DASHBOARD_PORT_DEFAULT"
+    upsert_env_export_install "HERMES_DASHBOARD_PORT" "$HERMES_DASHBOARD_PORT_DEFAULT"
+    upsert_env_export_install "HERMES_CHAT_PORT" "$HERMES_CHAT_PORT_DEFAULT"
+    upsert_env_export_install "OPENCLAW_WEBSITE_PUBLIC_BASE_URL" "$OPENCLAW_WEBSITE_PUBLIC_BASE_URL"
+    upsert_env_export_install "OPENCLAW_WEBSITE_ALLOWED_ORIGINS" "$OPENCLAW_WEBSITE_ALLOWED_ORIGINS_DEFAULT"
+    upsert_env_export_install "OPENCLAW_DASHBOARD_ALLOWED_ORIGINS" "$OPENCLAW_DASHBOARD_ALLOWED_ORIGINS_DEFAULT"
+
+    patch_openclaw_dashboard_json_install "$CONFIG_DIR/openclaw.json" "$OPENCLAW_DASHBOARD_ALLOWED_ORIGINS_DEFAULT" || true
+    openclaw_config_set_if_changed_install "gateway.controlUi.allowedOrigins" "$OPENCLAW_DASHBOARD_ALLOWED_ORIGINS_DEFAULT"
+    openclaw_config_set_if_changed_install "gateway.controlUi.allowInsecureAuth" "true"
+    openclaw_config_set_if_changed_install "gateway.controlUi.dangerouslyDisableDeviceAuth" "false"
+}
+
+patch_openclaw_dashboard_json_install() {
+    local config_file="$1"
+    local origins_csv="$2"
+    [ -n "$config_file" ] || return 0
+    [ -f "$config_file" ] || return 0
+    if ! check_command python3; then
         return 0
     fi
-
-    local py_bin=""
-    if command -v python3 >/dev/null 2>&1; then
-        py_bin="python3"
-    elif command -v python >/dev/null 2>&1; then
-        py_bin="python"
-    else
-        log_warn "未检测到 Python，跳过 gateway.controlUi.allowedOrigins 自动配置"
-        return 0
-    fi
-
-    local extra_origins="${OPENCLAW_DASHBOARD_ALLOWED_ORIGINS:-}"
-    local disable_pairing="${OPENCLAW_DASHBOARD_DISABLE_PAIRING:-1}"
-    local result
-    result=$("$py_bin" - "$openclaw_json" "$GATEWAY_PORT" "$disable_pairing" "$extra_origins" <<'PYEOF'
-import json
-import os
-import secrets
-import sys
-
-cfg_path = os.path.expanduser(sys.argv[1])
-gateway_port = str(sys.argv[2]).strip() or "13145"
-disable_pairing = str(sys.argv[3]).strip() != "0"
-extra_raw = str(sys.argv[4]).strip()
-
-with open(cfg_path, "r", encoding="utf-8") as f:
-    cfg = json.load(f)
-
-gateway = cfg.setdefault("gateway", {})
-control_ui = gateway.setdefault("controlUi", {})
-auth = gateway.setdefault("auth", {})
-existing = control_ui.get("allowedOrigins", [])
-if not isinstance(existing, list):
-    existing = []
-
-required = [
-    f"http://127.0.0.1:{gateway_port}",
-    f"https://127.0.0.1:{gateway_port}",
-    f"http://localhost:{gateway_port}",
-    f"https://localhost:{gateway_port}",
-    "https://monkeykingfury.com",
-    "https://www.monkeykingfury.com",
-]
-if extra_raw:
-    required.extend([x.strip() for x in extra_raw.split(",") if x.strip()])
-
+    python3 - "$config_file" "$origins_csv" <<'PY' 2>/dev/null || true
+import json, sys
+path, origins_csv = sys.argv[1], sys.argv[2]
+origins = [x.strip() for x in origins_csv.split(',') if x.strip()]
+with open(path, 'r', encoding='utf-8') as f:
+    data = json.load(f)
+gateway = data.setdefault('gateway', {})
+control = gateway.setdefault('controlUi', {})
+auth = gateway.setdefault('auth', {})
+existing = control.get('allowedOrigins') if isinstance(control.get('allowedOrigins'), list) else []
 merged = []
-seen = set()
-for item in [*existing, *required]:
-    v = str(item).strip()
-    if not v or v in seen:
-        continue
-    seen.add(v)
-    merged.append(v)
-
-if merged == existing:
-    origins_changed = False
-else:
-    control_ui["allowedOrigins"] = merged
-    origins_changed = True
-
-changed = origins_changed
-if str(auth.get("mode", "")).strip().lower() != "token":
-    auth["mode"] = "token"
-    changed = True
-
-if not str(auth.get("token", "")).strip():
-    auth["token"] = secrets.token_hex(24)
-    changed = True
-
-if disable_pairing:
-    if control_ui.get("allowInsecureAuth") is not True:
-        control_ui["allowInsecureAuth"] = True
-        changed = True
-    if control_ui.get("dangerouslyDisableDeviceAuth") is not True:
-        control_ui["dangerouslyDisableDeviceAuth"] = True
-        changed = True
-
-if not changed:
-    print("NOCHANGE")
-    raise SystemExit(0)
-
-with open(cfg_path, "w", encoding="utf-8") as f:
-    json.dump(cfg, f, ensure_ascii=False, indent=2)
-    f.write("\n")
-print("UPDATED")
-PYEOF
-)
-
-    if [ "$result" = "UPDATED" ]; then
-        log_info "已自动补齐 gateway.controlUi.allowedOrigins"
-        if check_command openclaw; then
-            openclaw gateway restart 2>/dev/null || openclaw gateway start 2>/dev/null || true
-            log_info "Gateway 已重启以应用 allowedOrigins 配置"
-        fi
-    elif [ "$result" = "NOCHANGE" ]; then
-        log_info "gateway.controlUi.allowedOrigins 已符合要求"
-    else
-        log_warn "gateway.controlUi.allowedOrigins 自动配置失败（可手动检查 ~/.openclaw/openclaw.json）"
-    fi
+for item in list(existing) + origins:
+    value = str(item or '').strip()
+    if value and value not in merged:
+        merged.append(value)
+control['allowedOrigins'] = merged
+control['allowInsecureAuth'] = True
+control['dangerouslyDisableDeviceAuth'] = False
+if not str(auth.get('mode') or '').strip():
+    auth['mode'] = 'token'
+with open(path, 'w', encoding='utf-8') as f:
+    json.dump(data, f, ensure_ascii=False, indent=2)
+    f.write('\n')
+PY
 }
 
 # 为 MiniMax 写入官方兼容 provider 配置，避免旧版本出现 Unknown model
@@ -5391,6 +5394,48 @@ with open(file, "w") as f:
     json.dump(cfg, f, indent=2)
 PYEOF
     fi
+}
+
+cleanup_custom_model_provider_env_install() {
+    remove_env_export_install "OPENCLAW_CUSTOM_PROVIDER_ID"
+    remove_env_export_install "OPENCLAW_CUSTOM_PROVIDER_NAME"
+    remove_env_export_install "OPENCLAW_CUSTOM_PROVIDER_BASE_URL"
+    remove_env_export_install "OPENCLAW_CUSTOM_PROVIDER_MODEL"
+    remove_env_export_install "OPENCLAW_CUSTOM_PROVIDER_API_TYPE"
+    remove_env_export_install "OPENCLAW_CUSTOM_PROVIDER_API_KEY"
+}
+
+sync_minimax_auth_profile_install() {
+    local api_key="${1:-}"
+    [ -n "$api_key" ] || return 0
+    if ! check_command python3; then
+        return 0
+    fi
+
+    local auth_file="$CONFIG_DIR/agents/main/agent/auth-profiles.json"
+    python3 - "$auth_file" "$api_key" <<'PY' 2>/dev/null || true
+import json, pathlib, sys, time
+path = pathlib.Path(sys.argv[1]).expanduser()
+api_key = sys.argv[2]
+path.parent.mkdir(parents=True, exist_ok=True)
+try:
+    data = json.loads(path.read_text(encoding='utf-8')) if path.exists() else {}
+    if not isinstance(data, dict):
+        data = {}
+except Exception:
+    data = {}
+data['version'] = data.get('version') or 1
+profiles = data.setdefault('profiles', {})
+profiles['minimax:cn'] = {'type': 'api_key', 'provider': 'minimax', 'key': api_key}
+data.setdefault('lastGood', {})['minimax'] = 'minimax:cn'
+usage = data.setdefault('usageStats', {}).setdefault('minimax:cn', {})
+usage['lastUsed'] = int(time.time() * 1000)
+usage['errorCount'] = 0
+for field in ('lastFailureAt', 'cooldownUntil'):
+    usage.pop(field, None)
+path.write_text(json.dumps(data, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+path.chmod(0o600)
+PY
 }
 
 configure_minimax_multimodal_vendor_install() {
@@ -5606,6 +5651,7 @@ EOF
             local minimax_api_host=""
             local minimax_provider_url=""
             upsert_env_export_install "MINIMAX_API_KEY" "$AI_KEY"
+            cleanup_custom_model_provider_env_install
 
             minimax_provider_url="$(normalize_minimax_provider_url_install "$BASE_URL")"
             if [ -n "$minimax_provider_url" ]; then
@@ -5621,6 +5667,7 @@ EOF
             fi
             MINIMAX_API_HOST="$minimax_api_host"
             OPENCLAW_MINIMAX_PROVIDER_URL="$minimax_provider_url"
+            sync_minimax_auth_profile_install "$AI_KEY"
             upsert_minimax_multimodal_env_defaults_install "$minimax_api_host"
             sync_minimax_image_provider_install "$AI_KEY" "$minimax_api_host"
             write_minimax_skill_config_install "$AI_KEY" "$minimax_api_host"
@@ -7109,8 +7156,6 @@ converge_gateway_single_instance() {
         openclaw_config_set_if_changed_install "gateway.customBindHost" "$GATEWAY_CUSTOM_BIND_HOST"
     fi
     openclaw_config_set_if_changed_install "gateway.port" "$GATEWAY_PORT"
-    apply_dashboard_pairing_bypass_install
-
     if ! install_official_gateway_service; then
         return 1
     fi
@@ -7209,9 +7254,9 @@ print_success() {
     echo "  默认地址: http://127.0.0.1:${LOBSTER_WORLD_PORT_DEFAULT}"
     echo ""
     echo -e "${CYAN}服务监控:${NC}"
-    echo "  像素小屋补装/修复后会自动接线并启动以下辅助服务"
+    echo "  像素小屋补装/修复后会自动接线并启动健康检查服务"
     echo "  健康检查服务（端口 13146）: curl http://127.0.0.1:13146/health"
-    echo "  配额强制服务（端口 13147）: curl http://127.0.0.1:13147/quota/status"
+    echo "  内部 Gateway（端口 ${GATEWAY_PORT}）: 仅供本机上游与状态检查"
     echo ""
     echo -e "${CYAN}文档与资源:${NC}"
     echo "  渠道配置: ~/.openclaw/docs/channels-configuration-guide.md"
@@ -7316,14 +7361,18 @@ clean_legacy_config_if_needed() {
         fi
 
         if [ -f "$config_menu_path" ]; then
-            # 使用 config-menu.sh 的修复函数
-            if bash "$config_menu_path" --repair-config 2>/dev/null; then
+            # 使用 config-menu.sh 的修复函数；全自动/无 TTY 场景下显式喂入确认，避免 read 失败导致安装早退。
+            if [ "${AUTO_CONFIRM_ALL:-0}" = "1" ] || [ "$NO_PROMPT" = "1" ] || [ "$TTY_INPUT" = "/dev/null" ]; then
+                if printf 'y\n\n' | bash "$config_menu_path" --repair-config 2>/dev/null; then
+                    log_info "旧配置清理完成（保留 Memory/Sessions/API Keys）"
+                    return 0
+                fi
+            elif bash "$config_menu_path" --repair-config 2>/dev/null; then
                 log_info "旧配置清理完成（保留 Memory/Sessions/API Keys）"
                 return 0
-            else
-                log_warn "配置清理失败，继续安装"
-                return 1
             fi
+            log_warn "配置清理失败，继续安装"
+            return 0
         else
             log_warn "未找到 config-menu.sh，跳过清理"
             return 0
@@ -7419,8 +7468,13 @@ main() {
     print_banner
     print_install_plan
 
-    echo -e "${YELLOW}⚠️  警告: OpenClaw 需要完全的计算机权限${NC}"
-    echo -e "${YELLOW}    不建议在主要工作电脑上安装，建议使用专用服务器或虚拟机${NC}"
+    if [ "$LOBSTER_ENGINE" = "hermes" ]; then
+        echo -e "${YELLOW}⚠️  警告: Hermes 将安装本地工具链并写入共享 Lobster 配置${NC}"
+        echo -e "${YELLOW}    Hermes-only 不会启动 OpenClaw Gateway/channel/onboard 链路${NC}"
+    else
+        echo -e "${YELLOW}⚠️  警告: OpenClaw 需要完全的计算机权限${NC}"
+        echo -e "${YELLOW}    不建议在主要工作电脑上安装，建议使用专用服务器或虚拟机${NC}"
+    fi
     echo ""
 
     if [ "$DRY_RUN" = "1" ]; then
@@ -7444,6 +7498,7 @@ main() {
     create_directories
     persist_noninteractive_config_install
     install_backup_manager_script
+    install_remote_local_control_helper
     install_lobster_setup_launcher
     if [ "$LOBSTER_ENGINE" != "hermes" ]; then
         install_channel_assets

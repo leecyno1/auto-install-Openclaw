@@ -23,5 +23,5 @@ python3 skills/default/model-usage/scripts/model_usage.py --help
 ```
 
 ## 6. 参考资料
-- 上游来源: /Users/lichengyin/.codex/skills/model-usage
+- 上游来源: ~/.codex/skills/model-usage
 - 本技能说明: `SKILL.md`

@@ -851,6 +851,245 @@ EOF
     chmod 600 "$readme_file" 2>/dev/null || true
 }
 
+
+openclaw_install_hermes_openai_bridge() {
+    local hermes_home="${1:-${HERMES_HOME:-$HOME/.hermes}}"
+    local bridge_port="${2:-${HERMES_CHAT_PORT:-8000}}"
+    local bridge_host="${3:-127.0.0.1}"
+    local model="${4:-MiniMax-M2.7}"
+    local provider="${5:-minimax}"
+    local install_dir="${OPENCLAW_HERMES_BRIDGE_DIR:-/opt/openclaw-hermes-bridge}"
+    local service_name="${OPENCLAW_HERMES_BRIDGE_SERVICE:-openclaw-hermes-openai.service}"
+
+    [ -n "$bridge_port" ] || bridge_port="8000"
+    [ -n "$bridge_host" ] || bridge_host="127.0.0.1"
+    [ -n "$model" ] || model="MiniMax-M2.7"
+    [ -n "$provider" ] || provider="minimax"
+
+    if ! command -v python3 >/dev/null 2>&1; then
+        return 1
+    fi
+    if ! command -v systemctl >/dev/null 2>&1; then
+        return 1
+    fi
+    if ! openclaw_hermes_cli_available; then
+        return 127
+    fi
+
+    mkdir -p "$install_dir" 2>/dev/null || return 1
+    cat >"$install_dir/openai_bridge.py" <<'PYBRIDGE'
+#!/usr/bin/env python3
+import json
+import os
+import subprocess
+import time
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+
+HOST = os.environ.get("HERMES_OPENAI_BRIDGE_HOST", "127.0.0.1")
+PORT = int(os.environ.get("HERMES_OPENAI_BRIDGE_PORT", "8000"))
+MODEL = os.environ.get("HERMES_OPENAI_BRIDGE_MODEL", "MiniMax-M2.7")
+PROVIDER = os.environ.get("HERMES_OPENAI_BRIDGE_PROVIDER", "minimax")
+TIMEOUT = int(os.environ.get("HERMES_OPENAI_BRIDGE_TIMEOUT", "115"))
+HERMES_BIN = os.environ.get("HERMES_BIN", "hermes")
+
+
+def respond(handler, status, payload, content_type="application/json; charset=utf-8"):
+    data = json.dumps(payload, ensure_ascii=False).encode("utf-8")
+    handler.send_response(status)
+    handler.send_header("Content-Type", content_type)
+    handler.send_header("Content-Length", str(len(data)))
+    handler.send_header("Access-Control-Allow-Origin", "*")
+    handler.send_header("Access-Control-Allow-Headers", "authorization, content-type")
+    handler.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+    handler.end_headers()
+    handler.wfile.write(data)
+
+
+def respond_sse(handler, completion):
+    message = completion.get("choices", [{}])[0].get("message", {})
+    content = str(message.get("content") or "")
+    created = completion.get("created") or int(time.time())
+    model = completion.get("model") or "hermes-agent"
+    completion_id = completion.get("id") or f"chatcmpl-hermes-{created}"
+    usage = completion.get("usage") or {}
+    handler.send_response(200)
+    handler.send_header("Content-Type", "text/event-stream; charset=utf-8")
+    handler.send_header("Cache-Control", "no-cache")
+    handler.send_header("Connection", "close")
+    handler.send_header("Access-Control-Allow-Origin", "*")
+    handler.send_header("Access-Control-Allow-Headers", "authorization, content-type")
+    handler.end_headers()
+    first = {"id": completion_id, "object": "chat.completion.chunk", "created": created, "model": model, "choices": [{"index": 0, "delta": {"role": "assistant", "content": content}, "finish_reason": None}]}
+    final = {"id": completion_id, "object": "chat.completion.chunk", "created": created, "model": model, "choices": [{"index": 0, "delta": {}, "finish_reason": "stop"}], "usage": usage}
+    for payload in (first, final):
+        handler.wfile.write(("data: " + json.dumps(payload, ensure_ascii=False) + "\n\n").encode("utf-8"))
+        handler.wfile.flush()
+    handler.wfile.write(b"data: [DONE]\n\n")
+    handler.wfile.flush()
+    handler.close_connection = True
+
+
+def text_from_content(content):
+    if isinstance(content, str):
+        return content.strip()
+    if isinstance(content, list):
+        out = []
+        for part in content:
+            if isinstance(part, dict) and part.get("type") == "text":
+                out.append(str(part.get("text") or ""))
+        return "\n".join(x for x in out if x).strip()
+    return ""
+
+
+def build_prompt(messages):
+    rows = []
+    for message in messages[-12:]:
+        if not isinstance(message, dict):
+            continue
+        role = str(message.get("role") or "user").strip() or "user"
+        text = text_from_content(message.get("content"))
+        if text:
+            rows.append((role, text))
+    if not rows:
+        return "请回复 OK"
+    if len(rows) == 1:
+        return rows[-1][1]
+    labels = {"system": "系统", "user": "用户", "assistant": "助手"}
+    lines = ["请根据以下对话上下文继续回复最后一条用户消息。"]
+    for role, text in rows:
+        lines.append(f"{labels.get(role, role)}: {text}")
+    return "\n".join(lines)
+
+
+class Handler(BaseHTTPRequestHandler):
+    server_version = "OpenClawHermesOpenAIBridge/1.1"
+
+    def log_message(self, fmt, *args):
+        print("%s - %s" % (self.address_string(), fmt % args), flush=True)
+
+    def do_OPTIONS(self):
+        respond(self, 200, {"ok": True})
+
+    def do_GET(self):
+        path = self.path.split("?", 1)[0]
+        if path in ("/health", "/v1/health"):
+            return respond(self, 200, {"ok": True, "model": MODEL, "provider": PROVIDER})
+        if path == "/v1/models":
+            now = int(time.time())
+            return respond(self, 200, {"object": "list", "data": [
+                {"id": "hermes-agent", "object": "model", "created": now, "owned_by": "hermes"},
+                {"id": MODEL, "object": "model", "created": now, "owned_by": PROVIDER},
+            ]})
+        return respond(self, 404, {"error": {"message": "Not Found", "type": "not_found"}})
+
+    def do_POST(self):
+        path = self.path.split("?", 1)[0]
+        if path != "/v1/chat/completions":
+            return respond(self, 404, {"error": {"message": "Not Found", "type": "not_found"}})
+        length = int(self.headers.get("content-length") or 0)
+        raw = self.rfile.read(length) if length else b"{}"
+        try:
+            body = json.loads(raw.decode("utf-8") or "{}")
+        except Exception:
+            return respond(self, 400, {"error": {"message": "Invalid JSON", "type": "invalid_request_error"}})
+        messages = body.get("messages") if isinstance(body, dict) else None
+        if not isinstance(messages, list) or not messages:
+            return respond(self, 400, {"error": {"message": "messages is required", "type": "invalid_request_error"}})
+        prompt = build_prompt(messages)
+        env = os.environ.copy()
+        env["PATH"] = "/root/.local/bin:/usr/local/bin:" + env.get("PATH", "")
+        try:
+            proc = subprocess.run([HERMES_BIN, "-z", prompt, "--provider", PROVIDER, "-m", MODEL], text=True, capture_output=True, timeout=TIMEOUT, env=env, cwd=os.path.expanduser("~"))
+        except subprocess.TimeoutExpired:
+            return respond(self, 504, {"error": {"message": "Hermes request timeout", "type": "timeout"}})
+        if proc.returncode != 0:
+            detail = (proc.stderr or proc.stdout or "Hermes request failed").strip()[-1000:]
+            return respond(self, 502, {"error": {"message": detail, "type": "hermes_error"}})
+        content = (proc.stdout or "").strip()
+        created = int(time.time())
+        prompt_tokens = max(1, len(prompt) // 4)
+        completion_tokens = max(1, len(content) // 4)
+        completion = {
+            "id": f"chatcmpl-hermes-{created}",
+            "object": "chat.completion",
+            "created": created,
+            "model": body.get("model") or "hermes-agent",
+            "choices": [{"index": 0, "message": {"role": "assistant", "content": content}, "finish_reason": "stop"}],
+            "usage": {"prompt_tokens": prompt_tokens, "completion_tokens": completion_tokens, "total_tokens": prompt_tokens + completion_tokens},
+        }
+        if bool(body.get("stream")):
+            return respond_sse(self, completion)
+        return respond(self, 200, completion)
+
+
+if __name__ == "__main__":
+    print(f"OpenClaw Hermes OpenAI bridge listening on {HOST}:{PORT}, model={MODEL}, provider={PROVIDER}", flush=True)
+    ThreadingHTTPServer((HOST, PORT), Handler).serve_forever()
+PYBRIDGE
+    chmod +x "$install_dir/openai_bridge.py" 2>/dev/null || true
+
+    if [ "$(id -u 2>/dev/null || echo 1)" != "0" ]; then
+        return 0
+    fi
+
+    cat >"/etc/systemd/system/$service_name" <<SERVICE
+[Unit]
+Description=OpenClaw Hermes OpenAI-compatible bridge
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+EnvironmentFile=-$hermes_home/.env
+Environment=HERMES_OPENAI_BRIDGE_HOST=$bridge_host
+Environment=HERMES_OPENAI_BRIDGE_PORT=$bridge_port
+Environment=HERMES_OPENAI_BRIDGE_PROVIDER=$provider
+Environment=HERMES_OPENAI_BRIDGE_MODEL=$model
+ExecStart=/usr/bin/python3 $install_dir/openai_bridge.py
+Restart=always
+RestartSec=3
+User=root
+WorkingDirectory=$HOME
+
+[Install]
+WantedBy=multi-user.target
+SERVICE
+    systemctl daemon-reload >/dev/null 2>&1 || return 1
+    systemctl enable --now "$service_name" >/dev/null 2>&1 || return 1
+    systemctl restart "$service_name" >/dev/null 2>&1 || return 1
+}
+
+openclaw_apply_hermes_default_model_from_env() {
+    local shared_env="${1:-$(openclaw_lobster_shared_env_path)}"
+    local hermes_home="${2:-${HERMES_HOME:-$HOME/.hermes}}"
+    local hermes_env preset model base_url provider
+    openclaw_hermes_cli_available || return 127
+    hermes_env="$(openclaw_hermes_env_path "$hermes_home")"
+
+    preset="$(openclaw_read_shell_kv_value OPENCLAW_ACTIVE_PROVIDER_PRESET "$hermes_env")"
+    model="$(openclaw_read_shell_kv_value OPENCLAW_ACTIVE_PROVIDER_MODEL "$hermes_env")"
+    base_url="$(openclaw_read_shell_kv_value OPENCLAW_ACTIVE_PROVIDER_BASE_URL "$hermes_env")"
+
+    if [ -z "$preset" ] && [ -f "$shared_env" ]; then
+        preset="$(openclaw_read_shell_kv_value OPENCLAW_ACTIVE_PROVIDER_PRESET "$shared_env")"
+        model="$(openclaw_read_shell_kv_value OPENCLAW_ACTIVE_PROVIDER_MODEL "$shared_env")"
+        base_url="$(openclaw_read_shell_kv_value OPENCLAW_ACTIVE_PROVIDER_BASE_URL "$shared_env")"
+    fi
+
+    case "$preset" in
+        minimax|minimax-cn) provider="minimax" ;;
+        openai|anthropic|openrouter|gemini|deepseek|glm|zai) provider="$preset" ;;
+        *) provider="" ;;
+    esac
+    [ -n "$provider" ] || return 0
+    [ -n "$model" ] || return 0
+    openclaw_run_hermes_cli "$hermes_home" config set model.default "$model" >/dev/null 2>&1 || return 1
+    openclaw_run_hermes_cli "$hermes_home" config set model.provider "$provider" >/dev/null 2>&1 || return 1
+    if [ -n "$base_url" ]; then
+        openclaw_run_hermes_cli "$hermes_home" config set model.base_url "$base_url" >/dev/null 2>&1 || return 1
+    fi
+}
+
 openclaw_apply_hermes_profile_cli() {
     local shared_env="${1:-$(openclaw_lobster_shared_env_path)}"
     local hermes_home="${2:-${HERMES_HOME:-$HOME/.hermes}}"
@@ -904,6 +1143,8 @@ openclaw_apply_hermes_profile_cli() {
 
     eval "$(openclaw_hermes_rule_profile_defaults "$rule_profile")"
     desired_toolsets="$(openclaw_hermes_role_toolsets "$role")"
+
+    openclaw_apply_hermes_default_model_from_env "$shared_env" "$hermes_home" >/dev/null 2>&1 || true
 
     openclaw_run_hermes_cli "$hermes_home" config set lobster.profile_name "$profile_name" >/dev/null 2>&1 || return 1
     openclaw_run_hermes_cli "$hermes_home" config set lobster.profile_summary "$profile_summary" >/dev/null 2>&1 || return 1
