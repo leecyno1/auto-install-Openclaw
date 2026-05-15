@@ -30,6 +30,8 @@ mode: manual
 - Boutique README 与 `scripts/build_skills_directory.py` 已改为默认三档优先，不再宣传旧 npm OpenClaw 默认统计；`scripts/sync-upstream.sh` 移除作者本机绝对路径。
 - 默认 skills 远端源已切到国内 Gitee：`OPENCLAW_SKILLS_REPO_URL=https://gitee.com/leecyno1/boutique-openclaw-skills.git`；GitHub 通过 `OPENCLAW_SKILLS_REPO_GITHUB_URL` 作为回退。
 - boutique 仓库已添加 `gitee-leecyno1` remote；README 增加国内源发布顺序：先 `git push gitee-leecyno1 main`，再 `git push origin main`。
+- 已提交 boutique：`54d5dec feat: maintain default OpenClaw skills tiers`，并成功推送 GitHub `origin/main`。Gitee `leecyno1/boutique-openclaw-skills` 当前不存在/无权限，推送返回 404；需先在 Gitee 创建仓库后再执行 `git push gitee-leecyno1 main`。
+- 已提交安装器：`bf5b31b refactor: externalize default skills to boutique registry`，并成功推送 Gitee `gitee-leecyno1/release/hermes-website-minimax-hardening-20260503` 与 GitHub `mine/release/hermes-website-minimax-hardening-20260503`。
 - 最终验证：OpenClawInstaller `./scripts/release-check.sh` 通过；boutique `python3 -m unittest discover -s tests` 与 `./scripts/install-tier.sh high --dry-run` 通过。
 
 ## In Progress
