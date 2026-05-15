@@ -193,6 +193,59 @@ def units_for_category(category: str, method: str, path: str, body: Optional[byt
         return count_image_units(method, path, body)
     return 1
 
+
+def _json_body(body: Optional[bytes]) -> dict:
+    if not body:
+        return {}
+    try:
+        data = json.loads(body.decode("utf-8", errors="ignore"))
+        return data if isinstance(data, dict) else {}
+    except Exception:
+        return {}
+
+
+def infer_model_family(path: str, body: Optional[bytes]) -> str:
+    data = _json_body(body)
+    model = str(data.get("model") or data.get("model_id") or "")
+    haystack = f"{path} {model}".lower()
+    if "minimax" in haystack:
+        return "minimax"
+    if "deepseek" in haystack:
+        return "deepseek"
+    if "glm" in haystack or "zai" in haystack or "zhipu" in haystack:
+        return "glm"
+    if "gpt" in haystack or "openai" in haystack:
+        return "gpt"
+    if "image" in haystack or "dall-e" in haystack or "imagen" in haystack:
+        return "image"
+    if "video" in haystack or "hailuo" in haystack:
+        return "video"
+    return "unknown"
+
+
+def infer_task_type(category: str, path: str, body: Optional[bytes]) -> str:
+    if category in ("image", "video"):
+        return f"{category}_generation"
+    data = _json_body(body)
+    text = json.dumps(data, ensure_ascii=False).lower() if data else ""
+    if any(word in text for word in ("summarize", "摘要", "总结")):
+        return "summary"
+    if any(word in text for word in ("classify", "分类")):
+        return "classification"
+    if any(word in text for word in ("rewrite", "润色", "改写")):
+        return "rewrite"
+    if any(word in text for word in ("code review", "review code", "代码审阅", "审查代码")):
+        return "coding_review"
+    return "text"
+
+
+def quota_tool_metadata(path: str, category: str, body: Optional[bytes]) -> str:
+    return json.dumps({
+        "path": path,
+        "modelFamily": infer_model_family(path, body),
+        "taskType": infer_task_type(category, path, body),
+    }, ensure_ascii=False)
+
 # ── HTTP Proxy Handler ────────────────────────────────────────────────────────
 
 class QuotaEnforcerHandler(BaseHTTPRequestHandler):
@@ -267,8 +320,9 @@ class QuotaEnforcerHandler(BaseHTTPRequestHandler):
         })
 
     def _proxy_with_quota(self, method: str, path: str, headers: dict, body: Optional[bytes], category: str, units: int) -> None:
-        log_info(f"Quota-controlled request: {path} category={category} units={units}")
-        reserve_result = quota_reserve(category, units, tool=path)
+        tool_metadata = quota_tool_metadata(path, category, body)
+        log_info(f"Quota-controlled request: {path} category={category} units={units} metadata={tool_metadata}")
+        reserve_result = quota_reserve(category, units, tool=tool_metadata)
 
         if not reserve_result.get("ok"):
             self._send_quota_denied(category, units, reserve_result)
@@ -294,6 +348,8 @@ class QuotaEnforcerHandler(BaseHTTPRequestHandler):
 
         resp_headers["X-Quota-Reservation-Id"] = reservation_id
         resp_headers["X-Quota-Category"] = category
+        resp_headers["X-Quota-Model-Family"] = infer_model_family(path, body)
+        resp_headers["X-Quota-Task-Type"] = infer_task_type(category, path, body)
         resp_headers["X-Proxy-By"] = "openclaw-quota-enforcer"
         self._forward_response(status, resp_headers, resp_body)
 

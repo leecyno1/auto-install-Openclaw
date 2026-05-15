@@ -15,6 +15,7 @@ SKILLS_LIB = ROOT / 'scripts' / 'lib' / 'skills.sh'
 README = ROOT / 'README.md'
 BACKEND_APP = ROOT / 'subprojects' / 'lobster-sanctum-ui' / 'vendor' / 'star-office-ui' / 'backend' / 'app.py'
 BACKEND_DIR = BACKEND_APP.parent
+BOUTIQUE_SKILLS = ROOT.parent / 'boutique-openclaw-skills' / 'skills' / 'default'
 
 MINIMAX_OFFICIAL_SKILLS = [
     'android-native-dev', 'buddy-sings', 'flutter-dev', 'frontend-dev', 'fullstack-dev',
@@ -39,6 +40,7 @@ class ConfigSurfaceTests(unittest.TestCase):
         self.assertIn('大圣之怒配置中心', output)
         self.assertIn('--install-pixel-house', output)
         self.assertIn('--remote-local-control', output)
+        self.assertIn('--remote-local-bootstrap', output)
         self.assertIn('--engine-menu', output)
         self.assertIn('--model-only', output)
         self.assertIn('--official-channels-only', output)
@@ -48,7 +50,7 @@ class ConfigSurfaceTests(unittest.TestCase):
         text = CONFIG_MENU.read_text(encoding='utf-8')
         self.assertIn('allow_noninteractive_shortcut_menu()', text)
         self.assertIn(
-            '--help|-h|--repair-config|--repair-minimax|--install-pixel-house|--remote-local-control|--engine-menu|--model-only|--official-channels-only',
+            '--help|-h|--repair-config|--repair-minimax|--install-pixel-house|--remote-local-control|--remote-local-bootstrap|--engine-menu|--model-only|--official-channels-only',
             text,
         )
         self.assertIn('--model-only)', text)
@@ -61,6 +63,8 @@ class ConfigSurfaceTests(unittest.TestCase):
         self.assertIn('repair_minimax_provider_only_menu', text)
         self.assertIn('--remote-local-control)', text)
         self.assertIn('install_remote_local_control_menu', text)
+        self.assertIn('--remote-local-bootstrap)', text)
+        self.assertIn('bootstrap_remote_local_control_menu', text)
 
     def test_installer_and_menu_prepare_website_dashboard_integration(self):
         install_text = INSTALL.read_text(encoding='utf-8')
@@ -210,8 +214,8 @@ class ConfigSurfaceTests(unittest.TestCase):
         self.assertIn("delete cfg.models.providers[otherProvider];", menu_text)
 
     def test_minimax_scripts_read_configured_host_and_output_path(self):
-        web_search = (ROOT / 'skills' / 'default' / 'minimax-web-search' / 'scripts' / 'web_search.py').read_text(encoding='utf-8')
-        vision = (ROOT / 'skills' / 'default' / 'minimax-image-understanding' / 'scripts' / 'understand_image.py').read_text(encoding='utf-8')
+        web_search = (BOUTIQUE_SKILLS / 'minimax-web-search' / 'scripts' / 'web_search.py').read_text(encoding='utf-8')
+        vision = (BOUTIQUE_SKILLS / 'minimax-image-understanding' / 'scripts' / 'understand_image.py').read_text(encoding='utf-8')
         self.assertIn("config.get('mcp_base_path')", web_search)
         self.assertIn("config.get('api_host')", web_search)
         self.assertIn("cfg.get('mcp_base_path')", vision)
@@ -266,7 +270,7 @@ class ConfigSurfaceTests(unittest.TestCase):
         menu_text = CONFIG_MENU.read_text(encoding='utf-8')
         skills_lib_text = SKILLS_LIB.read_text(encoding='utf-8')
         for skill in MINIMAX_OFFICIAL_SKILLS:
-            self.assertTrue((ROOT / 'skills' / 'default' / skill / 'SKILL.md').is_file(), skill)
+            self.assertTrue((BOUTIQUE_SKILLS / skill / 'SKILL.md').is_file(), skill)
             self.assertIn(skill, skills_lib_text)
         self.assertIn('openclaw_skill_fallback_init()', skills_lib_text)
         self.assertIn('openclaw_skill_manifest_list()', skills_lib_text)
@@ -278,6 +282,22 @@ class ConfigSurfaceTests(unittest.TestCase):
         self.assertIn('openclaw_skill_fallback_init menu', menu_text)
         self.assertIn('openclaw_skill_manifest_list minimax_official', install_text)
         self.assertIn('openclaw_skill_manifest_list minimax_official', menu_text)
+
+    def test_default_skills_sync_uses_boutique_repository(self):
+        install_text = INSTALL.read_text(encoding='utf-8')
+        menu_text = CONFIG_MENU.read_text(encoding='utf-8')
+        module_text = (ROOT / 'scripts' / 'modules' / 'skills.sh').read_text(encoding='utf-8')
+        readme_text = README.read_text(encoding='utf-8')
+
+        for text in (install_text, menu_text, module_text):
+            self.assertIn('boutique-openclaw-skills', text)
+            self.assertIn('OPENCLAW_SKILLS_REPO_URL', text)
+            self.assertIn('https://gitee.com/leecyno1/boutique-openclaw-skills.git', text)
+            self.assertIn('OPENCLAW_SKILLS_REPO_GITHUB_URL', text)
+            self.assertIn('tiers/low.json', text)
+
+        self.assertIn('技能如果需要同步从 boutique 仓库进行同步', readme_text)
+        self.assertIn('boutique-openclaw-skills', readme_text)
 
     def test_super_skill_local_import_entries_do_not_use_author_machine_paths(self):
         text = CONFIG_MENU.read_text(encoding='utf-8')

@@ -25,6 +25,7 @@ print_usage() {
   --repair-minimax           仅修复 MiniMax Provider / 多模态配置
   --install-pixel-house      补装像素小屋
   --remote-local-control     安装云端控制本地主机的可选反向 SSH 辅助脚本
+  --remote-local-bootstrap   本地配置并启动云端控制本地主机反向 SSH
   --engine-menu              直接进入引擎管理
   --skills-only              直接进入 Skills 管理
   --image-api-only           直接进入生图 Provider 配置
@@ -40,6 +41,7 @@ print_usage() {
   openclaw-setup repair
   openclaw-setup repair minimax
   openclaw-setup config website --sync
+  openclaw-setup config --remote-local-bootstrap --pairing-file ./openclaw-cloud-pairing.json
   bash ~/.openclaw/config-menu.sh
 EOF
 }
@@ -79,7 +81,7 @@ resolve_onboard_term_menu() {
 
 allow_noninteractive_shortcut_menu() {
     case "${1:-}" in
-        --help|-h|--repair-config|--repair-minimax|--install-pixel-house|--remote-local-control|--engine-menu|--model-only|--official-channels-only|--skills-only|--image-api-only|--rules-only|--routing-only|--website-sync|model|provider|providers|image|image-api|image-provider|skills|skill|rules|rule|tier-rules|tier|routing|advanced-routing|pixel-house|pixel|house|workbench|remote-local-control|remote-local|local-control|website|hermes|engine) return 0 ;;
+        --help|-h|--repair-config|--repair-minimax|--install-pixel-house|--remote-local-control|--remote-local-bootstrap|--engine-menu|--model-only|--official-channels-only|--skills-only|--image-api-only|--rules-only|--routing-only|--website-sync|model|provider|providers|image|image-api|image-provider|skills|skill|rules|rule|tier-rules|tier|routing|advanced-routing|pixel-house|pixel|house|workbench|remote-local-control|remote-local-bootstrap|remote-local|local-control|website|hermes|engine) return 0 ;;
         *) return 1 ;;
     esac
 }
@@ -212,6 +214,9 @@ INSTALLER_REPO="leecyno1/auto-install-Openclaw"
 INSTALLER_REPO_GITEE="leecyno1/auto-install-openclaw"
 INSTALLER_RAW_URL="https://raw.githubusercontent.com/${INSTALLER_REPO}/main"
 INSTALLER_GITEE_RAW_URL="https://gitee.com/${INSTALLER_REPO_GITEE}/raw/main"
+OPENCLAW_SKILLS_REPO_URL="${OPENCLAW_SKILLS_REPO_URL:-https://gitee.com/leecyno1/boutique-openclaw-skills.git}"
+OPENCLAW_SKILLS_REPO_GITHUB_URL="${OPENCLAW_SKILLS_REPO_GITHUB_URL:-https://github.com/leecyno1/boutique-openclaw-skills.git}"
+OPENCLAW_SKILLS_REPO_MIRROR_URL="${OPENCLAW_SKILLS_REPO_MIRROR_URL:-https://mirror.ghproxy.com/https://github.com/leecyno1/boutique-openclaw-skills.git}"
 AUTO_FIX_OPENCLAW_REPO_URL="${AUTO_FIX_OPENCLAW_REPO_URL:-https://github.com/leecyno1/auto-fix-openclaw.git}"
 AUTO_FIX_OPENCLAW_REPO_MIRROR_URL="${AUTO_FIX_OPENCLAW_REPO_MIRROR_URL:-https://mirror.ghproxy.com/https://github.com/leecyno1/auto-fix-openclaw.git}"
 AUTO_FIX_OPENCLAW_DIR="${AUTO_FIX_OPENCLAW_DIR:-$HOME/.openclaw/tools/auto-fix-openclaw}"
@@ -1022,17 +1027,26 @@ get_gateway_host() {
     gateway_bind_display_host "$bind" "$custom_host"
 }
 
+quote_env_value_menu() {
+    python3 - "$1" <<'PYEOF'
+import shlex, sys
+print(shlex.quote(sys.argv[1]))
+PYEOF
+}
+
 upsert_env_export() {
     local key="$1"
     local value="$2"
     local file="$OPENCLAW_ENV"
+    local quoted_value
 
     mkdir -p "$(dirname "$file")" 2>/dev/null || true
     touch "$file" 2>/dev/null || true
+    quoted_value="$(quote_env_value_menu "$value")"
 
     local tmp_file
     tmp_file="$(mktemp)"
-    awk -v k="$key" -v v="$value" '
+    awk -v k="$key" -v v="$quoted_value" '
         BEGIN { done=0 }
         $0 ~ "^export " k "=" { print "export " k "=" v; done=1; next }
         { print }
@@ -4311,9 +4325,12 @@ config_ai_model() {
         print_menu_item "3" "自定义 Provider 高级配置" "🌐"
         print_menu_item "4" "生图 Provider 配置" "🖼️"
         print_menu_item "5" "刷新模型与工具状态" "🔄"
+        print_menu_item "6" "多模型注册表管理" "🧭"
+        print_menu_item "7" "路由策略" "🧠"
+        print_menu_item "8" "限流 / 预算" "📊"
         print_menu_item "0" "返回主菜单" "↩️"
         echo ""
-        read_input "${YELLOW}请选择 [0-5]: ${NC}" choice
+        read_input "${YELLOW}请选择 [0-8]: ${NC}" choice
 
         case "$choice" in
             1)
@@ -4343,6 +4360,15 @@ config_ai_model() {
                 log_info "模型与工具状态已刷新"
                 press_enter
                 ;;
+            6)
+                manage_model_registry_menu
+                ;;
+            7)
+                configure_model_router_menu
+                ;;
+            8)
+                configure_quota_budget_menu
+                ;;
             0)
                 return
                 ;;
@@ -4352,6 +4378,153 @@ config_ai_model() {
                 ;;
         esac
     done
+}
+
+find_model_registry_script_menu() {
+    local script_dir candidate
+    script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    for candidate in \
+        "$script_dir/scripts/lib/model_registry.py" \
+        "$HOME/.openclaw/runtime/installer-repo/scripts/lib/model_registry.py" \
+        "$HOME/.openclaw/.cache/auto-install-openclaw-repo/scripts/lib/model_registry.py" \
+        "$HOME/.openclaw/workspace/auto-install-openclaw/scripts/lib/model_registry.py" \
+        "$HOME/.openclaw/workspace/auto-install-Openclaw/scripts/lib/model_registry.py"
+    do
+        [ -f "$candidate" ] && { echo "$candidate"; return 0; }
+    done
+    return 1
+}
+
+print_model_registry_slots_menu() {
+    local capabilities_json="$HOME/.openclaw/model-capabilities.json"
+    if [ ! -f "$capabilities_json" ]; then
+        echo -e "${GRAY}尚未生成能力目录：$capabilities_json${NC}"
+        return 0
+    fi
+    python3 - "$capabilities_json" <<'PYEOF'
+import json, pathlib, sys
+path = pathlib.Path(sys.argv[1])
+data = json.loads(path.read_text())
+slots = data.get('registry', {}).get('slots', {})
+router = data.get('router', {})
+print(f"Router: {router.get('backend', 'embedded')} / {router.get('strategy', 'rules')}")
+for slot in ('minimax', 'deepseek', 'glm', 'gpt', 'image', 'video'):
+    entry = slots.get(slot)
+    if entry:
+        print(f"  {slot:8s} -> {entry.get('ref') or (entry.get('provider','') + '/' + entry.get('model',''))}")
+    else:
+        print(f"  {slot:8s} -> (empty)")
+archived = data.get('archivedProviders', {})
+if archived:
+    print("Archived duplicates:")
+    for provider, entry in archived.items():
+        print(f"  {provider}: slot={entry.get('slot','')} model={entry.get('model','')}")
+PYEOF
+}
+
+run_model_registry_cleanup_menu() {
+    local registry_script specs openclaw_json agent_models_json capabilities_json
+    registry_script="$(find_model_registry_script_menu || true)"
+    if [ -z "$registry_script" ]; then
+        log_error "未找到模型注册表脚本 scripts/lib/model_registry.py"
+        return 1
+    fi
+    specs="$(get_env_value OPENCLAW_EXTRA_MODELS)"
+    if [ -z "$specs" ]; then
+        log_warn "OPENCLAW_EXTRA_MODELS 为空；请先通过安装参数或追加辅助模型写入规格。"
+        return 0
+    fi
+    openclaw_json="$HOME/.openclaw/openclaw.json"
+    agent_models_json="$HOME/.openclaw/agents/main/agent/models.json"
+    capabilities_json="$HOME/.openclaw/model-capabilities.json"
+    mkdir -p "$(dirname "$openclaw_json")" "$(dirname "$agent_models_json")" 2>/dev/null || true
+    [ -f "$openclaw_json" ] || echo "{}" > "$openclaw_json"
+    [ -f "$agent_models_json" ] || echo "{}" > "$agent_models_json"
+    python3 "$registry_script" --specs "$specs" --openclaw-json "$openclaw_json" --agent-models-json "$agent_models_json" --capabilities-json "$capabilities_json" || return 1
+    chmod 600 "$openclaw_json" "$agent_models_json" "$capabilities_json" 2>/dev/null || true
+    log_info "同族重复 provider 已按家族槽位清理。"
+}
+
+append_extra_model_spec_menu() {
+    local current spec
+    echo -e "${CYAN}格式: id=...,provider=...,model=...,base_url=...,api_key=...,api_type=...,slot=...${NC}"
+    read_input "${YELLOW}请输入辅助模型规格: ${NC}" spec
+    [ -n "$spec" ] || { log_warn "规格为空，已取消。"; return 0; }
+    current="$(get_env_value OPENCLAW_EXTRA_MODELS)"
+    if [ -n "$current" ]; then
+        upsert_env_export "OPENCLAW_EXTRA_MODELS" "${current}|||${spec}"
+    else
+        upsert_env_export "OPENCLAW_EXTRA_MODELS" "$spec"
+    fi
+    run_model_registry_cleanup_menu || return 1
+}
+
+manage_model_registry_menu() {
+    while true; do
+        clear_screen
+        print_header
+        echo -e "${WHITE}🧭 多模型注册表管理${NC}"
+        print_divider
+        print_model_registry_slots_menu
+        echo ""
+        print_menu_item "1" "查看当前槽位" "👀"
+        print_menu_item "2" "追加辅助模型" "➕"
+        print_menu_item "3" "清理同族重复项" "🧹"
+        print_menu_item "4" "切换主模型" "⭐"
+        print_menu_item "5" "标记媒体能力" "🎬"
+        print_menu_item "0" "返回上一级" "↩️"
+        echo ""
+        read_input "${YELLOW}请选择 [0-5]: ${NC}" choice
+        case "$choice" in
+            1) echo ""; print_model_registry_slots_menu; press_enter ;;
+            2) append_extra_model_spec_menu; press_enter ;;
+            3) run_model_registry_cleanup_menu; press_enter ;;
+            4) config_provider_presets_menu ;;
+            5) config_image_provider_viviai ;;
+            0) return ;;
+            *) log_error "无效选择"; press_enter ;;
+        esac
+    done
+}
+
+configure_model_router_menu() {
+    clear_screen
+    print_header
+    echo -e "${WHITE}🧠 路由策略${NC}"
+    print_divider
+    echo -e "${CYAN}当前后端: ${WHITE}${OPENCLAW_ROUTER_BACKEND:-$(get_env_value OPENCLAW_ROUTER_BACKEND)}${NC}"
+    echo -e "${CYAN}当前策略: ${WHITE}${OPENCLAW_ROUTER_STRATEGY:-$(get_env_value OPENCLAW_ROUTER_STRATEGY)}${NC}"
+    echo ""
+    print_menu_item "1" "规则路由（默认）" "🧩"
+    print_menu_item "2" "成本优先" "💸"
+    print_menu_item "3" "质量优先" "🏆"
+    echo ""
+    read_input "${YELLOW}请选择 [1-3] (默认: 1): ${NC}" choice
+    case "${choice:-1}" in
+        2) upsert_env_export "OPENCLAW_ROUTER_STRATEGY" "cost" ;;
+        3) upsert_env_export "OPENCLAW_ROUTER_STRATEGY" "quality" ;;
+        *) upsert_env_export "OPENCLAW_ROUTER_STRATEGY" "rules" ;;
+    esac
+    upsert_env_export "OPENCLAW_ROUTER_BACKEND" "embedded"
+    log_info "路由后端保持 embedded；LiteLLM/Bifrost/Portkey 已预留但不默认启用。"
+    press_enter
+}
+
+configure_quota_budget_menu() {
+    clear_screen
+    print_header
+    echo -e "${WHITE}📊 限流 / 预算${NC}"
+    print_divider
+    echo -e "${GRAY}当前入口只增强内置 quota enforcer，不安装外部网关。${NC}"
+    echo ""
+    read_input "${YELLOW}文本请求窗口上限 (留空保持): ${NC}" text_limit
+    read_input "${YELLOW}图片请求窗口上限 (留空保持): ${NC}" image_limit
+    read_input "${YELLOW}视频请求窗口上限 (留空保持): ${NC}" video_limit
+    [ -n "$text_limit" ] && upsert_env_export "OPENCLAW_RULE_MAX_REQUESTS" "$text_limit"
+    [ -n "$image_limit" ] && upsert_env_export "OPENCLAW_RULE_MAX_IMAGE_REQUESTS" "$image_limit"
+    [ -n "$video_limit" ] && upsert_env_export "OPENCLAW_RULE_MAX_VIDEO_REQUESTS" "$video_limit"
+    log_info "限流/预算配置已保存。"
+    press_enter
 }
 
 config_provider_presets_menu() {
@@ -9581,6 +9754,14 @@ https://mirror.ghproxy.com/https://github.com/${INSTALLER_REPO}.git
 EOF
 }
 
+get_boutique_skills_repo_urls_menu() {
+    cat <<EOF
+$OPENCLAW_SKILLS_REPO_URL
+$OPENCLAW_SKILLS_REPO_GITHUB_URL
+$OPENCLAW_SKILLS_REPO_MIRROR_URL
+EOF
+}
+
 refresh_cached_installer_repo_menu() {
     local cache_repo="$1"
     [ -d "$cache_repo/.git" ] || return 1
@@ -9664,6 +9845,8 @@ resolve_default_skills_bundle_dir() {
 ${OPENCLAW_SKILLS_BUNDLE_DIR:-}
 $script_dir/skills/default
 $(pwd)/skills/default
+$HOME/boutique-openclaw-skills/skills/default
+/Volumes/PSSD/Projects/boutique-openclaw-skills/skills/default
 $HOME/auto-install-openclaw/skills/default
 $HOME/auto-install-Openclaw/skills/default
 $HOME/OpenClawInstaller/skills/default
@@ -9678,7 +9861,7 @@ EOF
     done
 
     cache_root="$CONFIG_DIR/.cache"
-    cache_repo="$cache_root/auto-install-openclaw-repo"
+    cache_repo="$cache_root/boutique-openclaw-skills"
     cache_bundle="$cache_repo/skills/default"
     mkdir -p "$cache_root" 2>/dev/null || true
 
@@ -9699,14 +9882,15 @@ EOF
         return 1
     fi
 
-    log_warn "本地未发现 skills/default，正在从仓库拉取默认技能包..." >&2
+    log_warn "本地未发现 skills/default，正在从 boutique-openclaw-skills 拉取默认技能包..." >&2
     tmp_repo="$(mktemp -d "$cache_root/repo.XXXXXX")"
-    for url in $(get_installer_repo_urls); do
+    for url in $(get_boutique_skills_repo_urls_menu); do
         rm -rf "$tmp_repo" 2>/dev/null || true
         tmp_repo="$(mktemp -d "$cache_root/repo.XXXXXX")"
         if git clone --depth 1 "$url" "$tmp_repo" >/dev/null 2>&1 && [ -d "$tmp_repo/skills/default" ] && is_default_skills_bundle_usable_menu "$tmp_repo/skills/default"; then
             rm -rf "$cache_repo" 2>/dev/null || true
             mv "$tmp_repo" "$cache_repo"
+            [ -f "$cache_repo/tiers/low.json" ] || log_warn "boutique 技能仓库缺少 tiers/low.json，继续使用 skills/default" >&2
             echo "$cache_repo/skills/default"
             return 0
         fi
@@ -12010,10 +12194,9 @@ install_pixel_house_launchers_menu() {
         "subprojects/lobster-sanctum-ui/openclaw-runtime-bridge.sh"
 }
 
-install_remote_local_control_menu() {
-    local script_dir source_script target_script
+find_remote_local_control_source_menu() {
+    local script_dir candidate
     script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-    source_script=""
     for candidate in \
         "$RUNTIME_REPO_DIR_MENU/scripts/remote-local-control.sh" \
         "$script_dir/scripts/remote-local-control.sh" \
@@ -12021,10 +12204,16 @@ install_remote_local_control_menu() {
         "$HOME/.openclaw/workspace/auto-install-openclaw/scripts/remote-local-control.sh" \
         "$HOME/.openclaw/workspace/auto-install-Openclaw/scripts/remote-local-control.sh"; do
         if [ -f "$candidate" ]; then
-            source_script="$candidate"
-            break
+            printf '%s\n' "$candidate"
+            return 0
         fi
     done
+    return 1
+}
+
+install_remote_local_control_menu() {
+    local source_script target_script
+    source_script="$(find_remote_local_control_source_menu || true)"
 
     if [ -z "$source_script" ]; then
         log_error "未找到远程本地主机控制脚本源码（scripts/remote-local-control.sh）"
@@ -12041,6 +12230,15 @@ install_remote_local_control_menu() {
     echo -e "${YELLOW}说明:${NC} 该功能默认不会启用远程控制；请先阅读文档并手动配置反向 SSH。"
     echo "  文档: docs/plans/2026-04-30-cloud-to-local-reverse-ssh-control.md"
     echo "  查看帮助: bash ~/.openclaw/remote-local-control.sh help"
+}
+
+bootstrap_remote_local_control_menu() {
+    install_remote_local_control_menu || return 1
+    echo ""
+    echo -e "${CYAN}开始本地反向 SSH 配置。首次注册后建议使用网站/控制台下载的 pairing JSON：${NC}"
+    echo "  bash ~/.openclaw/remote-local-control.sh configure-local --pairing-file ./openclaw-cloud-pairing.json --install-service"
+    echo ""
+    bash "$CONFIG_DIR/remote-local-control.sh" configure-local "$@"
 }
 
 pixel_house_systemd_available_menu() {
@@ -13673,11 +13871,23 @@ route_config_subcommand_menu() {
             return 0
             ;;
         routing|advanced-routing)
-            configure_rule_advanced_model_menu
+            configure_model_router_menu
+            return 0
+            ;;
+        registry|models|multi-model)
+            manage_model_registry_menu
+            return 0
+            ;;
+        quota|budget)
+            configure_quota_budget_menu
             return 0
             ;;
         pixel-house|pixel|house|workbench)
             manage_pixel_house
+            return 0
+            ;;
+        remote-local-bootstrap)
+            bootstrap_remote_local_control_menu
             return 0
             ;;
         remote-local-control|remote-local|local-control)
@@ -13769,6 +13979,12 @@ main() {
             install_remote_local_control_menu || exit 1
             echo ""
             echo -e "${CYAN}远程本地主机控制辅助脚本安装流程结束。${NC}"
+            exit 0
+            ;;
+        --remote-local-bootstrap)
+            bootstrap_remote_local_control_menu "${@:2}" || exit 1
+            echo ""
+            echo -e "${CYAN}远程本地主机控制本地配置流程结束。${NC}"
             exit 0
             ;;
         --engine-menu)

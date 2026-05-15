@@ -12,7 +12,7 @@ This design supports command-level control only. It intentionally does not provi
 - Work when the local machine is behind NAT or a corporate/home router.
 - Avoid opening inbound firewall ports on the local network.
 - Avoid exposing `~/.openclaw`, `~/.hermes`, SSH keys, browser sessions, or desktop control by default.
-- Keep the initial deliverable as documentation and review guidance, not an automatic installer feature.
+- Keep the feature opt-in: normal OpenClaw/Hermes installation only installs helpers when explicitly requested.
 
 ## Non-Goals
 
@@ -83,15 +83,17 @@ command="/usr/local/bin/openclaw-local-command-gate",no-agent-forwarding,no-X11-
 
 `openclaw-local-command-gate` should read `SSH_ORIGINAL_COMMAND`, parse the first token as an action, validate all arguments, execute only approved commands, and log the result.
 
-Initial whitelist:
+Current whitelist in `scripts/remote-local-control.sh`:
 
 | Action | Local behavior |
 | --- | --- |
-| `status` | Return hostname, OS, uptime, and agent version. |
+| `status` | Return hostname, current user, and OS. |
 | `openclaw-status` | Run safe OpenClaw status checks only. |
-| `tail-log <name>` | Print the last lines from approved logs. |
-| `run-maintenance <task>` | Run predeclared maintenance scripts by task name. |
-| `sync-inbox` | Pull files from a local staging directory if explicitly enabled. |
+| `tail-log gateway|health|quota` | Print the last lines from approved logs. |
+| `run-maintenance openclaw-doctor` | Run the predeclared OpenClaw doctor task. |
+| `desktop-create-folder <safe-folder>` | Create one safe leaf folder on the local Desktop, or `~/OpenClawRemoteDesktop` when Desktop is absent. |
+| `desktop-write-article <safe-folder> <safe-file.md|txt> <base64-content>` | Write base64-decoded article content into the safe Desktop folder. |
+| `sync-inbox` | Rejected until explicitly implemented. |
 
 Rejected by default:
 
@@ -124,12 +126,26 @@ The wrapper should:
 
 ### First-Time Setup
 
-1. On the cloud host, create a key pair dedicated to local reverse-control operations.
-2. On the local machine, create `local-agent` and install the cloud public key with a forced command.
-3. Install `openclaw-local-command-gate` on the local machine.
-4. Start the reverse tunnel from local to cloud.
-5. On the cloud host, run `openclaw-local-run status`.
-6. Confirm the cloud port is localhost-only.
+1. On the cloud host, install the helper with `openclaw-setup config --remote-local-control`.
+2. On the cloud host, create a key pair dedicated to local reverse-control operations.
+3. On the cloud host, install the wrapper with `~/.openclaw/remote-local-control.sh install-cloud --identity ~/.ssh/openclaw-local-control --apply`.
+4. After first registration, the website/control plane should generate a pairing JSON for the user.
+5. On the local machine, run `~/.openclaw/remote-local-control.sh configure-local --pairing-file <pairing.json> --install-service`.
+6. On the cloud host, run `openclaw-local-run status`.
+7. Confirm the cloud port is localhost-only.
+
+Recommended pairing JSON fields:
+
+```json
+{
+  "cloudSshTarget": "root@203.0.113.10",
+  "cloudSshPort": 5945,
+  "reversePort": 24022,
+  "cloudPublicKey": "ssh-ed25519 AAAA... openclaw-local-control"
+}
+```
+
+The local helper resolves the cloud address in this order: explicit CLI flags, `OPENCLAW_REMOTE_LOCAL_PAIRING_FILE`, environment variables such as `OPENCLAW_REMOTE_LOCAL_CLOUD`, then interactive prompt. The local installer cannot reliably discover the newest server address by itself; the control plane must provide it through the registration result, a pairing file, or a copyable command.
 
 ### Persistent Tunnel
 
@@ -162,12 +178,13 @@ The second form exposes the local SSH path to the internet if the cloud SSH serv
 
 This design is separate from the OpenClaw Gateway. The current installer keeps the Gateway local by default, which is the correct posture for cloud-to-local control.
 
-Recommended integration order:
+Implemented integration order:
 
-1. Keep this as documentation and manual review guidance.
-2. If validated, add a standalone helper script, not a default install step.
-3. If still useful, add an opt-in `openclaw-setup config remote-local-control` menu entry.
-4. Keep the default installation unchanged and disabled.
+1. Normal installation remains unchanged and disabled.
+2. `openclaw-setup config --remote-local-control` installs the standalone helper script only.
+3. `configure-local` or `bootstrap-local` must be run explicitly on the local machine to install the forced-command gate and start the tunnel.
+4. `configure-local --pairing-file` is the preferred path after website registration because it carries the latest cloud SSH target, SSH port, reverse port, and cloud public key.
+5. `install-tunnel-service` can optionally install a macOS LaunchAgent or Linux systemd user service for tunnel recovery.
 
 Hermes and OpenClaw can both use the same cloud wrapper because the local bridge is SSH-based and command-level. The cloud runtime does not need to know whether the local machine runs OpenClaw, Hermes, or neither.
 
@@ -210,20 +227,8 @@ Acceptance criteria:
 - all attempts are logged locally.
 - killing the tunnel process results in automatic recovery if persistence is enabled.
 
-## Future Implementation Options
+## Current Implementation
 
-### Option A: Documentation Only
+The implemented helper is `scripts/remote-local-control.sh`. It remains opt-in and separate from normal installation. The installer/config menu copies it into `~/.openclaw/remote-local-control.sh`; it does not silently enable a tunnel.
 
-Keep the setup manual. This is the safest near-term path and is suitable before a public release.
-
-### Option B: Standalone Script
-
-Add a script such as `scripts/setup-local-reverse-ssh-control.sh` that generates the forced-command gate and service templates. The script remains opt-in and separate from normal installation.
-
-### Option C: Config Menu Integration
-
-Add an advanced menu entry after real-world validation. The menu should generate instructions and templates, not silently enable remote control.
-
-## Recommended Default
-
-Use Option A for now. If real users need it, implement Option B as a standalone opt-in script. Do not add automatic enablement to the main installer until the command gate, logging, revocation, and recovery behavior have been tested on both Linux and macOS.
+Use `configure-local --pairing-file` on the user's local machine for the preferred active setup path, or `bootstrap-local` when the cloud address and public key are supplied manually. Use `install-tunnel-service` only when the user wants persistence through macOS LaunchAgent or Linux systemd user services. Do not add automatic enablement to the main installer unless the command gate, logging, revocation, and recovery behavior have been tested in the target deployment environment.

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generated_from": "skills/default",
+  "generated_from": "/Volumes/PSSD/Projects/boutique-openclaw-skills/skills/default",
   "notes": "Installer-facing skill catalog. Scripts should read this manifest instead of growing new hardcoded lists.",
   "bundles": {
     "basic": [
@@ -156,8 +156,18 @@
       "agentmail-toolkit",
       "ai-image-generation",
       "akshare-stock",
+      "alphaear-deepear-lite",
+      "alphaear-logic-visualizer",
+      "alphaear-news",
+      "alphaear-predictor",
+      "alphaear-reporter",
+      "alphaear-search",
+      "alphaear-sentiment",
+      "alphaear-signal-tracker",
+      "alphaear-stock",
       "android-native-dev",
       "animation",
+      "backtest-expert",
       "baoyu-article-illustrator",
       "baoyu-comic",
       "baoyu-compress-image",
@@ -178,23 +188,65 @@
       "baoyu-xhs-images",
       "baoyu-youtube-transcript",
       "brainstorming",
+      "breadth-chart-analyst",
+      "breakout-trade-planner",
       "buddy-sings",
+      "canslim-screener",
       "capability-evolver",
       "chrome-devtools-mcp",
+      "company-valuation",
       "content-strategy",
       "data-analyst",
+      "data-quality-checker",
+      "discord-reader",
+      "dividend-growth-pullback-screener",
       "docx",
+      "downtrend-duration-analyzer",
+      "dual-axis-skill-reviewer",
+      "earnings-calendar",
+      "earnings-preview",
+      "earnings-recap",
+      "earnings-trade-analyzer",
+      "economic-calendar-fetcher",
+      "edge-candidate-agent",
+      "edge-concept-synthesizer",
+      "edge-hint-extractor",
+      "edge-pipeline-orchestrator",
+      "edge-signal-aggregator",
+      "edge-strategy-designer",
+      "edge-strategy-reviewer",
+      "estimate-analysis",
+      "etf-premium",
+      "exposure-coach",
       "finance-data",
+      "finance-sentiment",
+      "finance-skill-creator",
       "find-skills",
+      "finviz-screener",
       "flutter-dev",
       "frontend-dev",
+      "ftd-detector",
       "fullstack-dev",
+      "funda-data",
       "gemini-image-service",
+      "generative-ui",
       "gif-sticker-maker",
       "github",
+      "hormuz-strait",
+      "ibd-distribution-day-monitor",
       "inference-skills",
+      "institutional-flow-tracker",
       "ios-application-dev",
+      "kanchi-dividend-review-monitor",
+      "kanchi-dividend-sop",
+      "kanchi-dividend-us-tax-accounting",
       "lark-calendar",
+      "linkedin-reader",
+      "macro-regime-detector",
+      "market-breadth-analyzer",
+      "market-environment-analysis",
+      "market-news-analyst",
+      "market-top-detector",
       "marketingskills",
       "mcp-builder",
       "media-downloader",
@@ -212,36 +264,70 @@
       "news-radar",
       "notebooklm-skill",
       "openclaw-cron-setup",
+      "opencli-reader",
+      "options-payoff",
+      "options-strategy-advisor",
       "oracle",
+      "pair-trade-screener",
       "paperless-docs",
       "paperless-ngx-tools",
+      "parabolic-short-trade-planner",
       "pdf",
+      "pead-screener",
       "planning-with-files",
+      "portfolio-manager",
+      "position-sizer",
       "pptx",
       "pptx-generator",
       "proactive-agent",
       "react-native-dev",
       "reflection",
+      "saas-valuation-compression",
+      "scenario-analyzer",
+      "sector-analyst",
       "self-improving-agent-cn",
+      "sepa-strategy",
       "shader-dev",
       "shell",
+      "signal-postmortem",
       "skill-creator",
+      "skill-designer",
+      "skill-idea-miner",
+      "skill-integration-tester",
       "skill-security-auditor",
       "social-content",
+      "stanley-druckenmiller-investment",
+      "startup-analysis",
+      "stock-correlation",
+      "stock-liquidity",
       "stock-monitor-skill",
+      "strategy-pivot-designer",
       "subagent-driven-development",
       "task",
       "tavily-search",
+      "technical-analyst",
+      "telegram-reader",
+      "theme-detector",
       "todo",
+      "trade-hypothesis-ideator",
+      "trader-memory-core",
+      "twitter-reader",
+      "uptrend-analyzer",
       "url-to-markdown",
+      "us-market-bubble-detector",
+      "us-stock-analysis",
       "using-superpowers",
+      "value-dividend-screener",
+      "vcp-screener",
       "verification-before-completion",
       "vision-analysis",
       "weather",
       "web-search",
       "writing-plans",
       "writing-skills",
-      "xlsx"
+      "xlsx",
+      "yc-reader",
+      "yfinance-data"
     ],
     "menu_enhanced": [
       "agent-browser",
@@ -251,27 +337,79 @@
       "agentmail-toolkit",
       "ai-image-generation",
       "akshare-stock",
+      "alphaear-deepear-lite",
+      "alphaear-logic-visualizer",
+      "alphaear-news",
+      "alphaear-predictor",
+      "alphaear-reporter",
+      "alphaear-search",
+      "alphaear-sentiment",
+      "alphaear-signal-tracker",
+      "alphaear-stock",
       "android-native-dev",
       "animation",
+      "backtest-expert",
       "brainstorming",
+      "breadth-chart-analyst",
+      "breakout-trade-planner",
       "buddy-sings",
+      "canslim-screener",
       "capability-evolver",
       "chrome-devtools-mcp",
+      "company-valuation",
       "content-strategy",
       "data-analyst",
+      "data-quality-checker",
+      "discord-reader",
+      "dividend-growth-pullback-screener",
       "docx",
+      "downtrend-duration-analyzer",
+      "dual-axis-skill-reviewer",
+      "earnings-calendar",
+      "earnings-preview",
+      "earnings-recap",
+      "earnings-trade-analyzer",
+      "economic-calendar-fetcher",
+      "edge-candidate-agent",
+      "edge-concept-synthesizer",
+      "edge-hint-extractor",
+      "edge-pipeline-orchestrator",
+      "edge-signal-aggregator",
+      "edge-strategy-designer",
+      "edge-strategy-reviewer",
+      "estimate-analysis",
+      "etf-premium",
+      "exposure-coach",
       "finance-data",
+      "finance-sentiment",
+      "finance-skill-creator",
       "find-skills",
+      "finviz-screener",
       "flutter-dev",
       "frontend-design",
       "frontend-dev",
+      "ftd-detector",
       "fullstack-dev",
+      "funda-data",
       "gemini-image-service",
+      "generative-ui",
       "gif-sticker-maker",
       "github",
+      "hormuz-strait",
+      "ibd-distribution-day-monitor",
       "inference-skills",
+      "institutional-flow-tracker",
       "ios-application-dev",
+      "kanchi-dividend-review-monitor",
+      "kanchi-dividend-sop",
+      "kanchi-dividend-us-tax-accounting",
       "lark-calendar",
+      "linkedin-reader",
+      "macro-regime-detector",
+      "market-breadth-analyzer",
+      "market-environment-analysis",
+      "market-news-analyst",
+      "market-top-detector",
       "marketingskills",
       "mcp-builder",
       "media-downloader",
@@ -293,32 +431,64 @@
       "openclaw-stock-analyzer",
       "openclaw-stock-data-skill",
       "openclaw-stock-kb",
+      "opencli-reader",
+      "options-payoff",
+      "options-strategy-advisor",
       "oracle",
+      "pair-trade-screener",
       "paperless-docs",
       "paperless-ngx-tools",
+      "parabolic-short-trade-planner",
       "pdf",
+      "pead-screener",
+      "portfolio-manager",
+      "position-sizer",
       "pptx",
       "pptx-generator",
       "proactive-agent",
       "react-native-dev",
       "reflection",
+      "saas-valuation-compression",
+      "scenario-analyzer",
+      "sector-analyst",
       "self-improving-agent-cn",
+      "sepa-strategy",
       "shader-dev",
       "shell",
+      "signal-postmortem",
       "skill-creator",
+      "skill-designer",
+      "skill-idea-miner",
+      "skill-integration-tester",
       "skill-security-auditor",
       "social-content",
+      "stanley-druckenmiller-investment",
+      "startup-analysis",
       "stock-analysis",
+      "stock-correlation",
       "stock-daily-analysis-skill",
+      "stock-liquidity",
       "stock-monitor-skill",
       "stock_datasource",
+      "strategy-pivot-designer",
       "subagent-driven-development",
       "task",
       "tavily-search",
+      "technical-analyst",
+      "telegram-reader",
+      "theme-detector",
       "todo",
+      "trade-hypothesis-ideator",
+      "trader-memory-core",
       "tushare-openclaw-skill",
+      "twitter-reader",
+      "uptrend-analyzer",
       "url-to-markdown",
+      "us-market-bubble-detector",
+      "us-stock-analysis",
       "using-superpowers",
+      "value-dividend-screener",
+      "vcp-screener",
       "verification-before-completion",
       "vision-analysis",
       "weather",
@@ -326,7 +496,9 @@
       "web-search",
       "writing-plans",
       "writing-skills",
-      "xlsx"
+      "xlsx",
+      "yc-reader",
+      "yfinance-data"
     ],
     "minimax_official": [
       "android-native-dev",
@@ -393,6 +565,94 @@
       "vision-analysis",
       "weather",
       "writing-skills"
+    ],
+    "trading_finance": [
+      "alphaear-deepear-lite",
+      "alphaear-logic-visualizer",
+      "alphaear-news",
+      "alphaear-predictor",
+      "alphaear-reporter",
+      "alphaear-search",
+      "alphaear-sentiment",
+      "alphaear-signal-tracker",
+      "alphaear-stock",
+      "backtest-expert",
+      "breadth-chart-analyst",
+      "breakout-trade-planner",
+      "canslim-screener",
+      "company-valuation",
+      "data-quality-checker",
+      "discord-reader",
+      "dividend-growth-pullback-screener",
+      "downtrend-duration-analyzer",
+      "dual-axis-skill-reviewer",
+      "earnings-calendar",
+      "earnings-preview",
+      "earnings-recap",
+      "earnings-trade-analyzer",
+      "economic-calendar-fetcher",
+      "edge-candidate-agent",
+      "edge-concept-synthesizer",
+      "edge-hint-extractor",
+      "edge-pipeline-orchestrator",
+      "edge-signal-aggregator",
+      "edge-strategy-designer",
+      "edge-strategy-reviewer",
+      "estimate-analysis",
+      "etf-premium",
+      "exposure-coach",
+      "finance-sentiment",
+      "finance-skill-creator",
+      "finviz-screener",
+      "ftd-detector",
+      "funda-data",
+      "generative-ui",
+      "hormuz-strait",
+      "ibd-distribution-day-monitor",
+      "institutional-flow-tracker",
+      "kanchi-dividend-review-monitor",
+      "kanchi-dividend-sop",
+      "kanchi-dividend-us-tax-accounting",
+      "linkedin-reader",
+      "macro-regime-detector",
+      "market-breadth-analyzer",
+      "market-environment-analysis",
+      "market-news-analyst",
+      "market-top-detector",
+      "opencli-reader",
+      "options-payoff",
+      "options-strategy-advisor",
+      "pair-trade-screener",
+      "parabolic-short-trade-planner",
+      "pead-screener",
+      "portfolio-manager",
+      "position-sizer",
+      "saas-valuation-compression",
+      "scenario-analyzer",
+      "sector-analyst",
+      "sepa-strategy",
+      "signal-postmortem",
+      "skill-designer",
+      "skill-idea-miner",
+      "skill-integration-tester",
+      "stanley-druckenmiller-investment",
+      "startup-analysis",
+      "stock-correlation",
+      "stock-liquidity",
+      "strategy-pivot-designer",
+      "technical-analyst",
+      "telegram-reader",
+      "theme-detector",
+      "trade-hypothesis-ideator",
+      "trader-memory-core",
+      "twitter-reader",
+      "uptrend-analyzer",
+      "us-market-bubble-detector",
+      "us-stock-analysis",
+      "value-dividend-screener",
+      "vcp-screener",
+      "yc-reader",
+      "yfinance-data"
     ]
   },
   "skills": [
@@ -436,10 +696,8 @@
         "default_sentinel"
       ],
       "source": "local",
-      "requires_api_keys": true,
-      "api_keys": [
-        "YOUR_API_KEY"
-      ]
+      "requires_api_keys": false,
+      "api_keys": []
     },
     {
       "id": "agentmail-cli",
@@ -476,8 +734,7 @@
       "source": "local",
       "requires_api_keys": true,
       "api_keys": [
-        "AGENTMAIL_API_KEY",
-        "YOUR_API_KEY"
+        "AGENTMAIL_API_KEY"
       ]
     },
     {
@@ -576,6 +833,141 @@
       "api_keys": []
     },
     {
+      "id": "alphaear-deepear-lite",
+      "name": "alphaear-deepear-lite",
+      "description": "Fetch the latest financial signals and transmission-chain analyses from DeepEar Lite. Use when the user needs immediate insights into financial market trends, stock performance factors, and reasoning from the DeepEar Lite dashboard.",
+      "path": "skills/default/alphaear-deepear-lite",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "trading_finance"
+      ],
+      "source": "github:RKiding/Awesome-finance-skills",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "alphaear-logic-visualizer",
+      "name": "alphaear-logic-visualizer",
+      "description": "Create visualize finance logic diagrams (e.g., Draw.io XML) to explain complex finance transmission chains or finance logic flows.",
+      "path": "skills/default/alphaear-logic-visualizer",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "trading_finance"
+      ],
+      "source": "github:RKiding/Awesome-finance-skills",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "alphaear-news",
+      "name": "alphaear-news",
+      "description": "Fetch hot finance news, unified trends, and prediction financial market data. Use when the user needs real-time financial news, trend reports from multiple finance sources (Weibo, Zhihu, WallstreetCN, etc.), or Polymarket finance market prediction data.",
+      "path": "skills/default/alphaear-news",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "trading_finance"
+      ],
+      "source": "github:RKiding/Awesome-finance-skills",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "alphaear-predictor",
+      "name": "alphaear-predictor",
+      "description": "Market prediction skill using Kronos. Use when user needs finance market time-series forecasting or news-aware finance market adjustments.",
+      "path": "skills/default/alphaear-predictor",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "trading_finance"
+      ],
+      "source": "github:RKiding/Awesome-finance-skills",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "alphaear-reporter",
+      "name": "alphaear-reporter",
+      "description": "Plan, write, and edit professional financial reports; generate finance chart configurations. Use when condensing finance analysis into a structured output.",
+      "path": "skills/default/alphaear-reporter",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "trading_finance"
+      ],
+      "source": "github:RKiding/Awesome-finance-skills",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "alphaear-search",
+      "name": "alphaear-search",
+      "description": "Perform finance web searches and local context searches. Use when the user needs general finance info from the web (Jina/DDG/Baidu) or needs to retrieve finance information from a local document store (RAG).",
+      "path": "skills/default/alphaear-search",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "trading_finance"
+      ],
+      "source": "github:RKiding/Awesome-finance-skills",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "alphaear-sentiment",
+      "name": "alphaear-sentiment",
+      "description": "Analyze finance text sentiment using FinBERT or LLM. Use when the user needs to determine the sentiment (positive/negative/neutral) and score of financial text markets.",
+      "path": "skills/default/alphaear-sentiment",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "trading_finance"
+      ],
+      "source": "github:RKiding/Awesome-finance-skills",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "alphaear-signal-tracker",
+      "name": "alphaear-signal-tracker",
+      "description": "Track finance investment signal evolution and update logic based on new finance market information. Use when monitoring finance signals and determining if they are strengthened, weakened, or falsified.",
+      "path": "skills/default/alphaear-signal-tracker",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "trading_finance"
+      ],
+      "source": "github:RKiding/Awesome-finance-skills",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "alphaear-stock",
+      "name": "alphaear-stock",
+      "description": "Search A-Share/HK/US finance stock tickers and retrieve finance stock price history. Use when user asks about finance stock codes, recent price changes, or specific company finance stock info.",
+      "path": "skills/default/alphaear-stock",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "trading_finance"
+      ],
+      "source": "github:RKiding/Awesome-finance-skills",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
       "id": "android-native-dev",
       "name": "android-native-dev",
       "description": "Android native application development and UI design guide. Covers Material Design 3, Kotlin/Compose development, project configuration, accessibility, and build troubleshooting. Read this before Android native application development.",
@@ -637,6 +1029,21 @@
       "tiers": [],
       "groups": [],
       "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "backtest-expert",
+      "name": "backtest-expert",
+      "description": "Expert guidance for systematic backtesting of trading strategies. Use when developing, testing, stress-testing, or validating quantitative trading strategies. Covers \"beating ideas to death\" methodology, parameter robustness testing, slippage modeling, bias...",
+      "path": "skills/default/backtest-expert",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "trading_finance"
+      ],
+      "source": "github:tradermonty/claude-trading-skills",
       "requires_api_keys": false,
       "api_keys": []
     },
@@ -992,6 +1399,36 @@
       "api_keys": []
     },
     {
+      "id": "breadth-chart-analyst",
+      "name": "breadth-chart-analyst",
+      "description": "This skill should be used when analyzing market breadth charts, specifically the S&P 500 Breadth Index (200-Day MA based) and the US Stock Market Uptrend Stock Ratio charts. Use this skill when the user provides breadth chart images for analysis, requests m...",
+      "path": "skills/default/breadth-chart-analyst",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "trading_finance"
+      ],
+      "source": "github:tradermonty/claude-trading-skills",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "breakout-trade-planner",
+      "name": "breakout-trade-planner",
+      "description": "Generate Minervini-style breakout trade plans from VCP screener output with worst-case risk calculation, portfolio heat management, and Alpaca-compatible order templates (stop-limit bracket for pre-placement, limit bracket for post-confirmation). Use when u...",
+      "path": "skills/default/breakout-trade-planner",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "trading_finance"
+      ],
+      "source": "github:tradermonty/claude-trading-skills",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
       "id": "buddy-sings",
       "name": "buddy-sings",
       "description": "Use when user wants their Claude Code pet (/buddy) to sing a song. Triggers on any request that combines the concept of their Claude Code buddy, pet, or companion with singing or music. Supports multilingual triggers — match equivalent phrases in any language.",
@@ -1019,6 +1456,23 @@
       "source": "local",
       "requires_api_keys": false,
       "api_keys": []
+    },
+    {
+      "id": "canslim-screener",
+      "name": "canslim-screener",
+      "description": "Screen US stocks using William O'Neil's CANSLIM growth stock methodology. Use when user requests CANSLIM stock screening, growth stock analysis, momentum stock identification, or wants to find stocks with strong earnings and price momentum following O'Neil'...",
+      "path": "skills/default/canslim-screener",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "trading_finance"
+      ],
+      "source": "github:tradermonty/claude-trading-skills",
+      "requires_api_keys": true,
+      "api_keys": [
+        "FMP_API_KEY"
+      ]
     },
     {
       "id": "canvas-design",
@@ -1058,6 +1512,21 @@
       ],
       "groups": [],
       "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "company-valuation",
+      "name": "company-valuation",
+      "description": "Estimate the intrinsic value of a public company using DCF, relative (peer multiple) and sum-of-parts (SOTP) methods, then triangulate to an implied share price with upside/downside versus the current market price. Use this skill whenever the user asks: \"wh...",
+      "path": "skills/default/company-valuation",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "trading_finance"
+      ],
+      "source": "github:himself65/finance-skills",
       "requires_api_keys": false,
       "api_keys": []
     },
@@ -1316,6 +1785,21 @@
       "api_keys": []
     },
     {
+      "id": "data-quality-checker",
+      "name": "data-quality-checker",
+      "description": "Validate data quality in market analysis documents and blog articles before publication. Use when checking for price scale inconsistencies (ETF vs futures), instrument notation errors, date/day-of-week mismatches, allocation total errors, and unit mismatche...",
+      "path": "skills/default/data-quality-checker",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "trading_finance"
+      ],
+      "source": "github:tradermonty/claude-trading-skills",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
       "id": "data-reconciliation-exceptions",
       "name": "data-reconciliation-exceptions",
       "description": "Reconciles data sources using stable identifiers (Pay Number, driving licence, driver card, and driver qualification card numbers), producing exception reports and “no silent failure” checks. Use when you need weekly matching with explicit reasons for non-j...",
@@ -1349,6 +1833,21 @@
       "api_keys": []
     },
     {
+      "id": "discord-reader",
+      "name": "discord-reader",
+      "description": "Read Discord for financial research using opencli (read-only). Use this skill whenever the user wants to read Discord channels, search for messages in trading servers, view guild/channel info, monitor crypto or market discussion groups, or gather financial...",
+      "path": "skills/default/discord-reader",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "trading_finance"
+      ],
+      "source": "github:himself65/finance-skills",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
       "id": "dispatching-parallel-agents",
       "name": "dispatching-parallel-agents",
       "description": "Use when two or more independent tasks can run in parallel without shared state.",
@@ -1358,6 +1857,24 @@
       "source": "local",
       "requires_api_keys": false,
       "api_keys": []
+    },
+    {
+      "id": "dividend-growth-pullback-screener",
+      "name": "dividend-growth-pullback-screener",
+      "description": "Use this skill to find high-quality dividend growth stocks (12%+ annual dividend growth, 1.5%+ yield) that are experiencing temporary pullbacks, identified by RSI oversold conditions (RSI ≤40). This skill combines fundamental dividend analysis with technica...",
+      "path": "skills/default/dividend-growth-pullback-screener",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "trading_finance"
+      ],
+      "source": "github:tradermonty/claude-trading-skills",
+      "requires_api_keys": true,
+      "api_keys": [
+        "FINVIZ_API_KEY",
+        "FMP_API_KEY"
+      ]
     },
     {
       "id": "doc-coauthoring",
@@ -1422,6 +1939,224 @@
       ]
     },
     {
+      "id": "downtrend-duration-analyzer",
+      "name": "downtrend-duration-analyzer",
+      "description": "Analyze historical downtrend durations and generate interactive HTML histograms showing typical correction lengths by sector and market cap.",
+      "path": "skills/default/downtrend-duration-analyzer",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "trading_finance"
+      ],
+      "source": "github:tradermonty/claude-trading-skills",
+      "requires_api_keys": true,
+      "api_keys": [
+        "FMP_API_KEY"
+      ]
+    },
+    {
+      "id": "dual-axis-skill-reviewer",
+      "name": "dual-axis-skill-reviewer",
+      "description": "Review skills in any project using a dual-axis method: (1) deterministic code-based checks (structure, scripts, tests, execution safety) and (2) LLM deep review findings. Use when you need reproducible quality scoring for `skills/*/SKILL.md`, want to gate m...",
+      "path": "skills/default/dual-axis-skill-reviewer",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "trading_finance"
+      ],
+      "source": "github:tradermonty/claude-trading-skills",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "earnings-calendar",
+      "name": "earnings-calendar",
+      "description": "This skill retrieves upcoming earnings announcements for US stocks using the Financial Modeling Prep (FMP) API. Use this when the user requests earnings calendar data, wants to know which companies are reporting earnings in the upcoming week, or needs a wee...",
+      "path": "skills/default/earnings-calendar",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "trading_finance"
+      ],
+      "source": "github:tradermonty/claude-trading-skills",
+      "requires_api_keys": true,
+      "api_keys": [
+        "FMP_API_KEY"
+      ]
+    },
+    {
+      "id": "earnings-preview",
+      "name": "earnings-preview",
+      "description": "Generate a pre-earnings briefing for any stock using Yahoo Finance data. Use this skill whenever the user wants to prepare for an upcoming earnings report, understand what analysts expect, review a company's beat/miss track record, or get a quick overview b...",
+      "path": "skills/default/earnings-preview",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "trading_finance"
+      ],
+      "source": "github:himself65/finance-skills",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "earnings-recap",
+      "name": "earnings-recap",
+      "description": "Generate a post-earnings analysis for any stock using Yahoo Finance data. Use when the user wants to review what happened after earnings, understand beat/miss results, see stock reaction, or get an earnings recap. Triggers: \"AAPL earnings recap\", \"how did T...",
+      "path": "skills/default/earnings-recap",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "trading_finance"
+      ],
+      "source": "github:himself65/finance-skills",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "earnings-trade-analyzer",
+      "name": "earnings-trade-analyzer",
+      "description": "Analyze recent post-earnings stocks using a 5-factor scoring system (Gap Size, Pre-Earnings Trend, Volume Trend, MA200 Position, MA50 Position). Scores each stock 0-100 and assigns A/B/C/D grades. Use when user asks about earnings trade analysis, post-earni...",
+      "path": "skills/default/earnings-trade-analyzer",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "trading_finance"
+      ],
+      "source": "github:tradermonty/claude-trading-skills",
+      "requires_api_keys": true,
+      "api_keys": [
+        "FMP_API_KEY"
+      ]
+    },
+    {
+      "id": "economic-calendar-fetcher",
+      "name": "economic-calendar-fetcher",
+      "description": "Fetch upcoming economic events and data releases using FMP API. Retrieve scheduled central bank decisions, employment reports, inflation data, GDP releases, and other market-moving economic indicators for specified date ranges (default: next 7 days). The sc...",
+      "path": "skills/default/economic-calendar-fetcher",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "trading_finance"
+      ],
+      "source": "github:tradermonty/claude-trading-skills",
+      "requires_api_keys": true,
+      "api_keys": [
+        "FMP_API_KEY"
+      ]
+    },
+    {
+      "id": "edge-candidate-agent",
+      "name": "edge-candidate-agent",
+      "description": "Generate and prioritize US equity long-side edge research tickets from EOD observations, then export pipeline-ready candidate specs for trade-strategy-pipeline Phase I. Use when users ask to turn hypotheses/anomalies into reproducible research tickets, conv...",
+      "path": "skills/default/edge-candidate-agent",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "trading_finance"
+      ],
+      "source": "github:tradermonty/claude-trading-skills",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "edge-concept-synthesizer",
+      "name": "edge-concept-synthesizer",
+      "description": "Abstract detector tickets and hints into reusable edge concepts with thesis, invalidation signals, and strategy playbooks before strategy design/export.",
+      "path": "skills/default/edge-concept-synthesizer",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "trading_finance"
+      ],
+      "source": "github:tradermonty/claude-trading-skills",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "edge-hint-extractor",
+      "name": "edge-hint-extractor",
+      "description": "Extract edge hints from daily market observations and news reactions, with optional LLM ideation, and output canonical hints.yaml for downstream concept synthesis and auto detection.",
+      "path": "skills/default/edge-hint-extractor",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "trading_finance"
+      ],
+      "source": "github:tradermonty/claude-trading-skills",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "edge-pipeline-orchestrator",
+      "name": "edge-pipeline-orchestrator",
+      "description": "Orchestrate the full edge research pipeline from candidate detection through strategy design, review, revision, and export. Use when coordinating multi-stage edge research workflows end-to-end.",
+      "path": "skills/default/edge-pipeline-orchestrator",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "trading_finance"
+      ],
+      "source": "github:tradermonty/claude-trading-skills",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "edge-signal-aggregator",
+      "name": "edge-signal-aggregator",
+      "description": "Aggregate and rank signals from multiple edge-finding skills (edge-candidate-agent, theme-detector, sector-analyst, institutional-flow-tracker) into a prioritized conviction dashboard with weighted scoring, deduplication, and contradiction detection.",
+      "path": "skills/default/edge-signal-aggregator",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "trading_finance"
+      ],
+      "source": "github:tradermonty/claude-trading-skills",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "edge-strategy-designer",
+      "name": "edge-strategy-designer",
+      "description": "Convert abstract edge concepts into strategy draft variants and optional exportable ticket YAMLs for edge-candidate-agent export/validation.",
+      "path": "skills/default/edge-strategy-designer",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "trading_finance"
+      ],
+      "source": "github:tradermonty/claude-trading-skills",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "edge-strategy-reviewer",
+      "name": "edge-strategy-reviewer",
+      "description": "Critically review strategy drafts from edge-strategy-designer for edge plausibility, overfitting risk, sample size adequacy, and execution realism. Use when strategy_drafts/*.yaml exists and needs quality gate before pipeline export. Outputs PASS/REVISE/REJ...",
+      "path": "skills/default/edge-strategy-reviewer",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "trading_finance"
+      ],
+      "source": "github:tradermonty/claude-trading-skills",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
       "id": "editorial-reviewer",
       "name": "editorial-reviewer",
       "description": "公众号终稿编辑复审适配器。用于对 Draft v1 进行结构、证据、语调的全面复审，输出结构化的修改建议。",
@@ -1444,6 +2179,36 @@
       "api_keys": []
     },
     {
+      "id": "estimate-analysis",
+      "name": "estimate-analysis",
+      "description": "Deep-dive into analyst estimates and revision trends for any stock using Yahoo Finance data. Use when the user wants to understand analyst estimate direction, how EPS or revenue forecasts changed over time, compare estimate distributions, or analyze growth...",
+      "path": "skills/default/estimate-analysis",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "trading_finance"
+      ],
+      "source": "github:himself65/finance-skills",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "etf-premium",
+      "name": "etf-premium",
+      "description": "Calculate ETF premium/discount vs NAV via Yahoo Finance, and decompose single-day surges into NAV-driven vs structural components (gamma squeeze, dealer hedging, blocked AP arbitrage). Use whenever the user asks about an ETF's premium or discount, NAV compa...",
+      "path": "skills/default/etf-premium",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "trading_finance"
+      ],
+      "source": "github:himself65/finance-skills",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
       "id": "executing-plans",
       "name": "executing-plans",
       "description": "Use when executing a written implementation plan with review checkpoints.",
@@ -1453,6 +2218,23 @@
       "source": "local",
       "requires_api_keys": false,
       "api_keys": []
+    },
+    {
+      "id": "exposure-coach",
+      "name": "exposure-coach",
+      "description": "Generate a one-page Market Posture summary with net exposure ceiling, growth-vs-value bias, participation breadth, and new-entry-allowed vs cash-priority recommendation by integrating signals from breadth, regime, and flow analysis skills.",
+      "path": "skills/default/exposure-coach",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "trading_finance"
+      ],
+      "source": "github:tradermonty/claude-trading-skills",
+      "requires_api_keys": true,
+      "api_keys": [
+        "FMP_API_KEY"
+      ]
     },
     {
       "id": "finance-data",
@@ -1468,6 +2250,38 @@
         "default_sentinel"
       ],
       "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "finance-sentiment",
+      "name": "finance-sentiment",
+      "description": "Fetch structured stock sentiment across Reddit, X.com, news, and Polymarket using the Adanos Finance API. Use this skill whenever the user asks how much people are talking about a stock, how hot a ticker is on social platforms, how many Polymarket bets exis...",
+      "path": "skills/default/finance-sentiment",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "trading_finance"
+      ],
+      "source": "github:himself65/finance-skills",
+      "requires_api_keys": true,
+      "api_keys": [
+        "ADANOS_API_KEY"
+      ]
+    },
+    {
+      "id": "finance-skill-creator",
+      "name": "finance-skill-creator",
+      "description": "Create new skills, modify and improve existing skills, and measure skill performance. Use when users want to create a skill from scratch, update or optimize an existing skill, run evals to test a skill, benchmark skill performance with variance analysis, or...",
+      "path": "skills/default/finance-skill-creator",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "trading_finance"
+      ],
+      "source": "github:himself65/finance-skills",
       "requires_api_keys": false,
       "api_keys": []
     },
@@ -1496,6 +2310,23 @@
       "source": "local",
       "requires_api_keys": false,
       "api_keys": []
+    },
+    {
+      "id": "finviz-screener",
+      "name": "finviz-screener",
+      "description": "Build and open FinViz screener URLs from natural language requests. Use when user wants to screen stocks, find stocks matching criteria, filter by fundamentals or technicals, or asks to open FinViz with specific conditions. Supports both Japanese and Englis...",
+      "path": "skills/default/finviz-screener",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "trading_finance"
+      ],
+      "source": "github:tradermonty/claude-trading-skills",
+      "requires_api_keys": true,
+      "api_keys": [
+        "FINVIZ_API_KEY"
+      ]
     },
     {
       "id": "flutter-dev",
@@ -1556,6 +2387,23 @@
       "api_keys": []
     },
     {
+      "id": "ftd-detector",
+      "name": "ftd-detector",
+      "description": "Detects Follow-Through Day (FTD) signals for market bottom confirmation using William O'Neil's methodology. Dual-index tracking (S&P 500 + NASDAQ) with state machine for rally attempt, FTD qualification, and post-FTD health monitoring. Use when user asks ab...",
+      "path": "skills/default/ftd-detector",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "trading_finance"
+      ],
+      "source": "github:tradermonty/claude-trading-skills",
+      "requires_api_keys": true,
+      "api_keys": [
+        "FMP_API_KEY"
+      ]
+    },
+    {
       "id": "fullstack-dev",
       "name": "fullstack-dev",
       "description": "Full-stack backend architecture and frontend-backend integration guide. TRIGGER when: building a full-stack app, creating REST API with frontend, scaffolding backend service, building todo app, building CRUD app, building real-time app, building chat app, E...",
@@ -1576,6 +2424,23 @@
       ]
     },
     {
+      "id": "funda-data",
+      "name": "funda-data",
+      "description": "Fetch financial data from the Funda AI API (https://api.funda.ai). Covers quotes, historical prices, financials, SEC filings, transcripts, analyst estimates, options flow/greeks/GEX, supply chain graph, social sentiment, Polymarket, congressional trades, ec...",
+      "path": "skills/default/funda-data",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "trading_finance"
+      ],
+      "source": "github:himself65/finance-skills",
+      "requires_api_keys": true,
+      "api_keys": [
+        "FUNDA_API_KEY"
+      ]
+    },
+    {
       "id": "gemini-image-service",
       "name": "gemini-image-service",
       "description": "使用 Gemini 第三方服务生成图片。读取 GEMINI_API_KEY/GEMINI_BASE_URL/GEMINI_IMAGE_MODEL。",
@@ -1590,6 +2455,21 @@
       "api_keys": [
         "GEMINI_API_KEY"
       ]
+    },
+    {
+      "id": "generative-ui",
+      "name": "generative-ui",
+      "description": "Design system and guidelines for Claude's built-in generative UI — the show_widget tool that renders interactive HTML/SVG widgets inline in claude.ai conversations. This skill provides the complete Anthropic \"Imagine\" design system so Claude produces high-q...",
+      "path": "skills/default/generative-ui",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "trading_finance"
+      ],
+      "source": "github:himself65/finance-skills",
+      "requires_api_keys": false,
+      "api_keys": []
     },
     {
       "id": "gh-modify-pr",
@@ -1706,6 +2586,38 @@
       "api_keys": []
     },
     {
+      "id": "hormuz-strait",
+      "name": "hormuz-strait",
+      "description": "Check the current status of the Strait of Hormuz — shipping transit data, oil price impact, stranded vessels, insurance risk levels, diplomatic developments, and global trade impact. Use this skill whenever the user asks about the Strait of Hormuz, Hormuz c...",
+      "path": "skills/default/hormuz-strait",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "trading_finance"
+      ],
+      "source": "github:himself65/finance-skills",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "ibd-distribution-day-monitor",
+      "name": "ibd-distribution-day-monitor",
+      "description": "Detect IBD-style Distribution Days for QQQ/SPY (close down at least 0.2% on higher volume), track 25-session expiration and 5% invalidation, count d5/d15/d25 clusters, classify market risk (NORMAL/CAUTION/HIGH/SEVERE), and emit TQQQ/QQQ exposure recommendat...",
+      "path": "skills/default/ibd-distribution-day-monitor",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "trading_finance"
+      ],
+      "source": "github:tradermonty/claude-trading-skills",
+      "requires_api_keys": true,
+      "api_keys": [
+        "FMP_API_KEY"
+      ]
+    },
+    {
       "id": "imagegen",
       "name": "imagegen",
       "description": "Generate or edit raster images when the task benefits from AI-created bitmap visuals such as photos, illustrations, textures, sprites, mockups, or transparent-background cutouts. Use when Codex should create a brand-new image, transform an existing image, o...",
@@ -1747,6 +2659,23 @@
       "api_keys": []
     },
     {
+      "id": "institutional-flow-tracker",
+      "name": "institutional-flow-tracker",
+      "description": "Use this skill to track institutional investor ownership changes and portfolio flows using 13F filings data. Analyzes hedge funds, mutual funds, and other institutional holders to identify stocks with significant smart money accumulation or distribution. He...",
+      "path": "skills/default/institutional-flow-tracker",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "trading_finance"
+      ],
+      "source": "github:tradermonty/claude-trading-skills",
+      "requires_api_keys": true,
+      "api_keys": [
+        "FMP_API_KEY"
+      ]
+    },
+    {
       "id": "internal-comms",
       "name": "internal-comms",
       "description": "A set of resources to help me write all kinds of internal communications, using the formats that my company likes to use. Claude should use this skill whenever asked to write some sort of internal communications (status reports, leadership updates, 3P updat...",
@@ -1783,6 +2712,53 @@
       "tiers": [],
       "groups": [],
       "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "kanchi-dividend-review-monitor",
+      "name": "kanchi-dividend-review-monitor",
+      "description": "Monitor dividend portfolios with Kanchi-style forced-review triggers (T1-T5) and convert anomalies into OK/WARN/REVIEW states without auto-selling. Use when users ask for 減配検知, 8-Kガバナンス監視, 配当安全性モニタリング, REVIEWキュー自動化, or periodic dividend risk checks.",
+      "path": "skills/default/kanchi-dividend-review-monitor",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "trading_finance"
+      ],
+      "source": "github:tradermonty/claude-trading-skills",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "kanchi-dividend-sop",
+      "name": "kanchi-dividend-sop",
+      "description": "Convert Kanchi-style dividend investing into a repeatable US-stock operating procedure. Use when users ask for かんち式配当投資, dividend screening, dividend growth quality checks, PERxPBR adaptation for US sectors, pullback limit-order planning, or one-page stock...",
+      "path": "skills/default/kanchi-dividend-sop",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "trading_finance"
+      ],
+      "source": "github:tradermonty/claude-trading-skills",
+      "requires_api_keys": true,
+      "api_keys": [
+        "FMP_API_KEY"
+      ]
+    },
+    {
+      "id": "kanchi-dividend-us-tax-accounting",
+      "name": "kanchi-dividend-us-tax-accounting",
+      "description": "Provide US dividend tax and account-location workflow for Kanchi-style income portfolios. Use when users ask about qualified vs ordinary dividends, 1099-DIV interpretation, REIT/BDC distribution treatment, holding-period checks, or taxable-vs-IRA account pl...",
+      "path": "skills/default/kanchi-dividend-us-tax-accounting",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "trading_finance"
+      ],
+      "source": "github:tradermonty/claude-trading-skills",
       "requires_api_keys": false,
       "api_keys": []
     },
@@ -1828,6 +2804,21 @@
       "api_keys": []
     },
     {
+      "id": "linkedin-reader",
+      "name": "linkedin-reader",
+      "description": "Read LinkedIn for financial research using opencli (read-only). Use this skill whenever the user wants to read their LinkedIn feed, search for jobs in the finance/trading industry, view professional posts about markets or earnings, or gather professional se...",
+      "path": "skills/default/linkedin-reader",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "trading_finance"
+      ],
+      "source": "github:himself65/finance-skills",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
       "id": "loading-state-patterns",
       "name": "loading-state-patterns",
       "description": "Patterns for skeleton loaders, shimmer effects, and loading states that match design system aesthetics. Covers skeleton components, shimmer animations, and progressive loading. Use when building polished loading experiences. Triggers on skeleton, loading st...",
@@ -1851,6 +2842,85 @@
         "GEMINI_API_KEY",
         "RECRAFT_API_KEY",
         "REMOVE_BG_API_KEY"
+      ]
+    },
+    {
+      "id": "macro-regime-detector",
+      "name": "macro-regime-detector",
+      "description": "Detect structural macro regime transitions (1-2 year horizon) using cross-asset ratio analysis. Analyze RSP/SPY concentration, yield curve, credit conditions, size factor, equity-bond relationship, and sector rotation to identify regime shifts between Conce...",
+      "path": "skills/default/macro-regime-detector",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "trading_finance"
+      ],
+      "source": "github:tradermonty/claude-trading-skills",
+      "requires_api_keys": true,
+      "api_keys": [
+        "FMP_API_KEY"
+      ]
+    },
+    {
+      "id": "market-breadth-analyzer",
+      "name": "market-breadth-analyzer",
+      "description": "Quantifies market breadth health using TraderMonty's public CSV data. Generates a 0-100 composite score across 6 components (100 = healthy). No API key required. Use when user asks about market breadth, participation rate, advance-decline health, whether th...",
+      "path": "skills/default/market-breadth-analyzer",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "trading_finance"
+      ],
+      "source": "github:tradermonty/claude-trading-skills",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "market-environment-analysis",
+      "name": "market-environment-analysis",
+      "description": "Comprehensive market environment analysis and reporting tool. Analyzes global markets including US, European, Asian markets, forex, commodities, and economic indicators. Provides risk-on/risk-off assessment, sector analysis, and technical indicator interpre...",
+      "path": "skills/default/market-environment-analysis",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "trading_finance"
+      ],
+      "source": "github:tradermonty/claude-trading-skills",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "market-news-analyst",
+      "name": "market-news-analyst",
+      "description": "This skill should be used when analyzing recent market-moving news events and their impact on equity markets and commodities. Use this skill when the user requests analysis of major financial news from the past 10 days, wants to understand market reactions...",
+      "path": "skills/default/market-news-analyst",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "trading_finance"
+      ],
+      "source": "github:tradermonty/claude-trading-skills",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "market-top-detector",
+      "name": "market-top-detector",
+      "description": "Detects market top probability using O'Neil Distribution Days, Minervini Leading Stock Deterioration, and Monty Defensive Sector Rotation. Generates a 0-100 composite score with risk zone classification. Use when user asks about market top risk, distributio...",
+      "path": "skills/default/market-top-detector",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "trading_finance"
+      ],
+      "source": "github:tradermonty/claude-trading-skills",
+      "requires_api_keys": true,
+      "api_keys": [
+        "FMP_API_KEY"
       ]
     },
     {
@@ -2284,6 +3354,53 @@
       "api_keys": []
     },
     {
+      "id": "opencli-reader",
+      "name": "opencli-reader",
+      "description": "Generic read-only fallback for any source opencli covers but this repo has no dedicated reader for — Yahoo Finance, Bloomberg, Reuters, Barchart, Eastmoney, Xueqiu, Sinafinance, Reddit, HackerNews, Substack, Medium, Weibo, Bilibili, Xiaohongshu, Zhihu, arXi...",
+      "path": "skills/default/opencli-reader",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "trading_finance"
+      ],
+      "source": "github:himself65/finance-skills",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "options-payoff",
+      "name": "options-payoff",
+      "description": "Generate an interactive options payoff curve chart with dynamic parameter controls. Use this skill whenever the user shares an options position screenshot, describes an options strategy, or asks to visualize how an options trade makes or loses money. Trigge...",
+      "path": "skills/default/options-payoff",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "trading_finance"
+      ],
+      "source": "github:himself65/finance-skills",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "options-strategy-advisor",
+      "name": "options-strategy-advisor",
+      "description": "Options trading strategy analysis and simulation tool. Provides theoretical pricing using Black-Scholes model, Greeks calculation, strategy P/L simulation, and risk management guidance. Use when user requests options strategy analysis, covered calls, protec...",
+      "path": "skills/default/options-strategy-advisor",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "trading_finance"
+      ],
+      "source": "github:tradermonty/claude-trading-skills",
+      "requires_api_keys": true,
+      "api_keys": [
+        "FMP_API_KEY"
+      ]
+    },
+    {
       "id": "oracle",
       "name": "oracle",
       "description": "Use the @steipete/oracle CLI to bundle a prompt plus the right files and get a second-model review (API or browser) for debugging, refactors, design checks, or cross-validation.",
@@ -2297,6 +3414,23 @@
       "requires_api_keys": true,
       "api_keys": [
         "OPENAI_API_KEY"
+      ]
+    },
+    {
+      "id": "pair-trade-screener",
+      "name": "pair-trade-screener",
+      "description": "Statistical arbitrage tool for identifying and analyzing pair trading opportunities. Detects cointegrated stock pairs within sectors, analyzes spread behavior, calculates z-scores, and provides entry/exit recommendations for market-neutral strategies. Use w...",
+      "path": "skills/default/pair-trade-screener",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "trading_finance"
+      ],
+      "source": "github:tradermonty/claude-trading-skills",
+      "requires_api_keys": true,
+      "api_keys": [
+        "FMP_API_KEY"
       ]
     },
     {
@@ -2332,6 +3466,24 @@
       ]
     },
     {
+      "id": "parabolic-short-trade-planner",
+      "name": "parabolic-short-trade-planner",
+      "description": "Screen US equities for parabolic exhaustion patterns and generate conditional pre-market short plans, then evaluate intraday trigger fires from live 5-min bars. Phase 1 daily 5-factor scorer (MA extension / acceleration / volume climax / range expansion / l...",
+      "path": "skills/default/parabolic-short-trade-planner",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "trading_finance"
+      ],
+      "source": "github:tradermonty/claude-trading-skills",
+      "requires_api_keys": true,
+      "api_keys": [
+        "ALPACA_API_KEY",
+        "FMP_API_KEY"
+      ]
+    },
+    {
       "id": "pdf",
       "name": "pdf",
       "description": "Use when extracting, creating, merging, splitting, filling, or analyzing PDF files.",
@@ -2345,6 +3497,23 @@
       "source": "local",
       "requires_api_keys": false,
       "api_keys": []
+    },
+    {
+      "id": "pead-screener",
+      "name": "pead-screener",
+      "description": "Screen post-earnings gap-up stocks for PEAD (Post-Earnings Announcement Drift) patterns. Analyzes weekly candle formation to detect red candle pullbacks and breakout signals. Supports two input modes - FMP earnings calendar (Mode A) or earnings-trade-analyz...",
+      "path": "skills/default/pead-screener",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "trading_finance"
+      ],
+      "source": "github:tradermonty/claude-trading-skills",
+      "requires_api_keys": true,
+      "api_keys": [
+        "FMP_API_KEY"
+      ]
     },
     {
       "id": "planner-image-post",
@@ -2390,6 +3559,36 @@
       "tiers": [],
       "groups": [],
       "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "portfolio-manager",
+      "name": "portfolio-manager",
+      "description": "Comprehensive portfolio analysis using Alpaca MCP Server integration to fetch holdings and positions, then analyze asset allocation, risk metrics, individual stock positions, diversification, and generate rebalancing recommendations. Use when user requests...",
+      "path": "skills/default/portfolio-manager",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "trading_finance"
+      ],
+      "source": "github:tradermonty/claude-trading-skills",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "position-sizer",
+      "name": "position-sizer",
+      "description": "Calculate risk-based position sizes for long stock trades. Use when user asks about position sizing, how many shares to buy, risk per trade, Kelly criterion, ATR-based sizing, or portfolio risk allocation. Supports stop-loss distance calculation, volatility...",
+      "path": "skills/default/position-sizer",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "trading_finance"
+      ],
+      "source": "github:tradermonty/claude-trading-skills",
       "requires_api_keys": false,
       "api_keys": []
     },
@@ -2666,6 +3865,51 @@
       "api_keys": []
     },
     {
+      "id": "saas-valuation-compression",
+      "name": "saas-valuation-compression",
+      "description": "Analyze SaaS company valuation compression between funding rounds. Use this skill whenever the user asks about: how much a SaaS company's valuation multiple changed between rounds, why the ARR multiple compressed or expanded, comparing a company's compressi...",
+      "path": "skills/default/saas-valuation-compression",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "trading_finance"
+      ],
+      "source": "github:himself65/finance-skills",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "scenario-analyzer",
+      "name": "scenario-analyzer",
+      "description": "ニュースヘッドラインを入力として18ヶ月シナリオを分析するスキル。 scenario-analystエージェントで主分析を実行し、 strategy-reviewerエージェントでセカンドオピニオンを取得。 1次・2次・3次影響、推奨銘柄、レビューを含む包括的レポートを日本語で生成。 使用例: /scenario-analyzer \"Fed raises rates by 50bp\" トリガー: ニュース分析、シナリオ分析、18ヶ月展望、中長期投資戦略",
+      "path": "skills/default/scenario-analyzer",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "trading_finance"
+      ],
+      "source": "github:tradermonty/claude-trading-skills",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "sector-analyst",
+      "name": "sector-analyst",
+      "description": "This skill should be used when analyzing sector rotation patterns and market cycle positioning. It fetches sector uptrend data from CSV (no API key required) and optionally accepts chart images for supplementary analysis. Use this skill when the user reques...",
+      "path": "skills/default/sector-analyst",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "trading_finance"
+      ],
+      "source": "github:tradermonty/claude-trading-skills",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
       "id": "self-improving-agent-cn",
       "name": "self-improving-agent",
       "description": "AI自我改进与记忆系统 - 解决'同类错误反复犯、用户纠正不长记性'的痛点。自动捕获错误、用户纠正、最佳实践，并转化为长期记忆。",
@@ -2688,6 +3932,21 @@
       "tiers": [],
       "groups": [],
       "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "sepa-strategy",
+      "name": "sepa-strategy",
+      "description": "Analyze stocks using Mark Minervini's SEPA (Specific Entry Point Analysis) methodology. Use this skill whenever the user mentions SEPA, Minervini, superperformance, trend template, VCP (Volatility Contraction Pattern), Stage 2 uptrend, stage analysis, pivot...",
+      "path": "skills/default/sepa-strategy",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "trading_finance"
+      ],
+      "source": "github:himself65/finance-skills",
       "requires_api_keys": false,
       "api_keys": []
     },
@@ -2736,6 +3995,23 @@
       "api_keys": []
     },
     {
+      "id": "signal-postmortem",
+      "name": "signal-postmortem",
+      "description": "Record and analyze post-trade outcomes for signals generated by edge pipeline and other skills. Track false positives, missed opportunities, and regime mismatches. Feed results back to edge-signal-aggregator weights and skill improvement backlog.",
+      "path": "skills/default/signal-postmortem",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "trading_finance"
+      ],
+      "source": "github:tradermonty/claude-trading-skills",
+      "requires_api_keys": true,
+      "api_keys": [
+        "FMP_API_KEY"
+      ]
+    },
+    {
       "id": "skill-creator",
       "name": "skill-creator",
       "description": "Guide for creating effective skills. This skill should be used when users want to create a new skill (or update an existing skill) that extends Codex's capabilities with specialized knowledge, workflows, or tool integrations.",
@@ -2747,6 +4023,36 @@
       ],
       "groups": [],
       "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "skill-designer",
+      "name": "skill-designer",
+      "description": "Design new Claude skills from structured idea specifications. Use when the skill auto-generation pipeline needs to produce a Claude CLI prompt that creates a complete skill directory (SKILL.md, references, scripts, tests) following repository conventions.",
+      "path": "skills/default/skill-designer",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "trading_finance"
+      ],
+      "source": "github:tradermonty/claude-trading-skills",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "skill-idea-miner",
+      "name": "skill-idea-miner",
+      "description": "Mine Claude Code session logs for skill idea candidates. Use when running the weekly skill generation pipeline to extract, score, and backlog new skill ideas from recent coding sessions.",
+      "path": "skills/default/skill-idea-miner",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "trading_finance"
+      ],
+      "source": "github:tradermonty/claude-trading-skills",
       "requires_api_keys": false,
       "api_keys": []
     },
@@ -2763,6 +4069,21 @@
         "GH_TOKEN",
         "GITHUB_TOKEN"
       ]
+    },
+    {
+      "id": "skill-integration-tester",
+      "name": "skill-integration-tester",
+      "description": "Validate multi-skill workflows defined in CLAUDE.md by checking skill existence, inter-skill data contracts (JSON schema compatibility), file naming conventions, and handoff integrity. Use when adding new workflows, modifying skill outputs, or verifying pip...",
+      "path": "skills/default/skill-integration-tester",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "trading_finance"
+      ],
+      "source": "github:tradermonty/claude-trading-skills",
+      "requires_api_keys": false,
+      "api_keys": []
     },
     {
       "id": "skill-security-auditor",
@@ -2810,6 +4131,36 @@
       "api_keys": []
     },
     {
+      "id": "stanley-druckenmiller-investment",
+      "name": "stanley-druckenmiller-investment",
+      "description": "Druckenmiller Strategy Synthesizer - Integrates 8 upstream skill outputs (Market Breadth, Uptrend Analysis, Market Top, Macro Regime, FTD Detector, VCP Screener, Theme Detector, CANSLIM Screener) into a unified conviction score (0-100), pattern classificati...",
+      "path": "skills/default/stanley-druckenmiller-investment",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "trading_finance"
+      ],
+      "source": "github:tradermonty/claude-trading-skills",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "startup-analysis",
+      "name": "startup-analysis",
+      "description": "Analyze a startup from three perspectives: VC investor, job applicant, and CEO/founder. Use this skill whenever the user wants to evaluate a startup, assess whether to invest in or join a startup, do due diligence, evaluate a job offer from a startup, under...",
+      "path": "skills/default/startup-analysis",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "trading_finance"
+      ],
+      "source": "github:himself65/finance-skills",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
       "id": "stock-analysis",
       "name": "stock-analysis",
       "description": "Analyze stocks and cryptocurrencies using Yahoo Finance data. Supports portfolio management, watchlists with alerts, dividend analysis, 8-dimension stock scoring, viral trend detection (Hot Scanner), and rumor/early signal detection. Use for stock analysis,...",
@@ -2823,6 +4174,21 @@
       ]
     },
     {
+      "id": "stock-correlation",
+      "name": "stock-correlation",
+      "description": "Analyze stock correlations to find related companies and trading pairs. Use when the user asks about correlated stocks, related companies, sector peers, trading pairs, or how two or more stocks move together. Triggers: \"what correlates with NVDA\", \"find sto...",
+      "path": "skills/default/stock-correlation",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "trading_finance"
+      ],
+      "source": "github:himself65/finance-skills",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
       "id": "stock-daily-analysis-skill",
       "name": "stock-daily-analysis",
       "description": "LLM驱动的每日股票分析系统。支持A股/港股/美股自选股智能分析，生成决策仪表盘和大盘复盘报告。提供技术面分析（均线、MACD、RSI、乖离率）、趋势判断、买入信号评分。可与market-data skill集成获取更稳定的ETF数据。触发词：股票分析、分析股票、每日分析、技术面分析。",
@@ -2830,6 +4196,21 @@
       "tiers": [],
       "groups": [],
       "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "stock-liquidity",
+      "name": "stock-liquidity",
+      "description": "Analyze stock liquidity using bid-ask spreads, volume profiles, order book depth, market impact estimates, and turnover ratios via Yahoo Finance data. Use this skill whenever the user asks about liquidity, trading costs, bid-ask spread, market depth, volume...",
+      "path": "skills/default/stock-liquidity",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "trading_finance"
+      ],
+      "source": "github:himself65/finance-skills",
       "requires_api_keys": false,
       "api_keys": []
     },
@@ -2856,6 +4237,21 @@
       "tiers": [],
       "groups": [],
       "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "strategy-pivot-designer",
+      "name": "strategy-pivot-designer",
+      "description": "Detect backtest iteration stagnation and generate structurally different strategy pivot proposals when parameter tuning reaches a local optimum.",
+      "path": "skills/default/strategy-pivot-designer",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "trading_finance"
+      ],
+      "source": "github:tradermonty/claude-trading-skills",
       "requires_api_keys": false,
       "api_keys": []
     },
@@ -2975,6 +4371,36 @@
       "api_keys": []
     },
     {
+      "id": "technical-analyst",
+      "name": "technical-analyst",
+      "description": "This skill should be used when analyzing weekly price charts for stocks, stock indices, cryptocurrencies, or forex pairs. Use this skill when the user provides chart images and requests technical analysis, trend identification, support/resistance levels, sc...",
+      "path": "skills/default/technical-analyst",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "trading_finance"
+      ],
+      "source": "github:tradermonty/claude-trading-skills",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "telegram-reader",
+      "name": "telegram-reader",
+      "description": "Read Telegram channels and groups for financial news and market research using tdl (read-only). Use this skill whenever the user wants to read Telegram channels, export messages from financial Telegram groups, list their Telegram chats, search for news in T...",
+      "path": "skills/default/telegram-reader",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "trading_finance"
+      ],
+      "source": "github:himself65/finance-skills",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
       "id": "test-driven-development",
       "name": "test-driven-development",
       "description": "Use before implementing any feature or bugfix that should be tested.",
@@ -2984,6 +4410,24 @@
       "source": "local",
       "requires_api_keys": false,
       "api_keys": []
+    },
+    {
+      "id": "theme-detector",
+      "name": "theme-detector",
+      "description": "Detect and analyze trending market themes across sectors. Use when user asks about current market themes, trending sectors, sector rotation, thematic investing, what themes are hot or cold, or wants to identify bullish and bearish market narratives with lif...",
+      "path": "skills/default/theme-detector",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "trading_finance"
+      ],
+      "source": "github:tradermonty/claude-trading-skills",
+      "requires_api_keys": true,
+      "api_keys": [
+        "FINVIZ_API_KEY",
+        "FMP_API_KEY"
+      ]
     },
     {
       "id": "theme-factory",
@@ -3036,6 +4480,36 @@
       "api_keys": []
     },
     {
+      "id": "trade-hypothesis-ideator",
+      "name": "trade-hypothesis-ideator",
+      "description": "Generate falsifiable trade strategy hypotheses from market data, trade logs, and journal snippets. Use when you have a structured input bundle and want ranked hypothesis cards with experiment designs, kill criteria, and optional strategy.yaml export compati...",
+      "path": "skills/default/trade-hypothesis-ideator",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "trading_finance"
+      ],
+      "source": "github:tradermonty/claude-trading-skills",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "trader-memory-core",
+      "name": "trader-memory-core",
+      "description": "Track investment theses across their lifecycle — from screening idea to closed position with postmortem. Register theses from screener outputs, manage state transitions, attach position sizing, review due dates, and generate postmortem reports with P&L and...",
+      "path": "skills/default/trader-memory-core",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "trading_finance"
+      ],
+      "source": "github:tradermonty/claude-trading-skills",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
       "id": "tushare-openclaw-skill",
       "name": "tushare-api",
       "description": "Tushare Pro 金融数据 API 查询助手。用于帮助用户查询中国股票、基金、期货、债券等金融数据。当用户需要获取股票行情、财务数据、基础信息、宏观经济数据时使用此 skill。",
@@ -3060,6 +4534,21 @@
       ]
     },
     {
+      "id": "twitter-reader",
+      "name": "twitter-reader",
+      "description": "Read Twitter/X for financial research using opencli (read-only). Use this skill whenever the user wants to read their Twitter feed, search for financial tweets, view bookmarks, look up user profiles, or gather market sentiment from Twitter/X. Triggers inclu...",
+      "path": "skills/default/twitter-reader",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "trading_finance"
+      ],
+      "source": "github:himself65/finance-skills",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
       "id": "ui-ux-pro-max",
       "name": "ui-ux-pro-max",
       "description": "UI/UX design intelligence. 50 styles, 21 palettes, 50 font pairings, 20 charts, 8 stacks (React, Next.js, Vue, Svelte, SwiftUI, React Native, Flutter, Tailwind). Actions: plan, build, create, design, implement, review, fix, improve, optimize, enhance, refac...",
@@ -3067,6 +4556,21 @@
       "tiers": [],
       "groups": [],
       "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "uptrend-analyzer",
+      "name": "uptrend-analyzer",
+      "description": "Analyzes market breadth using Monty's Uptrend Ratio Dashboard data to diagnose the current market environment. Generates a 0-100 composite score from 5 components (breadth, sector participation, rotation, momentum, historical context). Use when asking about...",
+      "path": "skills/default/uptrend-analyzer",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "trading_finance"
+      ],
+      "source": "github:tradermonty/claude-trading-skills",
       "requires_api_keys": false,
       "api_keys": []
     },
@@ -3082,6 +4586,36 @@
       ],
       "groups": [],
       "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "us-market-bubble-detector",
+      "name": "us-market-bubble-detector",
+      "description": "Evaluates market bubble risk through quantitative data-driven analysis using the revised Minsky/Kindleberger framework v2.1. Prioritizes objective metrics (Put/Call, VIX, margin debt, breadth, IPO data) over subjective impressions. Features strict qualitati...",
+      "path": "skills/default/us-market-bubble-detector",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "trading_finance"
+      ],
+      "source": "github:tradermonty/claude-trading-skills",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "us-stock-analysis",
+      "name": "us-stock-analysis",
+      "description": "Comprehensive US stock analysis including fundamental analysis (financial metrics, business quality, valuation), technical analysis (indicators, chart patterns, support/resistance), stock comparisons, and investment report generation. Use when user requests...",
+      "path": "skills/default/us-stock-analysis",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "trading_finance"
+      ],
+      "source": "github:tradermonty/claude-trading-skills",
       "requires_api_keys": false,
       "api_keys": []
     },
@@ -3112,6 +4646,41 @@
       "source": "local",
       "requires_api_keys": false,
       "api_keys": []
+    },
+    {
+      "id": "value-dividend-screener",
+      "name": "value-dividend-screener",
+      "description": "Screen US stocks for high-quality dividend opportunities combining value characteristics (P/E ratio under 20, P/B ratio under 2), attractive yields (3% or higher), and consistent growth (dividend/revenue/EPS trending up over 3 years). Supports two-stage scr...",
+      "path": "skills/default/value-dividend-screener",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "trading_finance"
+      ],
+      "source": "github:tradermonty/claude-trading-skills",
+      "requires_api_keys": true,
+      "api_keys": [
+        "FINVIZ_API_KEY",
+        "FMP_API_KEY"
+      ]
+    },
+    {
+      "id": "vcp-screener",
+      "name": "vcp-screener",
+      "description": "Screen S&P 500 stocks for Mark Minervini's Volatility Contraction Pattern (VCP). Identifies Stage 2 uptrend stocks forming tight bases with contracting volatility near breakout pivot points. Use when user requests VCP screening, Minervini-style setups, tigh...",
+      "path": "skills/default/vcp-screener",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "trading_finance"
+      ],
+      "source": "github:tradermonty/claude-trading-skills",
+      "requires_api_keys": true,
+      "api_keys": [
+        "FMP_API_KEY"
+      ]
     },
     {
       "id": "verification-before-completion",
@@ -3488,6 +5057,36 @@
       ],
       "groups": [],
       "source": "local",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "yc-reader",
+      "name": "yc-reader",
+      "description": "Look up Y Combinator companies, batches, and startup ecosystem data using the yc-oss API (read-only). Use this skill whenever the user wants to research YC-backed startups, find companies in a specific batch or industry, check which YC companies are hiring,...",
+      "path": "skills/default/yc-reader",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "trading_finance"
+      ],
+      "source": "github:himself65/finance-skills",
+      "requires_api_keys": false,
+      "api_keys": []
+    },
+    {
+      "id": "yfinance-data",
+      "name": "yfinance-data",
+      "description": "Fetch financial and market data using the yfinance Python library. Use this skill whenever the user asks for stock prices, historical data, financial statements, options chains, dividends, earnings, analyst recommendations, or any market data. Triggers incl...",
+      "path": "skills/default/yfinance-data",
+      "tiers": [
+        "super"
+      ],
+      "groups": [
+        "trading_finance"
+      ],
+      "source": "github:himself65/finance-skills",
       "requires_api_keys": false,
       "api_keys": []
     },

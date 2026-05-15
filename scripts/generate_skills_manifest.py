@@ -8,7 +8,8 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-SKILLS_DIR = ROOT / 'skills' / 'default'
+BOUTIQUE_ROOT = Path(__file__).resolve().parents[2] / 'boutique-openclaw-skills'
+SKILLS_DIR = Path(__import__('os').environ.get('OPENCLAW_SKILLS_SOURCE_DIR', BOUTIQUE_ROOT / 'skills' / 'default'))
 MANIFEST = ROOT / 'skills' / 'manifest.json'
 
 MINIMAX_OFFICIAL = set(
@@ -35,13 +36,63 @@ CORE = (
     | {'akshare-stock', 'finance-data'}
 )
 EXTENDED = set('animation gemini-image-service oracle paperless-docs paperless-ngx-tools writing-plans planning-with-files'.split())
-SUPER = set(
+TRADING_FINANCE = set(
+    '''backtest-expert breadth-chart-analyst breakout-trade-planner canslim-screener
+    data-quality-checker dividend-growth-pullback-screener downtrend-duration-analyzer
+    dual-axis-skill-reviewer earnings-calendar earnings-trade-analyzer economic-calendar-fetcher
+    edge-candidate-agent edge-concept-synthesizer edge-hint-extractor edge-pipeline-orchestrator
+    edge-signal-aggregator edge-strategy-designer edge-strategy-reviewer exposure-coach
+    finviz-screener ftd-detector ibd-distribution-day-monitor institutional-flow-tracker
+    kanchi-dividend-review-monitor kanchi-dividend-sop kanchi-dividend-us-tax-accounting
+    macro-regime-detector market-breadth-analyzer market-environment-analysis market-news-analyst
+    market-top-detector options-strategy-advisor pair-trade-screener parabolic-short-trade-planner
+    pead-screener portfolio-manager position-sizer scenario-analyzer sector-analyst signal-postmortem
+    skill-designer skill-idea-miner skill-integration-tester stanley-druckenmiller-investment
+    strategy-pivot-designer technical-analyst theme-detector trade-hypothesis-ideator trader-memory-core
+    uptrend-analyzer us-market-bubble-detector us-stock-analysis value-dividend-screener vcp-screener
+    finance-sentiment funda-data hormuz-strait company-valuation earnings-preview earnings-recap
+    estimate-analysis etf-premium options-payoff saas-valuation-compression sepa-strategy
+    stock-correlation stock-liquidity yfinance-data finance-skill-creator discord-reader linkedin-reader
+    opencli-reader telegram-reader twitter-reader yc-reader startup-analysis generative-ui
+    alphaear-deepear-lite alphaear-logic-visualizer alphaear-news alphaear-predictor alphaear-reporter
+    alphaear-search alphaear-sentiment alphaear-signal-tracker alphaear-stock'''.split()
+)
+TRADERMONTY_SKILLS = set(
+    '''backtest-expert breadth-chart-analyst breakout-trade-planner canslim-screener
+    data-quality-checker dividend-growth-pullback-screener downtrend-duration-analyzer
+    dual-axis-skill-reviewer earnings-calendar earnings-trade-analyzer economic-calendar-fetcher
+    edge-candidate-agent edge-concept-synthesizer edge-hint-extractor edge-pipeline-orchestrator
+    edge-signal-aggregator edge-strategy-designer edge-strategy-reviewer exposure-coach
+    finviz-screener ftd-detector ibd-distribution-day-monitor institutional-flow-tracker
+    kanchi-dividend-review-monitor kanchi-dividend-sop kanchi-dividend-us-tax-accounting
+    macro-regime-detector market-breadth-analyzer market-environment-analysis market-news-analyst
+    market-top-detector options-strategy-advisor pair-trade-screener parabolic-short-trade-planner
+    pead-screener portfolio-manager position-sizer scenario-analyzer sector-analyst signal-postmortem
+    skill-designer skill-idea-miner skill-integration-tester stanley-druckenmiller-investment
+    strategy-pivot-designer technical-analyst theme-detector trade-hypothesis-ideator trader-memory-core
+    uptrend-analyzer us-market-bubble-detector us-stock-analysis value-dividend-screener vcp-screener'''.split()
+)
+HIMSELF65_FINANCE_SKILLS = set(
+    '''finance-sentiment funda-data hormuz-strait company-valuation earnings-preview earnings-recap
+    estimate-analysis etf-premium options-payoff saas-valuation-compression sepa-strategy
+    stock-correlation stock-liquidity yfinance-data finance-skill-creator discord-reader linkedin-reader
+    opencli-reader telegram-reader twitter-reader yc-reader startup-analysis generative-ui'''.split()
+)
+ALPHAEAR_SKILLS = set(
+    '''alphaear-deepear-lite alphaear-logic-visualizer alphaear-news alphaear-predictor alphaear-reporter
+    alphaear-search alphaear-sentiment alphaear-signal-tracker alphaear-stock'''.split()
+)
+
+
+BAOYU_SKILLS = set(
     'baoyu-skills baoyu-article-illustrator baoyu-comic baoyu-compress-image '
     'baoyu-cover-image baoyu-danger-gemini-web baoyu-danger-x-to-markdown '
     'baoyu-format-markdown baoyu-image-gen baoyu-infographic baoyu-markdown-to-html '
     'baoyu-post-to-wechat baoyu-post-to-weibo baoyu-post-to-x baoyu-slide-deck '
     'baoyu-translate baoyu-url-to-markdown baoyu-xhs-images baoyu-youtube-transcript'.split()
 )
+SUPER = BAOYU_SKILLS | TRADING_FINANCE
+
 MENU_ENHANCED = set(
     'capability-evolver openclaw-cron-setup proactive-agent self-improving-agent-cn '
     'brainstorming reflection find-skills skill-creator subagent-driven-development '
@@ -56,7 +107,7 @@ MENU_ENHANCED = set(
     'writing-plans agentmail agentmail-cli agentmail-mcp agentmail-toolkit '
     'lark-calendar notebooklm-skill skill-security-auditor weather data-analyst '
     'finance-data task todo'.split()
-) | MINIMAX_OFFICIAL | MINIMAX_LOCAL
+) | MINIMAX_OFFICIAL | MINIMAX_LOCAL | TRADING_FINANCE
 DEFAULT_SENTINELS = (
     set(
         'agentmail agentmail-cli agentmail-mcp agentmail-toolkit content-strategy '
@@ -69,6 +120,7 @@ DEFAULT_SENTINELS = (
     | MINIMAX_LOCAL
 )
 API_ENV_RE = re.compile(r'\b[A-Z][A-Z0-9_]*(?:API_KEY|TOKEN|SECRET|APP_SECRET)\b')
+API_ENV_PLACEHOLDERS = {'YOUR_API_KEY'}
 
 
 def parse_skill(path: Path) -> tuple[str, str, list[str]]:
@@ -105,7 +157,7 @@ def parse_skill(path: Path) -> tuple[str, str, list[str]]:
     desc = re.sub(r'\s+', ' ', desc).strip()
     if len(desc) > 260:
         desc = desc[:257].rstrip() + '...'
-    envs = sorted(set(API_ENV_RE.findall(text)))
+    envs = sorted(set(API_ENV_RE.findall(text)) - API_ENV_PLACEHOLDERS)
     return declared_name, (desc or f'{name} skill'), envs
 
 
@@ -133,8 +185,10 @@ def build_manifest() -> dict:
             groups.append('minimax_local_compat')
         if skill_id in DEFAULT_SENTINELS:
             groups.append('default_sentinel')
-        if skill_id in SUPER:
+        if skill_id in BAOYU_SKILLS:
             groups.append('baoyu')
+        if skill_id in TRADING_FINANCE:
+            groups.append('trading_finance')
         source = 'local'
         if skill_id in MINIMAX_OFFICIAL:
             source = 'github:MiniMax-AI/skills'
@@ -144,6 +198,12 @@ def build_manifest() -> dict:
             source = 'github:coreyhaines31/marketingskills'
         elif skill_id in {'ai-image-generation', 'inference-skills'}:
             source = 'github:inference-sh/skills'
+        elif skill_id in TRADERMONTY_SKILLS:
+            source = 'github:tradermonty/claude-trading-skills'
+        elif skill_id in HIMSELF65_FINANCE_SKILLS:
+            source = 'github:himself65/finance-skills'
+        elif skill_id in ALPHAEAR_SKILLS:
+            source = 'github:RKiding/Awesome-finance-skills'
         items.append(
             {
                 'id': skill_id,
@@ -159,7 +219,7 @@ def build_manifest() -> dict:
         )
     return {
         'version': 1,
-        'generated_from': 'skills/default',
+        'generated_from': str(SKILLS_DIR),
         'notes': 'Installer-facing skill catalog. Scripts should read this manifest instead of growing new hardcoded lists.',
         'bundles': {
             'basic': sorted(CORE),
@@ -169,6 +229,7 @@ def build_manifest() -> dict:
             'minimax_official': sorted(MINIMAX_OFFICIAL),
             'minimax_local_compat': sorted(MINIMAX_LOCAL),
             'default_sentinels': sorted(DEFAULT_SENTINELS),
+            'trading_finance': sorted(TRADING_FINANCE),
         },
         'skills': items,
     }

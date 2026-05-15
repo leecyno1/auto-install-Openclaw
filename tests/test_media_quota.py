@@ -101,6 +101,20 @@ class MediaQuotaTests(unittest.TestCase):
         self.assertFalse(blocked['ok'])
         self.assertEqual(blocked['reason'], 'quota_exceeded')
 
+    def test_status_includes_family_and_task_breakdown(self):
+        self.assertIsNotNone(media_quota)
+        reservation = media_quota.reserve_quota(
+            'text',
+            1,
+            env=self.env,
+            tool=json.dumps({'path': '/v1/chat/completions', 'modelFamily': 'gpt', 'taskType': 'coding_review'}),
+        )
+        self.assertTrue(reservation['ok'])
+        media_quota.commit_quota(reservation['reservation']['id'], env=self.env)
+        status = media_quota.get_quota_status(env=self.env)
+        self.assertEqual(status['breakdown']['families']['gpt']['used'], 1)
+        self.assertEqual(status['breakdown']['tasks']['coding_review']['used'], 1)
+
     def test_high_profile_text_quota_is_unlimited(self):
         self.assertIsNotNone(media_quota)
         env = dict(self.env)

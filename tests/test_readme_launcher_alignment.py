@@ -103,6 +103,12 @@ class ReadmeLauncherAlignmentTests(unittest.TestCase):
     def test_readme_documents_remote_local_control_as_optional(self):
         readme_text = README.read_text(encoding='utf-8')
         self.assertIn('openclaw-setup config --remote-local-control', readme_text)
+        self.assertIn('bootstrap-local --cloud', readme_text)
+        self.assertIn('install-tunnel-service --cloud', readme_text)
+        self.assertIn('--local-user YOUR_LOCAL_LOGIN_USER', readme_text)
+        self.assertIn('configure-local --pairing-file', readme_text)
+        self.assertIn('OPENCLAW_REMOTE_LOCAL_PAIRING_FILE', readme_text)
+        self.assertIn('desktop-write-article', readme_text)
         self.assertIn('反向 SSH', readme_text)
         self.assertIn('可选', readme_text)
 

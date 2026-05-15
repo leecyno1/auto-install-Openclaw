@@ -6,7 +6,7 @@
 
 <p align="center">
   <strong>OpenClaw / Hermes 双轨全功能安装与配置方案</strong><br />
-  官方优先安装 + 自定义 Provider 补丁 + 本地 Skills 仓 + 像素小屋 + 网站联动
+  官方优先安装 + 自定义 Provider 补丁 + Boutique Skills 同步 + 像素小屋 + 网站联动
 </p>
 
 <p align="center">
@@ -64,7 +64,42 @@ curl -fsSL https://gitee.com/leecyno1/auto-install-openclaw/raw/release/hermes-w
   --rule-profile medium \
   --install-skills extended \
   --install-pixel-house \
-  --enable-advanced-routing
+  --enable-advanced-routing \
+  --extra-model "id=gpt-5-5,name=GPT-5.5,base_url=https://yfy.zhouyang168.top/v1,api_key=$GPT55_API_KEY,model=gpt-5.5,api_type=openai-completions,image_tool=responses-image-generation,image_model=gpt-image-2"
+```
+
+可重复追加多个可选模型：
+
+```bash
+./install-openclaw.sh --auto-confirm-all \
+  --provider minimax --model MiniMax-M2.7 --api-key "$MINIMAX_API_KEY" --base-url https://api.minimaxi.com/v1 --api-type openai-completions \
+  --extra-model "id=gpt-5-5,name=GPT-5.5,base_url=https://yfy.zhouyang168.top/v1,api_key=$GPT55_API_KEY,model=gpt-5.5,api_type=openai-completions,image_tool=responses-image-generation,image_model=gpt-image-2" \
+  --extra-model "id=gpt-5-4,name=GPT-5.4,base_url=https://yfy.zhouyang168.top/v1,api_key=$GPT55_API_KEY,model=gpt-5.4,api_type=openai-completions"
+```
+
+`image_tool=responses-image-generation` 会把图片能力记录到 `~/.openclaw/model-capabilities.json`：这条链路使用 `/v1/responses` + `tools:[{"type":"image_generation"}]`，适用于 `gpt-5.5` 可生成图片但 `/v1/images/generations` 无可用渠道的网关。
+
+多模型会统一进入内部注册表和能力目录：
+
+- **家族槽位唯一**：`minimax` / `deepseek` / `glm` / `gpt` / `image` / `video` 每个槽位只保留最后一次声明的激活 provider，被替换的同族 provider 记录到 `archivedProviders`，避免 OpenClaw/provider 列表反复堆积重复项。
+- **能力目录**：`~/.openclaw/model-capabilities.json` 同时记录文本、图片、视频能力，以及 `gpt-5.5` 这类 “文本模型 + Responses image_generation tool” 链路的可用端点和不可用 fallback。
+- **规则路由**：默认 `OPENCLAW_ROUTER_BACKEND=embedded`、`OPENCLAW_ROUTER_STRATEGY=rules`，主模型处理主任务，辅助模型用于摘要、分类、改写、代码审阅和媒体生成。
+- **外部后端预留**：配置结构预留 `litellm` / `bifrost` / `portkey`，但默认不安装外部网关；RouteLLM 仅作为后续算法参考。
+
+安装脚本也会自动做分区和流量保护：
+
+- **数据盘优先**：如果检测到可写的 `/data`，默认使用 `/data/openclaw-storage` 保存备份、升级备份、root 缓存、配额状态和 Node 编译缓存，降低系统盘压力。
+- **未来备份落盘**：`~/.openclaw/backups`、`~/.openclaw-upgrade-backups`、`~/.cache` 会在数据盘可用时迁移为软链接；可用 `OPENCLAW_DATA_ROOT` 指定其它目录，或 `OPENCLAW_DATA_DISK_AUTO=0` 关闭自动探测。
+- **内置流量控制**：默认写入 `OPENCLAW_TRAFFIC_CONTROL_ENABLED=1` 和 `OPENCLAW_QUOTA_ENFORCER_MODE=embedded`，并按规则档位设置文本、图片、视频请求窗口配额；默认不启用外部网关。
+
+推荐组合示例：MiniMax 做主任务，GPT-5.5 负责高质量推理和 Responses 图片工具，DeepSeek/GLM 作为低成本辅助槽位：
+
+```bash
+./install-openclaw.sh --auto-confirm-all \
+  --provider minimax --model MiniMax-M2.7 --api-key "$MINIMAX_API_KEY" --base-url https://api.minimaxi.com/v1 --api-type openai-completions \
+  --extra-model "id=deepseek-v4,provider=deepseek,model=DeepSeek-V4,base_url=https://api.deepseek.com/v1,api_key=$DEEPSEEK_API_KEY,api_type=openai-completions" \
+  --extra-model "id=glm-5-1,provider=zai,model=glm-5.1,base_url=https://open.bigmodel.cn/api/paas/v4,api_key=$ZAI_API_KEY,api_type=openai-completions" \
+  --extra-model "id=gpt-5-5,provider=openai,model=gpt-5.5,base_url=https://yfy.zhouyang168.top/v1,api_key=$GPT55_API_KEY,api_type=openai-completions,image_tool=responses-image-generation,image_model=gpt-image-2"
 ```
 
 ```bash
@@ -74,6 +109,16 @@ curl -fsSL https://gitee.com/leecyno1/auto-install-openclaw/raw/release/hermes-w
 curl -fsSL https://gitee.com/leecyno1/auto-install-openclaw/raw/release/hermes-website-minimax-hardening-20260503/install.sh | bash -s -- --auto-confirm-all --engine hermes
 curl -fsSL https://gitee.com/leecyno1/auto-install-openclaw/raw/release/hermes-website-minimax-hardening-20260503/install.sh | bash -s -- --auto-confirm-all --engine both
 ```
+
+
+## Skills 仓库边界
+
+本项目后续只负责安装器、网站接线、模型注册表、发布测试和运行时配置。默认 skills 的维护、分档、手册和来源链接迁移到独立仓库：[`boutique-openclaw-skills`](https://github.com/leecyno1/boutique-openclaw-skills)。技能如果需要同步从 boutique 仓库进行同步。
+
+- 低档：`tiers/low.json`，适合首次安装和轻量生产。
+- 中档：`tiers/medium.json`，适合标准生产和常用扩展。
+- 高档：`tiers/high.json`，适合完整专家包、金融交易研究和创作套件。
+- 本安装器仍保留 `skills/manifest.json` 作为测试与兼容缓存，但默认远端技能源为 `OPENCLAW_SKILLS_REPO_URL=https://gitee.com/leecyno1/boutique-openclaw-skills.git`。
 
 ### 2. 配置模块（独立使用）
 
@@ -159,12 +204,12 @@ bash ~/.openclaw/config-menu.sh --remote-local-control
 - **模块解耦**：Skills、三档规则、像素小屋、API 配置各自独立，可按需使用
 - **移除重复**：不再与官方 OpenClaw CLI 重复实现模型配置、渠道管理、状态监测
 - **灵活替换**：支持替换 Skills 中硬编码的第三方服务地址（NanoBanana、Gemini、OpenAI 等）
-- **混合策略**：基础 Skills 从本地快速安装，扩展 Skills 从官方源同步保持更新
+- **Skills 外置维护**：默认 Skills 优先从 Gitee `boutique-openclaw-skills` 同步，本仓库只保留兼容缓存、安装器注册表和测试
 - **数据安全**：所有配置修改前自动备份，支持回滚
 
 **保留的核心能力：**
 
-- 本地 Skills 仓库，降低大规模部署的不确定性
+- Boutique Skills 同步入口，按低/中/高三档安装默认技能，降低大规模部署的不确定性
 - 像素小屋工作台，可视化角色、技能、装备、状态
 - 三档配额系统（low/medium/high），Gateway 层强制执行
 - 配置修复工具，清理历史残留，保留用户数据
@@ -253,7 +298,7 @@ openclaw-setup config tier-rules --level none      # 无限制
 | `baoyu-post-to-wechat` | 直接把内容整理后推送到公众号工作流。 |
 
 > [!TIP]
-> 更完整的技能列表、是否默认安装、是否需要 API Key，请看 [docs/skills-guides.md](docs/skills-guides.md) 和 [skills/default/DEFAULT_SKILLS.md](skills/default/DEFAULT_SKILLS.md)。
+> 更完整的技能列表、三档说明、使用手册和原仓库链接，请看 [`boutique-openclaw-skills`](https://github.com/leecyno1/boutique-openclaw-skills)；本仓库中的 `skills/manifest.json` 仅作为安装器测试与兼容缓存。
 
 ## 推荐工作流
 
@@ -320,7 +365,7 @@ openclaw-setup config migrate
 │   ├── migrate-to-modular.sh           # 迁移向导
 │   ├── lobster-world.sh                # 像素小屋启动器
 │   └── *.py                            # Skills 同步、配额管理等
-├── skills/default/                     # 本地 Skills 仓库（100+ skills）
+├── skills/                             # Skills 兼容缓存；权威维护在 boutique-openclaw-skills
 ├── docs/                               # 配套文档
 └── subprojects/lobster-sanctum-ui/     # 像素小屋工作台
 ```
@@ -406,15 +451,55 @@ openclaw-setup config pixel-house --restart   # 重启
 该能力用于云端 OpenClaw/Hermes 通过反向 SSH 调用本地主机上的白名单命令。默认不会启用远程控制，也不会暴露本地 SSH 或 OpenClaw Gateway 到公网。
 
 ```bash
-# 安装辅助脚本（仅安装，不自动启用隧道）
+# 1. 云服务器安装辅助脚本（仅安装，不自动启用隧道）
 openclaw-setup config --remote-local-control
 
-# 查看本地/云端配置模板和安全说明
+# 2. 云服务器生成专用密钥，并安装云端调用包装器
+ssh-keygen -t ed25519 -f ~/.ssh/openclaw-local-control -N ''
+~/.openclaw/remote-local-control.sh install-cloud \
+  --identity ~/.ssh/openclaw-local-control \
+  --local-user YOUR_LOCAL_LOGIN_USER \
+  --port 24022 \
+  --apply
+
+# 3. 用户本地电脑定向配置：优先使用首次注册后网站/控制台下载的 pairing JSON
+#    pairing JSON 应包含 cloud/cloudSshTarget、cloudSshPort、cloudPublicKey 等字段
+~/.openclaw/remote-local-control.sh configure-local --pairing-file ./openclaw-cloud-pairing.json --install-service
+
+# 也可以通过环境变量传入最新地址，适合网站首次注册后复制一条命令给用户
+OPENCLAW_REMOTE_LOCAL_PAIRING_FILE=./openclaw-cloud-pairing.json \
+  ~/.openclaw/remote-local-control.sh configure-local --install-service
+
+# 没有 pairing JSON 时，手动传入云服务器地址/端口/公钥
+# 底层等价命令仍可使用: ~/.openclaw/remote-local-control.sh bootstrap-local --cloud root@YOUR_CLOUD_HOST --cloud-public-key ./openclaw-local-control.pub
+~/.openclaw/remote-local-control.sh configure-local \
+  --cloud root@YOUR_CLOUD_HOST \
+  --cloud-ssh-port 22 \
+  --cloud-public-key ./openclaw-local-control.pub \
+  --local-user YOUR_LOCAL_LOGIN_USER \
+  --identity ~/.ssh/id_ed25519 \
+  --connect-now
+
+# 可选：只安装开机自启/登录自启的反向隧道
+# 最小形式: ~/.openclaw/remote-local-control.sh install-tunnel-service --cloud root@YOUR_CLOUD_HOST
+~/.openclaw/remote-local-control.sh install-tunnel-service \
+  --cloud root@YOUR_CLOUD_HOST \
+  --cloud-ssh-port 22 \
+  --identity ~/.ssh/id_ed25519
+
+# 4. 云服务器调用本地白名单命令
+openclaw-local-run status
+openclaw-local-run desktop-create-folder OpenClawRemote
+openclaw-local-run desktop-write-article OpenClawRemote hello.md "$(printf 'hello from cloud' | base64 | tr -d '\n')"
+
+# 查看帮助和当前默认端口
 ~/.openclaw/remote-local-control.sh help
 ~/.openclaw/remote-local-control.sh status
 ```
 
-详细设计见：`docs/plans/2026-04-30-cloud-to-local-reverse-ssh-control.md`。
+默认白名单只允许状态检查、日志查看、OpenClaw doctor，以及受限的桌面文件夹/文章写入；不允许远程 shell、sudo、scp、rm 等危险命令。
+
+本地安装获取云服务器最新地址的推荐顺序：网站/控制台在用户首次注册并分配服务器后生成 `openclaw-cloud-pairing.json`；本地脚本用 `configure-local --pairing-file` 读取最新地址；如果没有文件，则读取 `OPENCLAW_REMOTE_LOCAL_CLOUD`、`OPENCLAW_REMOTE_LOCAL_CLOUD_SSH_PORT`、`OPENCLAW_REMOTE_LOCAL_CLOUD_PUBLIC_KEY` 等环境变量；最后才交互式询问用户手动输入。详细设计见：`docs/plans/2026-04-30-cloud-to-local-reverse-ssh-control.md`。
 
 ### 网站联动
 

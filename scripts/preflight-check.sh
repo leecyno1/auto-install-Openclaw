@@ -122,12 +122,13 @@ grep -q 'sync_lobster_shared_state_menu' config-menu.sh || fail "config-menu mis
 pass "dual-engine markers"
 
 # 12) MiniMax 官方 skills + 自定义 Provider URL 原样保存检查
+BOUTIQUE_SKILLS_DIR="${OPENCLAW_SKILLS_SOURCE_DIR:-$(cd .. 2>/dev/null && pwd)/boutique-openclaw-skills/skills/default}"
 for skill in \
   android-native-dev buddy-sings flutter-dev frontend-dev fullstack-dev gif-sticker-maker \
   ios-application-dev minimax-docx minimax-multimodal-toolkit minimax-music-gen \
   minimax-music-playlist minimax-pdf minimax-xlsx pptx-generator react-native-dev \
   shader-dev vision-analysis; do
-    [ -f "skills/default/$skill/SKILL.md" ] || fail "missing MiniMax official skill: $skill"
+    [ -f "$BOUTIQUE_SKILLS_DIR/$skill/SKILL.md" ] || fail "missing MiniMax official skill in boutique repo: $skill"
 done
 grep -q 'MINIMAX_OFFICIAL_SKILLS=' install.sh || fail "install.sh missing MiniMax official skill list"
 grep -q 'MINIMAX_OFFICIAL_SKILLS=' config-menu.sh || fail "config-menu missing MiniMax official skill list"

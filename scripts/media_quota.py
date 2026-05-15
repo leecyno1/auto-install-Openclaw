@@ -196,6 +196,38 @@ def _category_status(state: dict[str, Any], category: str, env: dict[str, str] |
     }
 
 
+def _tool_metadata(entry: dict[str, Any]) -> dict[str, str]:
+    raw = str(entry.get("tool") or "")
+    metadata: dict[str, str] = {}
+    try:
+        parsed = json.loads(raw)
+        if isinstance(parsed, dict):
+            metadata = {str(k): str(v) for k, v in parsed.items() if v is not None}
+    except Exception:
+        metadata = {"path": raw}
+    return metadata
+
+
+def _breakdown_status(entries: list[dict[str, Any]]) -> dict[str, Any]:
+    families: dict[str, dict[str, int]] = {}
+    tasks: dict[str, dict[str, int]] = {}
+    media: dict[str, dict[str, int]] = {}
+    for entry in entries:
+        status = str(entry.get("status") or "")
+        if status != "committed":
+            continue
+        units = max(0, _to_int(entry.get("units"), 0))
+        metadata = _tool_metadata(entry)
+        family = str(metadata.get("modelFamily") or metadata.get("family") or "unknown").strip().lower() or "unknown"
+        task = str(metadata.get("taskType") or metadata.get("task") or entry.get("category") or "unknown").strip().lower() or "unknown"
+        category = str(entry.get("category") or "unknown").strip().lower() or "unknown"
+        for bucket, key in ((families, family), (tasks, task), (media, category)):
+            bucket.setdefault(key, {"used": 0, "requests": 0})
+            bucket[key]["used"] += units
+            bucket[key]["requests"] += 1
+    return {"families": families, "tasks": tasks, "media": media}
+
+
 def get_quota_status(env: dict[str, str] | None = None, now: int | None = None) -> dict[str, Any]:
     current = int(now or time.time())
     with _file_lock(env):
@@ -209,6 +241,7 @@ def get_quota_status(env: dict[str, str] | None = None, now: int | None = None) 
         "image": _category_status(state, "image", env, current),
         "video": _category_status(state, "video", env, current),
         "text": _category_status(state, "text", env, current),
+        "breakdown": _breakdown_status(state.get("entries", [])),
     }
 
 

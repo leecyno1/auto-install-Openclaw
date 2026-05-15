@@ -5,6 +5,7 @@ import datetime as dt
 import hashlib
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -115,6 +116,16 @@ def copy_source(source_path: Path, skill_dir: Path) -> None:
         return
     shutil.copy2(source_path, target)
 
+
+
+def normalize_skill_frontmatter_name(skill_dir: Path) -> None:
+    skill_file = skill_dir / 'SKILL.md'
+    if skill_dir.name != 'finance-skill-creator' or not skill_file.is_file():
+        return
+    text = skill_file.read_text(encoding='utf-8', errors='ignore')
+    updated = re.sub(r'(?m)^name:\s*skill-creator\s*$', 'name: finance-skill-creator', text, count=1)
+    if updated != text:
+        skill_file.write_text(updated, encoding='utf-8')
 
 def sync_detail(source_path: Path, source_kind: str, changed: bool) -> str:
     if source_kind == 'clawhub':
@@ -498,6 +509,7 @@ def main() -> int:
                 continue
 
             copy_source(source_dir, skill_dir)
+            normalize_skill_frontmatter_name(skill_dir)
             report_rows.append({
                 'skill': skill,
                 'status': '已更新',

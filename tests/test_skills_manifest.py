@@ -6,6 +6,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = ROOT / 'skills' / 'manifest.json'
 SKILLS_LIB = ROOT / 'scripts' / 'lib' / 'skills.sh'
+BOUTIQUE_SKILLS = ROOT.parent / 'boutique-openclaw-skills' / 'skills' / 'default'
 
 REQUIRED_DEFAULT = {
     'agentmail', 'agentmail-cli', 'agentmail-mcp', 'agentmail-toolkit',
@@ -35,7 +36,8 @@ class SkillsManifestTests(unittest.TestCase):
         cls.skills = {item['id']: item for item in cls.data['skills']}
 
     def test_manifest_contains_every_local_skill_directory(self):
-        local = {p.name for p in (ROOT / 'skills' / 'default').iterdir() if p.is_dir()}
+        self.assertTrue(BOUTIQUE_SKILLS.is_dir(), f'missing boutique skills source: {BOUTIQUE_SKILLS}')
+        local = {p.name for p in BOUTIQUE_SKILLS.iterdir() if p.is_dir()}
         missing = sorted(local - set(self.skills))
         self.assertEqual(missing, [])
 

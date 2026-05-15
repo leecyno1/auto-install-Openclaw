@@ -20,6 +20,7 @@ OpenClaw 独立安装入口
 常用示例:
   ./install-openclaw.sh --auto-confirm-all
   ./install-openclaw.sh --install-method git --rule-profile medium
+  ./install-openclaw.sh --extra-model "id=gpt-5-5,name=GPT-5.5,base_url=https://example.com/v1,api_key=$GPT55_API_KEY,model=gpt-5.5,api_type=openai-completions,image_tool=responses-image-generation"
   openclaw-setup install openclaw
 EOF
 }

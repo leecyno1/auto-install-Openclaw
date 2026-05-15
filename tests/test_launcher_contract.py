@@ -53,6 +53,19 @@ class LauncherContractTests(unittest.TestCase):
         self.assertIn('install_health_server_launcher', install_text)
         self.assertIn('install_gateway_quota_enforcer_script', install_text)
 
+    def test_install_script_prepares_data_disk_storage_and_traffic_controls(self):
+        install_text = (ROOT / 'install.sh').read_text(encoding='utf-8')
+        self.assertIn('setup_data_disk_storage_install()', install_text)
+        self.assertIn('resolve_openclaw_data_root_install()', install_text)
+        self.assertIn('/data/openclaw-storage', install_text)
+        self.assertIn('migrate_path_to_symlink_install "$CONFIG_DIR/backups"', install_text)
+        self.assertIn('migrate_path_to_symlink_install "$HOME/.openclaw-upgrade-backups"', install_text)
+        self.assertIn('migrate_path_to_symlink_install "$HOME/.cache"', install_text)
+        self.assertIn('OPENCLAW_DATA_ROOT', install_text)
+        self.assertIn('OPENCLAW_TRAFFIC_CONTROL_ENABLED', install_text)
+        self.assertIn('OPENCLAW_QUOTA_ENFORCER_MODE', install_text)
+        self.assertIn('OPENCLAW_MEDIA_QUOTA_STATE_FILE', install_text)
+
     def test_install_script_installs_remote_local_control_helper(self):
         install_text = (ROOT / 'install.sh').read_text(encoding='utf-8')
         self.assertIn('install_remote_local_control_helper()', install_text)
@@ -71,6 +84,78 @@ class LauncherContractTests(unittest.TestCase):
         self.assertIn('-R 127.0.0.1:${port}:127.0.0.1:${local_port}', text)
         self.assertIn('no-agent-forwarding,no-X11-forwarding,no-pty', text)
         self.assertIn('SSH_ORIGINAL_COMMAND', text)
+
+    def test_remote_local_control_helper_provides_local_bootstrap_and_desktop_whitelist(self):
+        helper = ROOT / 'scripts' / 'remote-local-control.sh'
+        text = helper.read_text(encoding='utf-8')
+        self.assertIn('bootstrap-local', text)
+        self.assertIn('desktop-create-folder', text)
+        self.assertIn('desktop-write-article', text)
+        self.assertIn('safe_leaf_name()', text)
+        self.assertIn('base64 --decode', text)
+        self.assertIn('command="$gate_path",no-agent-forwarding,no-X11-forwarding,no-pty', text)
+
+    def test_remote_local_control_helper_can_install_persistent_tunnel_service(self):
+        helper = ROOT / 'scripts' / 'remote-local-control.sh'
+        text = helper.read_text(encoding='utf-8')
+        self.assertIn('install-tunnel-service', text)
+        self.assertIn('openclaw-local-tunnel', text)
+        self.assertIn('LaunchAgents', text)
+        self.assertIn('systemd/user', text)
+        self.assertIn('start-tunnel --cloud', text)
+
+    def test_remote_local_control_helper_supports_local_configure_pairing_and_cloud_ssh_port(self):
+        helper = ROOT / 'scripts' / 'remote-local-control.sh'
+        text = helper.read_text(encoding='utf-8')
+        self.assertIn('configure-local', text)
+        self.assertIn('--pairing-file', text)
+        self.assertIn('--cloud-ssh-port', text)
+        self.assertIn('OPENCLAW_REMOTE_LOCAL_PAIRING_FILE', text)
+        self.assertIn('OPENCLAW_REMOTE_LOCAL_CLOUD_SSH_PORT', text)
+        self.assertIn('read_pairing_value()', text)
+        self.assertIn('-p "$cloud_ssh_port"', text)
+
+    def test_env_exports_are_shell_quoted_for_values_with_spaces(self):
+        install_text = (ROOT / 'install.sh').read_text(encoding='utf-8')
+        menu_text = (ROOT / 'config-menu.sh').read_text(encoding='utf-8')
+        self.assertIn('quote_env_value_install()', install_text)
+        self.assertIn('quoted_value="$(quote_env_value_install "$value")"', install_text)
+        self.assertIn('awk -v k="$key" -v v="$quoted_value"', install_text)
+        self.assertIn('quote_env_value_menu()', menu_text)
+        self.assertIn('quoted_value="$(quote_env_value_menu "$value")"', menu_text)
+        self.assertIn('awk -v k="$key" -v v="$quoted_value"', menu_text)
+
+    def test_auto_confirm_preserves_explicit_rule_profile(self):
+        install_text = (ROOT / 'install.sh').read_text(encoding='utf-8')
+        self.assertIn('if [ -z "${OPENCLAW_RULE_PROFILE:-}" ] && [ -z "${RULE_PROFILE_SELECTED:-}" ]; then', install_text)
+        self.assertIn('RULE_PROFILE_SELECTED="low"', install_text)
+
+    def test_minimax_provider_respects_openai_v1_api_type(self):
+        install_text = (ROOT / 'install.sh').read_text(encoding='utf-8')
+        self.assertIn('local custom_api_type="${5:-}"', install_text)
+        self.assertIn("baseUrl.includes('/v1') ? 'openai-completions' : 'anthropic-messages'", install_text)
+        self.assertIn('api: apiType', install_text)
+        self.assertIn('ensure_minimax_provider_config "$AI_PROVIDER" "$AI_MODEL" "$openclaw_json" "${OPENCLAW_MINIMAX_PROVIDER_URL:-}" "${AI_API_TYPE:-}"', install_text)
+
+    def test_installer_supports_repeatable_extra_models_and_image_capability_chain(self):
+        install_text = (ROOT / 'install.sh').read_text(encoding='utf-8')
+        common_text = (ROOT / 'scripts' / 'lib' / 'openclaw-common.sh').read_text(encoding='utf-8')
+        readme_text = (ROOT / 'README.md').read_text(encoding='utf-8')
+        self.assertIn('--extra-model <spec>', install_text)
+        self.assertIn('append_extra_model_spec_install "$2"', install_text)
+        self.assertIn('OPENCLAW_EXTRA_MODELS', install_text)
+        self.assertIn('apply_extra_models_install()', install_text)
+        self.assertIn('scripts/lib/model_registry.py', install_text)
+        self.assertIn('agent_models_json="$HOME/.openclaw/agents/main/agent/models.json"', install_text)
+        self.assertIn('capabilities_json="$HOME/.openclaw/model-capabilities.json"', install_text)
+        self.assertIn('OPENCLAW_ROUTER_BACKEND', install_text)
+        self.assertIn('OPENCLAW_ROUTER_STRATEGY', install_text)
+        self.assertIn('build_model_registry_specs_install()', install_text)
+        self.assertIn('OPENCLAW_EXTRA_MODELS', common_text)
+        self.assertIn('OPENCLAW_ROUTER_BACKEND', common_text)
+        self.assertIn('OPENCLAW_ROUTER_STRATEGY', common_text)
+        self.assertIn('image_tool=responses-image-generation', readme_text)
+        self.assertIn('gpt-5.5', readme_text)
 
     def test_install_script_keeps_remote_plugin_fallback_optional(self):
         install_text = (ROOT / 'install.sh').read_text(encoding='utf-8')

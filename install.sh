@@ -143,6 +143,9 @@ LOBSTER_CONFIG_DIR="$LOBSTER_HOME/config"
 LOBSTER_BIN_DIR="$HOME/.local/bin"
 HERMES_HOME="${HERMES_HOME:-$HOME/.hermes}"
 HERMES_INSTALL_DIR="${HERMES_INSTALL_DIR:-$HERMES_HOME/hermes-agent}"
+OPENCLAW_DATA_DISK_AUTO="${OPENCLAW_DATA_DISK_AUTO:-1}"
+OPENCLAW_DATA_ROOT_DEFAULT="${OPENCLAW_DATA_ROOT:-}"
+OPENCLAW_STORAGE_ROOT=""
 MIN_NODE_MAJOR=22
 MIN_NODE_MINOR=12
 INSTALLER_NAME="auto-install-Openclaw"
@@ -151,6 +154,9 @@ GITHUB_REPO="${GITHUB_REPO:-leecyno1/auto-install-Openclaw}"
 GITEE_REPO="${GITEE_REPO:-leecyno1/auto-install-openclaw}"
 GITHUB_RAW_URL="https://raw.githubusercontent.com/$GITHUB_REPO/main"
 GITEE_RAW_URL="https://gitee.com/$GITEE_REPO/raw/main"
+OPENCLAW_SKILLS_REPO_URL="${OPENCLAW_SKILLS_REPO_URL:-https://gitee.com/leecyno1/boutique-openclaw-skills.git}"
+OPENCLAW_SKILLS_REPO_GITHUB_URL="${OPENCLAW_SKILLS_REPO_GITHUB_URL:-https://github.com/leecyno1/boutique-openclaw-skills.git}"
+OPENCLAW_SKILLS_REPO_MIRROR_URL="${OPENCLAW_SKILLS_REPO_MIRROR_URL:-https://mirror.ghproxy.com/https://github.com/leecyno1/boutique-openclaw-skills.git}"
 OFFICIAL_INSTALL_URL="https://openclaw.ai/install.sh"
 OFFICIAL_DOCS_URL="https://docs.openclaw.ai"
 INSTALLER_MIRROR_RAW_URL="${OPENCLAW_INSTALLER_MIRROR_RAW_URL:-https://mirror.ghproxy.com/${GITHUB_RAW_URL}}"
@@ -696,6 +702,8 @@ ${INSTALLER_NAME} (OpenClaw 安装增强版)
   --api-key <key>                    默认文本模型 API Key
   --base-url <url>                   覆盖当前官方 Provider Base URL（原样保存，不自动拼路径）
   --api-type <type>                  API 兼容类型: anthropic-messages|openai-responses|openai-completions
+  --extra-model <spec>               追加可选模型，可重复。格式: id=...,name=...,base_url=...,api_key=...,model=...,api_type=...
+                                      可选图片链路: image_tool=responses-image-generation,image_model=gpt-image-2
   --image-model <model>              生图模型
   --image-api-key <key>              生图 API Key
   --image-base-url <url>             生图接口 URL（原样保存）
@@ -745,6 +753,11 @@ ${INSTALLER_NAME} (OpenClaw 安装增强版)
   OPENCLAW_SWAP_THRESHOLD_MB=<默认4096>
   OPENCLAW_SWAP_TARGET_MB=<默认自动(2G或4G)>
   OPENCLAW_SWAP_FILE=</swapfile.openclaw>
+  OPENCLAW_DATA_DISK_AUTO=0|1
+  OPENCLAW_DATA_ROOT=<默认自动探测/data/openclaw-storage>
+  OPENCLAW_MIGRATE_ROOT_CACHE=0|1
+  OPENCLAW_TRAFFIC_CONTROL_ENABLED=0|1
+  OPENCLAW_QUOTA_ENFORCER_MODE=embedded|off
   OPENCLAW_INSTALL_SKILL_DEPS=0|1
   OPENCLAW_SKILL_PIP_PACKAGES="<覆盖默认依赖包列表>"
   OPENCLAW_SKILLS_FORCE_UPDATE=0|1
@@ -758,6 +771,7 @@ ${INSTALLER_NAME} (OpenClaw 安装增强版)
   OPENCLAW_CUSTOM_PROVIDER_BASE_URL=<自定义 provider 地址>
   OPENCLAW_CUSTOM_PROVIDER_MODEL=<自定义 provider 模型>
   OPENCLAW_CUSTOM_PROVIDER_API_TYPE=<自定义 provider 接口兼容类型>
+  OPENCLAW_EXTRA_MODELS=<多行 extra model spec，格式同 --extra-model>
   MINIMAX_API_HOST=<默认由区域自动选择 minimaxi.com/minimax.io>
   OPENCLAW_MINIMAX_PROVIDER_URL=<可选，自定义 MiniMax Provider 地址，如 https://api.sfkey.cn>
   OPENCLAW_IMAGE_PROVIDER_ID=<生图 provider 标识>
@@ -916,6 +930,10 @@ parse_args() {
                 export AI_API_TYPE="$2"
                 shift 2
                 ;;
+            --extra-model)
+                append_extra_model_spec_install "$2"
+                shift 2
+                ;;
             --image-model)
                 export OPENCLAW_IMAGE_MODEL="$2"
                 shift 2
@@ -1018,6 +1036,9 @@ persist_noninteractive_config_install() {
 
     [ -n "${OPENCLAW_WEB_SKILL_PACK:-}" ] && upsert_env_export_install "OPENCLAW_WEB_SKILL_PACK" "$OPENCLAW_WEB_SKILL_PACK"
     [ -n "${OPENCLAW_INSTALL_SKILLS_TIER:-}" ] && upsert_env_export_install "OPENCLAW_INSTALL_SKILLS_TIER" "$OPENCLAW_INSTALL_SKILLS_TIER"
+    [ -n "${OPENCLAW_EXTRA_MODELS:-}" ] && upsert_env_export_install "OPENCLAW_EXTRA_MODELS" "$OPENCLAW_EXTRA_MODELS"
+    upsert_env_export_install "OPENCLAW_ROUTER_BACKEND" "${OPENCLAW_ROUTER_BACKEND:-embedded}"
+    upsert_env_export_install "OPENCLAW_ROUTER_STRATEGY" "${OPENCLAW_ROUTER_STRATEGY:-rules}"
 
     if [ "${OPENCLAW_ENABLE_ADVANCED_ROUTING:-0}" = "1" ]; then
         upsert_env_export_install "OPENCLAW_ENABLE_ADVANCED_ROUTING" "1"
@@ -1097,17 +1118,89 @@ contains_word() {
     return 1
 }
 
+quote_env_value_install() {
+    python3 - "$1" <<'PYEOF'
+import shlex, sys
+print(shlex.quote(sys.argv[1]))
+PYEOF
+}
+
+append_extra_model_spec_install() {
+    local spec="$1"
+    if [ -z "${OPENCLAW_EXTRA_MODELS:-}" ]; then
+        export OPENCLAW_EXTRA_MODELS="$spec"
+    else
+        export OPENCLAW_EXTRA_MODELS="${OPENCLAW_EXTRA_MODELS}|||${spec}"
+    fi
+}
+
+find_model_registry_script_install() {
+    local script_dir candidate
+    script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    for candidate in \
+        "$script_dir/scripts/lib/model_registry.py" \
+        "$CONFIG_DIR/runtime/installer-repo/scripts/lib/model_registry.py" \
+        "$HOME/.openclaw/.cache/auto-install-openclaw-repo/scripts/lib/model_registry.py" \
+        "$HOME/.openclaw/workspace/auto-install-openclaw/scripts/lib/model_registry.py" \
+        "$HOME/.openclaw/workspace/auto-install-Openclaw/scripts/lib/model_registry.py"
+    do
+        [ -f "$candidate" ] && { echo "$candidate"; return 0; }
+    done
+    return 1
+}
+
+join_model_spec_install() {
+    local spec="$1"
+    [ -n "$spec" ] || return 0
+    if [ -z "${OPENCLAW_MODEL_REGISTRY_SPECS_TMP:-}" ]; then
+        OPENCLAW_MODEL_REGISTRY_SPECS_TMP="$spec"
+    else
+        OPENCLAW_MODEL_REGISTRY_SPECS_TMP="${OPENCLAW_MODEL_REGISTRY_SPECS_TMP}|||${spec}"
+    fi
+}
+
+build_model_registry_specs_install() {
+    OPENCLAW_MODEL_REGISTRY_SPECS_TMP=""
+
+    local primary_provider primary_model primary_key primary_base primary_api_type
+    primary_provider="${OPENCLAW_ACTIVE_PROVIDER_PRESET:-${AI_PROVIDER:-}}"
+    primary_model="${OPENCLAW_ACTIVE_PROVIDER_MODEL:-${AI_MODEL:-}}"
+    primary_key="${OPENCLAW_ACTIVE_PROVIDER_API_KEY:-${AI_KEY:-}}"
+    primary_base="${OPENCLAW_ACTIVE_PROVIDER_BASE_URL:-${BASE_URL:-}}"
+    primary_api_type="${OPENCLAW_ACTIVE_PROVIDER_API_TYPE:-${AI_API_TYPE:-openai-completions}}"
+    if [ -n "$primary_provider" ] && [ -n "$primary_model" ] && [ -n "$primary_key" ] && [ -n "$primary_base" ]; then
+        join_model_spec_install "id=${primary_provider},provider=${primary_provider},model=${primary_model},base_url=${primary_base},api_key=${primary_key},api_type=${primary_api_type},role=primary"
+    fi
+
+    local image_provider image_model image_key image_base
+    image_provider="${OPENCLAW_IMAGE_PROVIDER_ID:-image}"
+    image_model="${OPENCLAW_IMAGE_MODEL:-}"
+    image_key="${OPENCLAW_IMAGE_API_KEY:-}"
+    image_base="${OPENCLAW_IMAGE_API_URL:-}"
+    if [ -n "$image_model" ] && [ -n "$image_key" ] && [ -n "$image_base" ]; then
+        join_model_spec_install "id=${image_provider},provider=${image_provider},slot=image,model=${image_model},base_url=${image_base},api_key=${image_key},api_type=openai-completions,media=image"
+    fi
+
+    if [ -n "${OPENCLAW_EXTRA_MODELS:-}" ]; then
+        join_model_spec_install "$OPENCLAW_EXTRA_MODELS"
+    fi
+
+    printf '%s' "$OPENCLAW_MODEL_REGISTRY_SPECS_TMP"
+}
+
 upsert_env_export_install() {
     local key="$1"
     local value="$2"
     local env_file="$CONFIG_DIR/env"
+    local quoted_value
 
     mkdir -p "$(dirname "$env_file")" 2>/dev/null || true
     touch "$env_file" 2>/dev/null || true
+    quoted_value="$(quote_env_value_install "$value")"
 
     local tmp_file
     tmp_file="$(mktemp)"
-    awk -v k="$key" -v v="$value" '
+    awk -v k="$key" -v v="$quoted_value" '
         BEGIN { done=0 }
         $0 ~ "^export " k "=" { print "export " k "=" v; done=1; next }
         { print }
@@ -1130,8 +1223,18 @@ remove_env_export_install() {
 get_saved_env_export_install() {
     local key="$1"
     local env_file="$CONFIG_DIR/env"
+    local raw_value
     [ -f "$env_file" ] || return 0
-    grep "^export ${key}=" "$env_file" 2>/dev/null | tail -1 | sed "s/^export ${key}=//" | tr -d '"'
+    raw_value="$(grep "^export ${key}=" "$env_file" 2>/dev/null | tail -1 | sed "s/^export ${key}=//")"
+    python3 - "$raw_value" <<'PYEOF'
+import shlex, sys
+raw = sys.argv[1]
+try:
+    parts = shlex.split(raw)
+    print(parts[0] if parts else '')
+except Exception:
+    print(raw.strip('"'))
+PYEOF
 }
 
 OPENCLAW_COMMON_LIB_INSTALL_LOADED=0
@@ -1762,7 +1865,7 @@ apply_profile_token_policy() {
     upsert_env_export_install "OPENCLAW_RULE_MAX_TOKENS_PER_REQUEST" "$max_tokens_per_req"
     upsert_env_export_install "OPENCLAW_RULE_MAX_IMAGE_REQUESTS" "$max_image_requests"
     upsert_env_export_install "OPENCLAW_RULE_MAX_VIDEO_REQUESTS" "$max_video_requests"
-    upsert_env_export_install "OPENCLAW_MEDIA_QUOTA_STATE_FILE" "$CONFIG_DIR/quota/media-state.json"
+    upsert_env_export_install "OPENCLAW_MEDIA_QUOTA_STATE_FILE" "${OPENCLAW_MEDIA_QUOTA_STATE_FILE:-${OPENCLAW_STORAGE_ROOT:-$CONFIG_DIR}/quota/media-state.json}"
     upsert_env_export_install "OPENCLAW_MEDIA_QUOTA_SCRIPT" "$HOME/.openclaw/.cache/auto-install-openclaw-repo/scripts/media_quota.py"
     upsert_env_export_install "OPENCLAW_CONTEXT_WARN_TOKENS" "$context_warn_tokens"
     upsert_env_export_install "OPENCLAW_CONTEXT_ASK_TOKENS" "$context_ask_tokens"
@@ -2295,7 +2398,7 @@ normalize_install_options() {
     if [ "${AUTO_CONFIRM_ALL:-0}" = "1" ]; then
         NO_PROMPT=1
         NO_ONBOARD=1
-        if [ -z "${OPENCLAW_RULE_PROFILE:-}" ]; then
+        if [ -z "${OPENCLAW_RULE_PROFILE:-}" ] && [ -z "${RULE_PROFILE_SELECTED:-}" ]; then
             RULE_PROFILE_SELECTED="low"
         fi
     fi
@@ -2736,6 +2839,111 @@ create_directories() {
 
     log_info "配置目录: $CONFIG_DIR"
     log_info "Lobster 控制目录: $LOBSTER_HOME"
+
+    setup_data_disk_storage_install || true
+}
+
+resolve_openclaw_data_root_install() {
+    if [ -n "${OPENCLAW_DATA_ROOT:-${OPENCLAW_DATA_ROOT_DEFAULT:-}}" ]; then
+        echo "${OPENCLAW_DATA_ROOT:-$OPENCLAW_DATA_ROOT_DEFAULT}"
+        return 0
+    fi
+    if [ "${OPENCLAW_DATA_DISK_AUTO:-1}" = "1" ] && [ -d /data ] && [ -w /data ]; then
+        echo "/data/openclaw-storage"
+        return 0
+    fi
+    echo "$CONFIG_DIR/storage"
+}
+
+migrate_path_to_symlink_install() {
+    local source_path="$1"
+    local target_path="$2"
+    [ -n "$source_path" ] && [ -n "$target_path" ] || return 1
+    mkdir -p "$target_path" 2>/dev/null || return 1
+
+    if [ -L "$source_path" ]; then
+        return 0
+    fi
+
+    if [ -d "$source_path" ]; then
+        shopt -s dotglob nullglob
+        local item
+        for item in "$source_path"/*; do
+            mv "$item" "$target_path/" 2>/dev/null || true
+        done
+        shopt -u dotglob nullglob
+        rmdir "$source_path" 2>/dev/null || return 0
+    elif [ -e "$source_path" ]; then
+        return 0
+    fi
+
+    ln -s "$target_path" "$source_path" 2>/dev/null || true
+}
+
+setup_data_disk_storage_install() {
+    local data_root use_external_data limits media_limits window_hours max_requests max_tokens max_tokens_per_req max_image_requests max_video_requests
+    data_root="$(resolve_openclaw_data_root_install)"
+    OPENCLAW_STORAGE_ROOT="$data_root"
+    export OPENCLAW_DATA_ROOT="$data_root"
+    export NODE_COMPILE_CACHE="${NODE_COMPILE_CACHE:-$data_root/node-compile-cache}"
+    mkdir -p \
+        "$data_root/openclaw-backups" \
+        "$data_root/upgrade-backups" \
+        "$data_root/root-cache" \
+        "$data_root/quota" \
+        "$data_root/node-compile-cache" \
+        "$data_root/logs" 2>/dev/null || return 1
+
+    use_external_data=0
+    case "$data_root" in
+        /data/*) use_external_data=1 ;;
+    esac
+
+    upsert_env_export_install "OPENCLAW_DATA_ROOT" "$data_root"
+    upsert_env_export_install "OPENCLAW_BACKUP_DIR" "$data_root/openclaw-backups"
+    upsert_env_export_install "OPENCLAW_UPGRADE_BACKUP_DIR" "$data_root/upgrade-backups"
+    upsert_env_export_install "OPENCLAW_CACHE_DIR" "$data_root/root-cache"
+    upsert_env_export_install "OPENCLAW_MEDIA_QUOTA_STATE_FILE" "$data_root/quota/media-state.json"
+    upsert_env_export_install "OPENCLAW_TRAFFIC_CONTROL_ENABLED" "${OPENCLAW_TRAFFIC_CONTROL_ENABLED:-1}"
+    upsert_env_export_install "OPENCLAW_QUOTA_ENFORCER_MODE" "${OPENCLAW_QUOTA_ENFORCER_MODE:-embedded}"
+    upsert_env_export_install "OPENCLAW_RULE_PROFILE" "${OPENCLAW_RULE_PROFILE:-$RULE_PROFILE_SELECTED}"
+    upsert_env_export_install "NODE_COMPILE_CACHE" "$NODE_COMPILE_CACHE"
+
+    limits="$(get_profile_token_limits "${OPENCLAW_RULE_PROFILE:-$RULE_PROFILE_SELECTED}")"
+    window_hours="$(echo "$limits" | awk '{print $1}')"
+    max_requests="$(echo "$limits" | awk '{print $2}')"
+    max_tokens="$(echo "$limits" | awk '{print $3}')"
+    max_tokens_per_req="$(echo "$limits" | awk '{print $4}')"
+    media_limits="$(get_profile_media_limits "${OPENCLAW_RULE_PROFILE:-$RULE_PROFILE_SELECTED}")"
+    max_image_requests="$(echo "$media_limits" | awk '{print $1}')"
+    max_video_requests="$(echo "$media_limits" | awk '{print $2}')"
+    upsert_env_export_install "OPENCLAW_RULE_WINDOW_HOURS" "${OPENCLAW_RULE_WINDOW_HOURS:-$window_hours}"
+    upsert_env_export_install "OPENCLAW_RULE_MAX_REQUESTS" "${OPENCLAW_RULE_MAX_REQUESTS:-$max_requests}"
+    upsert_env_export_install "OPENCLAW_RULE_MAX_TOKENS" "${OPENCLAW_RULE_MAX_TOKENS:-$max_tokens}"
+    upsert_env_export_install "OPENCLAW_RULE_MAX_TOKENS_PER_REQUEST" "${OPENCLAW_RULE_MAX_TOKENS_PER_REQUEST:-$max_tokens_per_req}"
+    upsert_env_export_install "OPENCLAW_RULE_MAX_IMAGE_REQUESTS" "${OPENCLAW_RULE_MAX_IMAGE_REQUESTS:-$max_image_requests}"
+    upsert_env_export_install "OPENCLAW_RULE_MAX_VIDEO_REQUESTS" "${OPENCLAW_RULE_MAX_VIDEO_REQUESTS:-$max_video_requests}"
+
+    migrate_path_to_symlink_install "$CONFIG_DIR/backups" "$data_root/openclaw-backups"
+    if [ "$use_external_data" = "1" ]; then
+        migrate_path_to_symlink_install "$HOME/.openclaw-upgrade-backups" "$data_root/upgrade-backups"
+        if [ "${OPENCLAW_MIGRATE_ROOT_CACHE:-1}" = "1" ]; then
+            migrate_path_to_symlink_install "$HOME/.cache" "$data_root/root-cache"
+        fi
+    fi
+
+    cat > "$data_root/README.txt" <<EOF
+OpenClaw data disk storage
+
+Managed by install.sh.
+- OpenClaw backups: $data_root/openclaw-backups
+- Upgrade backups:  $data_root/upgrade-backups
+- Root cache:       $data_root/root-cache
+- Quota state:      $data_root/quota/media-state.json
+- Node cache:       $data_root/node-compile-cache
+EOF
+
+    log_info "数据盘/缓存目录: $data_root"
 }
 
 install_backup_manager_script() {
@@ -3543,6 +3751,14 @@ https://mirror.ghproxy.com/https://github.com/${GITHUB_REPO}.git
 EOF
 }
 
+get_boutique_skills_repo_urls_install() {
+    cat <<EOF
+$OPENCLAW_SKILLS_REPO_URL
+$OPENCLAW_SKILLS_REPO_GITHUB_URL
+$OPENCLAW_SKILLS_REPO_MIRROR_URL
+EOF
+}
+
 refresh_cached_installer_repo() {
     local cache_repo="$1"
     [ -d "$cache_repo/.git" ] || return 1
@@ -3634,14 +3850,20 @@ resolve_install_skills_bundle_dir() {
     local url
 
     script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-    local_bundle="$script_dir/skills/default"
-    if [ -d "$local_bundle" ] && is_default_skills_bundle_usable_install "$local_bundle"; then
-        echo "$local_bundle"
-        return 0
-    fi
+    for local_bundle in \
+        "${OPENCLAW_SKILLS_BUNDLE_DIR:-}" \
+        "$script_dir/skills/default" \
+        "$HOME/boutique-openclaw-skills/skills/default" \
+        "/Volumes/PSSD/Projects/boutique-openclaw-skills/skills/default"; do
+        [ -n "$local_bundle" ] || continue
+        if [ -d "$local_bundle" ] && is_default_skills_bundle_usable_install "$local_bundle"; then
+            echo "$local_bundle"
+            return 0
+        fi
+    done
 
     cache_root="$CONFIG_DIR/.cache"
-    cache_repo="$cache_root/auto-install-openclaw-repo"
+    cache_repo="$cache_root/boutique-openclaw-skills"
     cache_bundle="$cache_repo/skills/default"
     mkdir -p "$cache_root" 2>/dev/null || true
 
@@ -3661,9 +3883,9 @@ resolve_install_skills_bundle_dir() {
         return 1
     fi
 
-    log_warn "当前安装脚本不在仓库目录内，正在从远端拉取默认技能包..." >&2
+    log_warn "当前安装脚本不在技能仓库目录内，正在从 boutique-openclaw-skills 拉取默认技能包..." >&2
     tmp_repo="$(mktemp -d "$cache_root/repo.XXXXXX")"
-    for url in $(get_installer_repo_urls); do
+    for url in $(get_boutique_skills_repo_urls_install); do
         rm -rf "$tmp_repo" 2>/dev/null || true
         tmp_repo="$(mktemp -d "$cache_root/repo.XXXXXX")"
         if git clone --depth 1 "$url" "$tmp_repo" >/dev/null 2>&1 \
@@ -3671,6 +3893,7 @@ resolve_install_skills_bundle_dir() {
             && is_default_skills_bundle_usable_install "$tmp_repo/skills/default"; then
             rm -rf "$cache_repo" 2>/dev/null || true
             mv "$tmp_repo" "$cache_repo"
+            [ -f "$cache_repo/tiers/low.json" ] || log_warn "boutique 技能仓库缺少 tiers/low.json，继续使用 skills/default" >&2
             echo "$cache_repo/skills/default"
             return 0
         fi
@@ -4229,9 +4452,9 @@ setup_lobster_world_defaults_install() {
     upsert_env_export_install "PROJECTION_API_PORT" "$PROJECTION_API_PORT_DEFAULT"
     upsert_env_export_install "OPENCLAW_STATUS_URL" "http://127.0.0.1:${GATEWAY_PORT}/status"
     upsert_env_export_install "OPENCLAW_INTERNAL_GATEWAY_URL" "http://127.0.0.1:${GATEWAY_PORT}"
-    upsert_env_export_install "NODE_COMPILE_CACHE" "${NODE_COMPILE_CACHE:-/var/tmp/openclaw-compile-cache}"
+    upsert_env_export_install "NODE_COMPILE_CACHE" "${NODE_COMPILE_CACHE:-${OPENCLAW_STORAGE_ROOT:-/var/tmp/openclaw-storage}/node-compile-cache}"
     upsert_env_export_install "OPENCLAW_NO_RESPAWN" "${OPENCLAW_NO_RESPAWN:-1}"
-    mkdir -p "${NODE_COMPILE_CACHE:-/var/tmp/openclaw-compile-cache}" 2>/dev/null || true
+    mkdir -p "${NODE_COMPILE_CACHE:-${OPENCLAW_STORAGE_ROOT:-/var/tmp/openclaw-storage}/node-compile-cache}" 2>/dev/null || true
     ensure_website_dashboard_integration_install
     upsert_env_export_install "PROJECTION_API_INGEST_URL" "http://${PROJECTION_API_HOST_DEFAULT}:${PROJECTION_API_PORT_DEFAULT}/runtime/ingest"
 
@@ -5298,6 +5521,7 @@ ensure_minimax_provider_config() {
     local model="$2"      # MiniMax-M2.7 / MiniMax-M2.7-highspeed
     local config_file="$3"
     local custom_provider_url="${4:-}"
+    local custom_api_type="${5:-}"
     local base_url
     base_url="$(resolve_minimax_provider_base_url_install "$provider" "$custom_provider_url")"
 
@@ -5311,6 +5535,7 @@ const file = '$config_file';
 const provider = '$provider';
 const model = '$model';
 const baseUrl = '$base_url';
+const apiType = '$custom_api_type' || (baseUrl.includes('/v1') ? 'openai-completions' : 'anthropic-messages');
 const otherProvider = provider === 'minimax' ? 'minimax-cn' : 'minimax';
 let cfg = {};
 try { cfg = JSON.parse(fs.readFileSync(file, 'utf8')); } catch {}
@@ -5335,7 +5560,7 @@ const models = ['MiniMax-M2.7', 'MiniMax-M2.7-highspeed', 'MiniMax-M2.5', 'MiniM
 }));
 cfg.models.providers[provider] = {
   baseUrl,
-  api: 'anthropic-messages',
+  api: apiType,
   authHeader: true,
   models
 };
@@ -5688,7 +5913,7 @@ EOF
     log_info "环境变量配置已保存到: $env_file"
 
     if [ "$AI_PROVIDER" = "minimax" ] || [ "$AI_PROVIDER" = "minimax-cn" ]; then
-        ensure_minimax_provider_config "$AI_PROVIDER" "$AI_MODEL" "$openclaw_json" "${OPENCLAW_MINIMAX_PROVIDER_URL:-}"
+        ensure_minimax_provider_config "$AI_PROVIDER" "$AI_MODEL" "$openclaw_json" "${OPENCLAW_MINIMAX_PROVIDER_URL:-}" "${AI_API_TYPE:-}"
         configure_minimax_multimodal_vendor_install "${MINIMAX_API_HOST:-$MINIMAX_API_HOST_CN_DEFAULT}"
     fi
 
@@ -5796,6 +6021,50 @@ EOF
 
     # 添加到 shell 配置文件
     add_env_to_shell "$env_file"
+}
+
+apply_extra_models_install() {
+    local specs="${OPENCLAW_EXTRA_MODELS:-}"
+    local env_file="$CONFIG_DIR/env"
+    local openclaw_json="$HOME/.openclaw/openclaw.json"
+    local agent_models_json="$HOME/.openclaw/agents/main/agent/models.json"
+    local capabilities_json="$HOME/.openclaw/model-capabilities.json"
+    local registry_script
+
+    if [ -z "$specs" ] && [ -f "$env_file" ]; then
+        specs="$(get_saved_env_export_install OPENCLAW_EXTRA_MODELS || true)"
+    fi
+    [ -n "$specs" ] && export OPENCLAW_EXTRA_MODELS="$specs"
+    specs="$(build_model_registry_specs_install)"
+    [ -n "$specs" ] || return 0
+
+    log_step "配置统一模型注册表..."
+    mkdir -p "$(dirname "$openclaw_json")" "$(dirname "$agent_models_json")" 2>/dev/null || true
+    [ -f "$openclaw_json" ] || echo "{}" > "$openclaw_json"
+    [ -f "$agent_models_json" ] || echo "{}" > "$agent_models_json"
+
+    registry_script="$(find_model_registry_script_install || true)"
+    if [ -z "$registry_script" ]; then
+        log_warn "未找到模型注册表脚本，请检查 scripts/lib/model_registry.py"
+        return 1
+    fi
+
+    if python3 "$registry_script" \
+        --specs "$specs" \
+        --openclaw-json "$openclaw_json" \
+        --agent-models-json "$agent_models_json" \
+        --capabilities-json "$capabilities_json"
+    then
+        chmod 600 "$openclaw_json" "$agent_models_json" "$capabilities_json" 2>/dev/null || true
+        upsert_env_export_install "OPENCLAW_ROUTER_BACKEND" "${OPENCLAW_ROUTER_BACKEND:-embedded}"
+        upsert_env_export_install "OPENCLAW_ROUTER_STRATEGY" "${OPENCLAW_ROUTER_STRATEGY:-rules}"
+        log_info "统一模型注册表已写入: $openclaw_json"
+        log_info "Agent 模型配置已同步: $agent_models_json"
+        log_info "模型能力链路已记录: $capabilities_json"
+    else
+        log_warn "统一模型注册表配置失败，请检查 --extra-model 参数格式"
+        return 1
+    fi
 }
 
 # 配置自定义 provider（用于支持自定义 API 地址）
@@ -7507,6 +7776,7 @@ main() {
             exit 1
         fi
         cleanup_stale_plugin_state
+        apply_extra_models_install || true
         log_info "默认消息渠道插件自动安装已关闭（改为手动安装，避免安装阶段耗时与失败重试）。"
         if [ "$NO_ONBOARD" = "1" ]; then
             log_info "已按参数跳过 AI 初始化向导 (--no-onboard)"
