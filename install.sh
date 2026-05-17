@@ -116,6 +116,12 @@ WHITE='\033[1;37m'
 GRAY='\033[0;90m'
 NC='\033[0m' # 无颜色
 
+# 大圣之怒主题色：火焰红 + 深海蓝
+THEME_RED="$RED"
+THEME_BLUE="$CYAN"
+THEME_DIM="$GRAY"
+THEME_ACCENT="$WHITE"
+
 # ================================ 配置变量 ================================
 # 兼容旧环境变量命名（clawdbot -> openclaw）
 map_legacy_env() {
@@ -310,20 +316,11 @@ HELP=0
 # ================================ 工具函数 ================================
 
 print_banner() {
-    echo -e "${CYAN}"
-    cat << 'EOF'
- __  __  ___  _   _ _  ________   __      _______ _   _ ______   __
-|  \/  |/ _ \| \ | | |/ /  ____| / /|  _ \|_   _| \ | |  ____| / /
-| \  / | | | |  \| | ' /| |__   / /_| |_) | | | |  \| | |__   / /
-| |\/| | | | | . ` |  < |  __| | '_ \  _ <  | | | . ` |  __| / /
-| |  | | |_| | |\  | . \| |____| (_) | |_) |_| |_| |\  | |___/ /
-|_|  |_|\___/|_| \_|_|\_\______|\___/|____/|_____|_| \_|______/_/
-
-                        MONKEY'S-FURY
-EOF
-    echo -e "${NC}"
-    echo -e "${CYAN}🔥 大圣之怒傻瓜Openclaw安装&配置助手 🔥${NC}"
-    echo -e "${CYAN}🔖 Version: v${INSTALLER_VERSION}${NC}"
+    echo -e "${THEME_BLUE}╔═══════════════════════════════════════════════════════════════╗${NC}"
+    echo -e "${THEME_BLUE}║${NC} ${THEME_RED}🔥 大圣之怒${NC} ${THEME_ACCENT}OpenClaw / Hermes 一键安装器${NC} ${THEME_BLUE}║${NC}"
+    echo -e "${THEME_BLUE}║${NC} ${THEME_DIM}红蓝双轨 · 国内源优先 · Skills 独立同步 · 配置中心联动${NC} ${THEME_BLUE}║${NC}"
+    echo -e "${THEME_BLUE}╚═══════════════════════════════════════════════════════════════╝${NC}"
+    echo -e "${THEME_BLUE}🔖 Version: v${INSTALLER_VERSION}${NC}"
     echo ""
 }
 
@@ -356,9 +353,9 @@ print_lobster_setup_quick_commands() {
 print_post_install_config_hint() {
     local mode="${1:-prompt}"
     echo ""
-    echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-    echo -e "${WHITE}           📝 配置菜单（命令行版）${NC}"
-    echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo -e "${THEME_BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━${THEME_RED}◆${THEME_BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo -e "${THEME_RED}🔥${NC} ${THEME_ACCENT}大圣之怒配置中心（命令行版）${NC}"
+    echo -e "${THEME_BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━${THEME_RED}◆${THEME_BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
     echo ""
     echo -e "${GRAY}配置菜单支持: 模型、官方渠道、Skills、权限、服务管理、引擎管理、像素小屋等${NC}"
     echo ""
@@ -415,19 +412,19 @@ print_exit_hint() {
 }
 
 log_info() {
-    echo -e "${GREEN}[INFO]${NC} $1"
+    echo -e "${THEME_BLUE}✓ INFO${NC} $1"
 }
 
 log_warn() {
-    echo -e "${YELLOW}[WARN]${NC} $1"
+    echo -e "${THEME_RED}⚠ WARN${NC} $1"
 }
 
 log_error() {
-    echo -e "${RED}[ERROR]${NC} $1"
+    echo -e "${THEME_RED}✗ ERROR${NC} $1"
 }
 
 log_step() {
-    echo -e "${BLUE}[STEP]${NC} $1"
+    echo -e "${THEME_BLUE}▶ STEP${NC} ${THEME_ACCENT}$1${NC}"
 }
 
 normalize_persona_role_id_install() {

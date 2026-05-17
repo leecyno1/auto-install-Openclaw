@@ -163,6 +163,12 @@ BG_BLUE='\033[44m'
 BG_GREEN='\033[44m'
 BG_RED='\033[41m'
 
+# 大圣之怒主题色：火焰红 + 深海蓝
+THEME_RED="$RED"
+THEME_BLUE="$CYAN"
+THEME_DIM="$GRAY"
+THEME_ACCENT="$WHITE"
+
 # ================================ 配置变量 ================================
 CONFIG_DIR="$HOME/.openclaw"
 LOBSTER_HOME="${LOBSTER_HOME:-$HOME/.lobster}"
@@ -358,38 +364,33 @@ clear_screen() {
 }
 
 print_header() {
-    echo -e "${CYAN}"
-    cat << 'EOF'
-    ╔═══════════════════════════════════════════════════════════════╗
-    ║                                                               ║
-    ║   🔥 大圣之怒配置中心                                         ║
-    ║                                                               ║
-    ╚═══════════════════════════════════════════════════════════════╝
-EOF
-    echo -e "${NC}"
+    echo -e "${THEME_BLUE}╔═══════════════════════════════════════════════════════════════╗${NC}"
+    echo -e "${THEME_BLUE}║${NC} ${THEME_RED}🔥 大圣之怒${NC} ${THEME_ACCENT}OpenClaw / Hermes 配置中心${NC} ${THEME_BLUE}║${NC}"
+    echo -e "${THEME_BLUE}║${NC} ${THEME_DIM}红蓝双轨 · 一键安装 · 模型/Skills/网站联动统一管理${NC}     ${THEME_BLUE}║${NC}"
+    echo -e "${THEME_BLUE}╚═══════════════════════════════════════════════════════════════╝${NC}"
 }
 
 print_divider() {
-    echo -e "${GRAY}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo -e "${THEME_BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━${THEME_RED}◆${THEME_BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 }
 
 print_menu_item() {
     local num=$1
     local text=$2
     local icon=$3
-    echo -e "  ${CYAN}[$num]${NC} $icon $text"
+    echo -e "  ${THEME_RED}[$num]${NC} ${icon}  ${THEME_ACCENT}${text}${NC}"
 }
 
 log_info() {
-    echo -e "${GREEN}✓${NC} $1"
+    echo -e "${THEME_BLUE}✓${NC} $1"
 }
 
 log_warn() {
-    echo -e "${YELLOW}⚠${NC} $1"
+    echo -e "${THEME_RED}⚠${NC} $1"
 }
 
 log_error() {
-    echo -e "${RED}✗${NC} $1"
+    echo -e "${THEME_RED}✗${NC} $1"
 }
 
 normalize_persona_role_id_menu() {

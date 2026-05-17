@@ -179,6 +179,22 @@ class ConfigSurfaceTests(unittest.TestCase):
         self.assertIn('11) manage_openclaw_menu ;;', text)
         self.assertIn('12) manage_hermes_menu ;;', text)
 
+    def test_cli_surfaces_use_dasheng_red_blue_theme(self):
+        menu_text = CONFIG_MENU.read_text(encoding='utf-8')
+        install_text = INSTALL.read_text(encoding='utf-8')
+
+        for text in (menu_text, install_text):
+            self.assertIn('THEME_RED="$RED"', text)
+            self.assertIn('THEME_BLUE="$CYAN"', text)
+            self.assertIn('大圣之怒', text)
+            self.assertIn('红蓝双轨', text)
+            self.assertIn('${THEME_BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━${THEME_RED}◆${THEME_BLUE}', text)
+
+        self.assertIn('OpenClaw / Hermes 配置中心', menu_text)
+        self.assertIn('OpenClaw / Hermes 一键安装器', install_text)
+        self.assertIn('echo -e "  ${THEME_RED}[$num]${NC}', menu_text)
+        self.assertIn('echo -e "${THEME_BLUE}▶ STEP${NC}', install_text)
+
     def test_legacy_expert_model_menu_is_not_user_facing_or_callable(self):
         text = CONFIG_MENU.read_text(encoding='utf-8')
         self.assertNotIn('configure_expert_model_menu()', text)
