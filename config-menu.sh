@@ -13806,6 +13806,122 @@ manage_engine_menu() {
     done
 }
 
+manage_openclaw_menu() {
+    while true; do
+        clear_screen
+        print_header
+
+        local openclaw_status gateway_pid gateway_status
+        check_openclaw_installed && openclaw_status="${GREEN}已安装${NC}" || openclaw_status="${GRAY}未安装${NC}"
+        gateway_pid="$(get_gateway_pid)"
+        if [ -n "$gateway_pid" ]; then
+            gateway_status="${GREEN}运行中${NC} (PID: $gateway_pid)"
+        else
+            gateway_status="${GRAY}未运行${NC}"
+        fi
+
+        echo -e "${WHITE}🦞 OpenClaw 管理${NC}"
+        print_divider
+        echo ""
+        echo -e "  OpenClaw: ${openclaw_status}"
+        echo -e "  Gateway: ${gateway_status}"
+        echo -e "  配置目录: ${WHITE}${OPENCLAW_HOME}${NC}"
+        echo ""
+
+        print_menu_item "1" "查看 OpenClaw 状态" "📊"
+        print_menu_item "2" "Gateway 健康检查" "🩺"
+        print_menu_item "3" "OpenClaw 诊断" "🔍"
+        print_menu_item "4" "服务管理（启动/停止/重启）" "⚙️"
+        print_menu_item "5" "模型配置" "🤖"
+        print_menu_item "6" "Skills 管理" "🧩"
+        print_menu_item "7" "官方渠道插件管理" "📡"
+        print_menu_item "8" "网站联动同步" "🌐"
+        print_menu_item "9" "设为默认引擎：OpenClaw" "🦞"
+        print_menu_item "0" "返回主菜单" "↩️"
+        echo ""
+        echo -en "${YELLOW}请选择 [0-9]: ${NC}"
+
+        local choice=""
+        if ! read choice < "$TTY_INPUT"; then
+            echo ""
+            log_error "无法读取输入（TTY 不可用），退出配置菜单。"
+            exit 1
+        fi
+
+        case "$choice" in
+            1) run_openclaw_status ;;
+            2) run_openclaw_health ;;
+            3) run_openclaw_doctor ;;
+            4) manage_service; return ;;
+            5) config_ai_model; return ;;
+            6) manage_skills; return ;;
+            7) manage_official_plugins; return ;;
+            8) sync_website_integration_menu ;;
+            9)
+                set_lobster_engine_state_menu "openclaw" "$(get_lobster_installed_engines_menu)"
+                log_info "默认引擎已切换为 OpenClaw"
+                ;;
+            0) return ;;
+            *) log_error "无效选择" ;;
+        esac
+        press_enter
+    done
+}
+
+manage_hermes_menu() {
+    while true; do
+        clear_screen
+        print_header
+
+        local default_engine hermes_status installed_engines
+        default_engine="$(get_lobster_default_engine_menu)"
+        installed_engines="$(get_lobster_installed_engines_menu)"
+        check_hermes_installed_menu && hermes_status="${GREEN}已安装${NC}" || hermes_status="${GRAY}未安装${NC}"
+
+        echo -e "${WHITE}⚕️ Hermes 管理${NC}"
+        print_divider
+        echo ""
+        echo -e "  Hermes: ${hermes_status}"
+        echo -e "  默认引擎: ${WHITE}${default_engine}${NC}"
+        echo -e "  已安装引擎: ${WHITE}${installed_engines}${NC}"
+        echo -e "  Hermes 派生档案: ${WHITE}${HERMES_HOME}/lobster-profile.env${NC}"
+        echo ""
+
+        print_menu_item "1" "安装 / 更新 Hermes" "⬇️"
+        print_menu_item "2" "查看 Hermes 状态 / 诊断" "📋"
+        print_menu_item "3" "OpenClaw -> Hermes 迁移" "🚚"
+        print_menu_item "4" "重应用 Hermes 角色 / 规则 / 工具映射" "🔁"
+        print_menu_item "5" "设为默认引擎：Hermes" "⚕️"
+        print_menu_item "0" "返回主菜单" "↩️"
+        echo ""
+        echo -en "${YELLOW}请选择 [0-5]: ${NC}"
+
+        local choice=""
+        if ! read choice < "$TTY_INPUT"; then
+            echo ""
+            log_error "无法读取输入（TTY 不可用），退出配置菜单。"
+            exit 1
+        fi
+
+        case "$choice" in
+            1) install_hermes_menu ;;
+            2) run_hermes_status_menu ;;
+            3) run_hermes_migration_menu ;;
+            4) apply_hermes_profile_menu ;;
+            5)
+                if ! check_hermes_installed_menu; then
+                    log_warn "Hermes 尚未安装，建议先执行安装。"
+                fi
+                set_lobster_engine_state_menu "hermes" "$installed_engines"
+                log_info "默认引擎已切换为 Hermes"
+                ;;
+            0) return ;;
+            *) log_error "无效选择" ;;
+        esac
+        press_enter
+    done
+}
+
 sync_website_integration_menu() {
     clear_screen
     print_header
@@ -13898,7 +14014,15 @@ route_config_subcommand_menu() {
             sync_website_integration_menu
             return 0
             ;;
-        hermes|engine)
+        openclaw)
+            manage_openclaw_menu
+            return 0
+            ;;
+        hermes)
+            manage_hermes_menu
+            return 0
+            ;;
+        engine)
             manage_engine_menu
             return 0
             ;;
@@ -13925,7 +14049,8 @@ show_main_menu() {
     print_menu_item "8" "身份配置" "👤"
     print_menu_item "9" "服务管理（含连通性）" "⚙️"
     print_menu_item "10" "像素小屋" "🏠"
-    print_menu_item "11" "引擎管理" "🧭"
+    print_menu_item "11" "OpenClaw 管理" "🦞"
+    print_menu_item "12" "Hermes 管理" "⚕️"
     echo ""
     print_menu_item "0" "退出" "🚪"
     echo ""
@@ -14034,7 +14159,7 @@ main() {
     # 主循环
     while true; do
         show_main_menu
-        echo -en "${YELLOW}请选择 [0-11]: ${NC}"
+        echo -en "${YELLOW}请选择 [0-12]: ${NC}"
         if ! read choice < "$TTY_INPUT"; then
             echo ""
             log_error "无法读取输入（TTY 不可用），退出配置菜单。"
@@ -14052,7 +14177,8 @@ main() {
             8) config_identity ;;
             9) manage_service ;;
             10) manage_pixel_house ;;
-            11) manage_engine_menu ;;
+            11) manage_openclaw_menu ;;
+            12) manage_hermes_menu ;;
             0)
                 echo ""
                 echo -e "${CYAN}再见！🦞${NC}"

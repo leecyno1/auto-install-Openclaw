@@ -170,6 +170,15 @@ class ConfigSurfaceTests(unittest.TestCase):
         self.assertNotIn('print_menu_item "12" "专家模型配置', text)
         self.assertIn('12)\n            config_image_provider_viviai', text)
 
+    def test_openclaw_and_hermes_management_are_top_level_entries(self):
+        text = CONFIG_MENU.read_text(encoding='utf-8')
+        self.assertIn('manage_openclaw_menu()', text)
+        self.assertIn('manage_hermes_menu()', text)
+        self.assertIn('print_menu_item "11" "OpenClaw 管理"', text)
+        self.assertIn('print_menu_item "12" "Hermes 管理"', text)
+        self.assertIn('11) manage_openclaw_menu ;;', text)
+        self.assertIn('12) manage_hermes_menu ;;', text)
+
     def test_legacy_expert_model_menu_is_not_user_facing_or_callable(self):
         text = CONFIG_MENU.read_text(encoding='utf-8')
         self.assertNotIn('configure_expert_model_menu()', text)
