@@ -121,6 +121,8 @@ THEME_RED="$RED"
 THEME_BLUE="$CYAN"
 THEME_DIM="$GRAY"
 THEME_ACCENT="$WHITE"
+THEME_PANEL="${BLUE}"
+THEME_OK="${CYAN}"
 
 # ================================ 配置变量 ================================
 # 兼容旧环境变量命名（clawdbot -> openclaw）
@@ -316,11 +318,23 @@ HELP=0
 # ================================ 工具函数 ================================
 
 print_banner() {
-    echo -e "${THEME_BLUE}╔═══════════════════════════════════════════════════════════════╗${NC}"
-    echo -e "${THEME_BLUE}║${NC} ${THEME_RED}🔥 大圣之怒${NC} ${THEME_ACCENT}OpenClaw / Hermes 一键安装器${NC} ${THEME_BLUE}║${NC}"
-    echo -e "${THEME_BLUE}║${NC} ${THEME_DIM}红蓝双轨 · 国内源优先 · Skills 独立同步 · 配置中心联动${NC} ${THEME_BLUE}║${NC}"
-    echo -e "${THEME_BLUE}╚═══════════════════════════════════════════════════════════════╝${NC}"
-    echo -e "${THEME_BLUE}🔖 Version: v${INSTALLER_VERSION}${NC}"
+    echo -e "${THEME_RED}┌─ \$ git clone https://github.com/leecyno1/auto-install-Openclaw${NC}"
+    echo -e "${THEME_BLUE}└─ \$ ./install.sh --engine ${LOBSTER_ENGINE:-openclaw}${NC}"
+    echo -e "${THEME_PANEL}╔════════════════════════════════════════════════════════════════════╗${NC}"
+    echo -e "${THEME_PANEL}║${NC} ${THEME_RED}●${NC} ${THEME_ACCENT}auto-install-Openclaw${NC}                                      ${THEME_PANEL}║${NC}"
+    echo -e "${THEME_PANEL}╠════════════════════════════════════════════════════════════════════╣${NC}"
+    echo -e "${THEME_PANEL}║${NC} ${THEME_RED} ██████╗ ██████╗ ███████╗███╗   ██╗ ██████╗██╗      █████╗ ██╗    ██╗${NC}"
+    echo -e "${THEME_PANEL}║${NC} ${THEME_RED}██╔═══██╗██╔══██╗██╔════╝████╗  ██║██╔════╝██║     ██╔══██╗██║    ██║${NC}"
+    echo -e "${THEME_PANEL}║${NC} ${THEME_BLUE}██║   ██║██████╔╝█████╗  ██╔██╗ ██║██║     ██║     ███████║██║ █╗ ██║${NC}"
+    echo -e "${THEME_PANEL}║${NC} ${THEME_BLUE}██║   ██║██╔═══╝ ██╔══╝  ██║╚██╗██║██║     ██║     ██╔══██║██║███╗██║${NC}"
+    echo -e "${THEME_PANEL}║${NC} ${THEME_ACCENT}╚██████╔╝██║     ███████╗██║ ╚████║╚██████╗███████╗██║  ██║╚███╔███╔╝${NC}"
+    echo -e "${THEME_PANEL}║${NC} ${THEME_DIM} ╚═════╝ ╚═╝     ╚══════╝╚═╝  ╚═══╝ ╚═════╝╚══════╝╚═╝  ╚═╝ ╚══╝╚══╝ ${THEME_PANEL}║${NC}"
+    echo -e "${THEME_PANEL}╠════════════════════════════════════════════════════════════════════╣${NC}"
+    echo -e "${THEME_PANEL}║${NC} ${THEME_BLUE}Auto Installer by leecyno1${NC}      ${THEME_DIM}Version v${INSTALLER_VERSION}${NC}"
+    echo -e "${THEME_PANEL}║${NC} ${THEME_BLUE}●${NC} 检测系统环境 ...        [ ${THEME_OK}OK${NC} ]"
+    echo -e "${THEME_PANEL}║${NC} ${THEME_BLUE}●${NC} 安装必要依赖 ...        [ ${THEME_OK}OK${NC} ]"
+    echo -e "${THEME_PANEL}║${NC} ${THEME_BLUE}●${NC} 接入国内源 / Skills ... [ ${THEME_OK}OK${NC} ]"
+    echo -e "${THEME_PANEL}╚════════════════════════════════════════════════════════════════════╝${NC}"
     echo ""
 }
 
@@ -412,19 +426,19 @@ print_exit_hint() {
 }
 
 log_info() {
-    echo -e "${THEME_BLUE}✓ INFO${NC} $1"
+    echo -e "${THEME_BLUE}●${NC} ${THEME_ACCENT}$1${NC}        [ ${THEME_OK}OK${NC} ]"
 }
 
 log_warn() {
-    echo -e "${THEME_RED}⚠ WARN${NC} $1"
+    echo -e "${THEME_RED}● WARN${NC} $1"
 }
 
 log_error() {
-    echo -e "${THEME_RED}✗ ERROR${NC} $1"
+    echo -e "${THEME_RED}● ERROR${NC} $1"
 }
 
 log_step() {
-    echo -e "${THEME_BLUE}▶ STEP${NC} ${THEME_ACCENT}$1${NC}"
+    echo -e "${THEME_RED}$${NC} ${THEME_BLUE}$1${NC}"
 }
 
 normalize_persona_role_id_install() {

@@ -168,6 +168,8 @@ THEME_RED="$RED"
 THEME_BLUE="$CYAN"
 THEME_DIM="$GRAY"
 THEME_ACCENT="$WHITE"
+THEME_PANEL="${BLUE}"
+THEME_OK="${CYAN}"
 
 # ================================ 配置变量 ================================
 CONFIG_DIR="$HOME/.openclaw"
@@ -364,10 +366,15 @@ clear_screen() {
 }
 
 print_header() {
-    echo -e "${THEME_BLUE}╔═══════════════════════════════════════════════════════════════╗${NC}"
-    echo -e "${THEME_BLUE}║${NC} ${THEME_RED}🔥 大圣之怒${NC} ${THEME_ACCENT}OpenClaw / Hermes 配置中心${NC} ${THEME_BLUE}║${NC}"
-    echo -e "${THEME_BLUE}║${NC} ${THEME_DIM}红蓝双轨 · 一键安装 · 模型/Skills/网站联动统一管理${NC}     ${THEME_BLUE}║${NC}"
-    echo -e "${THEME_BLUE}╚═══════════════════════════════════════════════════════════════╝${NC}"
+    echo -e "${THEME_RED}┌─ \$ openclaw-setup config${NC}"
+    echo -e "${THEME_BLUE}└─ 大圣之怒 / OpenClaw Control Center${NC}"
+    echo -e "${THEME_PANEL}╔═══════════════════════════════════════════════════════════════╗${NC}"
+    echo -e "${THEME_PANEL}║${NC} ${THEME_RED}●${NC} ${THEME_ACCENT}大圣之怒配置中心${NC}                         ${THEME_DIM}OpenClaw / Hermes${NC} ${THEME_PANEL}║${NC}"
+    echo -e "${THEME_PANEL}╠═══════════════════════════════════════════════════════════════╣${NC}"
+    echo -e "${THEME_PANEL}║${NC} ${THEME_BLUE}●${NC} 模型 / Skills / 网站联动   [ ${THEME_OK}OK${NC} ]"
+    echo -e "${THEME_PANEL}║${NC} ${THEME_BLUE}●${NC} OpenClaw / Hermes 双轨     [ ${THEME_OK}OK${NC} ]"
+    echo -e "${THEME_PANEL}║${NC} ${THEME_RED}●${NC} 红蓝主题终端面板            [ READY ]"
+    echo -e "${THEME_PANEL}╚═══════════════════════════════════════════════════════════════╝${NC}"
 }
 
 print_divider() {

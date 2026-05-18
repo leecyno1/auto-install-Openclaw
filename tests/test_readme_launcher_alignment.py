@@ -9,6 +9,17 @@ CONFIG_MENU = ROOT / 'config-menu.sh'
 
 
 class ReadmeLauncherAlignmentTests(unittest.TestCase):
+    def test_readme_homepage_is_promotional_and_skill_table_first(self):
+        readme_text = README.read_text(encoding='utf-8')
+        self.assertIn('photo/dasheng-openclaw-promo.png', readme_text)
+        self.assertIn('Featured-大圣之怒', readme_text)
+        self.assertIn('一键安装 OpenClaw / Hermes，把模型、Skills、规则、像素小屋和网站联动收束到一个可重复部署的入口。', readme_text)
+        self.assertIn('## 全部技能', readme_text)
+        self.assertIn('| 档位 | Skill | 分类 | 评分 | 依赖 | 一句话说明 | 手册 | 原仓库 |', readme_text)
+        self.assertLess(readme_text.index('photo/dasheng-openclaw-promo.png'), readme_text.index('Featured-大圣之怒'))
+        self.assertLess(readme_text.index('Featured-大圣之怒'), readme_text.index('## 全部技能'))
+        self.assertLess(readme_text.index('## 全部技能'), readme_text.index('## 模块概览'))
+
     def test_readme_primary_lobster_setup_commands_match_launcher_surface(self):
         readme_text = README.read_text(encoding='utf-8')
         install_text = INSTALL.read_text(encoding='utf-8')

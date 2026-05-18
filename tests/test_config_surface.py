@@ -186,14 +186,17 @@ class ConfigSurfaceTests(unittest.TestCase):
         for text in (menu_text, install_text):
             self.assertIn('THEME_RED="$RED"', text)
             self.assertIn('THEME_BLUE="$CYAN"', text)
+            self.assertIn('THEME_PANEL="${BLUE}"', text)
+            self.assertIn('THEME_OK="${CYAN}"', text)
             self.assertIn('大圣之怒', text)
-            self.assertIn('红蓝双轨', text)
+            self.assertIn('[ ${THEME_OK}OK${NC} ]', text)
             self.assertIn('${THEME_BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━${THEME_RED}◆${THEME_BLUE}', text)
 
-        self.assertIn('OpenClaw / Hermes 配置中心', menu_text)
-        self.assertIn('OpenClaw / Hermes 一键安装器', install_text)
+        self.assertIn('大圣之怒配置中心', menu_text)
+        self.assertIn('auto-install-Openclaw', install_text)
+        self.assertIn('██████╗ ██████╗', install_text)
         self.assertIn('echo -e "  ${THEME_RED}[$num]${NC}', menu_text)
-        self.assertIn('echo -e "${THEME_BLUE}▶ STEP${NC}', install_text)
+        self.assertIn('echo -e "${THEME_RED}$${NC} ${THEME_BLUE}$1${NC}"', install_text)
 
     def test_legacy_expert_model_menu_is_not_user_facing_or_callable(self):
         text = CONFIG_MENU.read_text(encoding='utf-8')
