@@ -293,7 +293,7 @@ class ConfigSurfaceTests(unittest.TestCase):
             'https://api.viviai.cc|/v1/chat/completions',
         )
 
-    def test_minimax_official_skills_are_local_and_wired_via_shared_skill_catalog(self):
+    def test_minimax_official_skills_are_in_boutique_and_wired_via_shared_skill_catalog(self):
         install_text = INSTALL.read_text(encoding='utf-8')
         menu_text = CONFIG_MENU.read_text(encoding='utf-8')
         skills_lib_text = SKILLS_LIB.read_text(encoding='utf-8')
@@ -334,11 +334,11 @@ class ConfigSurfaceTests(unittest.TestCase):
         self.assertIn('install_super_skill_from_local "ai-meeting-notes" "ai-meeting-notes"', text)
         self.assertIn('install_super_skill_from_local "tmux" "tmux"', text)
 
-    def test_super_skill_repo_entries_prefer_local_bundle_before_remote_repo(self):
+    def test_super_skill_repo_entries_prefer_cache_before_remote_repo(self):
         text = CONFIG_MENU.read_text(encoding='utf-8')
         self.assertIn('install_super_skill_from_bundle_or_repo()', text)
-        self.assertIn('安装 Baoyu 系列技能（本地优先）', text)
-        self.assertIn('安装 wechat-skills（本地优先）', text)
+        self.assertIn('安装 Baoyu 系列技能（缓存/远程）', text)
+        self.assertIn('安装 wechat-skills（缓存/远程）', text)
         self.assertIn(
             'install_super_skill_from_bundle_or_repo "baoyu-skills" "https://github.com/JimLiu/baoyu-skills.git" "baoyu-skills"',
             text,

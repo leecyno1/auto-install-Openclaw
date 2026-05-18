@@ -11,7 +11,7 @@
    - `openclaw doctor --fix`
    - `openclaw gateway restart`
    - `openclaw channels list`
-4. 如需追踪插件与 skills 上游来源，查看：`docs/upstream-sources.md`
+4. 如需追踪 skills 上游来源，查看独立仓库 `boutique-openclaw-skills` 的清单与手册。
 ## 2. 渠道总览
 
 | 菜单项 | 渠道 | 插件来源 | 插件包 |

@@ -5,13 +5,13 @@
 # 职责：
 # - 默认 skills 从 boutique-openclaw-skills 同步
 # - 兼容 basic/extended/super，同时支持 boutique low/medium/high 三档
-# - 本仓库只保留安装器侧兼容 manifest 与测试
+# - 本仓库不再内置 skills 库存或 manifest
 #
 # CLI 用法：
 #   openclaw-setup config skills --tier low|medium|high
 #   openclaw-setup config skills --tier basic|extended|super  # compatibility aliases
 #   openclaw-setup config skills --list
-#   openclaw-setup config skills --force-local
+#   openclaw-setup config skills --force-local  # compatibility: use boutique cache/source only
 #===============================================================================
 
 set -euo pipefail
@@ -24,8 +24,6 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 OPENCLAW_SKILLS_REPO_URL="${OPENCLAW_SKILLS_REPO_URL:-https://gitee.com/leecyno1/boutique-openclaw-skills.git}"
 OPENCLAW_SKILLS_REPO_GITHUB_URL="${OPENCLAW_SKILLS_REPO_GITHUB_URL:-https://github.com/leecyno1/boutique-openclaw-skills.git}"
 OPENCLAW_SKILLS_REPO_MIRROR_URL="${OPENCLAW_SKILLS_REPO_MIRROR_URL:-https://mirror.ghproxy.com/https://github.com/leecyno1/boutique-openclaw-skills.git}"
-SKILLS_LOCAL_SOURCE="${OPENCLAW_SKILLS_BUNDLE_DIR:-$REPO_ROOT/skills/default}"
-SKILLS_LOCAL_MANIFEST="$REPO_ROOT/skills/manifest.json"
 SKILLS_BOUTIQUE_LOW_TIER="tiers/low.json"
 SKILLS_INSTALL_TARGET="$HOME/.openclaw/skills"
 
@@ -101,10 +99,9 @@ resolve_skills_source() {
     local candidate cache_root cache_repo tmp_repo url
     for candidate in \
         "${OPENCLAW_SKILLS_BUNDLE_DIR:-}" \
-        "$SKILLS_LOCAL_SOURCE" \
         "$HOME/.openclaw/.cache/boutique-openclaw-skills/skills/default" \
         "$HOME/boutique-openclaw-skills/skills/default" \
-        "/Volumes/PSSD/Projects/boutique-openclaw-skills/skills/default"; do
+        "$REPO_ROOT/../boutique-openclaw-skills/skills/default"; do
         [ -n "$candidate" ] || continue
         if [ -d "$candidate" ]; then
             echo "$candidate"
@@ -160,12 +157,7 @@ get_tier_skills() {
     skills="$(get_boutique_tier_skills "$tier" 2>/dev/null || echo "")"
     [ -n "$skills" ] && { echo "$skills"; return 0; }
 
-    # 使用 manifest.json 获取 skill 列表
-    if [ -f "$SKILLS_LOCAL_MANIFEST" ]; then
-        skills="$(openclaw_skill_manifest_list "bundles:$tier" 2>/dev/null || echo "")"
-    fi
-
-    # 如果 manifest 获取失败，使用 fallback
+    # 如果 boutique tier 获取失败，使用内置兼容列表兜底
     if [ -z "$skills" ]; then
         case "$tier" in
             basic)
@@ -203,7 +195,11 @@ install_basic_skills_local() {
 
     for skill in $basic_skills; do
         local source_root source_dir
-        source_root="$(resolve_skills_source 2>/dev/null || echo "$SKILLS_LOCAL_SOURCE")"
+        source_root="$(resolve_skills_source 2>/dev/null || true)"
+        if [ -z "$source_root" ]; then
+            log_warn "  Cannot resolve boutique skills source"
+            return 1
+        fi
         source_dir="$source_root/$skill"
 
         if [ -d "$source_dir" ]; then
@@ -222,7 +218,7 @@ install_basic_skills_local() {
             fi
             log_info "  Installed: $skill"
         else
-            log_warn "  Missing: $skill (not found in local repository)"
+            log_warn "  Missing: $skill (not found in boutique repository/cache)"
         fi
     done
 
@@ -230,26 +226,11 @@ install_basic_skills_local() {
 }
 
 #===============================================================================
-# 安装扩展 Skills（官方源 + 本地回退）
+# 安装扩展 Skills（Boutique 同步）
 #===============================================================================
 
 install_extended_skills_official() {
-    log_info "Installing extended skills from official source..."
-
-    # 尝试使用官方 CLI 同步
-    if command -v openclaw &>/dev/null; then
-        log_info "Using 'openclaw skills sync'..."
-
-        if openclaw skills sync 2>&1; then
-            log_success "Official skills synced successfully"
-            return 0
-        else
-            log_warn "Official sync failed, falling back to local..."
-        fi
-    else
-        log_warn "OpenClaw CLI not found, using local repository"
-    fi
-
+    log_info "Official OpenClaw skill sync is skipped; boutique repository is authoritative."
     return 1
 }
 
@@ -266,7 +247,11 @@ install_extended_skills_local() {
 
     for skill in $extended_skills; do
         local source_root source_dir
-        source_root="$(resolve_skills_source 2>/dev/null || echo "$SKILLS_LOCAL_SOURCE")"
+        source_root="$(resolve_skills_source 2>/dev/null || true)"
+        if [ -z "$source_root" ]; then
+            log_warn "Cannot resolve boutique skills source"
+            return 1
+        fi
         source_dir="$source_root/$skill"
 
         if [ -d "$source_dir" ]; then
@@ -342,10 +327,12 @@ list_skills() {
 
     echo ""
 
-    # 本地可用的 skills
-    echo "Available in local repository ($(count_skills "$SKILLS_LOCAL_SOURCE") skills):"
-    if [ -d "$SKILLS_LOCAL_SOURCE" ]; then
-        find "$SKILLS_LOCAL_SOURCE" -maxdepth 1 -type d -not -name ".git*" | \
+    # Boutique 可用的 skills
+    local available_source
+    available_source="$(resolve_skills_source 2>/dev/null || true)"
+    echo "Available in boutique repository/cache ($(count_skills "$available_source") skills):"
+    if [ -d "$available_source" ]; then
+        find "$available_source" -maxdepth 1 -type d -not -name ".git*" | \
             sed 's|.*/||' | sort | head -20 | while read -r skill; do
             local status=""
             [ -d "$SKILLS_INSTALL_TARGET/$skill" ] && status="[installed]"
@@ -375,7 +362,7 @@ main() {
                 tier="$2"
                 shift
                 ;;
-            --force-local|-l)
+            --force-local)
                 force_local="true"
                 ;;
             --list|-l)
@@ -397,6 +384,8 @@ main() {
         esac
         shift
     done
+
+    tier="$(normalize_tier "$tier")"
 
     # 验证 tier
     case "$tier" in
@@ -421,17 +410,11 @@ main() {
     # 1. 基础 skills - 从 boutique 源或兼容缓存安装
     install_basic_skills_local
 
-    # 2. 扩展 skills - 根据策略
+    # 2. 扩展 skills - 从 boutique 仓库/缓存继续同步
     if [ "$tier" != "basic" ]; then
         echo ""
-        if [ "$force_local" = "true" ]; then
-            install_extended_skills_local "$tier"
-        else
-            # 混合策略：优先官方，失败后本地
-            if ! install_extended_skills_official; then
-                install_extended_skills_local "$tier"
-            fi
-        fi
+        [ "$force_local" = "true" ] || install_extended_skills_official || true
+        install_extended_skills_local "$tier"
     fi
 
     # 3. 验证
@@ -452,7 +435,7 @@ Usage:
 
 Options:
   --tier, -t <tier>     Installation tier: low, medium, high (aliases: basic, extended, super)
-  --force-local, -l      Skip official sync, use local repository only
+  --force-local          Compatibility flag; use boutique repository/cache only
   --list, -l             List installed and available skills
   --force-update, -f     Force update already installed skills
   --help, -h             Show this help message
@@ -469,7 +452,7 @@ Examples:
   # Install medium skills
   openclaw-setup config skills --tier medium
 
-  # Force local installation
+  # Force boutique cache/source installation
   openclaw-setup config skills --force-local
 
   # List all skills

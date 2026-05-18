@@ -204,7 +204,7 @@ SWAP_FILE_BASE="${OPENCLAW_SWAP_FILE:-/swapfile.openclaw}"
 INSTALL_SKILL_DEPS="${OPENCLAW_INSTALL_SKILL_DEPS:-1}"
 SKILL_PIP_PACKAGES_DEFAULT="duckduckgo-search akshare requests pyyaml pypdf pillow openpyxl python-pptx python-docx lxml defusedxml pdf2image"
 SKILL_PIP_PACKAGES="${OPENCLAW_SKILL_PIP_PACKAGES:-$SKILL_PIP_PACKAGES_DEFAULT}"
-SKILL_PIP_PACKAGES_FILE_REL="skills/requirements-runtime.txt"
+SKILL_PIP_PACKAGES_FILE_REL="${OPENCLAW_SKILL_PIP_PACKAGES_FILE_REL:-}"
 AUTO_FIX_ATTEMPTED=0
 GATEWAY_CONVERGED_ONCE=0
 # 默认官方消息渠道插件（仅保留通用官方渠道；微信/企业微信/钉钉/QQ 改为用户手动安装）
@@ -1423,6 +1423,22 @@ get_profile_skill_list() {
     esac
 }
 
+get_boutique_profile_skill_list_install() {
+    local bundle_dir="$1"
+    local level="$2"
+    local tier_file
+    level="$(normalize_rule_profile_level "$level")"
+    [ -n "$bundle_dir" ] || return 1
+    tier_file="$(cd "$bundle_dir/../.." 2>/dev/null && pwd)/tiers/$level.json"
+    [ -f "$tier_file" ] || return 1
+    python3 - "$tier_file" <<'PY'
+import json, sys
+with open(sys.argv[1], encoding='utf-8') as handle:
+    payload = json.load(handle)
+print(' '.join(item['id'] for item in payload.get('skills', []) if item.get('id')))
+PY
+}
+
 get_profile_token_limits() {
     local level
     level="$(normalize_rule_profile_level "$1")"
@@ -1917,7 +1933,7 @@ apply_profile_skill_policy() {
     fi
 
     mkdir -p "$target_dir" 2>/dev/null || true
-    skills_list="$(get_profile_skill_list "$level")"
+    skills_list="$(get_boutique_profile_skill_list_install "$bundle_dir" "$level" 2>/dev/null || get_profile_skill_list "$level")"
     skill_count="$(printf "%s\n" "$skills_list" | wc -w | tr -d ' ')"
     case "$level" in
         low) skill_pack_label="基础技能包（基础）" ;;
@@ -2783,9 +2799,10 @@ pip_install_skill_dep() {
 resolve_skill_pip_packages() {
     local script_dir req_file line pkgs
     script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-    req_file="$script_dir/$SKILL_PIP_PACKAGES_FILE_REL"
+    req_file=""
+    [ -n "$SKILL_PIP_PACKAGES_FILE_REL" ] && req_file="$script_dir/$SKILL_PIP_PACKAGES_FILE_REL"
 
-    if [ -f "$req_file" ]; then
+    if [ -n "$req_file" ] && [ -f "$req_file" ]; then
         pkgs=""
         while IFS= read -r line; do
             line="$(echo "$line" | sed 's/#.*$//' | xargs)"
@@ -3863,9 +3880,8 @@ resolve_install_skills_bundle_dir() {
     script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
     for local_bundle in \
         "${OPENCLAW_SKILLS_BUNDLE_DIR:-}" \
-        "$script_dir/skills/default" \
         "$HOME/boutique-openclaw-skills/skills/default" \
-        "/Volumes/PSSD/Projects/boutique-openclaw-skills/skills/default"; do
+        "$script_dir/../boutique-openclaw-skills/skills/default"; do
         [ -n "$local_bundle" ] || continue
         if [ -d "$local_bundle" ] && is_default_skills_bundle_usable_install "$local_bundle"; then
             echo "$local_bundle"
@@ -3894,7 +3910,7 @@ resolve_install_skills_bundle_dir() {
         return 1
     fi
 
-    log_warn "当前安装脚本不在技能仓库目录内，正在从 boutique-openclaw-skills 拉取默认技能包..." >&2
+    log_warn "正在从 boutique-openclaw-skills 拉取默认技能包..." >&2
     tmp_repo="$(mktemp -d "$cache_root/repo.XXXXXX")"
     for url in $(get_boutique_skills_repo_urls_install); do
         rm -rf "$tmp_repo" 2>/dev/null || true
@@ -5289,12 +5305,9 @@ install_channel_assets() {
     local skills_root="$CONFIG_DIR/skills"
     local docs_dir="$CONFIG_DIR/docs"
     local doc_file="$docs_dir/channels-configuration-guide.md"
-    local source_index_file="$docs_dir/upstream-sources.md"
     local script_dir
     script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
     local local_doc="$script_dir/docs/channels-configuration-guide.md"
-    local local_source_index="$script_dir/docs/upstream-sources.md"
-    local local_skill="$script_dir/skills/channel-setup-assistant/SKILL.md"
 
     mkdir -p "$skill_dir" "$skills_root" "$docs_dir" 2>/dev/null || true
 
@@ -5320,18 +5333,7 @@ install_channel_assets() {
 EOF
     fi
 
-    if [ -f "$local_source_index" ]; then
-        cp "$local_source_index" "$source_index_file" 2>/dev/null || true
-    elif download_with_fallback "$source_index_file.tmp" "$GITHUB_RAW_URL/docs/upstream-sources.md" "$INSTALLER_MIRROR_RAW_URL/docs/upstream-sources.md"; then
-        mv "$source_index_file.tmp" "$source_index_file"
-    else
-        rm -f "$source_index_file.tmp" 2>/dev/null || true
-    fi
-
-    if [ -f "$local_skill" ]; then
-        cp "$local_skill" "$skill_file" 2>/dev/null || true
-    else
-        cat > "$skill_file" <<'EOF'
+    cat > "$skill_file" <<'EOF'
 # OpenClaw 渠道配置助手 Skill
 
 目标：当用户提供消息渠道信息时，交互式收集缺失参数，并执行命令行完成配置。
@@ -5357,14 +5359,12 @@ EOF
 2) `openclaw gateway restart`
 3) `openclaw channels list`
 EOF
-    fi
 
     log_info "默认技能包将按规则档位注入（低/中/高），此步骤仅注入渠道文档与渠道助手 Skill。"
 
-    chmod 644 "$skill_file" "$doc_file" "$source_index_file" 2>/dev/null || true
+    chmod 644 "$skill_file" "$doc_file" 2>/dev/null || true
     log_info "已注入渠道配置文档与 Skill:"
     log_info "  文档: $doc_file"
-    log_info "  上游索引: $source_index_file"
     log_info "  Skill: $skill_file"
 }
 

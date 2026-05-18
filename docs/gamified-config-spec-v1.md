@@ -19,7 +19,7 @@
 | 游戏概念 | OpenClaw 真实能力 | 说明 |
 |---|---|---|
 | 工作档案（Profile） | 工作档案（identity.role + persona files） | 7 选 1，定义默认风格与能力偏好 |
-| 技能分层（Skills Tier） | `skills/default/*` + 档位安装策略 | 基础/进阶/终极三层解锁 |
+| 技能分层（Skills Tier） | boutique 仓库 `tiers/*.json` + 档位安装策略 | 基础/进阶/终极三层解锁 |
 | 工具配置（Tools） | 模型、API、工具开关、安全策略 | 模型=主副武器，安全=护甲，渠道=护符 |
 | 运行状态（Stats） | 服务状态、token、任务统计、成功率 | 实时显示角色战斗状态 |
 | 使用统计（XP/Level） | 使用时长+Token+任务完成+成功数 | 推动角色成长与功能解锁 |

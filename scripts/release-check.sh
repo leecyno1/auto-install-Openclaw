@@ -7,9 +7,6 @@ cd "$ROOT_DIR"
 pass() { echo "[PASS] $1"; }
 fail() { echo "[FAIL] $1"; exit 1; }
 
-python3 scripts/generate_skills_manifest.py --check >/dev/null || fail "skills manifest freshness"
-pass "skills manifest freshness"
-
 ./scripts/preflight-check.sh >/dev/null || fail "preflight"
 pass "preflight"
 

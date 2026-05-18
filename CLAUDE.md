@@ -85,7 +85,7 @@ python3 -m unittest tests/test_media_quota.py
 2. **Independent Modules**: Skills, tier rules, Pixel House, and API config are separate scripts in `scripts/modules/`
 3. **No Duplication**: Removed features that duplicate official OpenClaw CLI (model config, channel management, status monitoring)
 4. **Flexible Replacement**: Support replacing hardcoded third-party service URLs in skills
-5. **Hybrid Strategy**: Basic skills from local repo (fast), extended skills from official source (up-to-date)
+5. **Boutique Skills Source**: Default skills, tier docs, manuals, and original-source links live in `boutique-openclaw-skills`; this repo only installs/syncs them
 6. **Data Safety**: All modifications create backups, support rollback
 
 ### Repository Structure
@@ -105,8 +105,8 @@ python3 -m unittest tests/test_media_quota.py
 │   ├── migrate-to-modular.sh           # Migration wizard (~399 lines)
 │   ├── lobster-world.sh                # Pixel House launcher
 │   ├── apply-web-profile.sh            # Vendor control profile injection
-│   └── *.py                            # Skills sync, quota management, etc.
-├── skills/default/                     # Local skills repository (100+ skills)
+│   └── *.py                            # Quota, health, registry, and runtime helpers
+├── skills/README.md                    # Pointer to boutique-openclaw-skills source
 ├── docs/                               # Documentation
 ├── subprojects/
 │   └── lobster-sanctum-ui/             # Pixel House workbench (Flask backend)
@@ -124,11 +124,10 @@ python3 -m unittest tests/test_media_quota.py
 - TTY detection for pipe-safe execution
 
 **2. Skills Module (`scripts/modules/skills.sh`)**
-- Hybrid installation strategy: basic skills from local repo, extended from official source
-- Three tiers: basic (~60), extended (~80), super (~100+)
-- Uses `skills/manifest.json` as single source of truth
-- Automatic fallback to local repo if official source fails
-- CLI: `openclaw-setup config skills --tier <basic|extended|super>`
+- Boutique-only installation strategy: Gitee default, GitHub/mirror fallback, local cache fallback
+- Three tiers: low/basic, medium/extended, high/super, read from boutique `tiers/*.json` when available
+- This repository does not vendor default skills or generated skill manifests
+- CLI: `openclaw-setup config skills --tier <low|medium|high>`
 
 **3. Tier Rules Module (`scripts/modules/tier-rules.sh`)**
 - Four quota levels: none (unlimited), low (100 req/5h), medium (300 req/5h), high (unlimited req)
@@ -218,24 +217,16 @@ The API configuration module allows replacing hardcoded third-party service URLs
 
 The `api_replacer.py` script scans all skills and replaces URLs using regex patterns, backing up files before modification.
 
-## Skills Development
+## Skills Ownership
 
-Skills are stored in `skills/default/<skill-name>/` with this structure:
+Default skills are maintained outside this installer repository. Do not add vendored skill directories, generated skill manuals, or local manifests here.
 
-```
-skill-name/
-├── GUIDE.md          # User-facing documentation (required)
-├── SKILL.md          # Claude-facing instructions (required)
-├── _meta.json        # Metadata (tier, API requirements, triggers)
-├── scripts/          # Executable scripts (optional)
-└── references/       # Additional docs (optional)
-```
+- Source of truth: `https://gitee.com/leecyno1/boutique-openclaw-skills.git`
+- GitHub fallback: `https://github.com/leecyno1/boutique-openclaw-skills.git`
+- Runtime install target: `~/.openclaw/skills`
+- Tier definitions: boutique `tiers/low.json`, `tiers/medium.json`, `tiers/high.json`
 
-**Key conventions**:
-- `GUIDE.md` is shown in config menu and docs
-- `SKILL.md` contains Claude-specific prompts and tool usage
-- `_meta.json` defines installation tier and dependencies
-- Skills must be idempotent and handle missing dependencies gracefully
+To add or update a skill, change the boutique repository first, then use `openclaw-setup config skills --tier low|medium|high` to sync it.
 
 ## Testing & Validation
 
@@ -292,7 +283,6 @@ skill-name/
 ## Documentation
 
 Key docs in `docs/`:
-- `skills-guides.md`: Complete skills matrix with API requirements
 - `vendor-control-profiles.md`: Token budget and tier rules
 - `channels-configuration-guide.md`: Channel setup (Feishu, Slack, etc.)
 - `feishu-setup.md`: Feishu plugin configuration walkthrough
@@ -302,7 +292,7 @@ Key docs in `docs/`:
 
 **Installing from scratch**:
 1. Run minimal installer: `curl -fsSL https://gitee.com/.../install.sh | bash`
-2. Configure skills: `openclaw-setup config skills --tier basic`
+2. Configure skills from boutique: `openclaw-setup config skills --tier medium`
 3. Configure tier rules: `openclaw-setup config tier-rules --level medium`
 4. Install Pixel House: `openclaw-setup config pixel-house --install`
 5. Start services: `openclaw-setup config pixel-house --start`
@@ -319,11 +309,10 @@ Key docs in `docs/`:
 3. Verify changes: `grep -r "my-service.com" ~/.openclaw/skills/`
 4. Rollback if needed: `openclaw-setup config api --rollback`
 
-**Adding a new skill**:
-1. Create `skills/default/<name>/` with `GUIDE.md` + `SKILL.md` + `_meta.json`
-2. Update `skills/default/DEFAULT_SKILLS.md` with one-line description
-3. Run `python3 scripts/generate_skill_guides.py` to regenerate docs
-4. Test installation: `openclaw-setup config skills --tier basic`
+**Adding or updating skills**:
+1. Update `boutique-openclaw-skills` with `GUIDE.md`, `SKILL.md`, metadata, and tier membership
+2. Push boutique to Gitee/GitHub
+3. Test installer sync: `openclaw-setup config skills --tier medium`
 
 **Modifying a module**:
 1. Edit module script in `scripts/modules/`

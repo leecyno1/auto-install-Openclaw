@@ -4,108 +4,87 @@ import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-MANIFEST = ROOT / 'skills' / 'manifest.json'
+SKILLS_DIR = ROOT / 'skills'
 SKILLS_LIB = ROOT / 'scripts' / 'lib' / 'skills.sh'
-BOUTIQUE_SKILLS = ROOT.parent / 'boutique-openclaw-skills' / 'skills' / 'default'
+BOUTIQUE_ROOT = ROOT.parent / 'boutique-openclaw-skills'
+BOUTIQUE_SKILLS = BOUTIQUE_ROOT / 'skills' / 'default'
 
-REQUIRED_DEFAULT = {
-    'agentmail', 'agentmail-cli', 'agentmail-mcp', 'agentmail-toolkit',
-    'skill-creator', 'github', 'self-improving-agent-cn', 'subagent-driven-development',
+REQUIRED_LOW = {
+    'agent-browser', 'skill-creator', 'subagent-driven-development',
     'using-superpowers', 'verification-before-completion', 'writing-skills',
-    'skill-security-auditor', 'weather', 'shell', 'data-analyst', 'finance-data',
-    'pdf', 'pptx', 'task', 'todo', 'xlsx', 'docx', 'agent-browser', 'media-downloader',
-}
-
-MINIMAX_OFFICIAL = {
-    'android-native-dev', 'buddy-sings', 'flutter-dev', 'frontend-dev', 'fullstack-dev',
-    'gif-sticker-maker', 'ios-application-dev', 'minimax-docx', 'minimax-multimodal-toolkit',
-    'minimax-music-gen', 'minimax-music-playlist', 'minimax-pdf', 'minimax-xlsx',
-    'pptx-generator', 'react-native-dev', 'shader-dev', 'vision-analysis',
+    'weather', 'shell', 'data-analyst', 'task', 'todo', 'xlsx', 'docx',
 }
 
 
-def run_skill_lib(expr: str) -> str:
-    cmd = f'source {SKILLS_LIB}; {expr}'
-    return subprocess.check_output(['bash', '-lc', cmd], text=True, cwd=ROOT).strip()
+def run_bash(expr: str) -> str:
+    return subprocess.check_output(['bash', '-lc', expr], text=True, cwd=ROOT).strip()
 
 
-class SkillsManifestTests(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        cls.data = json.loads(MANIFEST.read_text(encoding='utf-8'))
-        cls.skills = {item['id']: item for item in cls.data['skills']}
+class SkillsBoutiqueBoundaryTests(unittest.TestCase):
+    def test_installer_repo_no_longer_vendors_default_skills(self):
+        self.assertTrue((SKILLS_DIR / 'README.md').is_file())
+        tracked_payload = [
+            path.relative_to(SKILLS_DIR).as_posix()
+            for path in SKILLS_DIR.rglob('*')
+            if path.is_file() or path.is_symlink()
+        ]
+        self.assertEqual(tracked_payload, ['README.md'])
+        self.assertFalse((ROOT / 'skills' / 'manifest.json').exists())
+        self.assertFalse((ROOT / 'skills' / 'default').exists())
 
-    def test_manifest_contains_every_local_skill_directory(self):
+    def test_obsolete_local_skill_generators_are_removed(self):
+        for relative in (
+            'scripts/generate_skills_manifest.py',
+            'scripts/generate_skill_guides.py',
+            'scripts/generate_skills_triage.py',
+            'scripts/refresh_default_skills.py',
+            'docs/skills-guides.md',
+            'docs/skills-update-report.md',
+            'docs/upstream-sources.md',
+        ):
+            self.assertFalse((ROOT / relative).exists(), relative)
+
+    def test_boutique_tier_files_are_the_skill_source_of_truth(self):
         self.assertTrue(BOUTIQUE_SKILLS.is_dir(), f'missing boutique skills source: {BOUTIQUE_SKILLS}')
-        local = {p.name for p in BOUTIQUE_SKILLS.iterdir() if p.is_dir()}
-        missing = sorted(local - set(self.skills))
-        self.assertEqual(missing, [])
+        tiers = {}
+        for tier in ('low', 'medium', 'high'):
+            path = BOUTIQUE_ROOT / 'tiers' / f'{tier}.json'
+            self.assertTrue(path.is_file(), path)
+            payload = json.loads(path.read_text(encoding='utf-8'))
+            ids = [item['id'] for item in payload.get('skills', [])]
+            self.assertEqual(len(ids), len(set(ids)), tier)
+            tiers[tier] = set(ids)
+        self.assertTrue(REQUIRED_LOW <= tiers['low'])
+        self.assertTrue(tiers['low'] <= tiers['medium'] <= tiers['high'])
 
-    def test_required_default_and_minimax_skills_are_classified(self):
-        for skill_id in REQUIRED_DEFAULT:
-            self.assertIn(skill_id, self.skills)
-            self.assertIn('basic', self.skills[skill_id]['tiers'])
-        for skill_id in MINIMAX_OFFICIAL:
-            self.assertIn(skill_id, self.skills)
-            self.assertIn('minimax_official', self.skills[skill_id]['groups'])
-            self.assertIn('basic', self.skills[skill_id]['tiers'])
+    def test_shell_library_gracefully_falls_back_without_local_manifest(self):
+        command = f'source {SKILLS_LIB}; openclaw_skill_manifest_path >/tmp/openclaw-manifest-path.txt 2>/dev/null'
+        proc = subprocess.run(['bash', '-lc', command], cwd=ROOT, text=True)
+        self.assertNotEqual(proc.returncode, 0)
+        fallback = run_bash(f'source {SKILLS_LIB}; openclaw_skill_fallback_init; printf "%s" "$PROFILE_BASIC_SKILLS"')
+        self.assertIn('using-superpowers', fallback)
+        self.assertIn('weather', fallback)
 
-    def test_manifest_descriptions_are_not_placeholder_for_managed_skills(self):
-        managed = REQUIRED_DEFAULT | MINIMAX_OFFICIAL | {'ai-image-generation', 'planning-with-files', 'baoyu-skills'}
-        bad = []
-        for skill_id in managed:
-            desc = self.skills[skill_id].get('description', '').strip().lower()
-            if not desc or '来自本地技能仓' in desc or desc in {'todo', 'skill'}:
-                bad.append(skill_id)
-        self.assertEqual(sorted(bad), [])
-
-    def test_shell_library_reads_manifest_bundle_lists(self):
-        minimax = set(run_skill_lib('openclaw_skill_manifest_list minimax_official').split())
-        basic = set(run_skill_lib('openclaw_skill_manifest_list tier:basic').split())
-        extended = set(run_skill_lib('openclaw_skill_manifest_list tier:extended').split())
-        super_set = set(run_skill_lib('openclaw_skill_manifest_list tier:super').split())
-        sentinels = set(run_skill_lib('openclaw_skill_manifest_default_sentinels').split())
-        menu_enhanced = set(run_skill_lib('openclaw_skill_manifest_list menu_enhanced').split())
-        baoyu = set(run_skill_lib('openclaw_skill_manifest_list group:baoyu').split())
-        self.assertTrue(MINIMAX_OFFICIAL <= minimax)
-        self.assertTrue(REQUIRED_DEFAULT <= basic)
-        self.assertIn('planning-with-files', extended)
-        self.assertIn('baoyu-skills', super_set)
-        self.assertTrue({'agentmail', 'ai-image-generation', 'minimax-docx'} <= sentinels)
-        self.assertIn('frontend-design', menu_enhanced)
-        self.assertIn('stock-analysis', menu_enhanced)
-        self.assertIn('baoyu-post-to-wechat', baoyu)
-
-    def test_installer_and_menu_delegate_skill_lists_to_manifest_when_available(self):
+    def test_installers_resolve_boutique_not_repo_local_skills(self):
         install_text = (ROOT / 'install.sh').read_text(encoding='utf-8')
         menu_text = (ROOT / 'config-menu.sh').read_text(encoding='utf-8')
-        for text in (install_text, menu_text):
-            self.assertIn('scripts/lib/skills.sh', text)
-            self.assertIn('openclaw_skill_fallback_init', text)
-            self.assertIn('openclaw_skill_manifest_list minimax_official', text)
-            self.assertIn('openclaw_skill_manifest_list tier:basic', text)
-            self.assertIn('openclaw_skill_manifest_default_sentinels', text)
-        self.assertIn('openclaw_skill_manifest_list menu_enhanced', menu_text)
-        self.assertIn('openclaw_skill_manifest_list group:baoyu', menu_text)
+        module_text = (ROOT / 'scripts' / 'modules' / 'skills.sh').read_text(encoding='utf-8')
+        custom_text = (ROOT / 'scripts' / 'lib' / 'openclaw-custom.sh').read_text(encoding='utf-8')
+        for text in (install_text, menu_text, module_text, custom_text):
+            self.assertIn('boutique-openclaw-skills', text)
+            self.assertIn('https://gitee.com/leecyno1/boutique-openclaw-skills.git', text)
+            self.assertNotIn('auto-install-openclaw-main/skills/default', text)
+        self.assertNotIn('$script_dir/skills/default', install_text)
+        self.assertNotIn('$script_dir/skills/default', menu_text)
+        self.assertNotIn('$REPO_ROOT/skills/default', module_text)
+        self.assertIn('get_boutique_profile_skill_list_install', install_text)
+        self.assertIn('get_boutique_profile_skill_list_menu', menu_text)
 
-    def test_manifest_can_be_regenerated_without_diff(self):
-        generator = ROOT / 'scripts' / 'generate_skills_manifest.py'
-        self.assertTrue(generator.is_file())
-        before = MANIFEST.read_text(encoding='utf-8')
-        subprocess.check_call(['python3', str(generator), '--check'], cwd=ROOT)
-        after = MANIFEST.read_text(encoding='utf-8')
-        self.assertEqual(before, after)
-
-    def test_release_check_script_exists_and_runs_required_checks(self):
-        release_check = ROOT / 'scripts' / 'release-check.sh'
-        self.assertTrue(release_check.is_file())
-        text = release_check.read_text(encoding='utf-8')
+    def test_release_check_no_longer_requires_local_manifest_generation(self):
+        text = (ROOT / 'scripts' / 'release-check.sh').read_text(encoding='utf-8')
+        self.assertNotIn('generate_skills_manifest.py', text)
         self.assertIn('./scripts/preflight-check.sh', text)
         self.assertIn('rg -n', text)
-        self.assertIn('sk-cp-', text)
-        self.assertIn("--glob '!tests/**'", text)
-        self.assertIn("--glob '!examples/**'", text)
-        self.assertIn("--glob '!scripts/release-check.sh'", text)
 
 
 if __name__ == '__main__':

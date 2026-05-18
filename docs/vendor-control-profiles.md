@@ -22,7 +22,7 @@
 2. Skills 档位安装
 - LOW -> 基础 skills 包
 - MEDIUM -> 扩展 skills 包
-- HIGH -> 超级 skills 包（`skills/default` 全量）
+- HIGH -> 超级 skills 包（从 boutique `tiers/high.json` 同步）
 
 3. API 参数（仅工具能力，不改主模型）
 - LOW：不强制

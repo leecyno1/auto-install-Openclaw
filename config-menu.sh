@@ -325,7 +325,7 @@ UNOFFICIAL_ROUTING_DEFAULT_STRATEGY="${OPENCLAW_UNOFFICIAL_ROUTING_STRATEGY:-aut
 UNOFFICIAL_ROUTING_DEFAULT_FAILOVER="${OPENCLAW_UNOFFICIAL_ROUTING_FAILOVER:-1}"
 SKILL_PIP_PACKAGES_DEFAULT="duckduckgo-search akshare requests pyyaml pypdf pillow openpyxl python-pptx python-docx lxml defusedxml pdf2image"
 SKILL_PIP_PACKAGES="${OPENCLAW_SKILL_PIP_PACKAGES:-$SKILL_PIP_PACKAGES_DEFAULT}"
-SKILL_PIP_PACKAGES_FILE_REL="skills/requirements-runtime.txt"
+SKILL_PIP_PACKAGES_FILE_REL="${OPENCLAW_SKILL_PIP_PACKAGES_FILE_REL:-}"
 apply_skill_manifest_defaults_menu
 MINIMAX_API_HOST_CN_DEFAULT="${MINIMAX_API_HOST_CN:-https://api.minimaxi.com}"
 MINIMAX_API_HOST_GLOBAL_DEFAULT="${MINIMAX_API_HOST_GLOBAL:-https://api.minimax.io}"
@@ -1158,6 +1158,22 @@ get_profile_skill_list() {
         high) echo "$PROFILE_SUPER_SKILLS" ;;
         *) echo "$PROFILE_EXTENDED_SKILLS" ;;
     esac
+}
+
+get_boutique_profile_skill_list_menu() {
+    local bundle_dir="$1"
+    local level="$2"
+    local tier_file
+    level="$(normalize_rule_profile_level "$level")"
+    [ -n "$bundle_dir" ] || return 1
+    tier_file="$(cd "$bundle_dir/../.." 2>/dev/null && pwd)/tiers/$level.json"
+    [ -f "$tier_file" ] || return 1
+    python3 - "$tier_file" <<'PY'
+import json, sys
+with open(sys.argv[1], encoding='utf-8') as handle:
+    payload = json.load(handle)
+print(' '.join(item['id'] for item in payload.get('skills', []) if item.get('id')))
+PY
 }
 
 get_profile_token_limits() {
@@ -2800,7 +2816,7 @@ apply_profile_skill_policy_menu() {
         return 1
     fi
     mkdir -p "$target_dir" 2>/dev/null || true
-    skills_list="$(get_profile_skill_list "$level")"
+    skills_list="$(get_boutique_profile_skill_list_menu "$bundle_dir" "$level" 2>/dev/null || get_profile_skill_list "$level")"
     skill_count="$(printf "%s\n" "$skills_list" | wc -w | tr -d ' ')"
     case "$level" in
         low) skill_pack_label="基础技能包（基础）" ;;
@@ -9851,13 +9867,8 @@ resolve_default_skills_bundle_dir() {
     script_dir="$(get_config_menu_script_dir)"
     local_candidates="$(cat <<EOF
 ${OPENCLAW_SKILLS_BUNDLE_DIR:-}
-$script_dir/skills/default
-$(pwd)/skills/default
 $HOME/boutique-openclaw-skills/skills/default
-/Volumes/PSSD/Projects/boutique-openclaw-skills/skills/default
-$HOME/auto-install-openclaw/skills/default
-$HOME/auto-install-Openclaw/skills/default
-$HOME/OpenClawInstaller/skills/default
+$script_dir/../boutique-openclaw-skills/skills/default
 EOF
 )"
     for candidate in $local_candidates; do
@@ -9886,11 +9897,11 @@ EOF
     fi
 
     if ! command -v git >/dev/null 2>&1; then
-        log_error "未检测到 git，且本地缺少 skills/default，无法拉取默认技能包" >&2
+        log_error "未检测到 git，且缺少 boutique 技能缓存，无法拉取默认技能包" >&2
         return 1
     fi
 
-    log_warn "本地未发现 skills/default，正在从 boutique-openclaw-skills 拉取默认技能包..." >&2
+    log_warn "正在从 boutique-openclaw-skills 拉取默认技能包..." >&2
     tmp_repo="$(mktemp -d "$cache_root/repo.XXXXXX")"
     for url in $(get_boutique_skills_repo_urls_menu); do
         rm -rf "$tmp_repo" 2>/dev/null || true
@@ -10501,8 +10512,6 @@ install_super_skill_from_local() {
         for candidate in \
             "$CONFIG_DIR/skills/$skill_name" \
             "${OPENCLAW_SKILLS_BUNDLE_DIR:-}/$skill_name" \
-            "$(get_config_menu_script_dir)/skills/default/$skill_name" \
-            "$(pwd)/skills/default/$skill_name" \
             "$HOME/.openclaw/skills/$skill_name" \
             "$HOME/.codex/skills/$skill_name"; do
             [ -n "$candidate" ] || continue
@@ -10539,9 +10548,9 @@ manage_super_skills() {
     print_divider
     echo ""
     print_menu_item "1" "查看高级技能包状态" "📊"
-    print_menu_item "2" "同步高级技能包（本地：NotebookLM + Baoyu 全套）" "📦"
-    print_menu_item "3" "安装 Baoyu 系列技能（本地优先）" "📚"
-    print_menu_item "4" "安装 wechat-skills（本地优先）" "📝"
+    print_menu_item "2" "同步高级技能包（boutique/缓存）" "📦"
+    print_menu_item "3" "安装 Baoyu 系列技能（缓存/远程）" "📚"
+    print_menu_item "4" "安装 wechat-skills（缓存/远程）" "📝"
     print_menu_item "5" "导入 ai-meeting-notes（本机）" "🗒️"
     print_menu_item "6" "导入 tmux（本机）" "🧰"
     print_menu_item "0" "返回上级菜单" "↩️"
@@ -10615,9 +10624,10 @@ pip_install_skill_dep_menu() {
 resolve_skill_pip_packages_menu() {
     local script_dir req_file line pkgs
     script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-    req_file="$script_dir/$SKILL_PIP_PACKAGES_FILE_REL"
+    req_file=""
+    [ -n "$SKILL_PIP_PACKAGES_FILE_REL" ] && req_file="$script_dir/$SKILL_PIP_PACKAGES_FILE_REL"
 
-    if [ -f "$req_file" ]; then
+    if [ -n "$req_file" ] && [ -f "$req_file" ]; then
         pkgs=""
         while IFS= read -r line; do
             line="$(echo "$line" | sed 's/#.*$//' | xargs)"

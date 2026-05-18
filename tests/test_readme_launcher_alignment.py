@@ -10,18 +10,19 @@ LOGO = ROOT / 'photo' / 'openclaw-installer-logo.svg'
 
 
 class ReadmeLauncherAlignmentTests(unittest.TestCase):
-    def test_readme_homepage_is_promotional_and_skill_table_first(self):
+    def test_readme_homepage_is_promotional_and_points_to_boutique_skills(self):
         readme_text = README.read_text(encoding='utf-8')
         self.assertIn('photo/dasheng-openclaw-promo.png', readme_text)
         self.assertIn('photo/openclaw-installer-logo.svg', readme_text)
         self.assertIn('Featured-大圣之怒', readme_text)
         self.assertIn('一键安装 OpenClaw / Hermes，把模型、Skills、规则、像素小屋和网站联动收束到一个可重复部署的入口。', readme_text)
-        self.assertIn('## 全部技能', readme_text)
-        self.assertIn('| 档位 | Skill | 分类 | 评分 | 依赖 | 一句话说明 | 手册 | 原仓库 |', readme_text)
+        self.assertIn('## Skills 索引', readme_text)
+        self.assertIn('本仓库不再保存完整 skills 表格', readme_text)
+        self.assertIn('boutique-openclaw-skills', readme_text)
         self.assertLess(readme_text.index('photo/dasheng-openclaw-promo.png'), readme_text.index('Featured-大圣之怒'))
         self.assertLess(readme_text.index('Featured-大圣之怒'), readme_text.index('photo/openclaw-installer-logo.svg'))
-        self.assertLess(readme_text.index('photo/openclaw-installer-logo.svg'), readme_text.index('## 全部技能'))
-        self.assertLess(readme_text.index('## 全部技能'), readme_text.index('## 模块概览'))
+        self.assertLess(readme_text.index('photo/openclaw-installer-logo.svg'), readme_text.index('## Skills 索引'))
+        self.assertLess(readme_text.index('## Skills 索引'), readme_text.index('## 模块概览'))
 
     def test_logo_card_mentions_project_stack_and_features(self):
         logo_text = LOGO.read_text(encoding='utf-8')

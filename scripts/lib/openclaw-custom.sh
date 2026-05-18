@@ -328,75 +328,88 @@ upsert_env() {
 
 # ================================ 技能同步 ================================
 
+OPENCLAW_SKILLS_REPO_URL="${OPENCLAW_SKILLS_REPO_URL:-https://gitee.com/leecyno1/boutique-openclaw-skills.git}"
+OPENCLAW_SKILLS_REPO_GITHUB_URL="${OPENCLAW_SKILLS_REPO_GITHUB_URL:-https://github.com/leecyno1/boutique-openclaw-skills.git}"
+OPENCLAW_SKILLS_REPO_MIRROR_URL="${OPENCLAW_SKILLS_REPO_MIRROR_URL:-https://mirror.ghproxy.com/https://github.com/leecyno1/boutique-openclaw-skills.git}"
+
+get_boutique_skills_repo_urls_custom() {
+    cat <<EOF
+$OPENCLAW_SKILLS_REPO_URL
+$OPENCLAW_SKILLS_REPO_GITHUB_URL
+$OPENCLAW_SKILLS_REPO_MIRROR_URL
+EOF
+}
+
+resolve_boutique_skills_source_custom() {
+    local candidate cache_root cache_repo tmp_repo url
+    for candidate in \
+        "${OPENCLAW_SKILLS_DIR:-}" \
+        "${OPENCLAW_SKILLS_BUNDLE_DIR:-}" \
+        "$CONFIG_DIR/.cache/boutique-openclaw-skills/skills/default" \
+        "$HOME/boutique-openclaw-skills/skills/default"; do
+        [ -n "$candidate" ] || continue
+        if [ -d "$candidate" ]; then
+            echo "$candidate"
+            return 0
+        fi
+    done
+
+    command -v git >/dev/null 2>&1 || return 1
+    cache_root="$CONFIG_DIR/.cache"
+    cache_repo="$cache_root/boutique-openclaw-skills"
+    mkdir -p "$cache_root" 2>/dev/null || true
+    if [ -d "$cache_repo/skills/default" ]; then
+        echo "$cache_repo/skills/default"
+        return 0
+    fi
+
+    tmp_repo="$(mktemp -d "$cache_root/boutique.XXXXXX")"
+    for url in $(get_boutique_skills_repo_urls_custom); do
+        rm -rf "$tmp_repo" 2>/dev/null || true
+        tmp_repo="$(mktemp -d "$cache_root/boutique.XXXXXX")"
+        if git clone --depth 1 "$url" "$tmp_repo" >/dev/null 2>&1 && [ -d "$tmp_repo/skills/default" ]; then
+            rm -rf "$cache_repo" 2>/dev/null || true
+            mv "$tmp_repo" "$cache_repo"
+            echo "$cache_repo/skills/default"
+            return 0
+        fi
+    done
+    rm -rf "$tmp_repo" 2>/dev/null || true
+    return 1
+}
+
+get_boutique_profile_skill_list_custom() {
+    local bundle_dir="$1"
+    local level="$2"
+    local tier_file
+    level="$(normalize_rule_profile_level "$level")"
+    [ -n "$bundle_dir" ] || return 1
+    tier_file="$(cd "$bundle_dir/../.." 2>/dev/null && pwd)/tiers/$level.json"
+    [ -f "$tier_file" ] || return 1
+    python3 - "$tier_file" <<'PY'
+import json, sys
+with open(sys.argv[1], encoding='utf-8') as handle:
+    payload = json.load(handle)
+print(' '.join(item['id'] for item in payload.get('skills', []) if item.get('id')))
+PY
+}
+
 sync_skills() {
     local level
     level="$(normalize_rule_profile_level "${1:-${RULE_PROFILE_SELECTED:-medium}}")"
     [ "$level" = "none" ] && return 0
 
-    local skills_dir="${OPENCLAW_SKILLS_DIR:-}"
-    if [ -z "$skills_dir" ]; then
-        local script_dir="${SCRIPT_DIR:-}"
-        if [ -n "$script_dir" ]; then
-            skills_dir="$script_dir/skills/default"
-        fi
-    fi
-
-    # 本地不存在时，从仓库 ZIP 下载并提取
-    if [ ! -d "$skills_dir" ]; then
-        echo -e "${BLUE}[STEP]${NC} 从仓库下载技能包 (档位: ${level}) ..."
-
-        local tmp_dir extract_dir target_dir skill_list downloaded failed
-        tmp_dir="$(mktemp -d)"
-        extract_dir="$tmp_dir/extract"
-        target_dir="$CONFIG_DIR/skills"
-        mkdir -p "$target_dir"
-        downloaded=0; failed=0
-
-        local zip_url="https://github.com/leecyno1/auto-install-openclaw/archive/refs/heads/main.zip"
-        local zip_file="$tmp_dir/repo.zip"
-
-        echo -e "${GREEN}[INFO]${NC} 正在下载仓库..."
-        if ! curl -fsSL --connect-timeout 15 --max-time 120 \
-            -o "$zip_file" "$zip_url" 2>/dev/null; then
-            echo -e "${YELLOW}[WARN]${NC} 技能包下载失败，将跳过技能同步"
-            rm -rf "$tmp_dir"
-            return 0
-        fi
-
-        echo -e "${GREEN}[INFO]${NC} 正在解压技能包..."
-        if unzip -q "$zip_file" -d "$extract_dir" 2>/dev/null; then
-            local src_dir="$extract_dir/auto-install-openclaw-main/skills/default"
-            if [ -d "$src_dir" ]; then
-                skill_list="$(get_profile_skill_list "$level")"
-                for skill_name in $skill_list; do
-                    if [ -d "$target_dir/$skill_name" ]; then
-                        continue
-                    fi
-                    if [ -d "$src_dir/$skill_name" ]; then
-                        cp -a "$src_dir/$skill_name" "$target_dir/" && \
-                            downloaded=$((downloaded + 1)) || \
-                            failed=$((failed + 1))
-                    else
-                        failed=$((failed + 1))
-                    fi
-                done
-            else
-                echo -e "${YELLOW}[WARN]${NC} skills/default 目录在仓库中不存在"
-            fi
-        else
-            echo -e "${YELLOW}[WARN]${NC} ZIP 解压失败"
-        fi
-
-        rm -rf "$tmp_dir"
-        echo -e "${GREEN}[INFO]${NC} 技能下载完成: 成功 ${downloaded}, 失败 ${failed}"
+    local skills_dir
+    skills_dir="$(resolve_boutique_skills_source_custom 2>/dev/null || true)"
+    if [ -z "$skills_dir" ] || [ ! -d "$skills_dir" ]; then
+        echo -e "${YELLOW}[WARN]${NC} 未找到 boutique 技能仓库或缓存，跳过技能同步"
         return 0
     fi
 
-    # 本地存在时，直接复制
-    echo -e "${BLUE}[STEP]${NC} 同步技能包 (档位: ${level}) ..."
+    echo -e "${BLUE}[STEP]${NC} 从 boutique 同步技能包 (档位: ${level}) ..."
 
     local skill_list target_dir copied skipped missing
-    skill_list="$(get_profile_skill_list "$level")"
+    skill_list="$(get_boutique_profile_skill_list_custom "$skills_dir" "$level" 2>/dev/null || get_profile_skill_list "$level")"
     target_dir="$CONFIG_DIR/skills"
     mkdir -p "$target_dir"
     copied=0; skipped=0; missing=0
@@ -457,8 +470,8 @@ update_skill_individual() {
     # 备份现有技能包
     cp -a "$skill_dir" "$backup_dir/$skill_name"
 
-    if echo "$source_url" | grep -q "github.com/leecyno1/auto-install-Openclaw"; then
-        # 本仓库技能：从 ZIP 下载更新
+    if echo "$source_url" | grep -q "github.com/leecyno1/boutique-openclaw-skills"; then
+        # boutique 技能：从 ZIP 下载更新
         local zip_url="${update_url}/archive/refs/heads/main.zip"
         local zip_file="$tmp_dir/skill.zip"
 
@@ -466,7 +479,7 @@ update_skill_individual() {
             local extract_dir="$tmp_dir/extract"
             mkdir -p "$extract_dir"
             if unzip -q "$zip_file" -d "$extract_dir" 2>/dev/null; then
-                local src_dir="$extract_dir/auto-install-openclaw-main/skills/default/$skill_name"
+                local src_dir="$extract_dir/boutique-openclaw-skills-main/skills/default/$skill_name"
                 if [ -d "$src_dir" ]; then
                     rm -rf "$skill_dir"
                     cp -a "$src_dir" "$skill_dir"
@@ -576,50 +589,50 @@ SKILL_SOURCE_REGISTRY=(
     "agentmail|https://github.com/openclaw/skills/tree/main/skills/agentmail|https://github.com/openclaw/skills|openclaw|MIT"
     "lark-calendar|https://github.com/openclaw/skills/tree/main/skills/lark-calendar|https://github.com/openclaw/skills|openclaw|MIT"
     # 自定义技能包（本仓库）
-    "minimax-web-search|https://github.com/leecyno1/auto-install-Openclaw/tree/main/skills/default/minimax-web-search|https://github.com/leecyno1/auto-install-Openclaw|leecyno1|MIT"
-    "minimax-image-understanding|https://github.com/leecyno1/auto-install-Openclaw/tree/main/skills/default/minimax-image-understanding|https://github.com/leecyno1/auto-install-Openclaw|leecyno1|MIT"
-    "minimax-pdf|https://github.com/leecyno1/auto-install-Openclaw/tree/main/skills/default/minimax-pdf|https://github.com/leecyno1/auto-install-Openclaw|leecyno1|MIT"
-    "minimax-docx|https://github.com/leecyno1/auto-install-Openclaw/tree/main/skills/default/minimax-docx|https://github.com/leecyno1/auto-install-Openclaw|leecyno1|MIT"
-    "minimax-xlsx|https://github.com/leecyno1/auto-install-Openclaw/tree/main/skills/default/minimax-xlsx|https://github.com/leecyno1/auto-install-Openclaw|leecyno1|MIT"
-    "minimax-multimodal-toolkit|https://github.com/leecyno1/auto-install-Openclaw/tree/main/skills/default/minimax-multimodal-toolkit|https://github.com/leecyno1/auto-install-Openclaw|leecyno1|MIT"
+    "minimax-web-search|https://github.com/leecyno1/boutique-openclaw-skills/tree/main/skills/default/minimax-web-search|https://github.com/leecyno1/boutique-openclaw-skills|leecyno1|MIT"
+    "minimax-image-understanding|https://github.com/leecyno1/boutique-openclaw-skills/tree/main/skills/default/minimax-image-understanding|https://github.com/leecyno1/boutique-openclaw-skills|leecyno1|MIT"
+    "minimax-pdf|https://github.com/leecyno1/boutique-openclaw-skills/tree/main/skills/default/minimax-pdf|https://github.com/leecyno1/boutique-openclaw-skills|leecyno1|MIT"
+    "minimax-docx|https://github.com/leecyno1/boutique-openclaw-skills/tree/main/skills/default/minimax-docx|https://github.com/leecyno1/boutique-openclaw-skills|leecyno1|MIT"
+    "minimax-xlsx|https://github.com/leecyno1/boutique-openclaw-skills/tree/main/skills/default/minimax-xlsx|https://github.com/leecyno1/boutique-openclaw-skills|leecyno1|MIT"
+    "minimax-multimodal-toolkit|https://github.com/leecyno1/boutique-openclaw-skills/tree/main/skills/default/minimax-multimodal-toolkit|https://github.com/leecyno1/boutique-openclaw-skills|leecyno1|MIT"
     # Baoyu 系列（本仓库）
-    "baoyu-skills|https://github.com/leecyno1/auto-install-Openclaw/tree/main/skills/default/baoyu-skills|https://github.com/leecyno1/auto-install-Openclaw|leecyno1|MIT"
-    "baoyu-post-to-wechat|https://github.com/leecyno1/auto-install-Openclaw/tree/main/skills/default/baoyu-post-to-wechat|https://github.com/leecyno1/auto-install-Openclaw|leecyno1|MIT"
-    "baoyu-post-to-weibo|https://github.com/leecyno1/auto-install-Openclaw/tree/main/skills/default/baoyu-post-to-weibo|https://github.com/leecyno1/auto-install-Openclaw|leecyno1|MIT"
-    "baoyu-post-to-x|https://github.com/leecyno1/auto-install-Openclaw/tree/main/skills/default/baoyu-post-to-x|https://github.com/leecyno1/auto-install-Openclaw|leecyno1|MIT"
-    "baoyu-article-illustrator|https://github.com/leecyno1/auto-install-Openclaw/tree/main/skills/default/baoyu-article-illustrator|https://github.com/leecyno1/auto-install-Openclaw|leecyno1|MIT"
-    "baoyu-comic|https://github.com/leecyno1/auto-install-Openclaw/tree/main/skills/default/baoyu-comic|https://github.com/leecyno1/auto-install-Openclaw|leecyno1|MIT"
-    "baoyu-image-gen|https://github.com/leecyno1/auto-install-Openclaw/tree/main/skills/default/baoyu-image-gen|https://github.com/leecyno1/auto-install-Openclaw|leecyno1|MIT"
-    "baoyu-infographic|https://github.com/leecyno1/auto-install-Openclaw/tree/main/skills/default/baoyu-infographic|https://github.com/leecyno1/auto-install-Openclaw|leecyno1|MIT"
-    "baoyu-slide-deck|https://github.com/leecyno1/auto-install-Openclaw/tree/main/skills/default/baoyu-slide-deck|https://github.com/leecyno1/auto-install-Openclaw|leecyno1|MIT"
-    "baoyu-cover-image|https://github.com/leecyno1/auto-install-Openclaw/tree/main/skills/default/baoyu-cover-image|https://github.com/leecyno1/auto-install-Openclaw|leecyno1|MIT"
-    "baoyu-compress-image|https://github.com/leecyno1/auto-install-Openclaw/tree/main/skills/default/baoyu-compress-image|https://github.com/leecyno1/auto-install-Openclaw|leecyno1|MIT"
-    "baoyu-format-markdown|https://github.com/leecyno1/auto-install-Openclaw/tree/main/skills/default/baoyu-format-markdown|https://github.com/leecyno1/auto-install-Openclaw|leecyno1|MIT"
-    "baoyu-translate|https://github.com/leecyno1/auto-install-Openclaw/tree/main/skills/default/baoyu-translate|https://github.com/leecyno1/auto-install-Openclaw|leecyno1|MIT"
-    "baoyu-url-to-markdown|https://github.com/leecyno1/auto-install-Openclaw/tree/main/skills/default/baoyu-url-to-markdown|https://github.com/leecyno1/auto-install-Openclaw|leecyno1|MIT"
-    "baoyu-xhs-images|https://github.com/leecyno1/auto-install-Openclaw/tree/main/skills/default/baoyu-xhs-images|https://github.com/leecyno1/auto-install-Openclaw|leecyno1|MIT"
-    "baoyu-youtube-transcript|https://github.com/leecyno1/auto-install-Openclaw/tree/main/skills/default/baoyu-youtube-transcript|https://github.com/leecyno1/auto-install-Openclaw|leecyno1|MIT"
+    "baoyu-skills|https://github.com/leecyno1/boutique-openclaw-skills/tree/main/skills/default/baoyu-skills|https://github.com/leecyno1/boutique-openclaw-skills|leecyno1|MIT"
+    "baoyu-post-to-wechat|https://github.com/leecyno1/boutique-openclaw-skills/tree/main/skills/default/baoyu-post-to-wechat|https://github.com/leecyno1/boutique-openclaw-skills|leecyno1|MIT"
+    "baoyu-post-to-weibo|https://github.com/leecyno1/boutique-openclaw-skills/tree/main/skills/default/baoyu-post-to-weibo|https://github.com/leecyno1/boutique-openclaw-skills|leecyno1|MIT"
+    "baoyu-post-to-x|https://github.com/leecyno1/boutique-openclaw-skills/tree/main/skills/default/baoyu-post-to-x|https://github.com/leecyno1/boutique-openclaw-skills|leecyno1|MIT"
+    "baoyu-article-illustrator|https://github.com/leecyno1/boutique-openclaw-skills/tree/main/skills/default/baoyu-article-illustrator|https://github.com/leecyno1/boutique-openclaw-skills|leecyno1|MIT"
+    "baoyu-comic|https://github.com/leecyno1/boutique-openclaw-skills/tree/main/skills/default/baoyu-comic|https://github.com/leecyno1/boutique-openclaw-skills|leecyno1|MIT"
+    "baoyu-image-gen|https://github.com/leecyno1/boutique-openclaw-skills/tree/main/skills/default/baoyu-image-gen|https://github.com/leecyno1/boutique-openclaw-skills|leecyno1|MIT"
+    "baoyu-infographic|https://github.com/leecyno1/boutique-openclaw-skills/tree/main/skills/default/baoyu-infographic|https://github.com/leecyno1/boutique-openclaw-skills|leecyno1|MIT"
+    "baoyu-slide-deck|https://github.com/leecyno1/boutique-openclaw-skills/tree/main/skills/default/baoyu-slide-deck|https://github.com/leecyno1/boutique-openclaw-skills|leecyno1|MIT"
+    "baoyu-cover-image|https://github.com/leecyno1/boutique-openclaw-skills/tree/main/skills/default/baoyu-cover-image|https://github.com/leecyno1/boutique-openclaw-skills|leecyno1|MIT"
+    "baoyu-compress-image|https://github.com/leecyno1/boutique-openclaw-skills/tree/main/skills/default/baoyu-compress-image|https://github.com/leecyno1/boutique-openclaw-skills|leecyno1|MIT"
+    "baoyu-format-markdown|https://github.com/leecyno1/boutique-openclaw-skills/tree/main/skills/default/baoyu-format-markdown|https://github.com/leecyno1/boutique-openclaw-skills|leecyno1|MIT"
+    "baoyu-translate|https://github.com/leecyno1/boutique-openclaw-skills/tree/main/skills/default/baoyu-translate|https://github.com/leecyno1/boutique-openclaw-skills|leecyno1|MIT"
+    "baoyu-url-to-markdown|https://github.com/leecyno1/boutique-openclaw-skills/tree/main/skills/default/baoyu-url-to-markdown|https://github.com/leecyno1/boutique-openclaw-skills|leecyno1|MIT"
+    "baoyu-xhs-images|https://github.com/leecyno1/boutique-openclaw-skills/tree/main/skills/default/baoyu-xhs-images|https://github.com/leecyno1/boutique-openclaw-skills|leecyno1|MIT"
+    "baoyu-youtube-transcript|https://github.com/leecyno1/boutique-openclaw-skills/tree/main/skills/default/baoyu-youtube-transcript|https://github.com/leecyno1/boutique-openclaw-skills|leecyno1|MIT"
     # Dasheng 内容生产流水线（本仓库）
-    "dasheng-caiji|https://github.com/leecyno1/auto-install-Openclaw/tree/main/skills/default/dasheng-caiji|https://github.com/leecyno1/auto-install-Openclaw|leecyno1|MIT"
-    "dasheng-daily-brief|https://github.com/leecyno1/auto-install-Openclaw/tree/main/skills/default/dasheng-daily-brief|https://github.com/leecyno1/auto-install-Openclaw|leecyno1|MIT"
-    "dasheng-daily-draft|https://github.com/leecyno1/auto-install-Openclaw/tree/main/skills/default/dasheng-daily-draft|https://github.com/leecyno1/auto-install-Openclaw|leecyno1|MIT"
-    "dasheng-daily-final|https://github.com/leecyno1/auto-install-Openclaw/tree/main/skills/default/dasheng-daily-final|https://github.com/leecyno1/auto-install-Openclaw|leecyno1|MIT"
-    "dasheng-standard-article|https://github.com/leecyno1/auto-install-Openclaw/tree/main/skills/default/dasheng-standard-article|https://github.com/leecyno1/auto-install-Openclaw|leecyno1|MIT"
+    "dasheng-caiji|https://github.com/leecyno1/boutique-openclaw-skills/tree/main/skills/default/dasheng-caiji|https://github.com/leecyno1/boutique-openclaw-skills|leecyno1|MIT"
+    "dasheng-daily-brief|https://github.com/leecyno1/boutique-openclaw-skills/tree/main/skills/default/dasheng-daily-brief|https://github.com/leecyno1/boutique-openclaw-skills|leecyno1|MIT"
+    "dasheng-daily-draft|https://github.com/leecyno1/boutique-openclaw-skills/tree/main/skills/default/dasheng-daily-draft|https://github.com/leecyno1/boutique-openclaw-skills|leecyno1|MIT"
+    "dasheng-daily-final|https://github.com/leecyno1/boutique-openclaw-skills/tree/main/skills/default/dasheng-daily-final|https://github.com/leecyno1/boutique-openclaw-skills|leecyno1|MIT"
+    "dasheng-standard-article|https://github.com/leecyno1/boutique-openclaw-skills/tree/main/skills/default/dasheng-standard-article|https://github.com/leecyno1/boutique-openclaw-skills|leecyno1|MIT"
     # 微信生态（本仓库）
-    "wechat-article-extractor-skill|https://github.com/leecyno1/auto-install-Openclaw/tree/main/skills/default/wechat-article-extractor-skill|https://github.com/leecyno1/auto-install-Openclaw|leecyno1|MIT"
-    "wechat-draft-writer|https://github.com/leecyno1/auto-install-Openclaw/tree/main/skills/default/wechat-draft-writer|https://github.com/leecyno1/auto-install-Openclaw|leecyno1|MIT"
-    "wechat-multi-publisher|https://github.com/leecyno1/auto-install-Openclaw/tree/main/skills/default/wechat-multi-publisher|https://github.com/leecyno1/auto-install-Openclaw|leecyno1|MIT"
-    "wechat-public-cli|https://github.com/leecyno1/auto-install-Openclaw/tree/main/skills/default/wechat-public-cli|https://github.com/leecyno1/auto-install-Openclaw|leecyno1|MIT"
-    "wechat-search|https://github.com/leecyno1/auto-install-Openclaw/tree/main/skills/default/wechat-search|https://github.com/leecyno1/auto-install-Openclaw|leecyno1|MIT"
-    "wechat-style-profiler|https://github.com/leecyno1/auto-install-Openclaw/tree/main/skills/default/wechat-style-profiler|https://github.com/leecyno1/auto-install-Openclaw|leecyno1|MIT"
-    "wechat-title-generator|https://github.com/leecyno1/auto-install-Openclaw/tree/main/skills/default/wechat-title-generator|https://github.com/leecyno1/auto-install-Openclaw|leecyno1|MIT"
-    "wechat-topic-outline-planner|https://github.com/leecyno1/auto-install-Openclaw/tree/main/skills/default/wechat-topic-outline-planner|https://github.com/leecyno1/auto-install-Openclaw|leecyno1|MIT"
+    "wechat-article-extractor-skill|https://github.com/leecyno1/boutique-openclaw-skills/tree/main/skills/default/wechat-article-extractor-skill|https://github.com/leecyno1/boutique-openclaw-skills|leecyno1|MIT"
+    "wechat-draft-writer|https://github.com/leecyno1/boutique-openclaw-skills/tree/main/skills/default/wechat-draft-writer|https://github.com/leecyno1/boutique-openclaw-skills|leecyno1|MIT"
+    "wechat-multi-publisher|https://github.com/leecyno1/boutique-openclaw-skills/tree/main/skills/default/wechat-multi-publisher|https://github.com/leecyno1/boutique-openclaw-skills|leecyno1|MIT"
+    "wechat-public-cli|https://github.com/leecyno1/boutique-openclaw-skills/tree/main/skills/default/wechat-public-cli|https://github.com/leecyno1/boutique-openclaw-skills|leecyno1|MIT"
+    "wechat-search|https://github.com/leecyno1/boutique-openclaw-skills/tree/main/skills/default/wechat-search|https://github.com/leecyno1/boutique-openclaw-skills|leecyno1|MIT"
+    "wechat-style-profiler|https://github.com/leecyno1/boutique-openclaw-skills/tree/main/skills/default/wechat-style-profiler|https://github.com/leecyno1/boutique-openclaw-skills|leecyno1|MIT"
+    "wechat-title-generator|https://github.com/leecyno1/boutique-openclaw-skills/tree/main/skills/default/wechat-title-generator|https://github.com/leecyno1/boutique-openclaw-skills|leecyno1|MIT"
+    "wechat-topic-outline-planner|https://github.com/leecyno1/boutique-openclaw-skills/tree/main/skills/default/wechat-topic-outline-planner|https://github.com/leecyno1/boutique-openclaw-skills|leecyno1|MIT"
     # 股票分析（本仓库）
-    "openclaw-stock|https://github.com/leecyno1/auto-install-Openclaw/tree/main/skills/default/openclaw-stock|https://github.com/leecyno1/auto-install-Openclaw|leecyno1|MIT"
-    "openclaw-stock-analyzer|https://github.com/leecyno1/auto-install-Openclaw/tree/main/skills/default/openclaw-stock-analyzer|https://github.com/leecyno1/auto-install-Openclaw|leecyno1|MIT"
-    "openclaw-stock-data-skill|https://github.com/leecyno1/auto-install-Openclaw/tree/main/skills/default/openclaw-stock-data-skill|https://github.com/leecyno1/auto-install-Openclaw|leecyno1|MIT"
-    "stock-monitor-skill|https://github.com/leecyno1/auto-install-Openclaw/tree/main/skills/default/stock-monitor-skill|https://github.com/leecyno1/auto-install-Openclaw|leecyno1|MIT"
-    "akshare-stock|https://github.com/leecyno1/auto-install-Openclaw/tree/main/skills/default/akshare-stock|https://github.com/leecyno1/auto-install-Openclaw|leecyno1|MIT"
+    "openclaw-stock|https://github.com/leecyno1/boutique-openclaw-skills/tree/main/skills/default/openclaw-stock|https://github.com/leecyno1/boutique-openclaw-skills|leecyno1|MIT"
+    "openclaw-stock-analyzer|https://github.com/leecyno1/boutique-openclaw-skills/tree/main/skills/default/openclaw-stock-analyzer|https://github.com/leecyno1/boutique-openclaw-skills|leecyno1|MIT"
+    "openclaw-stock-data-skill|https://github.com/leecyno1/boutique-openclaw-skills/tree/main/skills/default/openclaw-stock-data-skill|https://github.com/leecyno1/boutique-openclaw-skills|leecyno1|MIT"
+    "stock-monitor-skill|https://github.com/leecyno1/boutique-openclaw-skills/tree/main/skills/default/stock-monitor-skill|https://github.com/leecyno1/boutique-openclaw-skills|leecyno1|MIT"
+    "akshare-stock|https://github.com/leecyno1/boutique-openclaw-skills/tree/main/skills/default/akshare-stock|https://github.com/leecyno1/boutique-openclaw-skills|leecyno1|MIT"
 )
 
 # 查找技能包来源信息
@@ -637,7 +650,7 @@ lookup_skill_source() {
     done
 
     # 未找到，返回默认值
-    echo "$skill_name|https://github.com/leecyno1/auto-install-Openclaw/tree/main/skills/default/$skill_name|https://github.com/leecyno1/auto-install-Openclaw|leecyno1|MIT"
+    echo "$skill_name|https://github.com/leecyno1/boutique-openclaw-skills/tree/main/skills/default/$skill_name|https://github.com/leecyno1/boutique-openclaw-skills|leecyno1|MIT"
     return 1
 }
 

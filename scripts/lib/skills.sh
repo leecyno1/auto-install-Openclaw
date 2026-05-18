@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 
-# Shared skill catalog helpers. Prefer skills/manifest.json as the single source
-# for installer/config bundle membership; callers keep shell fallbacks for older
-# cached installer copies.
+# Shared skill catalog helpers. The installer repository no longer vendors a
+# local skills/manifest.json; callers keep these functions for compatibility
+# with older cached installer copies and fall back to hardcoded/boutique tier
+# lists when no manifest is present.
 
 openclaw_skills_lib_dir() {
     local src="${BASH_SOURCE[0]:-$0}"
