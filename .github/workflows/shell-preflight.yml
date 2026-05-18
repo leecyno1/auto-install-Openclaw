@@ -1,0 +1,27 @@
+name: Shell Preflight
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - master
+      - codex/**
+  workflow_dispatch:
+
+jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install tooling
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y shellcheck shfmt
+
+      - name: Run preflight
+        run: |
+          chmod +x scripts/preflight-check.sh
+          ./scripts/preflight-check.sh

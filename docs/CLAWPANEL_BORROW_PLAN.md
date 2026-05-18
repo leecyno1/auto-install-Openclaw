@@ -20,15 +20,15 @@
 - 导出 cachedFetch / invalidate 供各模块使用
 ```
 
-### 2. 配对/配置一键修复入口
+### 2. 配对/配置修复入口（已调整为官方渠道流程）
 **来源**：`clawpanel/src-tauri/src/commands/pairing.rs` + 脚本已有 `apply_dashboard_pairing_bypass_*`
 **问题**：服务器换 IP/域名后 allowedOrigins 失效，网页端持续 pairing required。
-**落地文件**：`config-menu.sh` 新增 `repair-pairing` 入口 + `install.sh` 强化
+**当前策略**：不再新增自定义配对修复入口；配对问题回归官方渠道插件配置和上游配对流程，`install.sh` 只保留稳定性强化。
 
 ```
 改造内容：
 - 新增菜单项 [X] 一键修复配对与登录权限（整合 allowedOrigins + pairing bypass）
-- 独立 CLI 命令：openclaw-config-harden（底层 Python 脚本）
+- 官方渠道配置入口负责引导插件安装与上游配对
 - 自动读取当前 server IP/hostname 追加到 allowedOrigins
 ```
 
@@ -124,7 +124,7 @@
 |------|------|------|
 | **Phase 1-A** | API 缓存层 + In-Flight 去重 | `api-client.js` 新建 |
 | **Phase 1-B** | projection-api Skills 容错回退 | `server.py` |
-| **Phase 1-C** | 独立配对修复脚本 + 菜单入口 | `repair-pairing.sh` 新建 |
+| **Phase 1-C** | 配对问题回归官方渠道配置流程 | `config-menu.sh` |
 | **Phase 2-A** | Gateway 守护状态机（轻量版） | `openclaw-runtime-bridge.sh` |
 | **Phase 2-B** | 静态资源 hash + 长缓存 | `build-runtime-assets.sh` |
 | **Phase 3** | 热更新 manifest + 校验 | `server.py` + CDN |

@@ -1,0 +1,628 @@
+:root {
+  color-scheme: dark;
+  --bg: #050c14;
+  --panel: #0d1824;
+  --panel-soft: #111f2c;
+  --panel-strong: #152635;
+  --line: rgba(137, 176, 210, 0.24);
+  --gold: #f0d48f;
+  --text: #eef5ff;
+  --muted: #92abc2;
+  --accent: #5ba7d1;
+  --danger: #d67469;
+  --success: #71c58c;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  margin: 0;
+  min-height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Trebuchet MS", "Microsoft YaHei", sans-serif;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button {
+  border: 0;
+}
+
+.shell {
+  min-height: 100vh;
+  display: grid;
+  grid-template-rows: auto 1fr;
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--line);
+  background: rgba(6, 14, 22, 0.96);
+}
+
+.topbar__title {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.eyebrow {
+  color: var(--gold);
+  font-size: 12px;
+  letter-spacing: 0.12em;
+}
+
+.topbar h1,
+.summary-card h2,
+.panel-section h3,
+.equipment-detail h3 {
+  margin: 0;
+}
+
+.topbar h1 {
+  font-size: 20px;
+}
+
+.topbar__meta {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.badge,
+.signal,
+.tag,
+.nav-pill,
+.rarity {
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.badge {
+  padding: 6px 10px;
+  border: 1px solid var(--line);
+  background: rgba(19, 34, 49, 0.82);
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(700px, 1fr) 420px;
+  gap: 16px;
+  padding: 16px;
+}
+
+.stage-column,
+.sidebar {
+  display: grid;
+  gap: 16px;
+  min-height: 0;
+}
+
+.world-card,
+.panel-card,
+.summary-card,
+.task-dock {
+  border: 1px solid var(--line);
+  background: linear-gradient(180deg, rgba(12, 23, 34, 0.98), rgba(8, 17, 26, 0.96));
+  border-radius: 18px;
+  overflow: hidden;
+}
+
+.summary-card,
+.panel-card,
+.task-dock {
+  padding: 14px;
+}
+
+.world-card__toolbar,
+.panel-card__header,
+.task-dock__header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+}
+
+.world-card__toolbar {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--line);
+  background: rgba(10, 20, 31, 0.95);
+}
+
+.world-card__tabs,
+.world-card__actions,
+.stack,
+.footer-actions,
+.tag-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.tab-button,
+.action-button,
+.ghost-button,
+.chip-button,
+.station-button,
+.equipment-slot,
+.role-card {
+  border: 1px solid var(--line);
+  background: rgba(19, 34, 49, 0.9);
+  color: var(--text);
+  border-radius: 12px;
+  padding: 10px 12px;
+  cursor: pointer;
+}
+
+.tab-button.is-active,
+.station-button.is-active,
+.equipment-slot.is-active,
+.role-card.is-active {
+  border-color: rgba(240, 212, 143, 0.6);
+  box-shadow: inset 0 0 0 1px rgba(240, 212, 143, 0.24);
+}
+
+.action-button {
+  background: rgba(34, 69, 99, 0.94);
+  border-color: rgba(201, 226, 248, 0.34);
+}
+
+.action-button--gold {
+  background: rgba(128, 96, 38, 0.94);
+  color: #fff4d0;
+}
+
+.action-button--small,
+.ghost-button--small {
+  padding: 7px 10px;
+  font-size: 12px;
+}
+
+.ghost-button {
+  background: rgba(19, 34, 49, 0.52);
+}
+
+.chip-button {
+  padding: 7px 10px;
+  font-size: 12px;
+}
+
+.chip-button--success {
+  background: rgba(22, 71, 48, 0.88);
+  border-color: rgba(113, 197, 140, 0.42);
+}
+
+.chip-button--danger {
+  background: rgba(87, 35, 35, 0.88);
+  border-color: rgba(214, 116, 105, 0.42);
+}
+
+.world-card__canvas {
+  min-height: 576px;
+  background: #050d15;
+}
+
+.world-card__statusline {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  padding: 12px 14px;
+  border-top: 1px solid var(--line);
+  background: rgba(8, 17, 26, 0.94);
+}
+
+.signal {
+  padding: 7px 12px;
+  font-size: 12px;
+  border: 1px solid var(--line);
+}
+
+.signal--info {
+  background: rgba(24, 49, 71, 0.85);
+  color: #cfe9ff;
+}
+
+.signal--success {
+  background: rgba(18, 63, 42, 0.88);
+  color: #dbffea;
+}
+
+.signal--warning {
+  background: rgba(88, 48, 22, 0.9);
+  color: #ffe1b8;
+}
+
+.summary-card {
+  display: grid;
+  gap: 14px;
+}
+
+.summary-card__hero {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.summary-card h2 {
+  font-size: 22px;
+}
+
+.summary-card p,
+.muted {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.summary-card__signal {
+  align-self: flex-start;
+  padding: 8px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  border: 1px solid var(--line);
+}
+
+.summary-card__signal.is-online {
+  color: #d7ffde;
+  background: rgba(18, 63, 42, 0.88);
+}
+
+.summary-card__signal.is-offline {
+  color: #ffd9d3;
+  background: rgba(87, 35, 35, 0.9);
+}
+
+.summary-grid,
+.metric-grid,
+.grid-two,
+.grid-three,
+.role-list,
+.skill-list,
+.inventory-grid,
+.equipment-grid,
+.task-list,
+.status-stack {
+  display: grid;
+  gap: 10px;
+}
+
+.summary-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.summary-grid--narrow {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.summary-pill,
+.metric-card,
+.inventory-card,
+.task-item,
+.status-line,
+.equipment-detail,
+.skill-card,
+.equipment-slot,
+.role-card {
+  border: 1px solid var(--line);
+  background: rgba(17, 32, 46, 0.88);
+}
+
+.summary-pill,
+.metric-card,
+.inventory-card,
+.task-item,
+.status-line {
+  padding: 10px 12px;
+  border-radius: 14px;
+}
+
+.summary-pill span,
+.metric-card small,
+.inventory-card small,
+.status-line span,
+.task-item small,
+.equipment-slot span,
+.field label {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.summary-pill strong,
+.metric-card strong,
+.inventory-card strong,
+.status-line strong,
+.task-item strong,
+.equipment-slot strong {
+  display: block;
+  margin-top: 4px;
+}
+
+.station-nav {
+  display: grid;
+  gap: 10px;
+}
+
+.station-button {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  text-align: left;
+}
+
+.station-button small {
+  display: block;
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+.nav-pill {
+  padding: 4px 8px;
+  font-size: 11px;
+  background: rgba(34, 69, 99, 0.9);
+  color: #d5ecff;
+}
+
+.panel-card__header {
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line);
+}
+
+.panel-card__body {
+  padding-top: 14px;
+  display: grid;
+  gap: 14px;
+}
+
+.panel-section {
+  display: grid;
+  gap: 12px;
+}
+
+.panel-section--tight {
+  gap: 10px;
+}
+
+.panel-row,
+.role-card__top,
+.skill-card__top,
+.panel-section__lead,
+.task-dock__footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.panel-section__lead {
+  align-items: center;
+}
+
+.grid-two {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.grid-three {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.field {
+  display: grid;
+  gap: 6px;
+}
+
+.field input,
+.field select,
+.field textarea,
+.task-dock textarea {
+  width: 100%;
+  background: rgba(6, 15, 23, 0.92);
+  border: 1px solid var(--line);
+  color: var(--text);
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+
+.field textarea,
+.task-dock textarea {
+  min-height: 88px;
+  resize: vertical;
+}
+
+.role-list {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.role-card {
+  text-align: left;
+  display: grid;
+  gap: 8px;
+}
+
+.tag {
+  padding: 5px 9px;
+  border: 1px solid rgba(240, 212, 143, 0.2);
+  background: rgba(100, 79, 36, 0.24);
+  color: #f6e4b1;
+  font-size: 11px;
+}
+
+.skill-list--short {
+  max-height: 280px;
+  overflow: auto;
+  padding-right: 4px;
+}
+
+.skill-card {
+  border-radius: 14px;
+  padding: 12px;
+  display: grid;
+  gap: 8px;
+}
+
+.skill-card--enabled {
+  box-shadow: inset 0 0 0 1px rgba(113, 197, 140, 0.16);
+}
+
+.skill-card--disabled {
+  opacity: 0.78;
+}
+
+.stack--tight {
+  gap: 6px;
+}
+
+.equipment-layout {
+  display: grid;
+  gap: 12px;
+}
+
+.equipment-grid--full {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.equipment-slot {
+  text-align: left;
+  display: grid;
+  gap: 2px;
+}
+
+.equipment-detail {
+  border-radius: 16px;
+  padding: 14px;
+  display: grid;
+  gap: 12px;
+}
+
+.rarity {
+  padding: 5px 10px;
+  font-size: 11px;
+  text-transform: uppercase;
+}
+
+.rarity--common,
+.inventory-card--common {
+  background: rgba(88, 103, 120, 0.22);
+  border-color: rgba(126, 144, 164, 0.22);
+}
+
+.rarity--magic,
+.inventory-card--magic {
+  background: rgba(53, 90, 150, 0.22);
+  border-color: rgba(83, 132, 210, 0.3);
+}
+
+.rarity--rare,
+.inventory-card--rare {
+  background: rgba(98, 73, 162, 0.24);
+  border-color: rgba(130, 95, 212, 0.3);
+}
+
+.rarity--epic,
+.inventory-card--epic {
+  background: rgba(132, 86, 24, 0.24);
+  border-color: rgba(214, 161, 63, 0.3);
+}
+
+.rarity--legendary,
+.inventory-card--legendary {
+  background: rgba(134, 52, 27, 0.26);
+  border-color: rgba(221, 117, 74, 0.35);
+}
+
+.inventory-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.task-item--latest {
+  box-shadow: inset 0 0 0 1px rgba(240, 212, 143, 0.22);
+}
+
+.metric-grid--full {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.metric-card strong {
+  font-size: 20px;
+}
+
+.status-stack {
+  grid-template-columns: 1fr;
+}
+
+.task-dock {
+  display: grid;
+  gap: 12px;
+}
+
+.task-dock__row {
+  display: grid;
+  grid-template-columns: 1fr 110px;
+  gap: 12px;
+  align-items: stretch;
+}
+
+.task-dock__footer {
+  align-items: center;
+}
+
+.footer-actions--left {
+  justify-content: flex-start;
+}
+
+@media (max-width: 1280px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 920px) {
+  .summary-grid,
+  .summary-grid--narrow,
+  .metric-grid--full,
+  .role-list,
+  .grid-two,
+  .grid-three,
+  .inventory-grid,
+  .equipment-grid--full {
+    grid-template-columns: 1fr;
+  }
+
+  .world-card__toolbar,
+  .world-card__statusline,
+  .topbar,
+  .task-dock__row,
+  .task-dock__footer,
+  .summary-card__hero,
+  .panel-section__lead {
+    grid-template-columns: 1fr;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .world-card__actions {
+    justify-content: flex-start;
+  }
+}

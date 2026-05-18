@@ -1226,6 +1226,25 @@ body.modal-open {
   grid-column: 1 / -1;
 }
 
+.provider-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.provider-grid .field-block.wide {
+  grid-column: 1 / -1;
+}
+
+.provider-grid select {
+  width: 100%;
+  min-height: 38px;
+  padding: 0 12px;
+  border: 1px solid rgba(126, 164, 231, 0.22);
+  background: rgba(9, 13, 20, 0.94);
+  color: var(--text);
+}
+
 .status-diag-actions {
   display: flex;
   flex-wrap: wrap;
@@ -1323,6 +1342,10 @@ body.config-body *::after {
 }
 
 .identity-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.provider-grid {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 

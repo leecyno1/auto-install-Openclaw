@@ -142,6 +142,72 @@
               <div class="role-config-readonly" id="roleConfigSummary"></div>
             </article>
 
+            <article class="panel-card provider-card">
+              <div class="panel-head">
+                <span class="panel-kicker">文本 Provider</span>
+                <h2>Provider / 模型</h2>
+              </div>
+              <div class="provider-grid">
+                <label class="field-block">
+                  <span>官方预设</span>
+                  <select id="providerPresetSelect"></select>
+                </label>
+                <label class="field-block">
+                  <span>显示名称</span>
+                  <input id="providerDisplayNameInput" type="text" maxlength="64" placeholder="如：Anthropic / 公司内网 Provider" />
+                </label>
+                <label class="field-block">
+                  <span>Provider 标识</span>
+                  <input id="providerIdInput" type="text" maxlength="64" placeholder="如：anthropic / custom-provider" />
+                </label>
+                <label class="field-block">
+                  <span>Base URL</span>
+                  <input id="providerBaseUrlInput" type="text" maxlength="200" placeholder="https://api.example.com/v1" />
+                </label>
+                <label class="field-block">
+                  <span>模型名</span>
+                  <input id="providerModelInput" type="text" maxlength="120" placeholder="例如：gpt-5.1" />
+                </label>
+                <label class="field-block">
+                  <span>兼容格式</span>
+                  <select id="providerApiTypeSelect"></select>
+                </label>
+                <label class="field-block wide">
+                  <span>API Key</span>
+                  <input id="providerApiKeyInput" type="password" maxlength="200" placeholder="留空表示保持现有 Key" />
+                </label>
+              </div>
+            </article>
+
+            <article class="panel-card provider-card">
+              <div class="panel-head">
+                <span class="panel-kicker">生图 Provider</span>
+                <h2>生图接口</h2>
+              </div>
+              <div class="provider-grid">
+                <label class="field-block">
+                  <span>Provider 标识</span>
+                  <input id="imageProviderIdInput" type="text" maxlength="64" placeholder="如：custom-image" />
+                </label>
+                <label class="field-block">
+                  <span>显示名称</span>
+                  <input id="imageProviderDisplayNameInput" type="text" maxlength="64" placeholder="如：ViviAI / 自建生图接口" />
+                </label>
+                <label class="field-block wide">
+                  <span>Base URL</span>
+                  <input id="imageProviderBaseUrlInput" type="text" maxlength="200" placeholder="https://api.example.com/v1/chat/completions" />
+                </label>
+                <label class="field-block">
+                  <span>模型名</span>
+                  <input id="imageProviderModelInput" type="text" maxlength="120" placeholder="例如：gemini-3.1-flash-image-preview" />
+                </label>
+                <label class="field-block wide">
+                  <span>API Key</span>
+                  <input id="imageProviderApiKeyInput" type="password" maxlength="200" placeholder="留空表示保持现有 Key" />
+                </label>
+              </div>
+            </article>
+
             <article class="panel-card role-security-card">
               <div class="panel-head">
                 <span class="panel-kicker">安全矩阵</span>

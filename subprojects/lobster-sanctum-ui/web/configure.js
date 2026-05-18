@@ -2,6 +2,8 @@ const defaultRole = "druid";
 const stateKey = "openclaw.command.center";
 const runtimeProjectionKey = "openclaw.runtime.world";
 const identityKey = "openclaw.identity.profile";
+const providerConfigKey = "openclaw.provider.config";
+const imageProviderConfigKey = "openclaw.image.provider.config";
 let serverCatalogRole = null;
 const runtimeWorldPort = 19000;
 const HOTBAR_SIZE = 6;
@@ -125,6 +127,43 @@ const modelRoutes = [
   { id: "growth", label: "增长运营路由", note: "适合内容策略、投放与渠道。" },
   { id: "creative", label: "创意生成路由", note: "适合 UI、图像和视频构图。" },
 ];
+
+const providerPresets = [
+  { id: "anthropic", label: "Anthropic", apiType: "anthropic-messages", baseUrl: "https://api.anthropic.com", model: "claude-sonnet-4-20250514" },
+  { id: "openai", label: "OpenAI", apiType: "openai-responses", baseUrl: "https://api.openai.com/v1", model: "gpt-5.1" },
+  { id: "zai", label: "GLM", apiType: "openai-responses", baseUrl: "https://open.bigmodel.cn/api/paas/v4", model: "glm-5" },
+  { id: "minimax", label: "MiniMax", apiType: "anthropic-messages", baseUrl: "https://api.minimax.io/anthropic", model: "MiniMax-M2.7-highspeed" },
+  { id: "google", label: "Gemini", apiType: "openai-responses", baseUrl: "", model: "gemini-2.5-pro" },
+  { id: "deepseek", label: "DeepSeek", apiType: "openai-responses", baseUrl: "https://api.deepseek.com", model: "deepseek-chat" },
+  { id: "openrouter", label: "OpenRouter", apiType: "openai-responses", baseUrl: "https://openrouter.ai/api/v1", model: "anthropic/claude-3.7-sonnet" },
+  { id: "custom", label: "自定义 Provider", apiType: "openai-responses", baseUrl: "", model: "" },
+];
+
+const apiTypeDefs = [
+  { id: "anthropic-messages", label: "Anthropic Messages" },
+  { id: "openai-responses", label: "OpenAI Responses" },
+  { id: "openai-completions", label: "OpenAI Completions" },
+];
+
+const defaultProviderConfig = {
+  preset: "anthropic",
+  displayName: "Anthropic",
+  providerId: "anthropic",
+  baseUrl: "https://api.anthropic.com",
+  model: "claude-sonnet-4-20250514",
+  apiType: "anthropic-messages",
+  apiKey: "",
+  keepExistingKey: true,
+};
+
+const defaultImageProviderConfig = {
+  providerId: "custom-image",
+  displayName: "生图 Provider",
+  baseUrl: "https://api.viviai.cc/v1/chat/completions",
+  model: "gemini-3.1-flash-image-preview",
+  apiKey: "",
+  keepExistingKey: true,
+};
 
 const securityOptions = [
   { id: "system", label: "系统权限", note: "系统命令与进程。" },
@@ -288,7 +327,7 @@ const skillCatalog = [
 ];
 
 const toolCatalog = [
-  { id: "minimax-2-7", name: "MiniMax 2.7", type: "模型", rarity: "rare", slot: "chest", desc: "默认主力大模型，平衡速度与质量。", roles: ALL_ROLE_IDS },
+  { id: "minimax-2-7", name: "MiniMax 2.7", type: "模型", rarity: "rare", slot: "chest", desc: "可选的高速多模态模型，适合追求速度和图文混合任务。", roles: ALL_ROLE_IDS },
   { id: "claude-main", name: "Claude Main", type: "模型", rarity: "mythic", slot: "chest", desc: "长文本、规划与复杂推理。", roles: ["druid", "assassin", "mage", "summoner", "paladin"] },
   { id: "codex-core", name: "Codex Core", type: "模型", rarity: "mythic", slot: "chest", desc: "代码实现、调试与验证。", roles: ["warrior"] },
   { id: "gemini-vision", name: "Gemini Vision", type: "模型", rarity: "mythic", slot: "chest", desc: "多模态理解与图像任务。", roles: ["designer", "mage", "paladin"] },
@@ -859,7 +898,25 @@ function roleDefaultSkills(role, skillPack) {
 }
 
 function roleDefaultTools(role) {
-  return toolCatalog.filter((tool) => tool.roles.includes(role)).slice(0, 8).map((tool) => tool.id);
+  const preferredChestByRole = {
+    druid: "claude-main",
+    assassin: "claude-main",
+    mage: "claude-main",
+    summoner: "claude-main",
+    warrior: "codex-core",
+    paladin: "claude-main",
+    designer: "gemini-vision",
+  };
+  const preferredChest = preferredChestByRole[role] || "claude-main";
+  return toolCatalog
+    .filter((tool) => tool.roles.includes(role))
+    .sort((left, right) => {
+      const leftScore = left.id === preferredChest ? 2 : left.slot === "chest" ? 1 : 0;
+      const rightScore = right.id === preferredChest ? 2 : right.slot === "chest" ? 1 : 0;
+      return rightScore - leftScore;
+    })
+    .slice(0, 8)
+    .map((tool) => tool.id);
 }
 
 function recommendedSynergiesForRole(role) {
@@ -1257,6 +1314,8 @@ let pendingRoleChange = null;
 let currentRuntime = { state: "idle", detail: "等待任务", progress: 0, updatedAt: "-" };
 let currentStatusSummary = null;
 let currentIdentity = readIdentityProfile();
+let currentProviderConfig = readProviderConfig();
+let currentImageProviderConfig = readImageProviderConfig();
 let selectedSkillId = null;
 let selectedToolId = null;
 let statusDiagBusy = false;
@@ -1323,6 +1382,92 @@ function writeIdentityProfile(profile) {
   const normalized = normalizeIdentityProfile(profile);
   window.localStorage.setItem(identityKey, JSON.stringify(normalized));
   return normalized;
+}
+
+function providerPresetById(id) {
+  return providerPresets.find((item) => item.id === id) || providerPresets[0];
+}
+
+function normalizeProviderConfig(config) {
+  const preset = providerPresetById(config?.preset || defaultProviderConfig.preset);
+  const normalized = {
+    preset: preset.id,
+    displayName: String(config?.displayName || preset.label || defaultProviderConfig.displayName || "").trim(),
+    providerId: String(config?.providerId || preset.id || defaultProviderConfig.providerId || "").trim(),
+    baseUrl: String(config?.baseUrl ?? preset.baseUrl ?? defaultProviderConfig.baseUrl).trim(),
+    model: String(config?.model ?? preset.model ?? defaultProviderConfig.model).trim(),
+    apiType: String(config?.apiType || preset.apiType || defaultProviderConfig.apiType).trim(),
+    apiKey: String(config?.apiKey || "").trim(),
+    keepExistingKey: config?.keepExistingKey !== false,
+  };
+  if (!normalized.providerId) normalized.providerId = normalized.preset === "custom" ? "custom-provider" : normalized.preset;
+  if (!normalized.displayName) normalized.displayName = preset.label || normalized.providerId;
+  if (!apiTypeDefs.some((item) => item.id === normalized.apiType)) {
+    normalized.apiType = preset.apiType || defaultProviderConfig.apiType;
+  }
+  return normalized;
+}
+
+function writeProviderConfig(config) {
+  const normalized = normalizeProviderConfig(config);
+  window.localStorage.setItem(providerConfigKey, JSON.stringify(normalized));
+  return normalized;
+}
+
+function readProviderConfig() {
+  return normalizeProviderConfig(safeParseJson(window.localStorage.getItem(providerConfigKey), defaultProviderConfig));
+}
+
+function normalizeImageProviderConfig(config) {
+  return {
+    providerId: String(config?.providerId || defaultImageProviderConfig.providerId).trim() || defaultImageProviderConfig.providerId,
+    displayName: String(config?.displayName || defaultImageProviderConfig.displayName).trim() || defaultImageProviderConfig.displayName,
+    baseUrl: String(config?.baseUrl ?? defaultImageProviderConfig.baseUrl).trim() || defaultImageProviderConfig.baseUrl,
+    model: String(config?.model ?? defaultImageProviderConfig.model).trim() || defaultImageProviderConfig.model,
+    apiKey: String(config?.apiKey || "").trim(),
+    keepExistingKey: config?.keepExistingKey !== false,
+  };
+}
+
+function writeImageProviderConfig(config) {
+  const normalized = normalizeImageProviderConfig(config);
+  window.localStorage.setItem(imageProviderConfigKey, JSON.stringify(normalized));
+  return normalized;
+}
+
+function readImageProviderConfig() {
+  return normalizeImageProviderConfig(safeParseJson(window.localStorage.getItem(imageProviderConfigKey), defaultImageProviderConfig));
+}
+
+function minimaxImageConfigFromProvider(providerConfig = currentProviderConfig) {
+  const rawBase = String(providerConfig?.baseUrl || "https://api.minimaxi.com/anthropic").trim();
+  const apiHost = rawBase.replace(/\/anthropic\/?$/, "") || "https://api.minimaxi.com";
+  return {
+    providerId: "minimax-image",
+    displayName: "MiniMax 官方生图",
+    baseUrl: `${apiHost}/v1/image_generation`,
+    model: "image-01",
+    apiKey: "",
+    keepExistingKey: true,
+  };
+}
+
+function shouldAutoWireMinimaxImage(config = currentImageProviderConfig) {
+  const providerId = String(config?.providerId || "").trim().toLowerCase();
+  const baseUrl = String(config?.baseUrl || "").trim();
+  if (!providerId && !baseUrl) return true;
+  if (providerId.startsWith("minimax")) return true;
+  if ((providerId === "" || providerId === "custom-image") && (!baseUrl || baseUrl === defaultImageProviderConfig.baseUrl)) return true;
+  return false;
+}
+
+function syncImageProviderForCurrentProvider() {
+  if (!["minimax", "minimax-cn"].includes(currentProviderConfig?.preset)) return;
+  if (!shouldAutoWireMinimaxImage(currentImageProviderConfig)) return;
+  currentImageProviderConfig = writeImageProviderConfig({
+    ...currentImageProviderConfig,
+    ...minimaxImageConfigFromProvider(currentProviderConfig),
+  });
 }
 
 function normalizeRuntime(payload) {
@@ -1533,6 +1678,8 @@ function collectApplyPayload(scope) {
     officeName: readOfficeName(currentRole),
     roleState: deepClone(currentRoleState),
     identity: deepClone(currentIdentity),
+    providerConfig: deepClone(currentProviderConfig),
+    imageProviderConfig: deepClone(currentImageProviderConfig),
   };
 }
 
@@ -1559,11 +1706,13 @@ async function applyRoleStateToBackend(scope, sourceButton) {
       if (result.summary.identity && typeof result.summary.identity === "object") {
         currentIdentity = writeIdentityProfile({ ...currentIdentity, ...result.summary.identity });
       }
+      applySummaryConfig(result.summary);
     }
     syncProjection();
     setSaveStatus(scope, `已保存 ${new Date().toLocaleTimeString()}`);
     renderBanner();
     renderSummaryStrip();
+    renderRoleTab();
     renderStatusTab();
     renderTasksTab();
     return true;
@@ -1584,6 +1733,16 @@ function renderSummaryStrip() {}
 function stateForRole(role) {
   if (role === currentRole) return currentRoleState;
   return hydrateRoleState(role, loadRoleState(role));
+}
+
+function applySummaryConfig(summary) {
+  if (!summary || typeof summary !== "object") return;
+  if (summary.providerConfig && typeof summary.providerConfig === "object") {
+    currentProviderConfig = writeProviderConfig({ ...currentProviderConfig, ...summary.providerConfig, apiKey: "" });
+  }
+  if (summary.imageProviderConfig && typeof summary.imageProviderConfig === "object") {
+    currentImageProviderConfig = writeImageProviderConfig({ ...currentImageProviderConfig, ...summary.imageProviderConfig, apiKey: "" });
+  }
 }
 
 function renderBanner() {
@@ -1613,6 +1772,102 @@ function renderIdentityForm() {
     if (!el) return;
     if (document.activeElement === el) return;
     el.value = currentIdentity[key] || identityDefaults[key] || "";
+  });
+}
+
+function renderProviderForms() {
+  const presetSelect = document.getElementById("providerPresetSelect");
+  if (presetSelect && !presetSelect.dataset.bound) {
+    presetSelect.innerHTML = providerPresets.map((item) => `<option value="${item.id}">${item.label}</option>`).join("");
+    presetSelect.addEventListener("change", () => {
+      const preset = providerPresetById(presetSelect.value);
+      currentProviderConfig = writeProviderConfig({
+        ...currentProviderConfig,
+        preset: preset.id,
+        displayName: preset.label,
+        providerId: preset.id === "custom" ? (currentProviderConfig.providerId || "custom-provider") : preset.id,
+        baseUrl: preset.id === "custom" ? currentProviderConfig.baseUrl : (preset.baseUrl || ""),
+        model: preset.id === "custom" ? currentProviderConfig.model : (preset.model || ""),
+        apiType: preset.id === "custom" ? currentProviderConfig.apiType : (preset.apiType || "openai-responses"),
+        apiKey: "",
+        keepExistingKey: true,
+      });
+      syncImageProviderForCurrentProvider();
+      renderProviderForms();
+      markCurrentTabDirty();
+    });
+    presetSelect.dataset.bound = "1";
+  }
+  if (presetSelect && document.activeElement !== presetSelect) {
+    presetSelect.value = currentProviderConfig.preset;
+  }
+
+  const apiTypeSelect = document.getElementById("providerApiTypeSelect");
+  if (apiTypeSelect && !apiTypeSelect.dataset.bound) {
+    apiTypeSelect.innerHTML = apiTypeDefs.map((item) => `<option value="${item.id}">${item.label}</option>`).join("");
+    apiTypeSelect.addEventListener("change", () => {
+      currentProviderConfig = writeProviderConfig({ ...currentProviderConfig, apiType: apiTypeSelect.value });
+      markCurrentTabDirty();
+    });
+    apiTypeSelect.dataset.bound = "1";
+  }
+  if (apiTypeSelect && document.activeElement !== apiTypeSelect) {
+    apiTypeSelect.value = currentProviderConfig.apiType;
+  }
+
+  const bindProviderField = (id, getter, setter, normalizeValue = (value) => value) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (!el.dataset.bound) {
+      const handler = () => {
+        setter(normalizeValue(el.value));
+        markCurrentTabDirty();
+      };
+      el.addEventListener("input", handler);
+      el.addEventListener("change", handler);
+      el.dataset.bound = "1";
+    }
+    if (document.activeElement !== el) {
+      el.value = getter() ?? "";
+    }
+  };
+
+  bindProviderField("providerDisplayNameInput", () => currentProviderConfig.displayName, (value) => {
+    currentProviderConfig = writeProviderConfig({ ...currentProviderConfig, displayName: value });
+  });
+  bindProviderField("providerIdInput", () => currentProviderConfig.providerId, (value) => {
+    currentProviderConfig = writeProviderConfig({
+      ...currentProviderConfig,
+      providerId: String(value || "").trim().toLowerCase().replace(/\s+/g, "-"),
+    });
+  });
+  bindProviderField("providerBaseUrlInput", () => currentProviderConfig.baseUrl, (value) => {
+    currentProviderConfig = writeProviderConfig({ ...currentProviderConfig, baseUrl: value });
+    syncImageProviderForCurrentProvider();
+  });
+  bindProviderField("providerModelInput", () => currentProviderConfig.model, (value) => {
+    currentProviderConfig = writeProviderConfig({ ...currentProviderConfig, model: value });
+  });
+  bindProviderField("providerApiKeyInput", () => currentProviderConfig.apiKey, (value) => {
+    currentProviderConfig = writeProviderConfig({ ...currentProviderConfig, apiKey: value, keepExistingKey: !value });
+  });
+  bindProviderField("imageProviderIdInput", () => currentImageProviderConfig.providerId, (value) => {
+    currentImageProviderConfig = writeImageProviderConfig({
+      ...currentImageProviderConfig,
+      providerId: String(value || "").trim().toLowerCase().replace(/\s+/g, "-"),
+    });
+  });
+  bindProviderField("imageProviderDisplayNameInput", () => currentImageProviderConfig.displayName, (value) => {
+    currentImageProviderConfig = writeImageProviderConfig({ ...currentImageProviderConfig, displayName: value });
+  });
+  bindProviderField("imageProviderBaseUrlInput", () => currentImageProviderConfig.baseUrl, (value) => {
+    currentImageProviderConfig = writeImageProviderConfig({ ...currentImageProviderConfig, baseUrl: value });
+  });
+  bindProviderField("imageProviderModelInput", () => currentImageProviderConfig.model, (value) => {
+    currentImageProviderConfig = writeImageProviderConfig({ ...currentImageProviderConfig, model: value });
+  });
+  bindProviderField("imageProviderApiKeyInput", () => currentImageProviderConfig.apiKey, (value) => {
+    currentImageProviderConfig = writeImageProviderConfig({ ...currentImageProviderConfig, apiKey: value, keepExistingKey: !value });
   });
 }
 
@@ -1664,6 +1919,7 @@ function renderRoleTab() {
 
   renderIdentityForm();
   renderRoleConfigSummary();
+  renderProviderForms();
   renderSecurityOptions();
 }
 
@@ -1697,6 +1953,7 @@ function renderRoleConfigSummary() {
     { label: "当前模型路由", value: optionLabel(modelRoutes, currentRoleState.modelRoute).replace(/路由$/, ""), note: "按安装配置生效" },
     { label: "当前规则档位", value: optionLabel(tokenRules, currentRoleState.tokenRule), note: "页面内只读" },
     { label: "当前技能包", value: optionLabel(packageDefs, currentRoleState.skillPack), note: "随职业基线刷新" },
+    { label: "当前 Provider", value: currentProviderConfig.displayName || optionLabel(providerPresets, currentProviderConfig.preset), note: currentProviderConfig.model || "未配置模型" },
   ];
   target.innerHTML = cards
     .map(
@@ -2376,6 +2633,7 @@ async function refreshRuntime() {
       if (payload.summary.identity && typeof payload.summary.identity === "object") {
         currentIdentity = writeIdentityProfile({ ...currentIdentity, ...payload.summary.identity });
       }
+      applySummaryConfig(payload.summary);
     }
   } catch {
     try {
@@ -2387,6 +2645,7 @@ async function refreshRuntime() {
   }
   renderBanner();
   renderSummaryStrip();
+  renderRoleTab();
   renderStatusTab();
   renderTasksTab();
   notifyEmbeddedHost("lobster-world-console-status", currentRuntime);
@@ -2477,13 +2736,15 @@ function bindEvents() {
   });
 
   window.addEventListener("storage", (event) => {
-    if (![stateKey, runtimeProjectionKey, OFFICE_PLAQUE_STORAGE_KEY, identityKey, "openclaw.persona.role"].includes(event.key)) return;
+    if (![stateKey, runtimeProjectionKey, OFFICE_PLAQUE_STORAGE_KEY, identityKey, providerConfigKey, imageProviderConfigKey, "openclaw.persona.role"].includes(event.key)) return;
     currentRole = readRole();
     previewRole = currentRole;
     currentRoleState = hydrateRoleState(currentRole, loadRoleState(currentRole));
     selectedSkillId = currentRoleState.selectedSkillId;
     selectedToolId = currentRoleState.selectedToolId;
     currentIdentity = readIdentityProfile();
+    currentProviderConfig = readProviderConfig();
+    currentImageProviderConfig = readImageProviderConfig();
     refreshRuntime();
     renderAll();
   });
@@ -2500,6 +2761,8 @@ async function bootstrapCompactConfigure() {
   selectedSkillId = currentRoleState.selectedSkillId;
   selectedToolId = currentRoleState.selectedToolId;
   currentIdentity = readIdentityProfile();
+  currentProviderConfig = readProviderConfig();
+  currentImageProviderConfig = readImageProviderConfig();
   if (!window.localStorage.getItem(OFFICE_PLAQUE_STORAGE_KEY)) {
     writeOfficeName(defaultOfficeNameForRole(currentRole));
   }

@@ -4,54 +4,70 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-OpenClaw Installer is a comprehensive deployment solution for OpenClaw AI assistant infrastructure. It combines installation automation, configuration management, repair utilities, local skills repository, and a pixel-based workbench UI (Lobster Sanctum Studio) into a unified system.
+OpenClaw Installer is a modular deployment solution for OpenClaw AI assistant infrastructure. **v2.0 introduces a complete architectural refactor**: installation and configuration are fully decoupled, with independent modules for Skills, tier rules, Pixel House, and API configuration.
 
-**Core Purpose**: Compress OpenClaw first-time deployment into a repeatable, environment-agnostic flow that handles installation, model configuration, plugin management, skills synchronization, and configuration repair while preserving user data (memory, sessions, API keys).
+**Core Purpose**: Provide a minimal installer that delegates to the official OpenClaw installation, plus independent configuration modules for custom features (Skills management, quota enforcement, Pixel House workbench, API endpoint replacement).
 
 ## Key Commands
 
-### Installation & Configuration
+### Installation
 
 ```bash
-# One-click install (interactive)
+# One-click install (minimal mode)
 curl -fsSL https://gitee.com/leecyno1/auto-install-openclaw/raw/main/install.sh | bash
 
-# Fully automated install
-curl -fsSL https://gitee.com/leecyno1/auto-install-openclaw/raw/main/install.sh | bash -s -- --auto-confirm-all
+# GitHub direct
+curl -fsSL https://raw.githubusercontent.com/leecyno1/auto-install-Openclaw/main/install.sh | bash
+```
 
-# Open configuration center
-bash ~/.openclaw/config-menu.sh
+### Configuration Modules
 
-# Repair legacy configurations (preserves memory/sessions)
-bash ~/.openclaw/config-menu.sh --repair-config
+```bash
+# Interactive menu
+openclaw-setup config
 
-# Install/repair Pixel House workbench
-bash ~/.openclaw/config-menu.sh --install-pixel-house
+# Skills management
+openclaw-setup config skills --tier basic      # ~60 skills
+openclaw-setup config skills --tier extended   # ~80 skills
+openclaw-setup config skills --tier super      # ~100+ skills
+
+# Tier rules configuration
+openclaw-setup config tier-rules --level low       # 100 req/5h
+openclaw-setup config tier-rules --level medium    # 300 req/5h
+openclaw-setup config tier-rules --level high      # unlimited
+openclaw-setup config tier-rules --with-monitoring # start gateway proxy
+
+# Pixel House workbench
+openclaw-setup config pixel-house --install
+openclaw-setup config pixel-house --start
+openclaw-setup config pixel-house --status
+
+# API configuration (replace hardcoded URLs in skills)
+openclaw-setup config api --show
+openclaw-setup config api --replace-service nanobanana --with https://my-service.com/api
+openclaw-setup config api --replace-service gemini --with https://my-gemini-proxy.com/v1
+
+# Dashboard pairing fix (fix "pairing required" errors)
+openclaw-setup config dashboard-pairing --fix
+openclaw-setup config dashboard-pairing --show
+
+# Migration from old version
+openclaw-setup config migrate
 ```
 
 ### OpenClaw Gateway Management
 
 ```bash
-# All commands require sourcing environment first
+source ~/.openclaw/env && openclaw gateway start
 source ~/.openclaw/env && openclaw gateway status
 source ~/.openclaw/env && openclaw doctor
 source ~/.openclaw/env && openclaw health
-source ~/.openclaw/env && openclaw update --restart
-source ~/.openclaw/env && openclaw plugins update --all
-```
-
-### Pixel House Workbench (Lobster Sanctum Studio)
-
-```bash
-~/.openclaw/lobster-world.sh start   # Start workbench (default port 19000)
-~/.openclaw/lobster-world.sh status  # Check status
-~/.openclaw/lobster-world.sh stop    # Stop workbench
 ```
 
 ### Development & Testing
 
 ```bash
-# Run preflight checks (shell lint + smoke tests + compatibility checks)
+# Run preflight checks
 ./scripts/preflight-check.sh
 
 # Shell script linting
@@ -59,80 +75,148 @@ source ~/.openclaw/env && openclaw plugins update --all
 
 # Media quota unit tests
 python3 -m unittest tests/test_media_quota.py
-
-# Regenerate skills documentation
-python3 scripts/generate_skill_guides.py
-
-# Refresh default skills cache
-python3 scripts/refresh_default_skills.py
 ```
 
-## Architecture
+## Architecture (v2.0 Modular)
+
+### Design Principles
+
+1. **Minimal Installer**: `install.sh` (~250 lines) only handles environment detection and official installer invocation
+2. **Independent Modules**: Skills, tier rules, Pixel House, and API config are separate scripts in `scripts/modules/`
+3. **No Duplication**: Removed features that duplicate official OpenClaw CLI (model config, channel management, status monitoring)
+4. **Flexible Replacement**: Support replacing hardcoded third-party service URLs in skills
+5. **Hybrid Strategy**: Basic skills from local repo (fast), extended skills from official source (up-to-date)
+6. **Data Safety**: All modifications create backups, support rollback
 
 ### Repository Structure
 
 ```
 .
-├── install.sh              # Main installer (handles OpenClaw + deps + env setup)
-├── config-menu.sh          # Interactive configuration center (482KB, handles all config flows)
+├── install.sh                          # Minimal installer (~250 lines)
+├── openclaw-setup.sh                   # Unified configuration entry point
+├── config-menu.sh.deprecated           # Old monolithic config (archived)
 ├── scripts/
-│   ├── lobster-world.sh    # Pixel House workbench launcher/manager
-│   ├── preflight-check.sh  # CI/CD validation pipeline
-│   ├── repair-pairing.sh   # Dashboard pairing repair utility
-│   ├── apply-web-profile.sh # Vendor control profile injection
-│   └── *.py                # Skills sync, quota management, doc generation
-├── skills/default/         # Local skills repository (100+ skills)
-├── plugins/official/       # Official plugin bundles (e.g., Feishu)
-├── docs/                   # Configuration guides, skill references, roadmaps
+│   ├── modules/                        # Independent configuration modules
+│   │   ├── skills.sh                   # Skills management (~389 lines)
+│   │   ├── tier-rules.sh               # Tier rules config (~420 lines)
+│   │   ├── pixel-house.sh              # Pixel House management (~406 lines)
+│   │   ├── api-config.sh               # API configuration (~413 lines)
+│   │   └── api_replacer.py             # URL replacement tool (~335 lines)
+│   ├── migrate-to-modular.sh           # Migration wizard (~399 lines)
+│   ├── lobster-world.sh                # Pixel House launcher
+│   ├── apply-web-profile.sh            # Vendor control profile injection
+│   └── *.py                            # Skills sync, quota management, etc.
+├── skills/default/                     # Local skills repository (100+ skills)
+├── docs/                               # Documentation
 ├── subprojects/
-│   └── lobster-sanctum-ui/ # Pixel House workbench (Flask backend + frontend)
-└── tests/                  # Unit tests for quota logic and core utilities
+│   └── lobster-sanctum-ui/             # Pixel House workbench (Flask backend)
+└── tests/                              # Unit tests
 ```
 
 ### Core Components
 
-**1. Installer (`install.sh`)**
-- Detects platform (macOS/Linux), validates Node.js 22.12+
-- Handles official OpenClaw installation via `openclaw.ai/install.sh` or mirrors
-- Sets up `~/.openclaw/` directory structure, environment variables, default configs
-- Supports both interactive and fully automated modes (`--auto-confirm-all`)
-- TTY detection for pipe-safe execution (`curl | bash`)
+**1. Minimal Installer (`install.sh`)**
+- ~250 lines (simplified from 439 lines)
+- Environment detection (OS, Node.js 22.12+, required commands)
+- Delegates to official OpenClaw installer (`openclaw.ai/install.sh`)
+- Applies basic patches (Feishu cleanup)
+- Shows next steps guide for module configuration
+- TTY detection for pipe-safe execution
 
-**2. Configuration Menu (`config-menu.sh`)**
-- 482KB interactive TUI for model config, plugin management, skills sync, service control
-- Repair mode: cleans legacy plugin entries, fixes channel configs, preserves user data
-- Handles official plugin installation with local-first fallback strategy
-- Manages vendor control profiles (LOW/MEDIUM/HIGH tiers with token budgets)
+**2. Skills Module (`scripts/modules/skills.sh`)**
+- Hybrid installation strategy: basic skills from local repo, extended from official source
+- Three tiers: basic (~60), extended (~80), super (~100+)
+- Uses `skills/manifest.json` as single source of truth
+- Automatic fallback to local repo if official source fails
+- CLI: `openclaw-setup config skills --tier <basic|extended|super>`
 
-**3. Skills System**
-- Local repository at `skills/default/` with 100+ skills
-- Three-tier installation: basic (LOW), extended (MEDIUM), super (HIGH)
-- Each skill has `GUIDE.md` for usage docs and `_meta.json` for metadata
-- Skills sync via `scripts/refresh_default_skills.py`
+**3. Tier Rules Module (`scripts/modules/tier-rules.sh`)**
+- Four quota levels: none (unlimited), low (100 req/5h), medium (300 req/5h), high (unlimited req)
+- Configures request limits, token budgets, image/video quotas
+- Optional gateway monitoring proxy (port 13147)
+- Bash version detection for macOS compatibility (3.2 vs 5.3)
+- CLI: `openclaw-setup config tier-rules --level <low|medium|high|none>`
 
-**4. Pixel House Workbench (`subprojects/lobster-sanctum-ui/`)**
+**4. Pixel House Module (`scripts/modules/pixel-house.sh`)**
+- Independent deployment of Pixel House workbench
 - Flask backend + frontend UI (default port 19000)
-- Maps OpenClaw backend state to visual workbench (characters, skills, equipment, status)
-- Managed via `scripts/lobster-world.sh` with PID/log tracking
+- Python dependency management (virtual environment)
+- Lifecycle management (install/start/stop/status)
+- CLI: `openclaw-setup config pixel-house --install|--start|--stop|--status`
 
-**5. Vendor Control Profiles**
-- Three tiers: LOW (100 req/5h, 600K tokens), MEDIUM (300 req/5h, 2.4M tokens), HIGH (unlimited req, 6M tokens)
-- Injects policies into `agents/main/soul`, `persona/`, and `~/.openclaw/policy/`
-- Controls skills installation scope and API requirements (Gemini, BraveSearch, NanoBanana)
+**5. API Configuration Module (`scripts/modules/api-config.sh` + `api_replacer.py`)**
+- Replaces hardcoded third-party service URLs in skills
+- Supports: NanoBanana, Gemini, OpenAI, MiniMax, Replicate
+- Scans multiple file types (.py, .js, .sh, .ts, .tsx, .jsx)
+- Uses `~/.openclaw/api-overrides.json` for service mappings
+- Smart backup: creates one backup per hour (not per file) to avoid slowdown
+- CLI: `openclaw-setup config api --replace-service <name> --with <url>`
 
-## Configuration Repair System
+**6. Migration Tool (`scripts/migrate-to-modular.sh`)**
+- Migrates from old monolithic config-menu.sh to new modular architecture
+- Extracts existing configuration (Skills tier, tier rules, API config)
+- Preserves user data (memory, sessions, API keys)
+- Creates backup before migration, supports rollback
+- CLI: `openclaw-setup config migrate`
 
-The repair flow (`--repair-config`) is critical for fixing historical misconfigurations:
+**7. Unified Entry Point (`openclaw-setup.sh`)**
+- Routes commands to appropriate modules
+- Provides interactive configuration menu
+- Backward compatibility with old command patterns
+- CLI: `openclaw-setup config [module] [options]`
 
-1. **Preserves**: Memory files, session data, conversation history, API keys
-2. **Cleans**: Legacy plugin entries, broken channel configs, orphaned plugin references
-3. **Fixes**: `pairing required`, `plugin not found`, `unknown channel id` errors
-4. **Rebuilds**: Skills cache, plugin manifests, configuration indexes
+**8. Dashboard Pairing Fix Module (`scripts/modules/dashboard-pairing.sh`)**
+- Fixes "pairing required" errors in Dashboard
+- Configures gateway.controlUi.allowedOrigins
+- Disables device authentication for embedded/proxy scenarios
+- Automatically restarts Gateway to apply changes
+- CLI: `openclaw-setup config dashboard-pairing --fix`
 
-When modifying repair logic, ensure `config-menu.sh` repair functions never delete:
-- `~/.openclaw/agents/main/memory/`
-- `~/.openclaw/agents/main/sessions/`
-- User-provided API keys in config files
+## Tier Rules Configuration
+
+Four quota levels with different limits:
+
+| Level | Requests | Tokens | Images | Videos | Use Case |
+|-------|----------|--------|--------|--------|----------|
+| none | unlimited | unlimited | unlimited | unlimited | No restrictions |
+| low | 100/5h | 600K | 0 | 0 | Basic deployment |
+| medium | 300/5h | 2.4M | 20 | 1 | Default config |
+| high | unlimited | 6M | 50 | 2 | High quota |
+
+Configuration is stored in:
+- `~/.openclaw/env` - Environment variables
+- `~/.openclaw/profile/web-config-profile.json` - Web profile
+- Applied via `scripts/apply-web-profile.sh`
+
+Optional gateway monitoring proxy runs on port 13147 to enforce quotas at the gateway level.
+
+## API Configuration & URL Replacement
+
+The API configuration module allows replacing hardcoded third-party service URLs in skills that don't provide URL configuration options.
+
+**Supported services:**
+- NanoBanana (image generation)
+- Gemini (Google AI)
+- OpenAI (GPT models)
+- MiniMax (Chinese AI)
+- Replicate (model hosting)
+
+**Configuration file:** `~/.openclaw/api-overrides.json`
+
+```json
+{
+  "nanobanana": {
+    "original": "https://api.nanobanana.com",
+    "replacement": "https://my-custom-service.com/api"
+  },
+  "gemini": {
+    "original": "https://generativelanguage.googleapis.com",
+    "replacement": "https://my-gemini-proxy.com/v1"
+  }
+}
+```
+
+The `api_replacer.py` script scans all skills and replaces URLs using regex patterns, backing up files before modification.
 
 ## Skills Development
 
@@ -175,22 +259,34 @@ skill-name/
 **Security**:
 - Never commit API keys, tokens, or credentials
 - Installer must validate all external downloads (checksums when available)
-- Config repair must preserve user secrets while cleaning broken configs
+- Smart backup strategy: one backup per hour instead of per-file to avoid slowdown
+- Migration tool preserves user data (memory, sessions, API keys)
 
 **Compatibility**:
 - Maintain official OpenClaw installer compatibility (use `openclaw.ai/install.sh` as source of truth)
 - Support both GitHub and Gitee mirrors for China accessibility
 - Handle TTY/non-TTY contexts (pipe-safe execution)
 - Node.js 22.12+ is minimum requirement
+- Bash version compatibility: detect and use homebrew bash 5.3+ on macOS (system bash is 3.2)
+
+**Modular Architecture**:
+- Each module must be independently executable
+- Modules should not depend on each other (except via shared utilities)
+- All modules must support `--help` flag
+- Configuration changes should be idempotent
+- Always provide dry-run mode for destructive operations
 
 **Naming**:
-- Repository renamed from `miaoxworld/OpenClawInstaller` to `leecyno1/auto-install-Openclaw`
-- Never reference old repository URLs in code or docs
+- Repository: `leecyno1/auto-install-Openclaw`
+- Main command: `openclaw-setup` (not `lobster-setup`)
 - Use `OpenClaw` (capital C) in user-facing text, `openclaw` in commands/paths
+- Old `config-menu.sh` is archived as `config-menu.sh.deprecated`
 
 ## Default Ports
 
 - OpenClaw Gateway: `127.0.0.1:13145` (localhost-only for security)
+- Health Check Server: `127.0.0.1:13146` (monitors gateway and workbench)
+- Quota Enforcer: `127.0.0.1:13147` (media generation quota enforcement)
 - Pixel House Workbench: `127.0.0.1:19000` (configurable via `STAR_BACKEND_PORT`)
 
 ## Documentation
@@ -204,21 +300,33 @@ Key docs in `docs/`:
 
 ## Common Workflows
 
+**Installing from scratch**:
+1. Run minimal installer: `curl -fsSL https://gitee.com/.../install.sh | bash`
+2. Configure skills: `openclaw-setup config skills --tier basic`
+3. Configure tier rules: `openclaw-setup config tier-rules --level medium`
+4. Install Pixel House: `openclaw-setup config pixel-house --install`
+5. Start services: `openclaw-setup config pixel-house --start`
+
+**Migrating from old version**:
+1. Run migration wizard: `openclaw-setup config migrate`
+2. Verify configuration: `openclaw-setup config skills --list`
+3. Check tier rules: `openclaw-setup config tier-rules --show`
+4. Test Pixel House: `openclaw-setup config pixel-house --status`
+
+**Replacing hardcoded service URLs**:
+1. Check current config: `openclaw-setup config api --show`
+2. Replace service URL: `openclaw-setup config api --replace-service nanobanana --with https://my-service.com/api`
+3. Verify changes: `grep -r "my-service.com" ~/.openclaw/skills/`
+4. Rollback if needed: `openclaw-setup config api --rollback`
+
 **Adding a new skill**:
 1. Create `skills/default/<name>/` with `GUIDE.md` + `SKILL.md` + `_meta.json`
 2. Update `skills/default/DEFAULT_SKILLS.md` with one-line description
 3. Run `python3 scripts/generate_skill_guides.py` to regenerate docs
-4. Test installation via config menu skills sync
+4. Test installation: `openclaw-setup config skills --tier basic`
 
-**Modifying installer**:
-1. Edit `install.sh` with changes
-2. Update version in `INSTALLER_VERSION` variable
-3. Run `./scripts/preflight-check.sh` to validate
-4. Test in clean environment (Docker or fresh VM)
-5. Update `README.md` if user-facing behavior changes
-
-**Fixing configuration issues**:
-1. Identify broken config pattern (e.g., legacy plugin entry)
-2. Add repair logic to `config-menu.sh` repair functions
-3. Test with `bash config-menu.sh --repair-config` on affected system
-4. Verify user data (memory/sessions) preserved after repair
+**Modifying a module**:
+1. Edit module script in `scripts/modules/`
+2. Test module directly: `bash scripts/modules/<module>.sh --help`
+3. Test via entry point: `openclaw-setup config <module> --help`
+4. Update documentation if user-facing behavior changes

@@ -43,7 +43,7 @@ class HealthHandler(BaseHTTPRequestHandler):
             "services": {}
         }
 
-        # 检查 Gateway (端口 13145)
+        # 检查内部 Gateway (端口 13145)
         gateway_running = False
         try:
             result = subprocess.run(["lsof", "-i", ":13145"], capture_output=True, text=True)
@@ -53,7 +53,8 @@ class HealthHandler(BaseHTTPRequestHandler):
         status["services"]["gateway"] = {
             "status": "up" if gateway_running else "down",
             "port": 13145,
-            "url": "http://127.0.0.1:13145"
+            "url": "http://127.0.0.1:13145",
+            "role": "internal_upstream"
         }
 
         # 检查像素小屋 (端口 19000)
@@ -69,7 +70,7 @@ class HealthHandler(BaseHTTPRequestHandler):
             "url": "http://127.0.0.1:19000"
         }
 
-        # 检查配额强制服务 (端口 13147)
+        # 检查兼容配额代理服务 (端口 13147，默认不作为新安装入口)
         quota_enforcer_running = False
         try:
             result = subprocess.run(["lsof", "-i", ":13147"], capture_output=True, text=True)
@@ -79,7 +80,8 @@ class HealthHandler(BaseHTTPRequestHandler):
         status["services"]["quota_enforcer"] = {
             "status": "up" if quota_enforcer_running else "down",
             "port": 13147,
-            "url": "http://127.0.0.1:13147/health"
+            "url": "http://127.0.0.1:13147/health",
+            "role": "legacy_quota_proxy"
         }
 
         # 整体状态
