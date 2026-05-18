@@ -1,45 +1,108 @@
-<svg width="960" height="320" viewBox="0 0 960 320" fill="none" xmlns="http://www.w3.org/2000/svg">
+<svg width="1200" height="540" viewBox="0 0 1200 540" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">Auto-Install OpenClaw Logo Card</title>
+  <desc id="desc">Dasheng red and OpenClaw blue logo card showing installer, OpenClaw, Hermes, Gitee, Node.js, Skills, Gateway, Pixel House and website integration.</desc>
   <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="960" y2="320" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#08131F"/>
-      <stop offset="1" stop-color="#0E2233"/>
+    <linearGradient id="bg" x1="0" y1="0" x2="1200" y2="540" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#03060B"/>
+      <stop offset="0.48" stop-color="#081827"/>
+      <stop offset="1" stop-color="#03060B"/>
     </linearGradient>
-    <linearGradient id="claw" x1="62" y1="44" x2="248" y2="226" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#FF6B5A"/>
-      <stop offset="1" stop-color="#FF3D2E"/>
+    <linearGradient id="panel" x1="54" y1="54" x2="1146" y2="486" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#091322"/>
+      <stop offset="1" stop-color="#02060C"/>
     </linearGradient>
-    <linearGradient id="bolt" x1="188" y1="74" x2="220" y2="146" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#FDE68A"/>
-      <stop offset="1" stop-color="#F59E0B"/>
+    <linearGradient id="red" x1="120" y1="130" x2="310" y2="330" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FF565D"/>
+      <stop offset="1" stop-color="#D90018"/>
     </linearGradient>
-    <filter id="soft" x="0" y="0" width="960" height="320" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
-      <feGaussianBlur stdDeviation="24"/>
+    <linearGradient id="blue" x1="336" y1="130" x2="742" y2="278" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#16B7FF"/>
+      <stop offset="1" stop-color="#0074FF"/>
+    </linearGradient>
+    <filter id="softRed" x="-40%" y="-40%" width="180%" height="180%" color-interpolation-filters="sRGB">
+      <feGaussianBlur stdDeviation="9" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
     </filter>
+    <filter id="softBlue" x="-30%" y="-30%" width="160%" height="160%" color-interpolation-filters="sRGB">
+      <feGaussianBlur stdDeviation="7" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <pattern id="grid" width="30" height="30" patternUnits="userSpaceOnUse">
+      <path d="M30 0H0V30" stroke="#0A84D8" stroke-width="0.7" opacity="0.18"/>
+    </pattern>
   </defs>
 
-  <rect width="960" height="320" rx="28" fill="url(#bg)"/>
+  <rect width="1200" height="540" rx="34" fill="url(#bg)"/>
+  <rect width="1200" height="540" rx="34" fill="url(#grid)" opacity="0.42"/>
+  <rect x="48" y="48" width="1104" height="444" rx="28" fill="url(#panel)" stroke="#12446D" stroke-width="2"/>
+  <rect x="48" y="48" width="1104" height="56" rx="28" fill="#071321" stroke="#12446D" stroke-width="2"/>
 
-  <g opacity="0.22" filter="url(#soft)">
-    <circle cx="160" cy="96" r="56" fill="#FF5A48"/>
-    <circle cx="876" cy="276" r="60" fill="#1F9CF0"/>
+  <circle cx="82" cy="76" r="7" fill="#FF333D"/>
+  <circle cx="108" cy="76" r="7" fill="#0AA8FF"/>
+  <circle cx="134" cy="76" r="7" fill="#66798A"/>
+  <text x="166" y="83" fill="#C8D7E6" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="20">auto-install-Openclaw</text>
+  <text x="992" y="83" fill="#70879B" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="18">v2.0 release</text>
+
+  <g transform="translate(92,145)">
+    <rect x="0" y="0" width="210" height="210" rx="42" fill="#0B1622" stroke="#244C68" stroke-width="2"/>
+    <g filter="url(#softRed)">
+      <path d="M105 30L166 65V138L105 178L44 138V65L105 30Z" fill="none" stroke="url(#red)" stroke-width="9" stroke-linejoin="round"/>
+      <path d="M78 124C56 99 65 64 96 52C112 29 145 45 150 76C176 95 166 138 130 147C106 152 90 141 78 124Z" fill="url(#red)" stroke="#FF9090" stroke-width="5"/>
+      <path d="M78 96C91 76 121 74 136 96C130 119 86 119 78 96Z" fill="#150207" stroke="#FF7777" stroke-width="5"/>
+      <circle cx="95" cy="96" r="5" fill="#FF252D"/>
+      <circle cx="120" cy="96" r="5" fill="#FF252D"/>
+      <path d="M95 132C103 141 119 141 127 132" stroke="#FFD2D2" stroke-width="5" stroke-linecap="round"/>
+    </g>
   </g>
 
-  <g transform="translate(36,24)">
-    <rect x="8" y="8" width="260" height="260" rx="44" fill="#0B1A2A" stroke="#17334A" stroke-width="2"/>
-
-    <path d="M112 74C132 60 166 64 182 83L165 100C155 90 136 88 125 96C113 104 109 122 116 136L96 150C79 124 87 88 112 74Z" fill="url(#claw)"/>
-    <path d="M88 170C96 202 128 224 162 216L156 188C136 192 117 180 112 160L88 170Z" fill="url(#claw)"/>
-    <path d="M203 118C229 132 240 164 231 191L206 182C210 168 204 152 191 145L203 118Z" fill="url(#claw)"/>
-
-    <circle cx="142" cy="146" r="36" fill="#13283D" stroke="#274A67" stroke-width="3"/>
-
-    <path d="M156 116L132 156H150L139 188L172 142H152L156 116Z" fill="url(#bolt)"/>
+  <g transform="translate(342,142)">
+    <text x="0" y="56" fill="url(#red)" font-family="Avenir Next, Segoe UI, Arial, sans-serif" font-size="52" font-weight="800">Auto-Install</text>
+    <text x="0" y="124" fill="url(#blue)" font-family="Avenir Next, Segoe UI, Arial, sans-serif" font-size="70" font-weight="900">OpenClaw</text>
+    <text x="4" y="168" fill="#A9BCD0" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="22">OpenClaw / Hermes · Gitee first</text>
+    <text x="4" y="204" fill="#7F9AB2" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="20">Model routing · quotas · tunnels</text>
   </g>
 
-  <g transform="translate(334,88)">
-    <text x="0" y="74" fill="#F4F8FB" font-family="Avenir Next, Segoe UI, sans-serif" font-size="66" font-weight="700" letter-spacing="1.2">OpenClaw</text>
-    <text x="0" y="130" fill="#A9C0D4" font-family="Avenir Next, Segoe UI, sans-serif" font-size="38" font-weight="500" letter-spacing="2.6">INSTALLER</text>
-    <rect x="0" y="152" width="504" height="2" fill="#1D415D"/>
-    <text x="0" y="190" fill="#7FA2BE" font-family="Avenir Next, Segoe UI, sans-serif" font-size="25" font-weight="500">One Command. Full Setup. Stable Upgrades.</text>
+  <g transform="translate(807,148)" filter="url(#softBlue)">
+    <rect x="0" y="0" width="296" height="206" rx="22" fill="#050B12" stroke="#0A84D8" stroke-width="2"/>
+    <text x="24" y="40" fill="#0AA8FF" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="17">$ openclaw-setup config</text>
+    <text x="24" y="82" fill="#D6E9F8" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="16">OpenClaw Gateway</text>
+    <text x="229" y="82" fill="#31E6FF" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="16">OK</text>
+    <text x="24" y="116" fill="#D6E9F8" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="16">Hermes Bridge</text>
+    <text x="229" y="116" fill="#31E6FF" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="16">OK</text>
+    <text x="24" y="150" fill="#D6E9F8" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="16">Pixel House</text>
+    <text x="229" y="150" fill="#31E6FF" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="16">OK</text>
+    <text x="24" y="184" fill="#D6E9F8" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="16">Website Sync</text>
+    <text x="229" y="184" fill="#31E6FF" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="16">OK</text>
   </g>
+
+  <g transform="translate(342,390)">
+    <rect x="0" y="0" width="126" height="38" rx="19" fill="#101A27" stroke="#E31D2C"/>
+    <text x="63" y="25" fill="#FF4D57" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="16" font-weight="700" text-anchor="middle">Node 22.12+</text>
+    <rect x="140" y="0" width="112" height="38" rx="19" fill="#101A27" stroke="#0A84D8"/>
+    <text x="196" y="25" fill="#34B8FF" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="16" font-weight="700" text-anchor="middle">Gitee 源</text>
+    <rect x="266" y="0" width="138" height="38" rx="19" fill="#101A27" stroke="#E31D2C"/>
+    <text x="335" y="25" fill="#FF4D57" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="16" font-weight="700" text-anchor="middle">179 Skills</text>
+    <rect x="418" y="0" width="146" height="38" rx="19" fill="#101A27" stroke="#0A84D8"/>
+    <text x="491" y="25" fill="#34B8FF" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="16" font-weight="700" text-anchor="middle">Gateway 13145</text>
+  </g>
+
+  <g transform="translate(342,438)">
+    <rect x="0" y="0" width="136" height="38" rx="19" fill="#101A27" stroke="#E31D2C"/>
+    <text x="68" y="25" fill="#FF4D57" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="16" font-weight="700" text-anchor="middle">SSE / Chat API</text>
+    <rect x="150" y="0" width="142" height="38" rx="19" fill="#101A27" stroke="#0A84D8"/>
+    <text x="221" y="25" fill="#34B8FF" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="16" font-weight="700" text-anchor="middle">Pixel House</text>
+    <rect x="306" y="0" width="158" height="38" rx="19" fill="#101A27" stroke="#E31D2C"/>
+    <text x="385" y="25" fill="#FF4D57" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="16" font-weight="700" text-anchor="middle">Quota Rules</text>
+    <rect x="478" y="0" width="146" height="38" rx="19" fill="#101A27" stroke="#0A84D8"/>
+    <text x="551" y="25" fill="#34B8FF" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="16" font-weight="700" text-anchor="middle">MiniMax Fix</text>
+  </g>
+
+  <path d="M1044 116C1084 136 1110 178 1108 224C1106 274 1075 316 1030 334" stroke="#E31D2C" stroke-width="8" stroke-linecap="round" opacity="0.72"/>
+  <path d="M1086 124C1128 158 1134 219 1104 262" stroke="#0AA8FF" stroke-width="7" stroke-linecap="round" opacity="0.8"/>
 </svg>

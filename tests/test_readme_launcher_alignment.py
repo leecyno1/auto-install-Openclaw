@@ -6,19 +6,36 @@ ROOT = Path(__file__).resolve().parents[1]
 README = ROOT / 'README.md'
 INSTALL = ROOT / 'install.sh'
 CONFIG_MENU = ROOT / 'config-menu.sh'
+LOGO = ROOT / 'photo' / 'openclaw-installer-logo.svg'
 
 
 class ReadmeLauncherAlignmentTests(unittest.TestCase):
     def test_readme_homepage_is_promotional_and_skill_table_first(self):
         readme_text = README.read_text(encoding='utf-8')
         self.assertIn('photo/dasheng-openclaw-promo.png', readme_text)
+        self.assertIn('photo/openclaw-installer-logo.svg', readme_text)
         self.assertIn('Featured-大圣之怒', readme_text)
         self.assertIn('一键安装 OpenClaw / Hermes，把模型、Skills、规则、像素小屋和网站联动收束到一个可重复部署的入口。', readme_text)
         self.assertIn('## 全部技能', readme_text)
         self.assertIn('| 档位 | Skill | 分类 | 评分 | 依赖 | 一句话说明 | 手册 | 原仓库 |', readme_text)
         self.assertLess(readme_text.index('photo/dasheng-openclaw-promo.png'), readme_text.index('Featured-大圣之怒'))
-        self.assertLess(readme_text.index('Featured-大圣之怒'), readme_text.index('## 全部技能'))
+        self.assertLess(readme_text.index('Featured-大圣之怒'), readme_text.index('photo/openclaw-installer-logo.svg'))
+        self.assertLess(readme_text.index('photo/openclaw-installer-logo.svg'), readme_text.index('## 全部技能'))
         self.assertLess(readme_text.index('## 全部技能'), readme_text.index('## 模块概览'))
+
+    def test_logo_card_mentions_project_stack_and_features(self):
+        logo_text = LOGO.read_text(encoding='utf-8')
+        for expected in (
+            'OpenClaw',
+            'Hermes',
+            'Gitee',
+            'Node 22.12+',
+            '179 Skills',
+            'Gateway 13145',
+            'SSE / Chat API',
+            'Pixel House',
+        ):
+            self.assertIn(expected, logo_text)
 
     def test_readme_primary_lobster_setup_commands_match_launcher_surface(self):
         readme_text = README.read_text(encoding='utf-8')

@@ -12,6 +12,10 @@
   <img src="https://img.shields.io/badge/Gitee-default%20source-008cff?style=for-the-badge" alt="Gitee default" />
 </p>
 
+<p align="center">
+  <img src="photo/openclaw-installer-logo.svg" alt="OpenClaw Installer 技术栈 Logo 卡片" width="860" />
+</p>
+
 <p align="center"><strong>一键安装 OpenClaw / Hermes，把模型、Skills、规则、像素小屋和网站联动收束到一个可重复部署的入口。</strong></p>
 
 ## 快速开始
