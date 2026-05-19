@@ -20,23 +20,23 @@
 
 ## 快速开始
 
-默认国内源走 Gitee，当前验证分支是 `release/hermes-website-minimax-hardening-20260503`。
+默认国内源走 Gitee，当前稳定入口直接使用 `main`。
 
 ```bash
 # OpenClaw
-curl -fsSL https://gitee.com/leecyno1/auto-install-openclaw/raw/release/hermes-website-minimax-hardening-20260503/install-openclaw.sh | bash
+curl -fsSL https://gitee.com/leecyno1/auto-install-openclaw/raw/main/install-openclaw.sh | bash
 
 # Hermes
-curl -fsSL https://gitee.com/leecyno1/auto-install-openclaw/raw/release/hermes-website-minimax-hardening-20260503/install-hermes.sh | bash
+curl -fsSL https://gitee.com/leecyno1/auto-install-openclaw/raw/main/install-hermes.sh | bash
 
 # 双引擎
-curl -fsSL https://gitee.com/leecyno1/auto-install-openclaw/raw/release/hermes-website-minimax-hardening-20260503/install.sh | bash -s -- --engine both
+curl -fsSL https://gitee.com/leecyno1/auto-install-openclaw/raw/main/install.sh | bash -s -- --engine both
 ```
 
 全自动批量部署示例：
 
 ```bash
-curl -fsSL https://gitee.com/leecyno1/auto-install-openclaw/raw/release/hermes-website-minimax-hardening-20260503/install-openclaw.sh | bash -s -- \
+curl -fsSL https://gitee.com/leecyno1/auto-install-openclaw/raw/main/install-openclaw.sh | bash -s -- \
   --auto-confirm-all \
   --provider minimax \
   --model MiniMax-M2.7-highspeed \
@@ -52,20 +52,20 @@ curl -fsSL https://gitee.com/leecyno1/auto-install-openclaw/raw/release/hermes-w
 兼容总入口：
 
 ```bash
-curl -fsSL https://gitee.com/leecyno1/auto-install-openclaw/raw/release/hermes-website-minimax-hardening-20260503/install.sh | bash -s -- --engine openclaw
-curl -fsSL https://gitee.com/leecyno1/auto-install-openclaw/raw/release/hermes-website-minimax-hardening-20260503/install.sh | bash -s -- --engine hermes
-curl -fsSL https://raw.githubusercontent.com/leecyno1/auto-install-Openclaw/release/hermes-website-minimax-hardening-20260503/install.sh | bash
-curl -fsSL https://mirror.ghproxy.com/https://raw.githubusercontent.com/leecyno1/auto-install-Openclaw/release/hermes-website-minimax-hardening-20260503/install.sh | bash
+curl -fsSL https://gitee.com/leecyno1/auto-install-openclaw/raw/main/install.sh | bash -s -- --engine openclaw
+curl -fsSL https://gitee.com/leecyno1/auto-install-openclaw/raw/main/install.sh | bash -s -- --engine hermes
+curl -fsSL https://raw.githubusercontent.com/leecyno1/auto-install-Openclaw/main/install.sh | bash
+curl -fsSL https://mirror.ghproxy.com/https://raw.githubusercontent.com/leecyno1/auto-install-Openclaw/main/install.sh | bash
 ```
 
 无人值守快捷命令：
 
 ```bash
-curl -fsSL https://gitee.com/leecyno1/auto-install-openclaw/raw/release/hermes-website-minimax-hardening-20260503/install-openclaw.sh | bash -s -- --auto-confirm-all
-curl -fsSL https://gitee.com/leecyno1/auto-install-openclaw/raw/release/hermes-website-minimax-hardening-20260503/install-hermes.sh | bash -s -- --auto-confirm-all
-curl -fsSL https://gitee.com/leecyno1/auto-install-openclaw/raw/release/hermes-website-minimax-hardening-20260503/install.sh | bash -s -- --auto-confirm-all --engine openclaw
-curl -fsSL https://gitee.com/leecyno1/auto-install-openclaw/raw/release/hermes-website-minimax-hardening-20260503/install.sh | bash -s -- --auto-confirm-all --engine hermes
-curl -fsSL https://gitee.com/leecyno1/auto-install-openclaw/raw/release/hermes-website-minimax-hardening-20260503/install.sh | bash -s -- --auto-confirm-all --engine both
+curl -fsSL https://gitee.com/leecyno1/auto-install-openclaw/raw/main/install-openclaw.sh | bash -s -- --auto-confirm-all
+curl -fsSL https://gitee.com/leecyno1/auto-install-openclaw/raw/main/install-hermes.sh | bash -s -- --auto-confirm-all
+curl -fsSL https://gitee.com/leecyno1/auto-install-openclaw/raw/main/install.sh | bash -s -- --auto-confirm-all --engine openclaw
+curl -fsSL https://gitee.com/leecyno1/auto-install-openclaw/raw/main/install.sh | bash -s -- --auto-confirm-all --engine hermes
+curl -fsSL https://gitee.com/leecyno1/auto-install-openclaw/raw/main/install.sh | bash -s -- --auto-confirm-all --engine both
 ```
 
 ## 统一入口
