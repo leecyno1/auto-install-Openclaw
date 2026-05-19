@@ -1,7 +1,7 @@
 # 大圣之怒 OpenClaw / Hermes 安装器
 
 <p align="center">
-  <img src="photo/dasheng-openclaw-promo.png" alt="Auto-Install OpenClaw 宣传图" width="100%" />
+  <img src="photo/dasheng-openclaw-promo-clean.png" alt="Auto-Install OpenClaw 宣传图" width="100%" />
 </p>
 
 <p align="center">
