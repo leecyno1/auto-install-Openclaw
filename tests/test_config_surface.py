@@ -322,7 +322,12 @@ class ConfigSurfaceTests(unittest.TestCase):
             self.assertIn('OPENCLAW_SKILLS_REPO_URL', text)
             self.assertIn('https://gitee.com/leecyno1/boutique-openclaw-skills.git', text)
             self.assertIn('OPENCLAW_SKILLS_REPO_GITHUB_URL', text)
-            self.assertIn('tiers/low.json', text)
+        self.assertIn('catalog/standard-bundle.json', install_text)
+        self.assertIn('catalog/standard-bundle.json', menu_text)
+        self.assertIn('catalog/standard-bundle.json', module_text)
+        self.assertIn('tiers/$level.json', install_text)
+        self.assertIn('tiers/$level.json', menu_text)
+        self.assertIn('tiers/$boutique_tier.json', module_text)
 
         self.assertIn('技能如果需要同步从 boutique 仓库进行同步', readme_text)
         self.assertIn('boutique-openclaw-skills', readme_text)

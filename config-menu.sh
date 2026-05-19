@@ -1176,6 +1176,28 @@ print(' '.join(item['id'] for item in payload.get('skills', []) if item.get('id'
 PY
 }
 
+get_boutique_standard_skill_list_menu() {
+    local bundle_dir="$1"
+    local catalog_file
+    [ -n "$bundle_dir" ] || return 1
+    catalog_file="$(cd "$bundle_dir/../.." 2>/dev/null && pwd)/catalog/standard-bundle.json"
+    [ -f "$catalog_file" ] || return 1
+    python3 - "$catalog_file" <<'PY'
+import json, sys
+with open(sys.argv[1], encoding='utf-8') as handle:
+    payload = json.load(handle)
+names = []
+for item in payload.get('skills', []):
+    if isinstance(item, str):
+        names.append(item)
+    elif isinstance(item, dict):
+        name = item.get('skill') or item.get('id') or item.get('name')
+        if name:
+            names.append(name)
+print(' '.join(names))
+PY
+}
+
 get_profile_token_limits() {
     local level
     level="$(normalize_rule_profile_level "$1")"
@@ -3313,7 +3335,7 @@ apply_vendor_rule_profile_menu() {
     level="$RULE_PROFILE_MENU_SELECTED"
     level="$(normalize_rule_profile_level "$level")"
     upsert_env_export "OPENCLAW_RULE_PROFILE" "$level"
-    upsert_env_export "OPENCLAW_WEB_SKILL_PACK" "${OPENCLAW_WEB_SKILL_PACK:-$level}"
+    upsert_env_export "OPENCLAW_WEB_SKILL_PACK" "${OPENCLAW_WEB_SKILL_PACK:-standard}"
 
     if [ "$level" = "none" ]; then
         echo ""
@@ -3323,7 +3345,6 @@ apply_vendor_rule_profile_menu() {
     configure_profile_api_keys_menu "$level"
     apply_profile_advanced_model_routing_menu "$level"
     apply_profile_token_policy_menu "$level"
-    apply_profile_skill_policy_menu "$level" 0 || true
     write_profile_policy_files_menu "$level"
     sync_lobster_shared_state_menu
     restart_quota_enforcer_menu
@@ -3343,7 +3364,7 @@ apply_vendor_rule_profile_menu() {
     echo -e "  档位: ${WHITE}${level}${NC}"
     echo -e "  限流: ${WHITE}$(echo "$limits" | awk '{req=$2<=0?\"不限\":$2\"次\"; print $1\"小时/\"req}')${NC}"
     echo -e "  多媒体额度: ${WHITE}图片 ${max_image_requests} 张 / 视频 ${max_video_requests} 条 / $(echo "$limits" | awk '{print $1}') 小时${NC}"
-    echo -e "  Skills 档位: ${WHITE}$(case "$level" in low) echo 低档=基础必装;; medium) echo 中档=基础+进阶;; high) echo 高档=中档+全量;; *) echo 中档=基础+进阶;; esac)${NC}"
+    echo -e "  Skills: ${WHITE}不随规则档位自动安装；请在 Skills 管理中显式选择标准/低/中/高包${NC}"
     echo -e "  上下文守门: ${WHITE}预警 ${context_warn_tokens} / 询问 ${context_ask_tokens} / 强制 ${context_force_tokens}${NC}"
     echo -e "  生图接口: ${WHITE}${OPENCLAW_IMAGE_API_URL:-https://api.viviai.cc/v1/chat/completions}${NC}"
     echo -e "  生图模型: ${WHITE}${OPENCLAW_IMAGE_MODEL:-gemini-3.1-flash-image-preview}${NC}"
@@ -9927,26 +9948,36 @@ copy_skill_dir() {
     cp -a "$src" "$dst"
 }
 
-sync_default_skills_bundle() {
+sync_standard_skills_bundle() {
     local force_update="${1:-0}"
     local bundle_dir
     local target_dir="$CONFIG_DIR/skills"
+    local skills_list
     local copied=0
     local skipped=0
+    local missing=0
 
     if ! bundle_dir="$(resolve_default_skills_bundle_dir)"; then
+        return 1
+    fi
+    skills_list="$(get_boutique_standard_skill_list_menu "$bundle_dir" 2>/dev/null || true)"
+    if [ -z "$skills_list" ]; then
+        log_error "boutique 仓库缺少 catalog/standard-bundle.json，无法同步标准 Skills 包"
         return 1
     fi
 
     mkdir -p "$target_dir"
 
-    local src
-    for src in "$bundle_dir"/*; do
-        [ -d "$src" ] || continue
-        local name
-        local dst
-        name="$(basename "$src")"
+    local name src dst
+    for name in $skills_list; do
+        src="$bundle_dir/$name"
         dst="$target_dir/$name"
+
+        if [ ! -d "$src" ]; then
+            missing=$((missing + 1))
+            log_warn "标准包技能缺失: $name"
+            continue
+        fi
 
         if [ -d "$dst" ] && [ "$force_update" != "1" ]; then
             skipped=$((skipped + 1))
@@ -9958,7 +9989,11 @@ sync_default_skills_bundle() {
         fi
     done
 
-    log_info "默认技能包同步完成：新增/更新 ${copied}，保留 ${skipped}"
+    upsert_env_export "OPENCLAW_WEB_SKILL_PACK" "standard"
+    upsert_env_export "OPENCLAW_PROFILE_SKILL_PACK_LABEL" "标准 Skills 包"
+    upsert_env_export "OPENCLAW_PROFILE_SKILL_LIST" "$skills_list"
+    upsert_env_export "OPENCLAW_PROFILE_SKILL_COUNT" "$(printf "%s\n" "$skills_list" | wc -w | tr -d ' ')"
+    log_info "标准 Skills 包同步完成：新增/更新 ${copied}，保留 ${skipped}，缺失 ${missing}"
     return 0
 }
 
@@ -10597,6 +10632,39 @@ manage_enhanced_skills() {
     manage_enhanced_skills
 }
 
+manage_tier_skills() {
+    clear_screen
+    print_header
+    echo -e "${WHITE}🧩 低 / 中 / 高 Skills 包安装${NC}"
+    print_divider
+    echo ""
+    echo -e "  ${CYAN}说明:${NC} 标准包由安装脚本默认安装；低/中/高包从 boutique 仓库实时读取清单。"
+    echo ""
+    print_menu_item "1" "安装低档 Skills 包（仅补齐缺失）" "🌱"
+    print_menu_item "2" "安装中档 Skills 包（仅补齐缺失）" "🧠"
+    print_menu_item "3" "安装高档 Skills 包（仅补齐缺失）" "🚀"
+    print_menu_item "4" "强制更新低档 Skills 包" "🔄"
+    print_menu_item "5" "强制更新中档 Skills 包" "🔄"
+    print_menu_item "6" "强制更新高档 Skills 包" "🔄"
+    print_menu_item "0" "返回上级菜单" "↩️"
+    echo ""
+    read_input "${YELLOW}请选择 [0-6]: ${NC}" tier_choice
+
+    case "$tier_choice" in
+        1) apply_profile_skill_policy_menu "low" 0 ;;
+        2) apply_profile_skill_policy_menu "medium" 0 ;;
+        3) apply_profile_skill_policy_menu "high" 0 ;;
+        4) apply_profile_skill_policy_menu "low" 1 ;;
+        5) apply_profile_skill_policy_menu "medium" 1 ;;
+        6) apply_profile_skill_policy_menu "high" 1 ;;
+        0) return ;;
+        *) log_error "无效选择" ;;
+    esac
+
+    press_enter
+    manage_tier_skills
+}
+
 pip_install_skill_dep_menu() {
     local pkg="$1"
     local log_file
@@ -10736,10 +10804,10 @@ manage_skills() {
     echo -e "  ${CYAN}基础包:${NC} ${basic_installed}/${basic_total}    ${CYAN}增强包:${NC} ${ext_installed}/${ext_total}    ${CYAN}总技能:${NC} ${installed_total}"
     echo ""
     print_menu_item "1" "查看已安装 Skills" "📋"
-    print_menu_item "2" "安装默认技能包（仅补齐缺失）" "📦"
-    print_menu_item "3" "强制更新默认技能包（覆盖同名）" "🔄"
+    print_menu_item "2" "安装标准 Skills 包（仅补齐缺失）" "📦"
+    print_menu_item "3" "强制更新标准 Skills 包（覆盖同名）" "🔄"
     print_menu_item "4" "官方插件管理（跳转官方设置）" "🧭"
-    print_menu_item "5" "增强插件管理" "🧠"
+    print_menu_item "5" "低 / 中 / 高 Skills 包安装" "🧩"
     print_menu_item "6" "超级插件管理" "🚀"
     print_menu_item "7" "从本地目录添加 Skill" "➕"
     print_menu_item "8" "删除已安装 Skill" "🗑️"
@@ -10757,16 +10825,16 @@ manage_skills() {
             list_installed_skills
             ;;
         2)
-            sync_default_skills_bundle 0
+            sync_standard_skills_bundle 0
             ;;
         3)
-            sync_default_skills_bundle 1
+            sync_standard_skills_bundle 1
             ;;
         4)
             manage_official_plugins
             ;;
         5)
-            manage_enhanced_skills
+            manage_tier_skills
             ;;
         6)
             manage_super_skills

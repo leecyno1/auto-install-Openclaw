@@ -394,9 +394,39 @@ print(' '.join(item['id'] for item in payload.get('skills', []) if item.get('id'
 PY
 }
 
+get_boutique_standard_skill_list_custom() {
+    local bundle_dir="$1"
+    local catalog_file
+    [ -n "$bundle_dir" ] || return 1
+    catalog_file="$(cd "$bundle_dir/../.." 2>/dev/null && pwd)/catalog/standard-bundle.json"
+    [ -f "$catalog_file" ] || return 1
+    python3 - "$catalog_file" <<'PY'
+import json, sys
+with open(sys.argv[1], encoding='utf-8') as handle:
+    payload = json.load(handle)
+names = []
+for item in payload.get('skills', []):
+    if isinstance(item, str):
+        names.append(item)
+    elif isinstance(item, dict):
+        name = item.get('skill') or item.get('id') or item.get('name')
+        if name:
+            names.append(name)
+print(' '.join(names))
+PY
+}
+
 sync_skills() {
     local level
-    level="$(normalize_rule_profile_level "${1:-${RULE_PROFILE_SELECTED:-medium}}")"
+    level="$(echo "${1:-standard}" | tr '[:upper:]' '[:lower:]' | tr -d '[:space:]')"
+    case "$level" in
+        standard|default|std) level="standard" ;;
+        low|medium|high|none) level="$(normalize_rule_profile_level "$level")" ;;
+        basic) level="low" ;;
+        extended) level="medium" ;;
+        super) level="high" ;;
+        *) level="standard" ;;
+    esac
     [ "$level" = "none" ] && return 0
 
     local skills_dir
@@ -409,7 +439,15 @@ sync_skills() {
     echo -e "${BLUE}[STEP]${NC} 从 boutique 同步技能包 (档位: ${level}) ..."
 
     local skill_list target_dir copied skipped missing
-    skill_list="$(get_boutique_profile_skill_list_custom "$skills_dir" "$level" 2>/dev/null || get_profile_skill_list "$level")"
+    if [ "$level" = "standard" ]; then
+        skill_list="$(get_boutique_standard_skill_list_custom "$skills_dir" 2>/dev/null || true)"
+    else
+        skill_list="$(get_boutique_profile_skill_list_custom "$skills_dir" "$level" 2>/dev/null || get_profile_skill_list "$level")"
+    fi
+    if [ -z "$skill_list" ]; then
+        echo -e "${YELLOW}[WARN]${NC} 未找到 ${level} 技能清单，跳过技能同步"
+        return 0
+    fi
     target_dir="$CONFIG_DIR/skills"
     mkdir -p "$target_dir"
     copied=0; skipped=0; missing=0

@@ -24,7 +24,7 @@ print_help() {
   doctor       执行 OpenClaw / Hermes 健康检查
   engine       打开引擎管理
   migrate      OpenClaw -> Hermes 迁移
-  skills       同步技能包，或 enrich/update/show-source
+  skills       同步标准技能包，或显式同步 low/medium/high、enrich/update/show-source
   backup       调用备份脚本
 
 示例:
@@ -34,6 +34,7 @@ print_help() {
   openclaw-setup config model
   openclaw-setup config image
   openclaw-setup config website --sync
+  openclaw-setup skills
   openclaw-setup skills medium
   openclaw-setup skills update
   openclaw-setup skills show-source agent-browser
@@ -112,9 +113,9 @@ case "$cmd" in
     fi
     ;;
   skills)
-    action="${1:-medium}"
+    action="${1:-standard}"
     case "$action" in
-      low|medium|high|none)
+      standard|default|std|low|medium|high|none|basic|extended|super)
         RULE_PROFILE_SELECTED="$action" sync_skills "$action"
         ;;
       enrich)

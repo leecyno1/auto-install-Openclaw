@@ -46,6 +46,17 @@ class SkillsBoutiqueBoundaryTests(unittest.TestCase):
 
     def test_boutique_tier_files_are_the_skill_source_of_truth(self):
         self.assertTrue(BOUTIQUE_SKILLS.is_dir(), f'missing boutique skills source: {BOUTIQUE_SKILLS}')
+        standard_path = BOUTIQUE_ROOT / 'catalog' / 'standard-bundle.json'
+        self.assertTrue(standard_path.is_file(), standard_path)
+        standard_payload = json.loads(standard_path.read_text(encoding='utf-8'))
+        standard_ids = [
+            item if isinstance(item, str) else item.get('skill') or item.get('id')
+            for item in standard_payload.get('skills', [])
+        ]
+        standard_ids = [item for item in standard_ids if item]
+        self.assertEqual(len(standard_ids), len(set(standard_ids)))
+        self.assertIn('skill-creator', standard_ids)
+        self.assertIn('verification-before-completion', standard_ids)
         tiers = {}
         for tier in ('low', 'medium', 'high'):
             path = BOUTIQUE_ROOT / 'tiers' / f'{tier}.json'
@@ -79,6 +90,19 @@ class SkillsBoutiqueBoundaryTests(unittest.TestCase):
         self.assertNotIn('$REPO_ROOT/skills/default', module_text)
         self.assertIn('get_boutique_profile_skill_list_install', install_text)
         self.assertIn('get_boutique_profile_skill_list_menu', menu_text)
+        self.assertIn('get_boutique_standard_skill_list_install', install_text)
+        self.assertIn('get_boutique_standard_skill_list_menu', menu_text)
+
+    def test_installer_defaults_to_standard_skills_not_rule_tiers(self):
+        install_text = (ROOT / 'install.sh').read_text(encoding='utf-8')
+        menu_text = (ROOT / 'config-menu.sh').read_text(encoding='utf-8')
+        setup_text = (ROOT / 'openclaw-setup.sh').read_text(encoding='utf-8')
+        self.assertIn('apply_standard_skill_policy || true', install_text)
+        self.assertNotIn('apply_profile_skill_policy "$level" || true', install_text)
+        self.assertNotIn('apply_profile_skill_policy_menu "$level" 0 || true', menu_text)
+        self.assertIn('sync_standard_skills_bundle 0', menu_text)
+        self.assertIn('manage_tier_skills', menu_text)
+        self.assertIn('action="${1:-standard}"', setup_text)
 
     def test_release_check_no_longer_requires_local_manifest_generation(self):
         text = (ROOT / 'scripts' / 'release-check.sh').read_text(encoding='utf-8')

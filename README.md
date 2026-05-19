@@ -43,7 +43,7 @@ curl -fsSL https://gitee.com/leecyno1/auto-install-openclaw/raw/main/install-ope
   --api-key "$MINIMAX_API_KEY" \
   --base-url https://api.minimaxi.com/anthropic \
   --rule-profile medium \
-  --install-skills extended \
+  --install-skills standard \
   --install-pixel-house \
   --enable-advanced-routing \
   --extra-model "id=gpt-5-5,name=GPT-5.5,base_url=https://yfy.zhouyang168.top/v1,api_key=$GPT55_API_KEY,model=gpt-5.5,api_type=openai-completions,image_tool=responses-image-generation,image_model=gpt-image-2"
@@ -97,9 +97,10 @@ openclaw-setup help
 
 | 档位 | 说明 | 命令 |
 | --- | --- | --- |
-| 低档 / low | 首次安装和轻量生产 | `openclaw-setup config skills --tier basic` 或 `--tier low` |
-| 中档 / medium | 标准生产和常用扩展 | `openclaw-setup config skills --tier extended` 或 `--tier medium` |
-| 高档 / high | 完整专家包、金融交易研究和创作套件 | `openclaw-setup config skills --tier super` 或 `--tier high` |
+| 标准包 / standard | 一键安装默认包，随 boutique `catalog/standard-bundle.json` 更新 | `openclaw-setup config skills --tier standard` |
+| 低档 / low | 首次安装和轻量生产，安装后在配置中心显式选择 | `openclaw-setup config skills --tier low` 或 `--tier basic` |
+| 中档 / medium | 标准生产和常用扩展，安装后在配置中心显式选择 | `openclaw-setup config skills --tier medium` 或 `--tier extended` |
+| 高档 / high | 完整专家包、金融交易研究和创作套件，安装后在配置中心显式选择 | `openclaw-setup config skills --tier high` 或 `--tier super` |
 
 ## Skills 索引
 
@@ -129,7 +130,8 @@ openclaw-setup help
 ## 常用配置
 
 ```bash
-openclaw-setup config skills --tier extended
+openclaw-setup config skills --tier standard
+openclaw-setup config skills --tier medium
 openclaw-setup config tier-rules --level medium
 openclaw-setup config pixel-house --install
 openclaw-setup config pixel-house --start

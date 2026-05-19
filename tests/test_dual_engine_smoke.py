@@ -28,8 +28,8 @@ class DualEngineSmokeTests(unittest.TestCase):
             env_file.write_text('\n'.join([
                 'export OPENCLAW_PERSONA_ROLE="warrior"',
                 'export OPENCLAW_RULE_PROFILE="medium"',
-                'export OPENCLAW_WEB_SKILL_PACK="medium"',
-                'export OPENCLAW_PROFILE_SKILL_PACK_LABEL="extended"',
+                'export OPENCLAW_WEB_SKILL_PACK="standard"',
+                'export OPENCLAW_PROFILE_SKILL_PACK_LABEL="标准 Skills 包"',
                 'export OPENCLAW_PROFILE_SKILL_LIST="agentmail shell github"',
                 'export OPENCLAW_PROFILE_SKILL_COUNT="3"',
                 'export OPENCLAW_RULE_MAX_REQUESTS="300"',
