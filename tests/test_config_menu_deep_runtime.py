@@ -8,6 +8,49 @@ CONFIG_MENU = ROOT / 'config-menu.sh'
 
 
 class ConfigMenuDeepRuntimeTests(unittest.TestCase):
+    def test_header_is_engine_aware_for_hermes_only_install(self):
+        with tempfile.TemporaryDirectory() as td:
+            home = Path(td)
+            lobster_config = home / '.lobster' / 'config'
+            lobster_config.mkdir(parents=True)
+            (lobster_config / 'engine.env').write_text(
+                'LOBSTER_DEFAULT_ENGINE="hermes"\n'
+                'LOBSTER_INSTALLED_ENGINES="hermes"\n',
+                encoding='utf-8',
+            )
+            hermes_bin = home / 'bin' / 'hermes'
+            hermes_bin.parent.mkdir(parents=True)
+            hermes_bin.write_text('#!/usr/bin/env bash\necho hermes\n', encoding='utf-8')
+            hermes_bin.chmod(0o755)
+
+            script = f'''
+                set -euo pipefail
+                export HOME="{home}"
+                export PATH="{hermes_bin.parent}:/usr/bin:/bin:/usr/sbin:/sbin"
+                openclaw_skill_fallback_init() {{ :; }}
+                tmp_script="$(mktemp)"
+                sed '$s/main "$@"//' "{CONFIG_MENU}" > "$tmp_script"
+                source "$tmp_script" --model-only
+                print_header
+            '''
+            result = subprocess.run(
+                ['bash', '-lc', script],
+                cwd=ROOT,
+                text=True,
+                capture_output=True,
+            )
+            if result.returncode != 0:
+                raise AssertionError(
+                    f"header runtime failed\nSTDOUT:\n{result.stdout}\nSTDERR:\n{result.stderr}"
+                )
+            self.assertIn('Hermes 模式', result.stdout)
+            self.assertIn('OpenClaw 引擎:', result.stdout)
+            self.assertIn('未启用', result.stdout)
+            self.assertIn('Hermes 引擎:', result.stdout)
+            self.assertIn('已安装', result.stdout)
+            self.assertNotIn('OpenClaw / Hermes 双轨', result.stdout)
+            self.assertNotIn('红蓝主题终端面板', result.stdout)
+
     def test_model_only_shortcut_enters_model_menu_and_executes_a_real_branch(self):
         with tempfile.TemporaryDirectory() as td:
             home = Path(td)

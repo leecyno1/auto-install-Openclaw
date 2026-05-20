@@ -3,7 +3,7 @@
 # ╔═══════════════════════════════════════════════════════════════════════════╗
 # ║                                                                           ║
 # ║   🔥 大圣之怒配置中心 v1.0.0                                                ║
-# ║   OpenClaw / Hermes 双轨配置工具                                            ║
+# ║   OpenClaw / Hermes 引擎配置工具                                            ║
 # ║                                                                           ║
 # ╚═══════════════════════════════════════════════════════════════════════════╝
 #
@@ -366,14 +366,46 @@ clear_screen() {
 }
 
 print_header() {
+    local default_engine installed_engines openclaw_state hermes_state skills_state mode_label
+    default_engine="$(get_lobster_default_engine_menu 2>/dev/null || echo openclaw)"
+    installed_engines="$(get_lobster_installed_engines_menu 2>/dev/null || echo "$default_engine")"
+
+    case "$default_engine" in
+        hermes) mode_label="Hermes 模式" ;;
+        both) mode_label="双引擎模式" ;;
+        *) mode_label="OpenClaw 模式" ;;
+    esac
+
+    if printf "%s" "$installed_engines" | grep -Eq '(^|,)openclaw(,|$)' && check_openclaw_installed; then
+        openclaw_state="${GREEN}已安装${NC}"
+    elif printf "%s" "$installed_engines" | grep -Eq '(^|,)openclaw(,|$)'; then
+        openclaw_state="${YELLOW}需修复${NC}"
+    else
+        openclaw_state="${GRAY}未启用${NC}"
+    fi
+
+    if printf "%s" "$installed_engines" | grep -Eq '(^|,)hermes(,|$)' && check_hermes_installed_menu; then
+        hermes_state="${GREEN}已安装${NC}"
+    elif printf "%s" "$installed_engines" | grep -Eq '(^|,)hermes(,|$)'; then
+        hermes_state="${YELLOW}需修复${NC}"
+    else
+        hermes_state="${GRAY}未启用${NC}"
+    fi
+
+    if [ -d "$CONFIG_DIR/skills" ] && find "$CONFIG_DIR/skills" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | grep -q .; then
+        skills_state="${GREEN}已同步${NC}"
+    else
+        skills_state="${YELLOW}待同步${NC}"
+    fi
+
     echo -e "${THEME_RED}┌─ \$ openclaw-setup config${NC}"
-    echo -e "${THEME_BLUE}└─ 大圣之怒 / OpenClaw Control Center${NC}"
+    echo -e "${THEME_BLUE}└─ 大圣之怒 / 引擎配置中心${NC}"
     echo -e "${THEME_PANEL}╔═══════════════════════════════════════════════════════════════╗${NC}"
-    echo -e "${THEME_PANEL}║${NC} ${THEME_RED}●${NC} ${THEME_ACCENT}大圣之怒配置中心${NC}                         ${THEME_DIM}OpenClaw / Hermes${NC} ${THEME_PANEL}║${NC}"
+    printf "%b\n" "${THEME_PANEL}║${NC} ${THEME_RED}●${NC} ${THEME_ACCENT}大圣之怒配置中心${NC}                         ${THEME_DIM}${mode_label}${NC} ${THEME_PANEL}║${NC}"
     echo -e "${THEME_PANEL}╠═══════════════════════════════════════════════════════════════╣${NC}"
-    echo -e "${THEME_PANEL}║${NC} ${THEME_BLUE}●${NC} 模型 / Skills / 网站联动   [ ${THEME_OK}OK${NC} ]"
-    echo -e "${THEME_PANEL}║${NC} ${THEME_BLUE}●${NC} OpenClaw / Hermes 双轨     [ ${THEME_OK}OK${NC} ]"
-    echo -e "${THEME_PANEL}║${NC} ${THEME_RED}●${NC} 红蓝主题终端面板            [ READY ]"
+    printf "%b\n" "${THEME_PANEL}║${NC} ${THEME_BLUE}●${NC} OpenClaw 引擎: ${openclaw_state}    Hermes 引擎: ${hermes_state}"
+    printf "%b\n" "${THEME_PANEL}║${NC} ${THEME_BLUE}●${NC} Skills: ${skills_state}    配置入口: ${GREEN}openclaw-setup config${NC}"
+    printf "%b\n" "${THEME_PANEL}║${NC} ${THEME_RED}●${NC} 提示: 仅显示当前机器实际安装/启用的引擎状态"
     echo -e "${THEME_PANEL}╚═══════════════════════════════════════════════════════════════╝${NC}"
 }
 
@@ -1349,6 +1381,14 @@ normalize_lobster_engine_menu() {
 }
 
 get_lobster_default_engine_menu() {
+    local value
+    if [ -f "$LOBSTER_ENGINE_ENV" ]; then
+        value="$(grep -E '^LOBSTER_DEFAULT_ENGINE=' "$LOBSTER_ENGINE_ENV" 2>/dev/null | tail -1 | sed -E 's/^LOBSTER_DEFAULT_ENGINE=//; s/^"//; s/"$//')"
+        if [ -n "$value" ]; then
+            normalize_lobster_engine_menu "$value"
+            return 0
+        fi
+    fi
     load_openclaw_common_lib_menu >/dev/null 2>&1 || true
     if command -v openclaw_get_lobster_default_engine >/dev/null 2>&1; then
         openclaw_get_lobster_default_engine
@@ -1358,6 +1398,14 @@ get_lobster_default_engine_menu() {
 }
 
 get_lobster_installed_engines_menu() {
+    local value
+    if [ -f "$LOBSTER_ENGINE_ENV" ]; then
+        value="$(grep -E '^LOBSTER_INSTALLED_ENGINES=' "$LOBSTER_ENGINE_ENV" 2>/dev/null | tail -1 | sed -E 's/^LOBSTER_INSTALLED_ENGINES=//; s/^"//; s/"$//')"
+        if [ -n "$value" ]; then
+            echo "$value"
+            return 0
+        fi
+    fi
     load_openclaw_common_lib_menu >/dev/null 2>&1 || true
     if command -v openclaw_get_lobster_installed_engines >/dev/null 2>&1; then
         openclaw_get_lobster_installed_engines
