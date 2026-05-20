@@ -7,19 +7,20 @@ README = ROOT / 'README.md'
 INSTALL = ROOT / 'install.sh'
 CONFIG_MENU = ROOT / 'config-menu.sh'
 LOGO = ROOT / 'photo' / 'openclaw-installer-logo.svg'
+PROMO = 'photo/openclaw-dasheng-hermes-logo.jpg'
 
 
 class ReadmeLauncherAlignmentTests(unittest.TestCase):
     def test_readme_homepage_is_promotional_and_points_to_boutique_skills(self):
         readme_text = README.read_text(encoding='utf-8')
-        self.assertIn('photo/dasheng-openclaw-promo.png', readme_text)
+        self.assertIn(PROMO, readme_text)
         self.assertIn('photo/openclaw-installer-logo.svg', readme_text)
         self.assertIn('Featured-大圣之怒', readme_text)
         self.assertIn('一键安装 OpenClaw / Hermes，把模型、Skills、规则、像素小屋和网站联动收束到一个可重复部署的入口。', readme_text)
         self.assertIn('## Skills 索引', readme_text)
         self.assertIn('本仓库不再保存完整 skills 表格', readme_text)
         self.assertIn('boutique-openclaw-skills', readme_text)
-        self.assertLess(readme_text.index('photo/dasheng-openclaw-promo.png'), readme_text.index('Featured-大圣之怒'))
+        self.assertLess(readme_text.index(PROMO), readme_text.index('Featured-大圣之怒'))
         self.assertLess(readme_text.index('Featured-大圣之怒'), readme_text.index('photo/openclaw-installer-logo.svg'))
         self.assertLess(readme_text.index('photo/openclaw-installer-logo.svg'), readme_text.index('## Skills 索引'))
         self.assertLess(readme_text.index('## Skills 索引'), readme_text.index('## 模块概览'))

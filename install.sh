@@ -340,6 +340,7 @@ print_banner() {
 
 print_lobster_setup_quick_commands() {
     local mode="${1:-full}"
+    local engine="${2:-${LOBSTER_ENGINE:-both}}"
     echo -e "${WHITE}统一入口（推荐）:${NC}"
     if [ "$mode" = "compact" ]; then
         echo "  openclaw-setup status       # 查看所有服务状态"
@@ -349,9 +350,23 @@ print_lobster_setup_quick_commands() {
         return 0
     fi
 
-    echo "  openclaw-setup install openclaw   # 安装或修复 OpenClaw"
-    echo "  openclaw-setup install hermes     # 安装或修复 Hermes"
-    echo "  openclaw-setup install both       # 安装双引擎"
+    case "$engine" in
+        hermes)
+            echo "  openclaw-setup install hermes     # 安装或修复 Hermes"
+            echo "  openclaw-setup install openclaw   # 如需补装 OpenClaw 引擎"
+            echo "  openclaw-setup install both       # 如需切换为双引擎"
+            ;;
+        openclaw)
+            echo "  openclaw-setup install openclaw   # 安装或修复 OpenClaw"
+            echo "  openclaw-setup install hermes     # 如需补装 Hermes 引擎"
+            echo "  openclaw-setup install both       # 如需切换为双引擎"
+            ;;
+        *)
+            echo "  openclaw-setup install both       # 安装或修复双引擎"
+            echo "  openclaw-setup install openclaw   # 仅修复 OpenClaw"
+            echo "  openclaw-setup install hermes     # 仅修复 Hermes"
+            ;;
+    esac
     echo "  openclaw-setup config       # 打开配置菜单"
     echo "  openclaw-setup repair       # 修复历史错误配置（保留记忆）"
     echo "  openclaw-setup repair minimax # 仅修复 MiniMax Provider / 多模态配置"
@@ -359,7 +374,7 @@ print_lobster_setup_quick_commands() {
     echo "  openclaw-setup status       # 查看已安装引擎状态"
     echo "  openclaw-setup doctor       # 执行引擎健康检查"
     echo "  openclaw-setup engine       # 打开引擎管理"
-    echo "  openclaw-setup backup       # 一键备份 OpenClaw 配置"
+    echo "  openclaw-setup backup       # 一键备份配置"
     echo "  lobster-setup ...          # 兼容旧命令，等价转发到 openclaw-setup"
     echo "  像素小屋补装/修复后会同步接线并启动 13146 健康检查"
 }
@@ -7585,32 +7600,48 @@ setup_daemon() {
 # ================================ 完成安装 ================================
 
 print_success() {
+    local engine="${LOBSTER_ENGINE:-both}"
     echo ""
     echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
     echo -e "${GREEN}                    🎉 安装完成！🎉${NC}"
     echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
     echo ""
     echo -e "${WHITE}配置目录:${NC}"
-    echo "  OpenClaw 配置: ~/.openclaw/"
-    echo "  Hermes 配置: ~/.hermes/"
+    if [ "$engine" != "hermes" ]; then
+        echo "  OpenClaw 配置: ~/.openclaw/"
+    else
+        echo "  共享控制配置: ~/.openclaw/        # 仅保存安装器、配置菜单、Skills 与共享环境"
+    fi
+    if [ "$engine" != "openclaw" ]; then
+        echo "  Hermes 配置: ~/.hermes/"
+    fi
     echo "  Lobster 控制层: ~/.lobster/"
     echo "  环境变量配置: ~/.openclaw/env"
     echo ""
-    print_lobster_setup_quick_commands "full"
+    print_lobster_setup_quick_commands "full" "$engine"
     echo ""
     echo -e "${CYAN}常用命令:${NC}"
-    echo "  openclaw gateway start    # 后台启动 OpenClaw"
-    echo "  openclaw gateway stop     # 停止 OpenClaw"
-    echo "  openclaw gateway status   # 查看 OpenClaw 状态"
-    echo "  hermes status             # 查看 Hermes 状态"
-    echo "  hermes doctor             # 诊断 Hermes 问题"
-    echo "  hermes claw migrate       # 从 OpenClaw 迁移（需手动执行）"
+    if [ "$engine" != "hermes" ]; then
+        echo "  openclaw gateway start    # 后台启动 OpenClaw"
+        echo "  openclaw gateway stop     # 停止 OpenClaw"
+        echo "  openclaw gateway status   # 查看 OpenClaw 状态"
+    fi
+    if [ "$engine" != "openclaw" ]; then
+        echo "  hermes status             # 查看 Hermes 状态"
+        echo "  hermes doctor             # 诊断 Hermes 问题"
+        if [ "$engine" = "hermes" ]; then
+            echo "  hermes setup              # 进入 Hermes 初始化/配置（如当前版本支持）"
+        else
+            echo "  hermes claw migrate       # 从 OpenClaw 迁移（需手动执行）"
+        fi
+    fi
     echo ""
     echo -e "${CYAN}配置菜单:${NC}"
-    echo "  bash ~/.openclaw/config-menu.sh                   # 打开统一配置菜单"
-    echo "  bash ~/.openclaw/config-menu.sh --repair-config  # 修复/迁移配置"
-    echo "  bash ~/.openclaw/config-menu.sh --repair-minimax # 仅修复 MiniMax Provider / 多模态配置"
-    echo "  bash ~/.openclaw/config-menu.sh --install-pixel-house  # 补装像素小屋"
+    echo "  openclaw-setup config                            # 打开统一配置菜单"
+    echo "  openclaw-setup repair                            # 修复/迁移配置"
+    echo "  openclaw-setup repair minimax                    # 仅修复 MiniMax Provider / 多模态配置"
+    echo "  openclaw-setup workbench                         # 启动/补装像素小屋"
+    echo "  bash ~/.openclaw/config-menu.sh                  # 兼容旧入口"
     echo ""
     echo -e "${CYAN}像素小屋工作台:${NC}"
     echo "  ~/.openclaw/lobster-world.sh start               # 启动工作台"
@@ -7621,10 +7652,17 @@ print_success() {
     echo -e "${CYAN}服务监控:${NC}"
     echo "  像素小屋补装/修复后会自动接线并启动健康检查服务"
     echo "  健康检查服务（端口 13146）: curl http://127.0.0.1:13146/health"
-    echo "  内部 Gateway（端口 ${GATEWAY_PORT}）: 仅供本机上游与状态检查"
+    if [ "$engine" != "hermes" ]; then
+        echo "  内部 Gateway（端口 ${GATEWAY_PORT}）: 仅供本机上游与状态检查"
+    else
+        echo "  Hermes Dashboard（默认端口 ${HERMES_DASHBOARD_PORT_DEFAULT}）: 如当前 Hermes 版本支持 dashboard/web/ui 命令"
+        echo "  Hermes Chat API（默认端口 ${HERMES_CHAT_PORT_DEFAULT}）: OpenAI 兼容接口桥接"
+    fi
     echo ""
     echo -e "${CYAN}文档与资源:${NC}"
-    echo "  渠道配置: ~/.openclaw/docs/channels-configuration-guide.md"
+    if [ "$engine" != "hermes" ]; then
+        echo "  渠道配置: ~/.openclaw/docs/channels-configuration-guide.md"
+    fi
     echo "  技能包目录: ~/.openclaw/skills/"
     echo "  档位配置: ~/.openclaw/policy/vendor-control-profile.json"
     echo ""
