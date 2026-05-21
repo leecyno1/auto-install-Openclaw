@@ -2803,13 +2803,31 @@ install_git() {
     log_info "Git 版本: $(git --version)"
 }
 
+apt_get_update_with_repair_install() {
+    sudo apt-get update && return 0
+
+    log_warn "apt 更新失败，尝试临时禁用 backports 源后重试..."
+    if [ -d /etc/apt/sources.list.d ]; then
+        grep -RIl "^[^#].*backports" /etc/apt/sources.list /etc/apt/sources.list.d 2>/dev/null | while IFS= read -r source_file; do
+            [ -f "$source_file" ] || continue
+            sudo cp "$source_file" "${source_file}.openclaw-bak" 2>/dev/null || true
+            sudo sed -i -E 's/^([^#].*backports.*)$/# openclaw-disabled-backports: \1/' "$source_file" 2>/dev/null || true
+        done
+    elif [ -f /etc/apt/sources.list ]; then
+        sudo cp /etc/apt/sources.list /etc/apt/sources.list.openclaw-bak 2>/dev/null || true
+        sudo sed -i -E 's/^([^#].*backports.*)$/# openclaw-disabled-backports: \1/' /etc/apt/sources.list 2>/dev/null || true
+    fi
+
+    sudo apt-get update
+}
+
 install_dependencies() {
     log_step "检查并安装依赖..."
 
     # 安装基础依赖
     case "$OS" in
         ubuntu|debian)
-            sudo apt-get update
+            apt_get_update_with_repair_install
             sudo apt-get install -y curl wget jq python3 python3-pip python3-venv poppler-utils ffmpeg vim-common bc
             ;;
         centos|rhel|fedora)
