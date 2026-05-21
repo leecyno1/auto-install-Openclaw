@@ -262,8 +262,34 @@ apply_skill_manifest_defaults_install() {
     fi
 }
 # ================================ Skills 精简定义（去重后） ================================
+openclaw_skill_fallback_init_install() {
+    local mode="${1:-install}"
+
+    MINIMAX_OFFICIAL_SKILLS="android-native-dev buddy-sings flutter-dev frontend-dev fullstack-dev gif-sticker-maker ios-application-dev minimax-docx minimax-multimodal-toolkit minimax-music-gen minimax-music-playlist minimax-pdf minimax-xlsx pptx-generator react-native-dev shader-dev vision-analysis"
+    MINIMAX_LOCAL_COMPAT_SKILLS="minimax-image-understanding minimax-web-search"
+    MINIMAX_SKILLS="${MINIMAX_LOCAL_COMPAT_SKILLS} ${MINIMAX_OFFICIAL_SKILLS}"
+    TRADING_FINANCE_SKILLS="backtest-expert breadth-chart-analyst breakout-trade-planner canslim-screener data-quality-checker dividend-growth-pullback-screener downtrend-duration-analyzer dual-axis-skill-reviewer earnings-calendar earnings-trade-analyzer economic-calendar-fetcher edge-candidate-agent edge-concept-synthesizer edge-hint-extractor edge-pipeline-orchestrator edge-signal-aggregator edge-strategy-designer edge-strategy-reviewer exposure-coach finviz-screener ftd-detector ibd-distribution-day-monitor institutional-flow-tracker kanchi-dividend-review-monitor kanchi-dividend-sop kanchi-dividend-us-tax-accounting macro-regime-detector market-breadth-analyzer market-environment-analysis market-news-analyst market-top-detector options-strategy-advisor pair-trade-screener parabolic-short-trade-planner pead-screener portfolio-manager position-sizer scenario-analyzer sector-analyst signal-postmortem skill-designer skill-idea-miner skill-integration-tester stanley-druckenmiller-investment strategy-pivot-designer technical-analyst theme-detector trade-hypothesis-ideator trader-memory-core uptrend-analyzer us-market-bubble-detector us-stock-analysis value-dividend-screener vcp-screener finance-sentiment funda-data hormuz-strait company-valuation earnings-preview earnings-recap estimate-analysis etf-premium options-payoff saas-valuation-compression sepa-strategy stock-correlation stock-liquidity yfinance-data finance-skill-creator discord-reader linkedin-reader opencli-reader telegram-reader twitter-reader yc-reader startup-analysis generative-ui alphaear-deepear-lite alphaear-logic-visualizer alphaear-news alphaear-predictor alphaear-reporter alphaear-search alphaear-sentiment alphaear-signal-tracker alphaear-stock"
+
+    CORE_SKILLS="capability-evolver openclaw-cron-setup proactive-agent self-improving-agent-cn brainstorming reflection find-skills skill-creator subagent-driven-development using-superpowers verification-before-completion writing-skills agent-browser chrome-devtools-mcp github mcp-builder model-usage shell ${MINIMAX_SKILLS} tavily-search web-search news-radar url-to-markdown pdf nano-pdf docx pptx xlsx stock-monitor-skill multi-search-engine content-strategy social-content ai-image-generation media-downloader marketingskills inference-skills agentmail agentmail-cli agentmail-mcp agentmail-toolkit lark-calendar notebooklm-skill skill-security-auditor weather data-analyst task todo"
+    EXTENDED_SKILLS="animation akshare-stock gemini-image-service oracle paperless-docs paperless-ngx-tools writing-plans planning-with-files finance-data"
+    SUPER_CURATED_SKILLS="baoyu-skills baoyu-article-illustrator baoyu-comic baoyu-compress-image baoyu-cover-image baoyu-danger-gemini-web baoyu-danger-x-to-markdown baoyu-format-markdown baoyu-image-gen baoyu-infographic baoyu-markdown-to-html baoyu-post-to-wechat baoyu-post-to-weibo baoyu-post-to-x baoyu-slide-deck baoyu-translate baoyu-url-to-markdown baoyu-xhs-images baoyu-youtube-transcript"
+    PROFILE_BASIC_SKILLS="${CORE_SKILLS}"
+    PROFILE_EXTENDED_SKILLS="${CORE_SKILLS} ${EXTENDED_SKILLS}"
+    PROFILE_SUPER_SKILLS="${CORE_SKILLS} ${EXTENDED_SKILLS} ${SUPER_CURATED_SKILLS} ${TRADING_FINANCE_SKILLS}"
+    DEFAULT_SKILLS_BUNDLE_SENTINELS="agentmail agentmail-cli agentmail-mcp agentmail-toolkit content-strategy social-content ai-image-generation media-downloader marketingskills inference-skills ${MINIMAX_SKILLS} subagent-driven-development using-superpowers verification-before-completion writing-skills lark-calendar notebooklm-skill skill-security-auditor weather data-analyst task todo"
+
+    if [ "$mode" = "menu" ]; then
+        ENHANCED_SKILLS_LIST="capability-evolver openclaw-cron-setup proactive-agent self-improving-agent-cn brainstorming reflection find-skills skill-creator subagent-driven-development using-superpowers verification-before-completion writing-skills agent-browser chrome-devtools-mcp github mcp-builder model-usage shell ${MINIMAX_SKILLS} ${TRADING_FINANCE_SKILLS} tavily-search web-search news-radar url-to-markdown pdf nano-pdf docx pptx xlsx frontend-design web-design stock-monitor-skill stock-daily-analysis-skill openclaw-stock-kb stock_datasource openclaw-stock-analyzer tushare-openclaw-skill openclaw-stock-data-skill stock-analysis openclaw-stock multi-search-engine akshare-stock content-strategy social-content ai-image-generation animation media-downloader marketingskills inference-skills gemini-image-service oracle paperless-docs paperless-ngx-tools writing-plans agentmail agentmail-cli agentmail-mcp agentmail-toolkit lark-calendar notebooklm-skill skill-security-auditor weather data-analyst finance-data task todo"
+        SUPER_CURATED_SKILLS_LIST="${SUPER_CURATED_SKILLS}"
+    fi
+}
+
 load_openclaw_skills_lib_install >/dev/null 2>&1 || true
-openclaw_skill_fallback_init install
+if command -v openclaw_skill_fallback_init >/dev/null 2>&1; then
+    openclaw_skill_fallback_init install
+else
+    openclaw_skill_fallback_init_install install
+fi
 apply_skill_manifest_defaults_install
 
 MINIMAX_API_HOST_CN_DEFAULT="${MINIMAX_API_HOST_CN:-https://api.minimaxi.com}"
