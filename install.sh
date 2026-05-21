@@ -4219,11 +4219,11 @@ install_gateway_quota_enforcer_script() {
 
     if [ ! -f "$source_script" ]; then
         log_warn "未找到配额强制脚本源码，跳过安装: $source_script"
-        return 1
+        return 0
     fi
     if [ ! -f "$source_media_quota" ]; then
         log_warn "未找到媒体配额脚本源码，跳过安装: $source_media_quota"
-        return 1
+        return 0
     fi
 
     mkdir -p "$CONFIG_DIR/scripts"
