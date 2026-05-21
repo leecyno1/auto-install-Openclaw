@@ -4200,7 +4200,7 @@ install_remote_local_control_helper() {
 
     if [ ! -f "$source_script" ]; then
         log_warn "未找到远程本地主机控制脚本源码，跳过安装: $source_script"
-        return 1
+        return 0
     fi
 
     mkdir -p "$CONFIG_DIR"
