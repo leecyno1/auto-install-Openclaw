@@ -105,7 +105,19 @@ PYTHON_SCRIPT
     python3 /tmp/health-server.py "$PORT" > "$LOG_FILE" 2>&1 &
     local pid=$!
     echo $pid > "$PID_FILE"
-    sleep 1
+
+    local attempt
+    for attempt in $(seq 1 30); do
+        if curl -s "http://127.0.0.1:$PORT/health" > /dev/null 2>&1; then
+            echo "✅ 健康检查服务已启动 (端口 $PORT)"
+            echo "   端点: http://127.0.0.1:$PORT/health"
+            return 0
+        fi
+        if ! kill -0 "$pid" 2>/dev/null; then
+            break
+        fi
+        sleep 0.2
+    done
 
     if curl -s "http://127.0.0.1:$PORT/health" > /dev/null 2>&1; then
         echo "✅ 健康检查服务已启动 (端口 $PORT)"

@@ -3108,7 +3108,7 @@ install_backup_manager_script() {
 
     if [ ! -f "$source_script" ]; then
         log_warn "未找到备份管理脚本源码，跳过安装: $source_script"
-        return 1
+        return 0
     fi
 
     cp "$source_script" "$target_script"
