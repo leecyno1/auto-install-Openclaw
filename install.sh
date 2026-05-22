@@ -6080,10 +6080,6 @@ EOF
         deepseek)
             upsert_env_export_install "DEEPSEEK_API_KEY" "$AI_KEY"
             upsert_env_export_install "DEEPSEEK_BASE_URL" "${BASE_URL:-https://api.deepseek.com}"
-            if [ -n "$BASE_URL" ]; then
-                upsert_env_export_install "OPENAI_API_KEY" "$AI_KEY"
-                upsert_env_export_install "OPENAI_BASE_URL" "$BASE_URL"
-            fi
             ;;
         moonshot|kimi)
             upsert_env_export_install "MOONSHOT_API_KEY" "$AI_KEY"
