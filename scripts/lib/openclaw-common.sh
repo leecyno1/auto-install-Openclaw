@@ -229,6 +229,7 @@ openclaw_sync_lobster_shared_env() {
         OPENCLAW_ACTIVE_PROVIDER_PRESET
         OPENCLAW_ACTIVE_PROVIDER_MODEL
         OPENCLAW_ACTIVE_PROVIDER_BASE_URL
+        OPENCLAW_ACTIVE_PROVIDER_API_KEY
         OPENCLAW_ACTIVE_PROVIDER_API_TYPE
         OPENCLAW_CUSTOM_PROVIDER_ID
         OPENCLAW_CUSTOM_PROVIDER_NAME
@@ -396,6 +397,7 @@ openclaw_sync_hermes_env_from_shared() {
     write_var "OPENCLAW_ACTIVE_PROVIDER_PRESET" "$(get_shared OPENCLAW_ACTIVE_PROVIDER_PRESET)"
     write_var "OPENCLAW_ACTIVE_PROVIDER_MODEL" "$(get_shared OPENCLAW_ACTIVE_PROVIDER_MODEL)"
     write_var "OPENCLAW_ACTIVE_PROVIDER_BASE_URL" "$(get_shared OPENCLAW_ACTIVE_PROVIDER_BASE_URL)"
+    write_var "OPENCLAW_ACTIVE_PROVIDER_API_KEY" "$(get_shared OPENCLAW_ACTIVE_PROVIDER_API_KEY)"
     write_var "OPENCLAW_ACTIVE_PROVIDER_API_TYPE" "$(get_shared OPENCLAW_ACTIVE_PROVIDER_API_TYPE)"
     write_var "OPENCLAW_CUSTOM_PROVIDER_ID" "$(get_shared OPENCLAW_CUSTOM_PROVIDER_ID)"
     write_var "OPENCLAW_CUSTOM_PROVIDER_NAME" "$(get_shared OPENCLAW_CUSTOM_PROVIDER_NAME)"
@@ -1026,8 +1028,11 @@ class Handler(BaseHTTPRequestHandler):
         prompt = build_prompt(messages)
         env = os.environ.copy()
         env["PATH"] = "/root/.local/bin:/usr/local/bin:" + env.get("PATH", "")
+        command = [HERMES_BIN, "-z", prompt, "-m", MODEL]
+        if PROVIDER and PROVIDER != "custom":
+            command.extend(["--provider", PROVIDER])
         try:
-            proc = subprocess.run([HERMES_BIN, "-z", prompt, "--provider", PROVIDER, "-m", MODEL], text=True, capture_output=True, timeout=TIMEOUT, env=env, cwd=os.path.expanduser("~"))
+            proc = subprocess.run(command, text=True, capture_output=True, timeout=TIMEOUT, env=env, cwd=os.path.expanduser("~"))
         except subprocess.TimeoutExpired:
             return respond(self, 504, {"error": {"message": "Hermes request timeout", "type": "timeout"}})
         if proc.returncode != 0:
@@ -1090,31 +1095,66 @@ SERVICE
 openclaw_apply_hermes_default_model_from_env() {
     local shared_env="${1:-$(openclaw_lobster_shared_env_path)}"
     local hermes_home="${2:-${HERMES_HOME:-$HOME/.hermes}}"
-    local hermes_env preset model base_url provider
+    local hermes_env preset model base_url api_key api_type provider
     openclaw_hermes_cli_available || return 127
     hermes_env="$(openclaw_hermes_env_path "$hermes_home")"
 
     preset="$(openclaw_read_shell_kv_value OPENCLAW_ACTIVE_PROVIDER_PRESET "$hermes_env")"
     model="$(openclaw_read_shell_kv_value OPENCLAW_ACTIVE_PROVIDER_MODEL "$hermes_env")"
     base_url="$(openclaw_read_shell_kv_value OPENCLAW_ACTIVE_PROVIDER_BASE_URL "$hermes_env")"
+    api_key="$(openclaw_read_shell_kv_value OPENCLAW_ACTIVE_PROVIDER_API_KEY "$hermes_env")"
+    api_type="$(openclaw_read_shell_kv_value OPENCLAW_ACTIVE_PROVIDER_API_TYPE "$hermes_env")"
 
-    if [ -z "$preset" ] && [ -f "$shared_env" ]; then
-        preset="$(openclaw_read_shell_kv_value OPENCLAW_ACTIVE_PROVIDER_PRESET "$shared_env")"
-        model="$(openclaw_read_shell_kv_value OPENCLAW_ACTIVE_PROVIDER_MODEL "$shared_env")"
-        base_url="$(openclaw_read_shell_kv_value OPENCLAW_ACTIVE_PROVIDER_BASE_URL "$shared_env")"
+    if [ -f "$shared_env" ]; then
+        [ -n "$preset" ] || preset="$(openclaw_read_shell_kv_value OPENCLAW_ACTIVE_PROVIDER_PRESET "$shared_env")"
+        [ -n "$model" ] || model="$(openclaw_read_shell_kv_value OPENCLAW_ACTIVE_PROVIDER_MODEL "$shared_env")"
+        [ -n "$base_url" ] || base_url="$(openclaw_read_shell_kv_value OPENCLAW_ACTIVE_PROVIDER_BASE_URL "$shared_env")"
+        [ -n "$api_key" ] || api_key="$(openclaw_read_shell_kv_value OPENCLAW_ACTIVE_PROVIDER_API_KEY "$shared_env")"
+        [ -n "$api_type" ] || api_type="$(openclaw_read_shell_kv_value OPENCLAW_ACTIVE_PROVIDER_API_TYPE "$shared_env")"
+    fi
+
+    if [ -z "$api_key" ]; then
+        case "$preset" in
+            openai) api_key="$(openclaw_read_shell_kv_value OPENAI_API_KEY "$hermes_env")" ;;
+            deepseek) api_key="$(openclaw_read_shell_kv_value DEEPSEEK_API_KEY "$hermes_env")" ;;
+            anthropic) api_key="$(openclaw_read_shell_kv_value ANTHROPIC_API_KEY "$hermes_env")" ;;
+            openrouter) api_key="$(openclaw_read_shell_kv_value OPENROUTER_API_KEY "$hermes_env")" ;;
+            gemini|google) api_key="$(openclaw_read_shell_kv_value GOOGLE_API_KEY "$hermes_env")" ;;
+            minimax|minimax-cn) api_key="$(openclaw_read_shell_kv_value MINIMAX_API_KEY "$hermes_env")" ;;
+            moonshot|kimi) api_key="$(openclaw_read_shell_kv_value MOONSHOT_API_KEY "$hermes_env")" ;;
+            zai) api_key="$(openclaw_read_shell_kv_value ZAI_API_KEY "$hermes_env")" ;;
+        esac
     fi
 
     case "$preset" in
         minimax|minimax-cn) provider="minimax" ;;
-        openai|anthropic|openrouter|gemini|deepseek|glm|zai) provider="$preset" ;;
-        *) provider="" ;;
+        openai|anthropic|openrouter|gemini) provider="$preset" ;;
+        *) provider="custom" ;;
     esac
-    [ -n "$provider" ] || return 0
+    if [ -n "$base_url" ]; then
+        case "$preset" in
+            minimax|minimax-cn|anthropic|gemini|openrouter) ;;
+            *) provider="custom" ;;
+        esac
+    fi
     [ -n "$model" ] || return 0
+    case "$api_type" in
+        openai-completions) api_type="chat_completions" ;;
+        openai-responses) api_type="responses" ;;
+        anthropic-messages) api_type="messages" ;;
+    esac
+    [ -n "$api_type" ] || [ "$provider" != "custom" ] || api_type="chat_completions"
+
     openclaw_run_hermes_cli "$hermes_home" config set model.default "$model" >/dev/null 2>&1 || return 1
     openclaw_run_hermes_cli "$hermes_home" config set model.provider "$provider" >/dev/null 2>&1 || return 1
     if [ -n "$base_url" ]; then
         openclaw_run_hermes_cli "$hermes_home" config set model.base_url "$base_url" >/dev/null 2>&1 || return 1
+    fi
+    if [ -n "$api_key" ]; then
+        openclaw_run_hermes_cli "$hermes_home" config set model.api_key "$api_key" >/dev/null 2>&1 || return 1
+    fi
+    if [ -n "$api_type" ]; then
+        openclaw_run_hermes_cli "$hermes_home" config set model.api_mode "$api_type" >/dev/null 2>&1 || return 1
     fi
 }
 

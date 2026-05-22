@@ -1270,6 +1270,27 @@ upsert_env_export_install() {
     chmod 600 "$env_file" 2>/dev/null || true
 }
 
+upsert_plain_env_value_install() {
+    local env_file="$1"
+    local key="$2"
+    local value="$3"
+    local quoted_value
+
+    mkdir -p "$(dirname "$env_file")" 2>/dev/null || true
+    touch "$env_file" 2>/dev/null || true
+    quoted_value="$(quote_env_value_install "$value")"
+
+    local tmp_file
+    tmp_file="$(mktemp)"
+    awk -v k="$key" -v v="$quoted_value" '
+        BEGIN { done=0 }
+        $0 ~ "^(export[[:space:]]+)?" k "=" { print k "=" v; done=1; next }
+        { print }
+        END { if (!done) print k "=" v }
+    ' "$env_file" > "$tmp_file" && mv "$tmp_file" "$env_file"
+    chmod 600 "$env_file" 2>/dev/null || true
+}
+
 remove_env_export_install() {
     local key="$1"
     local env_file="$CONFIG_DIR/env"
@@ -3716,6 +3737,54 @@ run_hermes_status_summary() {
     return 1
 }
 
+apply_hermes_model_config_install() {
+    ensure_hermes_on_path
+    check_hermes_installed || return 0
+
+    local model provider base_url api_key api_type hermes_provider
+    model="${OPENCLAW_ACTIVE_PROVIDER_MODEL:-${AI_MODEL:-}}"
+    provider="${OPENCLAW_ACTIVE_PROVIDER_PRESET:-${AI_PROVIDER:-}}"
+    base_url="${OPENCLAW_ACTIVE_PROVIDER_BASE_URL:-${BASE_URL:-}}"
+    api_key="${OPENCLAW_ACTIVE_PROVIDER_API_KEY:-${AI_KEY:-}}"
+    api_type="${OPENCLAW_ACTIVE_PROVIDER_API_TYPE:-${AI_API_TYPE:-}}"
+
+    [ -n "$model" ] || return 0
+
+    hermes_provider="$provider"
+    if [ -n "$base_url" ]; then
+        case "$provider" in
+            minimax|minimax-cn|anthropic|gemini|openrouter) ;;
+            *) hermes_provider="custom" ;;
+        esac
+    fi
+    [ -n "$hermes_provider" ] || hermes_provider="custom"
+    case "$api_type" in
+        openai-completions) api_type="chat_completions" ;;
+        openai-responses) api_type="responses" ;;
+        anthropic-messages) api_type="messages" ;;
+    esac
+    if [ "$hermes_provider" = "custom" ] && [ -z "$api_type" ]; then
+        api_type="chat_completions"
+    fi
+
+    hermes config set model.default "$model" >/dev/null 2>&1 || return 1
+    [ -n "$hermes_provider" ] && hermes config set model.provider "$hermes_provider" >/dev/null 2>&1 || true
+    [ -n "$base_url" ] && hermes config set model.base_url "$base_url" >/dev/null 2>&1 || true
+    [ -n "$api_key" ] && hermes config set model.api_key "$api_key" >/dev/null 2>&1 || true
+    [ -n "$api_type" ] && hermes config set model.api_mode "$api_type" >/dev/null 2>&1 || true
+
+    if [ -n "$base_url" ]; then
+        local hermes_env
+        hermes_env="$HERMES_HOME/.env"
+        mkdir -p "$(dirname "$hermes_env")" 2>/dev/null || true
+        touch "$hermes_env" 2>/dev/null || true
+        [ -n "$api_key" ] && upsert_plain_env_value_install "$hermes_env" "OPENAI_API_KEY" "$api_key"
+        [ -n "$base_url" ] && upsert_plain_env_value_install "$hermes_env" "OPENAI_BASE_URL" "$base_url"
+        upsert_plain_env_value_install "$hermes_env" "HERMES_INFERENCE_PROVIDER" "$hermes_provider"
+        chmod 600 "$hermes_env" 2>/dev/null || true
+    fi
+}
+
 start_hermes_dashboard_install() {
     ensure_hermes_on_path
     if ! check_hermes_installed; then
@@ -3738,7 +3807,16 @@ start_hermes_openai_bridge_install() {
     if ! check_hermes_installed; then
         return 0
     fi
-    if openclaw_install_hermes_openai_bridge "$HERMES_HOME" "$HERMES_CHAT_PORT_DEFAULT" "127.0.0.1" "${AI_MODEL:-MiniMax-M2.7}" "${AI_PROVIDER:-minimax}"; then
+    local bridge_model bridge_provider
+    bridge_model="${OPENCLAW_ACTIVE_PROVIDER_MODEL:-${AI_MODEL:-MiniMax-M2.7}}"
+    bridge_provider="${OPENCLAW_ACTIVE_PROVIDER_PRESET:-${AI_PROVIDER:-minimax}}"
+    if [ -n "${OPENCLAW_ACTIVE_PROVIDER_BASE_URL:-${BASE_URL:-}}" ]; then
+        case "$bridge_provider" in
+            minimax|minimax-cn|anthropic|gemini|openrouter) ;;
+            *) bridge_provider="custom" ;;
+        esac
+    fi
+    if openclaw_install_hermes_openai_bridge "$HERMES_HOME" "$HERMES_CHAT_PORT_DEFAULT" "127.0.0.1" "$bridge_model" "$bridge_provider"; then
         log_info "Hermes OpenAI 兼容聊天接口已在 127.0.0.1:${HERMES_CHAT_PORT_DEFAULT} 启动"
     else
         log_warn "Hermes OpenAI 兼容聊天接口启动失败；网站聊天可能不可用，请检查 systemd / python3"
@@ -3796,6 +3874,11 @@ install_hermes() {
         log_info "Hermes 已同步当前龙虾角色 / 规则 / 工具映射"
     else
         log_warn "Hermes 已安装，但 Lobster 配置映射应用失败；可稍后在配置菜单中重试"
+    fi
+    if apply_hermes_model_config_install; then
+        log_info "Hermes 默认模型已写入主配置（含自定义 Provider/API Key）"
+    else
+        log_warn "Hermes 默认模型写入失败；请稍后运行 openclaw-setup config model 重新同步"
     fi
     start_hermes_dashboard_install || true
     start_hermes_openai_bridge_install || true
@@ -5980,6 +6063,7 @@ EOF
 
     upsert_env_export_install "OPENCLAW_ACTIVE_PROVIDER_PRESET" "$AI_PROVIDER"
     upsert_env_export_install "OPENCLAW_ACTIVE_PROVIDER_MODEL" "$AI_MODEL"
+    [ -n "$AI_KEY" ] && upsert_env_export_install "OPENCLAW_ACTIVE_PROVIDER_API_KEY" "$AI_KEY" || remove_env_export_install "OPENCLAW_ACTIVE_PROVIDER_API_KEY"
     [ -n "$AI_API_TYPE" ] && upsert_env_export_install "OPENCLAW_ACTIVE_PROVIDER_API_TYPE" "$AI_API_TYPE" || remove_env_export_install "OPENCLAW_ACTIVE_PROVIDER_API_TYPE"
     [ -n "$BASE_URL" ] && upsert_env_export_install "OPENCLAW_ACTIVE_PROVIDER_BASE_URL" "$BASE_URL" || remove_env_export_install "OPENCLAW_ACTIVE_PROVIDER_BASE_URL"
 
@@ -5996,6 +6080,10 @@ EOF
         deepseek)
             upsert_env_export_install "DEEPSEEK_API_KEY" "$AI_KEY"
             upsert_env_export_install "DEEPSEEK_BASE_URL" "${BASE_URL:-https://api.deepseek.com}"
+            if [ -n "$BASE_URL" ]; then
+                upsert_env_export_install "OPENAI_API_KEY" "$AI_KEY"
+                upsert_env_export_install "OPENAI_BASE_URL" "$BASE_URL"
+            fi
             ;;
         moonshot|kimi)
             upsert_env_export_install "MOONSHOT_API_KEY" "$AI_KEY"
